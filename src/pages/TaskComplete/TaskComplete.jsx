@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+// Pantalla de cierre: confirma tarea y captura valoracion para actualizar ratings.
 export default function TaskComplete() {
+  // rating es el valor que luego se enviara a addUserRating/Supabase.
   const [rating, setRating] = useState(5)
   const { id } = useParams()
   const navigate = useNavigate()

@@ -2,11 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
 
+// Opciones del formulario. Si cambias categorias, sincronizalas con tasksService y Supabase SQL.
 const categories = ['Perro', 'Recados', 'Compras', 'Ayuda tecnica']
+// Precios sugeridos para reducir friccion al publicar.
 const prices = [3, 5, 10]
+// Urgencias permitidas en el MVP.
 const urgencies = ['Ahora', 'Hoy', 'Flexible']
 
+// Pantalla de publicacion de tareas. Todavia usa estado local; createTask() conectara con Supabase.
 export default function CreateTask() {
+  // Estados de chips seleccionables.
   const [price, setPrice] = useState(5)
   const [urgency, setUrgency] = useState('Ahora')
   const [category, setCategory] = useState('Perro')

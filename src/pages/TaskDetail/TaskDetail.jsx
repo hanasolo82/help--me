@@ -1,7 +1,9 @@
 import { useParams } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 
+// Detalle de tarea. Ahora usa contenido de maqueta; despues leeremos la tarea real por id desde Supabase.
 export default function TaskDetail() {
+  // id viene de la ruta /task/:id y sirve para abrir chat o cargar datos reales.
   const { id } = useParams()
   const navigate = useNavigate()
 

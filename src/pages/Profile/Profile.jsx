@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
 import { getUserById } from '../../services/usersApi'
 
+// Perfil de usuario actual. De momento usa el seed user-mario; luego vendra de auth.uid().
 export default function Profile() {
   const navigate = useNavigate()
+  // Cambia este id si quieres probar otro usuario mock del usersApi.
   const user = getUserById('user-mario')
 
   return (

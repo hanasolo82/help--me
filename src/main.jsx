@@ -6,6 +6,7 @@ import App from './App.jsx'
 import 'leaflet/dist/leaflet.css'
 import './styles.css'
 
+// Punto de entrada: monta React, activa rutas SPA y carga estilos globales/Leaflet.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

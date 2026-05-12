@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { sendEmailMagicLink, sendPhoneOtp, signInWithGoogle } from '../../services/authService'
 import { sanitizeText } from '../../lib/security'
 
+// Panel reutilizable: sirve tanto para modal en Landing como para ruta /login.
 export function LoginPanel({ titleId, mode = 'login' }) {
   const [method, setMethod] = useState('phone')
   const [identifier, setIdentifier] = useState('')
@@ -9,6 +10,7 @@ export function LoginPanel({ titleId, mode = 'login' }) {
   const [message, setMessage] = useState('')
   const isRegister = mode === 'register'
 
+  // OAuth redirige fuera de la app hacia Supabase/Google y vuelve a /home.
   async function handleGoogleAuth() {
     setStatus('loading')
     setMessage('')
@@ -21,6 +23,7 @@ export function LoginPanel({ titleId, mode = 'login' }) {
     }
   }
 
+  // Envia OTP por telefono o magic link por correo segun el metodo elegido.
   async function handleOtpAuth() {
     setStatus('loading')
     setMessage('')
@@ -88,6 +91,7 @@ export function LoginPanel({ titleId, mode = 'login' }) {
   )
 }
 
+// Ruta /login de respaldo. El flujo principal usa este mismo panel dentro de un modal.
 export default function Login() {
   return (
     <main className="auth-screen">

@@ -1,8 +1,10 @@
 const STORAGE_KEYS = {
+  // Claves usadas por el MVP local para simular una API antes de conectar todo a Supabase.
   users: 'helpme-users',
   tasks: 'helpme-tasks',
 }
 
+// Usuarios iniciales de prueba. Puedes cambiar nombres, fotos, tareas completadas o ratings aqui.
 const seedUsers = [
   {
     id: 'user-laura',
@@ -34,6 +36,7 @@ const seedUsers = [
   },
 ]
 
+// Tareas iniciales de prueba. Son las que aparecen en Home mientras no haya backend real conectado.
 const seedTasks = [
   {
     id: 'dog-walk',
@@ -82,6 +85,7 @@ const seedTasks = [
   },
 ]
 
+// Lee JSON desde localStorage y devuelve un fallback si no existe o si el JSON esta roto.
 function readFromStorage(key, fallback) {
   try {
     const stored = localStorage.getItem(key)
@@ -91,10 +95,12 @@ function readFromStorage(key, fallback) {
   }
 }
 
+// Guarda datos como JSON en localStorage. En produccion esto se sustituira por llamadas a Supabase.
 function writeToStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
+// Crea los datos iniciales una sola vez para que la app tenga contenido al arrancar.
 export function ensureSeedData() {
   if (!localStorage.getItem(STORAGE_KEYS.users)) {
     writeToStorage(STORAGE_KEYS.users, seedUsers)
@@ -105,11 +111,13 @@ export function ensureSeedData() {
   }
 }
 
+// Devuelve usuarios normalizados: siempre con rating promedio y numero de valoraciones calculado.
 export function getUsers() {
   ensureSeedData()
   return readFromStorage(STORAGE_KEYS.users, seedUsers).map(normalizeUser)
 }
 
+// Devuelve tareas enriquecidas con el usuario asociado para que las cards no tengan que buscarlo.
 export function getTasks() {
   ensureSeedData()
   const users = getUsers()
@@ -122,10 +130,12 @@ export function getTasks() {
   }))
 }
 
+// Recupera coordenadas si el usuario tiene tareas antiguas guardadas sin campo location.
 function getSeedTaskLocation(taskId) {
   return seedTasks.find((task) => task.id === taskId)?.location || seedTasks[0].location
 }
 
+// Crea o actualiza un usuario en el almacenamiento local.
 export function saveUser(user) {
   const users = getUsers()
   const normalizedUser = normalizeUser(user)
@@ -137,6 +147,7 @@ export function saveUser(user) {
   return normalizedUser
 }
 
+// Anade una nueva puntuacion y recalcula automaticamente el promedio del usuario.
 export function addUserRating(userId, rating) {
   const safeRating = Math.max(1, Math.min(5, Number(rating)))
   const users = getUsers()
@@ -155,10 +166,12 @@ export function addUserRating(userId, rating) {
   return nextUsers.find((user) => user.id === userId)
 }
 
+// Busca un usuario concreto ya normalizado. Se usa, por ejemplo, en Profile.
 export function getUserById(userId) {
   return getUsers().find((user) => user.id === userId)
 }
 
+// Garantiza compatibilidad entre usuarios nuevos con ratings[] y usuarios antiguos con rating.
 function normalizeUser(user) {
   const ratings = Array.isArray(user.ratings) && user.ratings.length > 0
     ? user.ratings.map(Number).filter((rating) => rating >= 1 && rating <= 5)
@@ -174,6 +187,7 @@ function normalizeUser(user) {
   }
 }
 
+// Calcula el promedio real de todas las puntuaciones y lo redondea a 1 decimal.
 function calculateAverageRating(ratings) {
   if (!ratings.length) {
     return 0
@@ -183,6 +197,7 @@ function calculateAverageRating(ratings) {
   return Number((total / ratings.length).toFixed(1))
 }
 
+// Convierte un rating antiguo suelto en una lista para no perder datos al migrar.
 function createRatingsFromLegacyAverage(legacyRating) {
   const rating = Number(legacyRating)
 

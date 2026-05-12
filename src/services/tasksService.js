@@ -1,9 +1,11 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 
+// Valores permitidos por frontend y por la constraint SQL de Supabase. Si anades una categoria, cambia ambos sitios.
 const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
 const allowedUrgencies = ['Ahora', 'Hoy', 'Flexible']
 
+// Valida y limpia los datos antes de enviarlos a Supabase. Esto no sustituye RLS ni constraints SQL.
 export function validateTaskInput(input) {
   const title = sanitizeText(input.title, 90)
   const description = sanitizeText(input.description, 600)
@@ -38,6 +40,7 @@ export function validateTaskInput(input) {
   }
 }
 
+// Crea una tarea real en Supabase usando el usuario autenticado como requester_id.
 export async function createTask(input) {
   assertSupabaseReady()
   const validation = validateTaskInput(input)

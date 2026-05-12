@@ -1,7 +1,9 @@
 import styles from "./TaskCard.module.css";
 
+// Card de tarea: muestra usuario, rating promedio, distancia, precio y accion principal.
 export default function TaskCard({ task, actionLabel = "Aceptar tarea", onAction }) {
   const userInitial = task.user?.name?.charAt(0) || 'H'
+  // El rating ya viene calculado desde usersApi como promedio del array ratings[].
   const ratingLabel = task.user?.ratingCount
     ? `${task.user.rating} estrellas · ${task.user.ratingCount} valoraciones`
     : 'Sin valoraciones todavia'

@@ -10,6 +10,7 @@ import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
 import RequireAuth from "./RequireAuth";
 
+// Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
 export default function AppRouter() {
   return (
     <Routes>

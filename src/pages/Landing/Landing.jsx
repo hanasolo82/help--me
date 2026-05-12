@@ -4,6 +4,7 @@ import Login, { LoginPanel } from '../Login/Login'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
 
+// Links de la navbar. Puedes anadir, quitar o cambiar secciones desde este array.
 const landingLinks = [
   { label: 'Como funciona', href: '#como-funciona' },
   { label: 'Confianza', href: '#confianza' },
@@ -11,6 +12,7 @@ const landingLinks = [
   { label: 'FAQ', href: '#faq' },
 ]
 
+// Slides del hero. Si anades imagenes reales en public/images, actualiza estas rutas.
 const heroSlides = [
   {
     title: 'Ayuda local en minutos',
@@ -31,17 +33,21 @@ const heroSlides = [
 
 export default function Landing() {
   const navigate = useNavigate()
+  // Si ya se aceptaron cookies, no volvemos a mostrar el modal en cada visita.
   const [showCookies, setShowCookies] = useState(() => localStorage.getItem('helpme-cookies') !== 'accepted')
   const [showLogin, setShowLogin] = useState(false)
+  // authMode cambia el texto del modal entre entrar y registrarse.
   const [authMode, setAuthMode] = useState('login')
   const [darkMode, setDarkMode] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
+  // Guarda imagenes que fallaron para mostrar el fallback visual en vez de una imagen rota.
   const [failedImages, setFailedImages] = useState({})
 
   const currentSlide = heroSlides[slideIndex]
 
   const navLinks = useMemo(() => landingLinks, [])
 
+  // Carrusel automatico del hero: cambia de slide cada 4 segundos.
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setSlideIndex((current) => (current + 1) % heroSlides.length)
@@ -55,6 +61,7 @@ export default function Landing() {
     setShowCookies(false)
   }
 
+  // Abre login/registro. Si ya hay sesion real y pulsa Entrar, va directo a Home.
   async function openAuth(mode) {
     const alreadyAuthenticated = await getCurrentUser()
 

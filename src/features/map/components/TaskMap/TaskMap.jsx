@@ -2,8 +2,10 @@ import L from 'leaflet'
 import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import styles from './TaskMap.module.css'
 
+// Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
 const defaultCenter = [41.6523, -0.9019]
 
+// Marcador custom para el usuario. Usamos divIcon para mantener el estilo visual del producto.
 const userIcon = L.divIcon({
   className: styles.userMarker,
   html: '<span>Tu</span>',
@@ -11,6 +13,7 @@ const userIcon = L.divIcon({
   iconAnchor: [21, 21],
 })
 
+// Crea un marcador por tarea con el precio dentro. Se genera por tarea porque cambia el texto.
 function createTaskIcon(price) {
   return L.divIcon({
     className: styles.taskMarker,
@@ -20,12 +23,14 @@ function createTaskIcon(price) {
   })
 }
 
+// Re-centra el mapa cuando llega la ubicacion real o cambia el centro.
 function RecenterMap({ center }) {
   const map = useMap()
   map.setView(center, map.getZoom(), { animate: true })
   return null
 }
 
+// Mapa real con OpenStreetMap: usuario, radio maximo y tareas filtradas.
 export default function TaskMap({ tasks, userLocation, radiusKm, onTaskSelect }) {
   const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
 

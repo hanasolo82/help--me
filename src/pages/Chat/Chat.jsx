@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom"
 
+// Chat MVP: mensajes estaticos para validar flujo antes de conectar tabla messages.
 export default function Chat() {
+  // id identifica la tarea/chat actual y permite volver al detalle o completar.
   const { id } = useParams()
   const navigate = useNavigate()
 

@@ -3,12 +3,14 @@ import { Navigate } from 'react-router-dom'
 import { getCurrentUser } from '../../services/authService'
 import { isSupabaseConfigured } from '../../lib/supabaseClient'
 
+// Componente guardia: bloquea rutas internas si no hay Supabase configurado o sesion valida.
 export default function RequireAuth({ children }) {
   const [status, setStatus] = useState('checking')
 
   useEffect(() => {
     let isMounted = true
 
+    // Comprueba la sesion de forma asincrona para no renderizar pantallas privadas antes de tiempo.
     async function checkAuth() {
       if (!isSupabaseConfigured) {
         setStatus('missing-config')

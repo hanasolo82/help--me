@@ -1,5 +1,6 @@
 const GEOJS_URL = 'https://get.geojs.io/v1/ip/geo.json'
 
+// Pide ubicacion precisa al navegador. En movil dispara el permiso del sistema/navegador.
 function getBrowserLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -27,6 +28,7 @@ function getBrowserLocation() {
   })
 }
 
+// Fallback ligero por IP si el usuario rechaza permisos o el navegador no da coordenadas.
 async function getGeoJsLocation() {
   const response = await fetch(GEOJS_URL)
 
@@ -45,6 +47,7 @@ async function getGeoJsLocation() {
   }
 }
 
+// Estrategia principal de ubicacion: primero GPS/navegador, despues aproximacion por GeoJS.
 export async function resolveUserLocation() {
   try {
     return await getBrowserLocation()

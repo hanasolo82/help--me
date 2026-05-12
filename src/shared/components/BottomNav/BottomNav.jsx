@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import styles from './BottomNav.module.css'
 
+// Barra inferior de navegacion. requester controla si mostramos "Crear" en modo pedir ayuda.
 export default function BottomNav({ active, requester = false }) {
   return (
     <nav className={styles.nav} aria-label="Navegacion principal">

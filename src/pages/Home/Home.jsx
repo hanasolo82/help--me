@@ -7,10 +7,13 @@ import TaskMap from '../../features/map/components/TaskMap/TaskMap'
 import { resolveUserLocation } from '../../services/locationService'
 import { getTasks } from '../../services/usersApi'
 
+// Opciones visibles en los filtros. Deben coincidir con las categorias de tareas.
 const categories = ['Todas', 'Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
+// Radios disponibles para filtrar feed y dibujar circulo en el mapa.
 const radiusOptions = [1, 3, 5, 10]
 
 export default function Home() {
+  // mode es el switch principal del producto: ayudar o pedir ayuda.
   const [mode, setMode] = useState('help')
   const [category, setCategory] = useState('Todas')
   const [radius, setRadius] = useState(3)
@@ -20,8 +23,11 @@ export default function Home() {
   const navigate = useNavigate()
 
   const isHelperMode = mode === 'help'
+  // De momento lee del MVP local. Cuando conectemos Supabase, aqui cambiaremos el origen de datos.
   const tasks = useMemo(() => getTasks(), [])
+  // Separa tareas de otros usuarios y tareas propias segun el modo activo.
   const modeTasks = tasks.filter((task) => (isHelperMode ? !task.owner : task.owner))
+  // Aplica filtros de categoria y radio antes de renderizar cards y marcadores del mapa.
   const visibleTasks = modeTasks.filter((task) => {
     const matchesCategory = category === 'Todas' || task.category === category
     const matchesRadius = Number(task.distance) <= radius
@@ -29,6 +35,7 @@ export default function Home() {
     return matchesCategory && matchesRadius
   })
 
+  // Abre el mapa y solicita ubicacion solo la primera vez para no repetir permisos sin necesidad.
   async function openMap() {
     setShowMap(true)
 
