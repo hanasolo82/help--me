@@ -1,0 +1,40 @@
+.mapShell {
+  min-height: clamp(22rem, 58vw, 34rem);
+  border: 0.125rem solid #10162f;
+  border-radius: 0.25rem;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.map {
+  width: 100%;
+  min-height: clamp(22rem, 58vw, 34rem);
+}
+
+.userMarker,
+.taskMarker {
+  display: grid;
+  place-items: center;
+  border: 0.125rem solid #10162f;
+  border-radius: 0.25rem;
+  box-shadow: 0.2rem 0.2rem 0 #10162f;
+  font-weight: 900;
+}
+
+.userMarker {
+  background: #10162f;
+  color: #ffffff;
+}
+
+.taskMarker {
+  background: #ffd300;
+  color: #10162f;
+}
+
+.userMarker span,
+.taskMarker span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
