@@ -683,3 +683,43 @@ p {
   border: 2px dashed var(--cc-navy);
   border-radius: 0.25rem;
 }
+
+.remembered-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-cream);
+  margin-bottom: 1rem;
+}
+
+.remembered-account strong {
+  display: block;
+  font-weight: 900;
+  word-break: break-all;
+}
+
+.link-button {
+  background: transparent;
+  border: none;
+  color: var(--cc-blue);
+  font-weight: 900;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-legal {
+  font-size: 0.85rem;
+  color: var(--cc-navy);
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.auth-legal a {
+  color: var(--cc-blue);
+  font-weight: 900;
+}

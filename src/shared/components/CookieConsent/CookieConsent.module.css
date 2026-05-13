@@ -1,0 +1,172 @@
+.banner {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 70;
+  display: grid;
+  gap: 1rem;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  border-top: 0.125rem solid var(--cc-navy);
+  box-shadow: 0 -0.5rem 0 var(--cc-navy);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (min-width: 760px) {
+  .banner {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    inset: auto 1rem 1rem 1rem;
+    border: 0.125rem solid var(--cc-navy);
+    border-radius: 0.5rem;
+    box-shadow: 0.75rem 0.75rem 0 var(--cc-navy);
+  }
+}
+
+.content {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 56rem;
+}
+
+.content h2 {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+}
+
+.content p {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.content a {
+  color: var(--cc-blue);
+  font-weight: 900;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--cc-blue);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.primaryButton,
+.secondaryButton {
+  border-radius: 0.25rem;
+  border: 0.125rem solid var(--cc-navy);
+  padding: 0.6rem 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0.25rem 0.25rem 0 var(--cc-navy);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.primaryButton {
+  background: var(--cc-yellow);
+  color: var(--cc-navy);
+}
+
+.secondaryButton {
+  background: var(--cc-white);
+  color: var(--cc-navy);
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translate(-0.05rem, -0.05rem);
+  box-shadow: 0.35rem 0.35rem 0 var(--cc-navy);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--cc-navy) 60%, rgba(0, 0, 0, 0.55));
+  overflow-y: auto;
+}
+
+.configModal {
+  position: relative;
+  width: min(100%, 36rem);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: var(--cc-white);
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.5rem;
+  box-shadow: 0.75rem 0.75rem 0 var(--cc-navy);
+  padding: 2.5rem clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-yellow);
+  color: var(--cc-navy);
+  font-size: 1.4rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.list li {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-cream);
+}
+
+.list strong {
+  display: block;
+  font-weight: 900;
+}
+
+.list p {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0.25rem 0 0;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.note {
+  font-size: 0.85rem;
+}
+
+.note a {
+  color: var(--cc-blue);
+  font-weight: 900;
+}

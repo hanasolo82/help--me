@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
+import AuthModal from '../../shared/components/AuthModal/AuthModal'
+import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 
 // Links de la navbar. Puedes anadir, quitar o cambiar secciones desde este array.
 const landingLinks = [
@@ -32,18 +34,14 @@ const heroSlides = [
 
 export default function Landing() {
   const navigate = useNavigate()
-  // Si ya se aceptaron cookies, no volvemos a mostrar el modal en cada visita.
-  const [showCookies, setShowCookies] = useState(() => localStorage.getItem('helpme-cookies') !== 'accepted')
+  const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
   const [darkMode, setDarkMode] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
-  // Guarda imagenes que fallaron para mostrar el fallback visual en vez de una imagen rota.
   const [failedImages, setFailedImages] = useState({})
 
   const currentSlide = heroSlides[slideIndex]
-
   const navLinks = useMemo(() => landingLinks, [])
 
-  // Carrusel automatico del hero: cambia de slide cada 4 segundos.
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setSlideIndex((current) => (current + 1) % heroSlides.length)
@@ -52,21 +50,21 @@ export default function Landing() {
     return () => window.clearInterval(intervalId)
   }, [])
 
-  function acceptCookies() {
-    localStorage.setItem('helpme-cookies', 'accepted')
-    setShowCookies(false)
-  }
-
-  // Envia a login/registro. Si ya hay sesion real y pulsa Entrar, va directo a Home.
+  // Si ya hay sesion y se pulsa "Entrar", saltamos directos a Home sin pedir password.
   async function openAuth(mode) {
-    const alreadyAuthenticated = await getCurrentUser()
-
-    if (mode === 'login' && alreadyAuthenticated) {
-      navigate('/home')
-      return
+    if (mode === 'login') {
+      const alreadyAuthenticated = await getCurrentUser()
+      if (alreadyAuthenticated) {
+        navigate('/home')
+        return
+      }
     }
 
-    navigate(mode === 'register' ? '/login?mode=register' : '/login')
+    setAuthModal({ open: true, mode })
+  }
+
+  function closeAuth() {
+    setAuthModal((current) => ({ ...current, open: false }))
   }
 
   return (
@@ -217,29 +215,19 @@ export default function Landing() {
       </section>
 
       <footer className={styles.footer}>
-        <span>helpMe</span>
-        <span>Zaragoza · Delicias</span>
+        <div>
+          <strong>helpMe</strong>
+          <span>Zaragoza · Delicias</span>
+        </div>
+        <nav aria-label="Enlaces legales">
+          <Link to="/legal/terms">Terminos</Link>
+          <Link to="/legal/privacy">Privacidad</Link>
+          <Link to="/legal/cookies">Cookies</Link>
+        </nav>
       </footer>
 
-      {showCookies && (
-        <div className={styles.modalLayer} role="dialog" aria-modal="true" aria-labelledby="cookies-title">
-          <section className={styles.cookieModal}>
-            <p className={styles.kicker}>Cookies</p>
-            <h2 id="cookies-title">Antes de entrar</h2>
-            <p>
-              Usamos cookies tecnicas para recordar preferencias como el modo visual y mejorar la experiencia del MVP.
-            </p>
-            <div className={styles.modalActions}>
-              <button className={styles.secondaryCta} onClick={acceptCookies}>
-                Solo necesarias
-              </button>
-              <button className={styles.primaryCta} onClick={acceptCookies}>
-                Aceptar
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <AuthModal open={authModal.open} mode={authModal.mode} onClose={closeAuth} />
+      <CookieConsent />
     </main>
   )
 }

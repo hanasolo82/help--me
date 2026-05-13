@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { estimatePasswordStrength, validateEmail } from '../../lib/security'
+import { clearRememberedEmail, readRememberedEmail } from '../../lib/consent'
 import Turnstile from '../../shared/components/Turnstile'
 import {
   resendSignupConfirmation,
@@ -12,7 +13,6 @@ import {
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
-// Estados posibles del formulario. Usamos const para evitar typos en string magico.
 const STATUS = Object.freeze({
   idle: 'idle',
   loading: 'loading',
@@ -20,10 +20,13 @@ const STATUS = Object.freeze({
   error: 'error',
 })
 
-// Panel reutilizable para la pagina /login. Mantiene la logica en servicios, no en Supabase directo.
-export function LoginPanel({ titleId, initialMode = 'login' }) {
-  const [mode, setMode] = useState(initialMode)
-  const [email, setEmail] = useState('')
+// Panel de autenticacion. Reutilizado tanto en /login como dentro del AuthModal de la landing.
+// Si hay un email recordado en localStorage, el formulario se compacta: solo password.
+export function LoginPanel({ titleId, initialMode = 'login', onSuccess }) {
+  const initialRemembered = readRememberedEmail()
+  const [rememberedEmail, setRememberedEmail] = useState(initialRemembered)
+  const [mode, setMode] = useState(initialRemembered ? 'login' : initialMode)
+  const [email, setEmail] = useState(initialRemembered || '')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [emailError, setEmailError] = useState('')
@@ -32,26 +35,46 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
   const [captchaToken, setCaptchaToken] = useState('')
   const [captchaKey, setCaptchaKey] = useState(0)
   const emailInputRef = useRef(null)
+  const passwordInputRef = useRef(null)
   const navigate = useNavigate()
   const { refreshProfile } = useAuth()
-  const isRegister = mode === 'register'
+
+  const hasRemembered = Boolean(rememberedEmail)
+  const isRegister = mode === 'register' && !hasRemembered
   const captchaRequired = Boolean(TURNSTILE_SITE_KEY)
+
   const handleCaptcha = useCallback((token) => setCaptchaToken(token), [])
   const resetCaptcha = useCallback(() => {
     setCaptchaToken('')
     setCaptchaKey((k) => k + 1)
   }, [])
 
-  // Al cambiar de tab, mover focus al primer input para mejor UX y accesibilidad.
+  // Al montar o cambiar de tab: foco al primer input util.
   useEffect(() => {
-    emailInputRef.current?.focus()
-  }, [mode])
+    if (hasRemembered) {
+      passwordInputRef.current?.focus()
+    } else {
+      emailInputRef.current?.focus()
+    }
+  }, [mode, hasRemembered])
+
+  function useAnotherAccount() {
+    clearRememberedEmail()
+    setRememberedEmail('')
+    setEmail('')
+    setPassword('')
+    setMode('login')
+    setMessage('')
+    setStatus(STATUS.idle)
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
     if (status === STATUS.loading) return
 
-    const emailCheck = validateEmail(email)
+    const finalEmail = hasRemembered ? rememberedEmail : email
+    const emailCheck = validateEmail(finalEmail)
+
     if (!emailCheck.isValid) {
       setEmailError(emailCheck.error)
       return
@@ -69,7 +92,7 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
 
     try {
       const authAction = isRegister ? signUpWithEmail : signInWithEmail
-      const result = await authAction({ email, password, captchaToken })
+      const result = await authAction({ email: finalEmail, password, captchaToken })
 
       if (!result.session) {
         setStatus(STATUS.sent)
@@ -79,11 +102,16 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
       }
 
       const nextProfile = await refreshProfile()
-      navigate(nextProfile ? '/home' : '/onboarding', { replace: true })
+      const destination = nextProfile ? '/home' : '/onboarding'
+
+      if (onSuccess) {
+        onSuccess({ destination, profile: nextProfile })
+      } else {
+        navigate(destination, { replace: true })
+      }
     } catch (error) {
       setStatus(STATUS.error)
       setMessage(error.message)
-      // Cada token de Turnstile es de un solo uso; al fallar, pedimos uno nuevo.
       resetCaptcha()
     }
   }
@@ -102,7 +130,7 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
 
   async function handleResend() {
     setMessage('Reenviando correo...')
-    await resendSignupConfirmation(email)
+    await resendSignupConfirmation(hasRemembered ? rememberedEmail : email)
     setMessage('Si el correo es valido recibiras un nuevo email de confirmacion.')
   }
 
@@ -120,74 +148,97 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
   return (
     <section className="auth-panel">
       <p className="eyebrow">helpMe Auth</p>
-      <h1 id={titleId}>{isRegister ? 'Crea tu cuenta' : 'Entra en helpMe'}</h1>
+      <h1 id={titleId}>
+        {hasRemembered
+          ? 'Bienvenido de vuelta'
+          : isRegister ? 'Crea tu cuenta' : 'Entra en helpMe'}
+      </h1>
       <p className="muted">
-        {isRegister
-          ? 'Crea una cuenta con email/password o continua con Google.'
-          : 'Accede con Google o con email/password. Si falta profile, iremos a onboarding.'}
+        {hasRemembered
+          ? 'Introduce tu contrasena para continuar.'
+          : isRegister
+            ? 'Crea una cuenta con email y contrasena o continua con Google.'
+            : 'Accede con Google o con email y contrasena.'}
       </p>
 
-      <button
-        type="button"
-        className="oauth-action"
-        onClick={handleGoogleAuth}
-        disabled={status === STATUS.loading}
-      >
-        Continuar con Google
-      </button>
+      {!hasRemembered && (
+        <>
+          <button
+            type="button"
+            className="oauth-action"
+            onClick={handleGoogleAuth}
+            disabled={status === STATUS.loading}
+          >
+            Continuar con Google
+          </button>
 
-      <div className="auth-divider">
-        <span>o</span>
-      </div>
+          <div className="auth-divider">
+            <span>o</span>
+          </div>
 
-      <div className="segmented" role="tablist" aria-label="Modo de autenticacion">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={!isRegister}
-          className={mode === 'login' ? 'selected' : ''}
-          onClick={() => setMode('login')}
-        >
-          Entrar
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={isRegister}
-          className={mode === 'register' ? 'selected' : ''}
-          onClick={() => setMode('register')}
-        >
-          Registrarse
-        </button>
-      </div>
+          <div className="segmented" role="tablist" aria-label="Modo de autenticacion">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isRegister}
+              className={mode === 'login' ? 'selected' : ''}
+              onClick={() => setMode('login')}
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isRegister}
+              className={mode === 'register' ? 'selected' : ''}
+              onClick={() => setMode('register')}
+            >
+              Registrarse
+            </button>
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleSubmit} noValidate>
-        <label className="field">
-          <span>Email</span>
-          <input
-            ref={emailInputRef}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            required
-            aria-invalid={Boolean(emailError)}
-            aria-describedby={emailError ? 'email-error' : undefined}
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            onBlur={handleEmailBlur}
-            placeholder="tu@email.com"
-          />
-          {emailError && (
-            <span id="email-error" className="field-error" role="alert">
-              {emailError}
-            </span>
-          )}
-        </label>
+        {hasRemembered ? (
+          <div className="remembered-account" aria-live="polite">
+            <div>
+              <span className="eyebrow">Cuenta</span>
+              <strong>{rememberedEmail}</strong>
+            </div>
+            <button type="button" className="link-button" onClick={useAnotherAccount}>
+              Usar otra cuenta
+            </button>
+          </div>
+        ) : (
+          <label className="field">
+            <span>Email</span>
+            <input
+              ref={emailInputRef}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              aria-invalid={Boolean(emailError)}
+              aria-describedby={emailError ? 'email-error' : undefined}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              onBlur={handleEmailBlur}
+              placeholder="tu@email.com"
+            />
+            {emailError && (
+              <span id="email-error" className="field-error" role="alert">
+                {emailError}
+              </span>
+            )}
+          </label>
+        )}
 
         <label className="field">
           <span>Contrasena</span>
           <div className="password-field">
             <input
+              ref={passwordInputRef}
               autoComplete={isRegister ? 'new-password' : 'current-password'}
               type={showPassword ? 'text' : 'password'}
               required
@@ -243,7 +294,7 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
           className="primary-action"
           disabled={status === STATUS.loading || (captchaRequired && !captchaToken)}
         >
-          {isRegister ? 'Crear cuenta' : 'Entrar'}
+          {hasRemembered ? 'Entrar' : isRegister ? 'Crear cuenta' : 'Entrar'}
         </button>
 
         {status === STATUS.sent && isRegister && (
@@ -256,11 +307,20 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
           </button>
         )}
       </form>
+
+      {!hasRemembered && (
+        <p className="auth-legal">
+          Al continuar aceptas los{' '}
+          <Link to="/legal/terms">Terminos</Link>
+          {' '}y la{' '}
+          <Link to="/legal/privacy">Politica de privacidad</Link>.
+        </p>
+      )}
     </section>
   )
 }
 
-// Pagina /login. Es una pantalla real, no un modal, para soportar redirecciones OAuth y mobile futuro.
+// Pagina /login: util como fallback directo y para callbacks OAuth. La landing usa AuthModal.
 export default function Login() {
   const location = useLocation()
   const params = new URLSearchParams(location.search)

@@ -1,0 +1,53 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--cc-navy) 60%, rgba(0, 0, 0, 0.55));
+  overflow-y: auto;
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 30rem);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.5rem;
+  box-shadow: 0.75rem 0.75rem 0 var(--cc-navy);
+  padding-top: 2.5rem;
+}
+
+.modal :global(.auth-panel) {
+  border: none;
+  box-shadow: none;
+  padding: 0 clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
+  background: transparent;
+}
+
+.closeButton {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-yellow);
+  color: var(--cc-navy);
+  font-size: 1.4rem;
+  font-weight: 900;
+  cursor: pointer;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.closeButton:hover {
+  transform: translate(-0.05rem, -0.05rem);
+  box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
+}

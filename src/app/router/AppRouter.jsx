@@ -12,6 +12,9 @@ import Chat from "../../pages/Chat/Chat";
 import Chats from "../../pages/Chats/Chats";
 import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
+import Cookies from "../../pages/Legal/Cookies";
+import Privacy from "../../pages/Legal/Privacy";
+import Terms from "../../pages/Legal/Terms";
 import RequireAuth from "./RequireAuth";
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
@@ -22,6 +25,9 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/legal/terms" element={<Terms />} />
+      <Route path="/legal/privacy" element={<Privacy />} />
+      <Route path="/legal/cookies" element={<Cookies />} />
       <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>} />
       <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/task/:id" element={<RequireAuth><TaskDetail /></RequireAuth>} />

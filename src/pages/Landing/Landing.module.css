@@ -335,10 +335,33 @@
 
 .footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   padding-block: 1.5rem;
   font-weight: 900;
+}
+
+.footer > div {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer nav a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.footer nav a:hover {
+  color: var(--accent);
 }
 
 .modalLayer {

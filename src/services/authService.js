@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, validateEmail, validatePassword } from '../lib/security'
+import { clearRememberedEmail, rememberEmail } from '../lib/consent'
 
 // URLs publicas para callbacks de Supabase. Solo deben coincidir con la allow-list
 // configurada en Supabase Auth > URL Configuration para evitar open redirect.
@@ -49,6 +50,8 @@ export async function signUpWithEmail({ email, password, captchaToken }) {
       throw error
     }
 
+    // Guardamos el email para que al volver al modal solo aparezca el campo password.
+    rememberEmail(emailResult.value)
     return data
   } catch (error) {
     throw normalizeAuthError(error, { context: 'signup' })
@@ -81,6 +84,7 @@ export async function signInWithEmail({ email, password, captchaToken }) {
       throw error
     }
 
+    rememberEmail(emailResult.value)
     return data
   } catch (error) {
     throw normalizeAuthError(error, { context: 'signin' })
@@ -197,6 +201,10 @@ export async function signOut({ scope = 'local' } = {}) {
   if (error) {
     throw error
   }
+
+  // Al cerrar sesion conscientemente, olvidamos el email recordado para evitar mezclar cuentas
+  // en dispositivos compartidos.
+  clearRememberedEmail()
 }
 
 function normalizeAuthError(error, { context } = {}) {

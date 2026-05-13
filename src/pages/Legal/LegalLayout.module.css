@@ -1,0 +1,131 @@
+.layout {
+  width: min(100% - 2rem, 56rem);
+  margin: 0 auto;
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+  display: grid;
+  gap: 1.5rem;
+  color: var(--cc-navy);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.back {
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-yellow);
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--cc-blue);
+}
+
+.updated {
+  margin-top: 0.25rem;
+  color: var(--cc-blue);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tab {
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  padding: 0.5rem 0.9rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.tabActive {
+  background: var(--cc-yellow);
+}
+
+.content {
+  background: var(--cc-white);
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.5rem;
+  box-shadow: 0.5rem 0.5rem 0 var(--cc-navy);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: grid;
+  gap: 1rem;
+  line-height: 1.6;
+}
+
+.content h2 {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  margin-top: 0.75rem;
+}
+
+.content h3 {
+  font-size: 1rem;
+  font-weight: 900;
+  margin-top: 0.5rem;
+}
+
+.content p {
+  margin: 0;
+}
+
+.content ul,
+.content ol {
+  margin: 0;
+  padding-left: 1.4rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.content table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92rem;
+}
+
+.content th,
+.content td {
+  border: 1px solid var(--cc-navy);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.content th {
+  background: var(--cc-yellow);
+}
+
+.content a {
+  color: var(--cc-blue);
+  font-weight: 900;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.92rem;
+}
+
+.footer a {
+  color: var(--cc-blue);
+  font-weight: 900;
+}
