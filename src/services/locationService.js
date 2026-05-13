@@ -55,3 +55,28 @@ export async function resolveUserLocation() {
     return getGeoJsLocation()
   }
 }
+
+const EARTH_RADIUS_KM = 6371
+
+function toRadians(degrees) {
+  return (degrees * Math.PI) / 180
+}
+
+// Distancia Haversine en kilometros entre dos puntos lat/lon. Devuelve null si falta dato.
+export function distanceKm(from, to) {
+  if (!from || !to) return null
+  const lat1 = Number(from.latitude)
+  const lon1 = Number(from.longitude)
+  const lat2 = Number(to.latitude)
+  const lon2 = Number(to.longitude)
+  if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return null
+
+  const dLat = toRadians(lat2 - lat1)
+  const dLon = toRadians(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+  return Number((EARTH_RADIUS_KM * c).toFixed(2))
+}

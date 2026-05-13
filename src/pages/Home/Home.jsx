@@ -1,41 +1,85 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './Home.module.css'
 import TaskCard from '../../features/tasks/components/TaskCard/TaskCard'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
 import TaskMap from '../../features/map/components/TaskMap/TaskMap'
-import { resolveUserLocation } from '../../services/locationService'
-import { getTasks } from '../../services/usersApi'
+import { distanceKm, resolveUserLocation } from '../../services/locationService'
+import { getMyTasks, getOpenTasks } from '../../services/tasksService'
+import { useAuth } from '../../contexts/useAuth'
 
-// Opciones visibles en los filtros. Deben coincidir con las categorias de tareas.
+// Filtros visibles. Las categorias coinciden EXACTAMENTE con las del schema y tasksService.
 const categories = ['Todas', 'Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
-// Radios disponibles para filtrar feed y dibujar circulo en el mapa.
-const radiusOptions = [1, 3, 5, 10]
+const radiusOptions = [1, 3, 5, 10, 50]
 
 export default function Home() {
-  // mode es el switch principal del producto: ayudar o pedir ayuda.
+  const { profile } = useAuth()
   const [mode, setMode] = useState('help')
   const [category, setCategory] = useState('Todas')
-  const [radius, setRadius] = useState(3)
+  const [radius, setRadius] = useState(10)
   const [showMap, setShowMap] = useState(false)
   const [location, setLocation] = useState(null)
   const [locationStatus, setLocationStatus] = useState('idle')
+  const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const isHelperMode = mode === 'help'
-  // De momento lee del MVP local. Cuando conectemos Supabase, aqui cambiaremos el origen de datos.
-  const tasks = useMemo(() => getTasks(), [])
-  // Separa tareas de otros usuarios y tareas propias segun el modo activo.
-  const modeTasks = tasks.filter((task) => (isHelperMode ? !task.owner : task.owner))
-  // Aplica filtros de categoria y radio antes de renderizar cards y marcadores del mapa.
-  const visibleTasks = modeTasks.filter((task) => {
-    const matchesCategory = category === 'Todas' || task.category === category
-    const matchesRadius = Number(task.distance) <= radius
 
-    return matchesCategory && matchesRadius
+  // Carga tareas desde Supabase cada vez que cambia el modo o la categoria.
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError('')
+
+    const promise = isHelperMode
+      ? getOpenTasks({ category })
+      : getMyTasks({ role: 'requester' })
+
+    promise
+      .then((data) => {
+        if (cancelled) return
+        setTasks(data || [])
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setError(err.message || 'No se pudieron cargar las tareas.')
+        setTasks([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isHelperMode, category])
+
+  // Calcula distancias respecto a la ubicacion del usuario (si la tiene) o la deja como null.
+  const tasksWithDistance = useMemo(() => {
+    return tasks.map((task) => ({
+      task,
+      distance: location ? distanceKm(location, { latitude: task.latitude, longitude: task.longitude }) : null,
+    }))
+  }, [tasks, location])
+
+  // Aplica filtro de radio solo si tenemos ubicacion. Sin ubicacion mostramos todo.
+  const visibleTasks = tasksWithDistance.filter(({ task, distance }) => {
+    if (!isHelperMode) return true
+    if (category !== 'Todas' && task.category !== category) return false
+    if (location && Number.isFinite(distance) && distance > radius) return false
+    return true
   })
 
-  // Abre el mapa y solicita ubicacion solo la primera vez para no repetir permisos sin necesidad.
+  const distancesById = useMemo(() => {
+    const map = {}
+    for (const item of visibleTasks) {
+      if (Number.isFinite(item.distance)) map[item.task.id] = item.distance
+    }
+    return map
+  }, [visibleTasks])
+
   async function openMap() {
     setShowMap(true)
 
@@ -59,7 +103,7 @@ export default function Home() {
       <header className={styles.header}>
         <div>
           <p className={styles.location}>
-            {location?.label || 'Zaragoza · Delicias'}
+            {location?.label || profile?.neighborhood || 'Activa tu ubicacion'}
           </p>
 
           <h1 className={styles.logo}>
@@ -72,7 +116,7 @@ export default function Home() {
             Landing
           </button>
           <button className={styles.avatar} onClick={() => navigate('/profile')} aria-label="Abrir perfil">
-            M
+            {profile?.full_name?.charAt(0).toUpperCase() || '?'}
           </button>
         </div>
       </header>
@@ -138,21 +182,29 @@ export default function Home() {
           </div>
         </div>
 
+        {loading && <p className="muted">Cargando tareas...</p>}
+        {error && !loading && <p className="auth-message error">{error}</p>}
+
         <div className={styles.taskGrid}>
-          {visibleTasks.map((task) => (
+          {visibleTasks.map(({ task, distance }) => (
             <TaskCard
               key={task.id}
               task={task}
+              distanceKm={distance}
               actionLabel={isHelperMode ? 'Aceptar tarea' : 'Ver estado'}
               onAction={() => navigate(`/task/${task.id}`)}
             />
           ))}
         </div>
 
-        {visibleTasks.length === 0 && (
+        {!loading && !error && visibleTasks.length === 0 && (
           <article className={styles.emptyState}>
-            <h3>No hay tareas con estos filtros</h3>
-            <p>Amplia el radio o cambia el tipo de actividad para ver mas oportunidades.</p>
+            <h3>{isHelperMode ? 'No hay tareas con estos filtros' : 'Aun no has publicado tareas'}</h3>
+            <p>
+              {isHelperMode
+                ? 'Amplia el radio o cambia el tipo de actividad para ver mas oportunidades.'
+                : 'Pulsa "Publicar tarea" para pedir tu primera ayuda.'}
+            </p>
           </article>
         )}
       </section>
@@ -189,9 +241,10 @@ export default function Home() {
             </div>
 
             <TaskMap
-              tasks={visibleTasks}
+              tasks={visibleTasks.map((item) => item.task)}
               userLocation={location}
               radiusKm={radius}
+              distances={distancesById}
               onTaskSelect={(taskId) => navigate(`/task/${taskId}`)}
             />
           </section>

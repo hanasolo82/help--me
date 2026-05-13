@@ -1,4 +1,6 @@
-// Limpieza basica para textos libres: quita signos peligrosos simples, compacta espacios y limita longitud.
+// Limpieza basica para textos libres: compacta espacios y limita longitud.
+// Nota: React ya escapa al renderizar, asi que esto NO sustituye DOMPurify si algun dia
+// usas dangerouslySetInnerHTML. Aqui solo normalizamos para guardar/enviar a Supabase.
 export function sanitizeText(value, maxLength = 240) {
   return String(value ?? '')
     .replace(/[<>]/g, '')
@@ -31,16 +33,78 @@ export function validatePhone(phone) {
   }
 }
 
-// Password minimo para email/password. La politica fuerte final tambien debe configurarse en Supabase.
+// Top passwords mas comunes filtradas. Lista minima local; en Supabase activa ademas
+// "Leaked password protection" (HaveIBeenPwned) en Auth > Policies.
+const COMMON_PASSWORDS = new Set([
+  '123456789012', 'qwertyuiop12', 'password1234', 'iloveyou1234',
+  'admin1234567', 'welcome12345', 'letmein12345', 'monkey123456',
+  'football1234', 'dragon123456', 'sunshine1234', 'princess1234',
+  'qwerty123456', 'abcdef123456', '111111111111', '000000000000',
+  'contraseña12', 'contrasena12', 'mipassword12', 'usuario12345',
+])
+
+export const PASSWORD_MIN_LENGTH = 12
+
+// Politica password: minimo 12 chars + al menos 3 de 4 clases + no estar en blocklist.
+// La politica fuerte final tambien debe configurarse en Supabase Auth > Policies.
 export function validatePassword(password) {
   const value = String(password ?? '')
-  const isValid = value.length >= 8
 
-  return {
-    value,
-    isValid,
-    error: isValid ? null : 'La contrasena debe tener al menos 8 caracteres.',
+  if (value.length < PASSWORD_MIN_LENGTH) {
+    return { value, isValid: false, error: `La contrasena debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.` }
   }
+
+  if (value.length > 128) {
+    return { value, isValid: false, error: 'La contrasena no puede superar 128 caracteres.' }
+  }
+
+  const classes = [
+    /[a-z]/.test(value),
+    /[A-Z]/.test(value),
+    /\d/.test(value),
+    /[^A-Za-z0-9]/.test(value),
+  ].filter(Boolean).length
+
+  if (classes < 3) {
+    return {
+      value,
+      isValid: false,
+      error: 'Usa al menos 3 de: minusculas, mayusculas, numeros, simbolos.',
+    }
+  }
+
+  if (COMMON_PASSWORDS.has(value.toLowerCase())) {
+    return { value, isValid: false, error: 'Esa contrasena aparece en listas filtradas. Elige otra.' }
+  }
+
+  return { value, isValid: true, error: null }
+}
+
+// Heuristico simple de fuerza para mostrar feedback visual en el formulario de registro.
+// Devuelve {score 0-4, label}. No sustituye zxcvbn pero evita la dependencia.
+export function estimatePasswordStrength(password) {
+  const value = String(password ?? '')
+  if (!value) return { score: 0, label: '' }
+
+  let score = 0
+  if (value.length >= 8) score += 1
+  if (value.length >= 12) score += 1
+  if (value.length >= 16) score += 1
+
+  const variety = [
+    /[a-z]/.test(value),
+    /[A-Z]/.test(value),
+    /\d/.test(value),
+    /[^A-Za-z0-9]/.test(value),
+  ].filter(Boolean).length
+  if (variety >= 3) score += 1
+  if (variety === 4 && value.length >= 14) score += 1
+
+  if (COMMON_PASSWORDS.has(value.toLowerCase())) score = 0
+
+  score = Math.min(4, score)
+  const label = ['Muy debil', 'Debil', 'Aceptable', 'Buena', 'Excelente'][score]
+  return { score, label }
 }
 
 // Username publico: simple, portable y facil de validar igual en frontend, SQL y futuro movil.

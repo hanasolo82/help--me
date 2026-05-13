@@ -51,6 +51,15 @@
   object-fit: cover;
 }
 
+.taskImage {
+  display: block;
+  width: 100%;
+  max-height: 14rem;
+  object-fit: cover;
+  border: 0.125rem solid #10162f;
+  border-radius: 0.25rem;
+}
+
 .topSection {
   display: flex;
   justify-content: space-between;

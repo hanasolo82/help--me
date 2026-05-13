@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AuthContext } from './AuthContextBase'
-import { isSupabaseConfigured } from '../lib/supabaseClient'
-import { getCurrentSession, onAuthStateChange } from '../services/authService'
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient'
+import { getCurrentUser, onAuthStateChange } from '../services/authService'
 import { getProfileByUserId } from '../services/profilesService'
+
+// Eventos donde tiene sentido recargar el profile. TOKEN_REFRESHED ocurre cada hora
+// y no cambia datos del usuario, por lo que se ignora para evitar fetches inutiles.
+const PROFILE_RELEVANT_EVENTS = new Set([
+  'INITIAL_SESSION',
+  'SIGNED_IN',
+  'SIGNED_OUT',
+  'USER_UPDATED',
+  'PASSWORD_RECOVERY',
+])
 
 // Estado global de auth: sesion Supabase + user + profile de dominio.
 export function AuthProvider({ children }) {
@@ -38,6 +48,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true
+    let didBootstrap = false
 
     async function bootstrapAuth() {
       if (!isSupabaseConfigured) {
@@ -45,24 +56,47 @@ export function AuthProvider({ children }) {
         return
       }
 
-      const initialSession = await getCurrentSession()
+      // getUser() valida el JWT contra el servidor (no es solo lectura de localStorage).
+      // Si el token es invalido o expiro, devolvera null y RequireAuth redirigira a /login.
+      const validatedUser = await getCurrentUser()
 
       if (!isMounted) return
 
-      setSession(initialSession)
-      setUser(initialSession?.user ?? null)
-      await loadProfile(initialSession?.user ?? null)
+      if (validatedUser) {
+        const { data } = await supabase.auth.getSession()
+        if (!isMounted) return
+        setSession(data.session)
+        setUser(validatedUser)
+        await loadProfile(validatedUser)
+      } else {
+        setSession(null)
+        setUser(null)
+        setProfile(null)
+      }
 
-      if (isMounted) setLoading(false)
+      if (isMounted) {
+        didBootstrap = true
+        setLoading(false)
+      }
     }
 
     bootstrapAuth()
 
-    const subscription = onAuthStateChange(async (_event, nextSession) => {
+    const subscription = onAuthStateChange(async (event, nextSession) => {
+      if (!isMounted) return
+
+      // Antes del bootstrap inicial, ignoramos eventos para no pisar el estado validado.
+      // INITIAL_SESSION llegara y reconciliara cuando bootstrap haya terminado.
+      if (!didBootstrap && event !== 'INITIAL_SESSION') return
+
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
-      await loadProfile(nextSession?.user ?? null)
-      setLoading(false)
+
+      if (PROFILE_RELEVANT_EVENTS.has(event)) {
+        await loadProfile(nextSession?.user ?? null)
+      }
+
+      if (isMounted) setLoading(false)
     })
 
     return () => {

@@ -1,34 +1,166 @@
-import { useParams, useNavigate } from "react-router-dom"
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../../contexts/useAuth'
+import {
+  getChatByTaskId,
+  getMessages,
+  sendMessage,
+  subscribeToMessages,
+} from '../../services/chatService'
 
-// Chat MVP: mensajes estaticos para validar flujo antes de conectar tabla messages.
+// Chat real conectado a Supabase con suscripcion realtime de mensajes y envio validado.
 export default function Chat() {
-  // id identifica la tarea/chat actual y permite volver al detalle o completar.
-  const { id } = useParams()
+  const { id: taskId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const [chat, setChat] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [body, setBody] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+  const messagesEndRef = useRef(null)
+
+  // Carga inicial: chat + historico + suscripcion realtime.
+  useEffect(() => {
+    let cancelled = false
+    let unsubscribe = null
+    setLoading(true)
+
+    async function bootstrap() {
+      try {
+        const chatRow = await getChatByTaskId(taskId)
+        if (cancelled) return
+
+        if (!chatRow) {
+          setError('No hay un chat para esta tarea todavia.')
+          setLoading(false)
+          return
+        }
+
+        setChat(chatRow)
+
+        const history = await getMessages(chatRow.id)
+        if (cancelled) return
+        setMessages(history)
+        setLoading(false)
+
+        unsubscribe = subscribeToMessages(chatRow.id, (newMessage) => {
+          setMessages((current) => {
+            if (current.some((message) => message.id === newMessage.id)) return current
+            return [...current, newMessage]
+          })
+        })
+      } catch (err) {
+        if (cancelled) return
+        setError(err.message || 'No se pudo cargar el chat.')
+        setLoading(false)
+      }
+    }
+
+    bootstrap()
+
+    return () => {
+      cancelled = true
+      if (unsubscribe) unsubscribe()
+    }
+  }, [taskId])
+
+  // Autoscroll al ultimo mensaje cada vez que llegan novedades.
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function handleSend(event) {
+    event.preventDefault()
+    if (!chat || !body.trim()) return
+    setSending(true)
+    setError('')
+
+    try {
+      await sendMessage(chat.id, body)
+      setBody('')
+    } catch (err) {
+      setError(err.message || 'No se pudo enviar el mensaje.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="chat-screen">
+        <p className="muted">Cargando chat...</p>
+      </main>
+    )
+  }
+
+  if (!chat) {
+    return (
+      <main className="chat-screen">
+        <header className="chat-header">
+          <button className="icon-button" onClick={() => navigate(`/task/${taskId}`)} aria-label="Volver">
+            ←
+          </button>
+          <h1>Chat no disponible</h1>
+        </header>
+        <p className="auth-message error">{error || 'Acepta la tarea para abrir un chat.'}</p>
+      </main>
+    )
+  }
+
+  const isRequester = user?.id === chat.requester_id
+  const counterpart = isRequester ? chat.helper : chat.requester
+  const counterpartName = counterpart?.full_name || counterpart?.username || 'Usuario helpMe'
 
   return (
     <main className="chat-screen">
       <header className="chat-header">
-        <button className="icon-button" onClick={() => navigate(`/task/${id}`)} aria-label="Volver">
+        <button className="icon-button" onClick={() => navigate(`/task/${taskId}`)} aria-label="Volver">
           ←
         </button>
         <div>
-          <strong>Laura</strong>
-          <p>Sacar al perro 30 min</p>
+          <strong>{counterpartName}</strong>
+          <p>{chat.task?.title}</p>
         </div>
       </header>
 
-      <section className="messages">
-        <p className="message incoming">Hola, gracias por aceptar. Te paso la correa en el portal.</p>
-        <p className="message outgoing">Perfecto. Llego en unos 10 minutos.</p>
-        <p className="message incoming">Genial, te espero.</p>
+      <section className="messages" aria-live="polite">
+        {messages.length === 0 && (
+          <p className="muted">Aun no hay mensajes. Saluda para empezar.</p>
+        )}
+        {messages.map((message) => (
+          <p
+            key={message.id}
+            className={message.sender_id === user?.id ? 'message outgoing' : 'message incoming'}
+          >
+            {message.body}
+          </p>
+        ))}
+        <div ref={messagesEndRef} />
       </section>
 
-      <footer className="chat-actions">
-        <button className="secondary-action">Contactar</button>
-        <button className="success-action" onClick={() => navigate(`/complete/${id}`)}>
-          Marcar completada
+      {error && <p className="auth-message error">{error}</p>}
+
+      <form className="chat-composer" onSubmit={handleSend}>
+        <input
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          placeholder="Escribe un mensaje"
+          maxLength={1200}
+          disabled={sending}
+        />
+        <button type="submit" className="primary-action" disabled={sending || !body.trim()}>
+          Enviar
         </button>
+      </form>
+
+      <footer className="chat-actions">
+        {isRequester && chat.task?.status !== 'completed' && (
+          <button className="success-action" onClick={() => navigate(`/complete/${taskId}`)}>
+            Marcar completada
+          </button>
+        )}
       </footer>
     </main>
   )

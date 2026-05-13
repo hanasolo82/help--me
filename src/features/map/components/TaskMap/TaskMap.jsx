@@ -14,10 +14,10 @@ const userIcon = L.divIcon({
 })
 
 // Crea un marcador por tarea con el precio dentro. Se genera por tarea porque cambia el texto.
-function createTaskIcon(price) {
+function createTaskIcon(priceEuros) {
   return L.divIcon({
     className: styles.taskMarker,
-    html: `<span>${price}€</span>`,
+    html: `<span>${priceEuros}€</span>`,
     iconSize: [42, 42],
     iconAnchor: [21, 21],
   })
@@ -30,8 +30,8 @@ function RecenterMap({ center }) {
   return null
 }
 
-// Mapa real con OpenStreetMap: usuario, radio maximo y tareas filtradas.
-export default function TaskMap({ tasks, userLocation, radiusKm, onTaskSelect }) {
+// Mapa real con OpenStreetMap: usuario, radio maximo y tareas filtradas. Tareas en formato Supabase.
+export default function TaskMap({ tasks, userLocation, radiusKm, onTaskSelect, distances }) {
   const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
 
   return (
@@ -53,28 +53,33 @@ export default function TaskMap({ tasks, userLocation, radiusKm, onTaskSelect })
           <Popup>
             <strong>Tu ubicacion</strong>
             <br />
-            {userLocation?.label || 'Zaragoza · Delicias'}
+            {userLocation?.label || 'Ubicacion aproximada'}
           </Popup>
         </Marker>
 
-        {tasks.map((task) => (
-          <Marker
-            key={task.id}
-            position={[task.location.latitude, task.location.longitude]}
-            icon={createTaskIcon(task.price)}
-            eventHandlers={{
-              click: () => onTaskSelect(task.id),
-            }}
-          >
-            <Popup>
-              <strong>{task.title}</strong>
-              <br />
-              {task.user?.name} · {task.distance} km
-              <br />
-              {task.price} EUR · {task.category}
-            </Popup>
-          </Marker>
-        ))}
+        {tasks.map((task) => {
+          const priceEuros = Math.round((task.price_cents ?? 0) / 100)
+          const distance = distances?.[task.id]
+          return (
+            <Marker
+              key={task.id}
+              position={[task.latitude, task.longitude]}
+              icon={createTaskIcon(priceEuros)}
+              eventHandlers={{
+                click: () => onTaskSelect(task.id),
+              }}
+            >
+              <Popup>
+                <strong>{task.title}</strong>
+                <br />
+                {task.requester?.full_name || task.requester?.username}
+                {Number.isFinite(distance) ? ` · ${distance} km` : ''}
+                <br />
+                {priceEuros} EUR · {task.category}
+              </Popup>
+            </Marker>
+          )
+        })}
       </MapContainer>
     </div>
   )
