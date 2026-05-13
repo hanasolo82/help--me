@@ -56,7 +56,7 @@ export function LoginPanel({ titleId, initialMode = 'login' }) {
       <h1 id={titleId}>{isRegister ? 'Crea tu cuenta' : 'Entra en helpMe'}</h1>
       <p className="muted">
         {isRegister
-          ? 'Crea una cuenta con email/password o continua con Google. Luego completaras onboarding.'
+          ? 'Crea una cuenta con email/password o continua con Google.'
           : 'Accede con Google o con email/password. Si falta profile, iremos a onboarding.'}
       </p>
 

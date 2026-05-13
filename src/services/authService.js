@@ -8,13 +8,17 @@ const redirectTo = `${window.location.origin}/home`
 export async function signInWithGoogle() {
   assertSupabaseReady()
 
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo },
-  })
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    })
 
-  if (error) {
-    throw error
+    if (error) {
+      throw error
+    }
+  } catch (error) {
+    throw normalizeAuthError(error)
   }
 }
 
@@ -32,16 +36,20 @@ export async function signUpWithEmail({ email, password }) {
     throw new Error(passwordResult.error)
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email: emailResult.value,
-    password: passwordResult.value,
-  })
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: emailResult.value,
+      password: passwordResult.value,
+    })
 
-  if (error) {
-    throw error
+    if (error) {
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    throw normalizeAuthError(error)
   }
-
-  return data
 }
 
 // Inicia sesion con email/password usando Supabase Auth.
@@ -58,16 +66,20 @@ export async function signInWithEmail({ email, password }) {
     throw new Error(passwordResult.error)
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: emailResult.value,
-    password: passwordResult.value,
-  })
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailResult.value,
+      password: passwordResult.value,
+    })
 
-  if (error) {
-    throw error
+    if (error) {
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    throw normalizeAuthError(error)
   }
-
-  return data
 }
 
 // Consulta la sesion real en Supabase. Se usa para proteger rutas y evitar modales innecesarios.
@@ -121,4 +133,16 @@ export async function signOut() {
   if (error) {
     throw error
   }
+}
+
+function normalizeAuthError(error) {
+  const message = String(error?.message || '')
+
+  if (message.toLowerCase().includes('failed to fetch') || error instanceof TypeError) {
+    return new Error(
+      'No se pudo conectar con Supabase. Revisa VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY y reinicia Vite.',
+    )
+  }
+
+  return error instanceof Error ? error : new Error('Ha ocurrido un error de autenticacion.')
 }
