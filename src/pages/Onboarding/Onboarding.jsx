@@ -34,7 +34,7 @@ export default function Onboarding() {
     setMessage('')
 
     try {
-      await createProfile(user.id, form)
+      await createProfile(form)
       await refreshProfile()
       navigate('/home', { replace: true })
     } catch (error) {

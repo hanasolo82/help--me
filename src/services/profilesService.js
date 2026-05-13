@@ -18,6 +18,19 @@ export async function getProfileByUserId(userId) {
   return data
 }
 
+// Lee el profile del usuario autenticado actual. Es la forma mas segura de consultar "mi profile".
+export async function getCurrentProfile() {
+  assertSupabaseReady()
+
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !authData.user) {
+    throw new Error('No hay una sesion valida para leer el profile.')
+  }
+
+  return getProfileByUserId(authData.user.id)
+}
+
 // Valida datos del onboarding antes de escribir en Supabase.
 export function validateProfileInput(input) {
   const usernameResult = validateUsername(input.username)
@@ -42,8 +55,8 @@ export function validateProfileInput(input) {
   }
 }
 
-// Crea el profile obligatorio para el usuario autenticado.
-export async function createProfile(userId, input) {
+// Crea el profile obligatorio usando SIEMPRE el id real del usuario autenticado en Supabase.
+export async function createProfile(input) {
   assertSupabaseReady()
   const validation = validateProfileInput(input)
 
@@ -51,10 +64,16 @@ export async function createProfile(userId, input) {
     throw new Error(validation.errors[0])
   }
 
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !authData.user) {
+    throw new Error('Necesitas una sesion valida para crear tu profile.')
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .insert({
-      id: userId,
+      id: authData.user.id,
       ...validation.value,
     })
     .select()
