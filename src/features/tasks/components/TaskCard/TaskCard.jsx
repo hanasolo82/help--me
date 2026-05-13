@@ -1,35 +1,13 @@
 import styles from "./TaskCard.module.css";
 
-// Card de tarea conectada a Supabase. Lee campos directos del schema (price_cents, urgency, requester...).
+// Card de tarea conectada a Supabase. Las columnas siguen el esquema actual:
+// id, title, description, price (numeric en euros), category, lat, lng, status, created_by, accepted_by.
 export default function TaskCard({ task, distanceKm, actionLabel = "Aceptar tarea", onAction }) {
-  const requester = task.requester || {}
-  const userName = requester.full_name || requester.username || 'Usuario helpMe'
-  const userInitial = userName.charAt(0).toUpperCase()
-  const ratingLabel = requester.completed_tasks > 0
-    ? `${requester.rating ?? 0} estrellas`
-    : 'Sin valoraciones todavia'
-  const completedTasks = requester.completed_tasks ?? 0
-  const priceEuros = Math.round((task.price_cents ?? 0) / 100)
+  const priceEuros = Number(task.price ?? 0)
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
 
   return (
     <article className={styles.card}>
-      <div className={styles.userRow}>
-        <div className={styles.avatarWrap}>
-          <span>{userInitial}</span>
-          {requester.avatar_url && <img src={requester.avatar_url} alt={userName} />}
-        </div>
-
-        <div>
-          <strong>{userName}</strong>
-          <p>{ratingLabel} · {completedTasks} tareas</p>
-        </div>
-      </div>
-
-      {task.image_url && (
-        <img className={styles.taskImage} src={task.image_url} alt={task.title} loading="lazy" />
-      )}
-
       <div className={styles.topSection}>
         <div>
           <h2 className={styles.title}>
@@ -37,7 +15,7 @@ export default function TaskCard({ task, distanceKm, actionLabel = "Aceptar tare
           </h2>
 
           <p className={styles.meta}>
-            {distanceLabel} · {task.urgency} · {task.category}
+            {distanceLabel} · {task.category}
           </p>
         </div>
 

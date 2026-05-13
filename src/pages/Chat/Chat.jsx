@@ -15,13 +15,12 @@ export default function Chat() {
   const { user } = useAuth()
   const [chat, setChat] = useState(null)
   const [messages, setMessages] = useState([])
-  const [body, setBody] = useState('')
+  const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const messagesEndRef = useRef(null)
 
-  // Carga inicial: chat + historico + suscripcion realtime.
   useEffect(() => {
     let cancelled = false
     let unsubscribe = null
@@ -66,20 +65,19 @@ export default function Chat() {
     }
   }, [taskId])
 
-  // Autoscroll al ultimo mensaje cada vez que llegan novedades.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   async function handleSend(event) {
     event.preventDefault()
-    if (!chat || !body.trim()) return
+    if (!chat || !content.trim()) return
     setSending(true)
     setError('')
 
     try {
-      await sendMessage(chat.id, body)
-      setBody('')
+      await sendMessage(chat.id, content)
+      setContent('')
     } catch (err) {
       setError(err.message || 'No se pudo enviar el mensaje.')
     } finally {
@@ -109,9 +107,9 @@ export default function Chat() {
     )
   }
 
-  const isRequester = user?.id === chat.requester_id
-  const counterpart = isRequester ? chat.helper : chat.requester
-  const counterpartName = counterpart?.full_name || counterpart?.username || 'Usuario helpMe'
+  const isRequester = user?.id === chat.task?.created_by
+  const counterpartId = chat.user1_id === user?.id ? chat.user2_id : chat.user1_id
+  const counterpartLabel = counterpartId ? `Usuario ${counterpartId.slice(0, 6)}` : 'Vecino'
 
   return (
     <main className="chat-screen">
@@ -120,7 +118,7 @@ export default function Chat() {
           ←
         </button>
         <div>
-          <strong>{counterpartName}</strong>
+          <strong>{counterpartLabel}</strong>
           <p>{chat.task?.title}</p>
         </div>
       </header>
@@ -134,7 +132,7 @@ export default function Chat() {
             key={message.id}
             className={message.sender_id === user?.id ? 'message outgoing' : 'message incoming'}
           >
-            {message.body}
+            {message.content}
           </p>
         ))}
         <div ref={messagesEndRef} />
@@ -144,13 +142,13 @@ export default function Chat() {
 
       <form className="chat-composer" onSubmit={handleSend}>
         <input
-          value={body}
-          onChange={(event) => setBody(event.target.value)}
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
           placeholder="Escribe un mensaje"
           maxLength={1200}
           disabled={sending}
         />
-        <button type="submit" className="primary-action" disabled={sending || !body.trim()}>
+        <button type="submit" className="primary-action" disabled={sending || !content.trim()}>
           Enviar
         </button>
       </form>

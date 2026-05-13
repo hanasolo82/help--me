@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
-import { getTaskById, markTaskCompleted, rateCompletedTask } from '../../services/tasksService'
+import { getTaskById, markTaskCompleted } from '../../services/tasksService'
 
-// Pantalla de cierre: el requester confirma completada y valora al helper. El trigger SQL
-// actualiza el rating promedio y completed_tasks del helper automaticamente.
+// Pantalla de cierre: el creador confirma completada. No hay tabla ratings en este esquema.
 export default function TaskComplete() {
   const { id: taskId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [task, setTask] = useState(null)
-  const [rating, setRating] = useState(5)
-  const [comment, setComment] = useState('')
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
 
@@ -46,15 +43,6 @@ export default function TaskComplete() {
         setTask(updated)
       }
 
-      if (task.helper_id) {
-        await rateCompletedTask({
-          taskId: task.id,
-          ratedId: task.helper_id,
-          score: Number(rating),
-          comment: comment || null,
-        })
-      }
-
       setStatus('done')
       navigate('/home', { replace: true })
     } catch (err) {
@@ -63,13 +51,8 @@ export default function TaskComplete() {
     }
   }
 
-  async function handleReject() {
-    setStatus('loading')
-    try {
-      navigate(`/chat/${taskId}`)
-    } finally {
-      setStatus('idle')
-    }
+  function handleReject() {
+    navigate(`/chat/${taskId}`)
   }
 
   if (!task && !error) {
@@ -88,7 +71,7 @@ export default function TaskComplete() {
     )
   }
 
-  const isRequester = user?.id === task.requester_id
+  const isRequester = user?.id === task.created_by
 
   if (!isRequester) {
     return (
@@ -116,32 +99,9 @@ export default function TaskComplete() {
             No, volver al chat
           </button>
           <button className="success-action" onClick={handleConfirm} disabled={status === 'loading'}>
-            {status === 'loading' ? 'Cerrando...' : 'Si, cerrar y valorar'}
+            {status === 'loading' ? 'Cerrando...' : 'Si, cerrar'}
           </button>
         </div>
-
-        <label className="field">
-          <span>Valoracion al ayudante</span>
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={rating}
-            onChange={(event) => setRating(event.target.value)}
-          />
-        </label>
-        <p className="rating-value">{rating} / 5</p>
-
-        <label className="field">
-          <span>Comentario (opcional)</span>
-          <textarea
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            maxLength={600}
-            rows={3}
-            placeholder="Cuenta como fue la experiencia"
-          />
-        </label>
 
         {error && <p className="auth-message error">{error}</p>}
       </section>

@@ -1,28 +1,22 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 
-// Valores permitidos por frontend y por la constraint SQL de Supabase. Si anades una categoria, cambia ambos sitios.
+// Valores permitidos por frontend. Si anades una categoria, anade tambien el CHECK en SQL si existe.
 export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
-export const allowedUrgencies = ['Ahora', 'Hoy', 'Flexible']
 
-// Selecciona la tarea con el requester y el helper anidados para listarlos sin queries extra.
+// Columnas reales de public.tasks. No hay FK declarada hacia profiles, asi que no anidamos perfiles.
 const TASK_SELECT = `
   id,
-  requester_id,
-  helper_id,
+  created_by,
+  accepted_by,
   title,
   description,
   category,
-  price_cents,
-  urgency,
+  price,
   status,
-  latitude,
-  longitude,
-  image_url,
-  created_at,
-  completed_at,
-  requester:profiles!tasks_requester_id_fkey ( id, username, full_name, avatar_url, rating, completed_tasks, neighborhood ),
-  helper:profiles!tasks_helper_id_fkey ( id, username, full_name, avatar_url, rating, completed_tasks )
+  lat,
+  lng,
+  created_at
 `
 
 // Valida y limpia los datos antes de enviarlos a Supabase. Esto no sustituye RLS ni constraints SQL.
@@ -30,39 +24,27 @@ export function validateTaskInput(input) {
   const title = sanitizeText(input.title, 90)
   const description = sanitizeText(input.description, 600)
   const category = sanitizeText(input.category, 40)
-  const urgency = sanitizeText(input.urgency, 20)
-  const priceCents = Number(input.priceCents)
-  const latitude = Number(input.latitude)
-  const longitude = Number(input.longitude)
-  const imageUrl = input.imageUrl ? sanitizeText(input.imageUrl, 500) : null
+  const price = Number(input.price)
+  const lat = Number(input.lat)
+  const lng = Number(input.lng)
 
   const errors = []
 
   if (title.length < 3) errors.push('El titulo debe tener al menos 3 caracteres.')
   if (description.length < 3) errors.push('La descripcion debe tener al menos 3 caracteres.')
   if (!allowedCategories.includes(category)) errors.push('Categoria no permitida.')
-  if (!allowedUrgencies.includes(urgency)) errors.push('Urgencia no permitida.')
-  if (!Number.isInteger(priceCents) || priceCents < 0 || priceCents > 50000) errors.push('Precio no valido.')
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) errors.push('Latitud no valida.')
-  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) errors.push('Longitud no valida.')
+  if (!Number.isFinite(price) || price < 0 || price > 500) errors.push('Precio no valido.')
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90) errors.push('Latitud no valida.')
+  if (!Number.isFinite(lng) || lng < -180 || lng > 180) errors.push('Longitud no valida.')
 
   return {
     isValid: errors.length === 0,
     errors,
-    value: {
-      title,
-      description,
-      category,
-      urgency,
-      price_cents: priceCents,
-      latitude,
-      longitude,
-      image_url: imageUrl || null,
-    },
+    value: { title, description, category, price, lat, lng },
   }
 }
 
-// Crea una tarea real en Supabase usando el usuario autenticado como requester_id.
+// Crea una tarea real en Supabase usando el usuario autenticado como created_by.
 export async function createTask(input) {
   assertSupabaseReady()
   const validation = validateTaskInput(input)
@@ -81,7 +63,8 @@ export async function createTask(input) {
     .from('tasks')
     .insert({
       ...validation.value,
-      requester_id: userData.user.id,
+      created_by: userData.user.id,
+      status: 'open',
     })
     .select(TASK_SELECT)
     .single()
@@ -107,7 +90,7 @@ export async function getOpenTasks({ category } = {}) {
     .order('created_at', { ascending: false })
 
   if (userId) {
-    query = query.neq('requester_id', userId)
+    query = query.neq('created_by', userId)
   }
 
   if (category && category !== 'Todas') {
@@ -123,7 +106,7 @@ export async function getOpenTasks({ category } = {}) {
   return data
 }
 
-// Tareas del usuario autenticado, sea como requester o como helper.
+// Tareas del usuario autenticado, sea como creator o como helper.
 export async function getMyTasks({ role = 'requester' } = {}) {
   assertSupabaseReady()
 
@@ -133,7 +116,7 @@ export async function getMyTasks({ role = 'requester' } = {}) {
     throw new Error('Necesitas iniciar sesion.')
   }
 
-  const column = role === 'helper' ? 'helper_id' : 'requester_id'
+  const column = role === 'helper' ? 'accepted_by' : 'created_by'
 
   const { data, error } = await supabase
     .from('tasks')
@@ -148,7 +131,7 @@ export async function getMyTasks({ role = 'requester' } = {}) {
   return data
 }
 
-// Lee una tarea por id con sus perfiles asociados.
+// Lee una tarea por id.
 export async function getTaskById(taskId) {
   assertSupabaseReady()
 
@@ -165,8 +148,8 @@ export async function getTaskById(taskId) {
   return data
 }
 
-// Acepta una tarea abierta: asigna helper_id y crea el chat correspondiente en una sola operacion logica.
-// Si la insercion del chat falla, revierte el helper_id para que la tarea quede disponible.
+// Acepta una tarea abierta: asigna accepted_by y crea el chat correspondiente.
+// Si la insercion del chat falla, revierte accepted_by para que la tarea quede disponible.
 export async function acceptTask(taskId) {
   assertSupabaseReady()
 
@@ -180,15 +163,11 @@ export async function acceptTask(taskId) {
 
   const { data: task, error: taskError } = await supabase
     .from('tasks')
-    .update({
-      helper_id: helperId,
-      status: 'assigned',
-      updated_at: new Date().toISOString(),
-    })
+    .update({ accepted_by: helperId, status: 'assigned' })
     .eq('id', taskId)
     .eq('status', 'open')
-    .is('helper_id', null)
-    .neq('requester_id', helperId)
+    .is('accepted_by', null)
+    .neq('created_by', helperId)
     .select(TASK_SELECT)
     .maybeSingle()
 
@@ -204,8 +183,8 @@ export async function acceptTask(taskId) {
     .from('chats')
     .insert({
       task_id: task.id,
-      requester_id: task.requester_id,
-      helper_id: helperId,
+      user1_id: task.created_by,
+      user2_id: helperId,
     })
     .select()
     .single()
@@ -213,9 +192,9 @@ export async function acceptTask(taskId) {
   if (chatError) {
     await supabase
       .from('tasks')
-      .update({ helper_id: null, status: 'open' })
+      .update({ accepted_by: null, status: 'open' })
       .eq('id', taskId)
-      .eq('helper_id', helperId)
+      .eq('accepted_by', helperId)
 
     throw chatError
   }
@@ -223,17 +202,13 @@ export async function acceptTask(taskId) {
   return { task, chat }
 }
 
-// Marca una tarea como completada. Solo el requester deberia poder hacerlo desde la UI.
+// Marca una tarea como completada. Solo el creador deberia poder hacerlo desde la UI.
 export async function markTaskCompleted(taskId) {
   assertSupabaseReady()
 
   const { data, error } = await supabase
     .from('tasks')
-    .update({
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .update({ status: 'completed' })
     .eq('id', taskId)
     .in('status', ['assigned', 'in_progress'])
     .select(TASK_SELECT)
@@ -250,50 +225,13 @@ export async function markTaskCompleted(taskId) {
   return data
 }
 
-// Inserta la valoracion. El trigger de Supabase recalcula promedio y completed_tasks del helper.
-export async function rateCompletedTask({ taskId, ratedId, score, comment }) {
-  assertSupabaseReady()
-
-  const safeScore = Number(score)
-  if (!Number.isInteger(safeScore) || safeScore < 1 || safeScore > 5) {
-    throw new Error('La valoracion debe estar entre 1 y 5.')
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para valorar.')
-  }
-
-  const { data, error } = await supabase
-    .from('ratings')
-    .insert({
-      task_id: taskId,
-      rater_id: userData.user.id,
-      rated_id: ratedId,
-      score: safeScore,
-      comment: comment ? sanitizeText(comment, 600) : null,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    if (error.code === '23505') {
-      throw new Error('Ya has valorado esta tarea.')
-    }
-    throw error
-  }
-
-  return data
-}
-
 // Cancela una tarea propia que todavia no se haya completado.
 export async function cancelTask(taskId) {
   assertSupabaseReady()
 
   const { data, error } = await supabase
     .from('tasks')
-    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .update({ status: 'cancelled' })
     .eq('id', taskId)
     .in('status', ['open', 'assigned', 'in_progress'])
     .select(TASK_SELECT)

@@ -1,7 +1,8 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 
-// Devuelve el chat asociado a una tarea (creado al aceptar). Incluye perfiles de ambos participantes.
+// Devuelve el chat asociado a una tarea (creado al aceptar). Sin embed de profiles
+// porque las FKs van a auth.users; los nombres se podran resolver aparte si hace falta.
 export async function getChatByTaskId(taskId) {
   assertSupabaseReady()
 
@@ -10,12 +11,10 @@ export async function getChatByTaskId(taskId) {
     .select(`
       id,
       task_id,
-      requester_id,
-      helper_id,
+      user1_id,
+      user2_id,
       created_at,
-      requester:profiles!chats_requester_id_fkey ( id, username, full_name, avatar_url ),
-      helper:profiles!chats_helper_id_fkey ( id, username, full_name, avatar_url ),
-      task:tasks ( id, title, status )
+      task:tasks!chats_task_id_fkey ( id, title, status, created_by, accepted_by )
     `)
     .eq('task_id', taskId)
     .maybeSingle()
@@ -33,7 +32,7 @@ export async function getMessages(chatId) {
 
   const { data, error } = await supabase
     .from('messages')
-    .select('id, chat_id, sender_id, body, created_at')
+    .select('id, chat_id, sender_id, content, created_at')
     .eq('chat_id', chatId)
     .order('created_at', { ascending: true })
     .limit(200)
@@ -46,10 +45,10 @@ export async function getMessages(chatId) {
 }
 
 // Envia un mensaje validando longitud. sender_id se rellena con el usuario autenticado.
-export async function sendMessage(chatId, body) {
+export async function sendMessage(chatId, content) {
   assertSupabaseReady()
 
-  const clean = sanitizeText(body, 1200)
+  const clean = sanitizeText(content, 1200)
 
   if (clean.length < 1) {
     throw new Error('El mensaje no puede estar vacio.')
@@ -66,7 +65,7 @@ export async function sendMessage(chatId, body) {
     .insert({
       chat_id: chatId,
       sender_id: userData.user.id,
-      body: clean,
+      content: clean,
     })
     .select()
     .single()
@@ -101,7 +100,7 @@ export function subscribeToMessages(chatId, onInsert) {
   }
 }
 
-// Lista los chats donde el usuario actual es requester o helper, con ultima actividad.
+// Lista los chats donde el usuario actual es user1 o user2, con la tarea asociada.
 export async function getMyChats() {
   assertSupabaseReady()
 
@@ -118,14 +117,12 @@ export async function getMyChats() {
     .select(`
       id,
       task_id,
-      requester_id,
-      helper_id,
+      user1_id,
+      user2_id,
       created_at,
-      requester:profiles!chats_requester_id_fkey ( id, username, full_name, avatar_url ),
-      helper:profiles!chats_helper_id_fkey ( id, username, full_name, avatar_url ),
-      task:tasks ( id, title, status )
+      task:tasks!chats_task_id_fkey ( id, title, status, created_by, accepted_by )
     `)
-    .or(`requester_id.eq.${userId},helper_id.eq.${userId}`)
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
     .order('created_at', { ascending: false })
 
   if (error) {

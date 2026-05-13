@@ -60,7 +60,7 @@ export default function Home() {
   const tasksWithDistance = useMemo(() => {
     return tasks.map((task) => ({
       task,
-      distance: location ? distanceKm(location, { latitude: task.latitude, longitude: task.longitude }) : null,
+      distance: location ? distanceKm(location, { latitude: task.lat, longitude: task.lng }) : null,
     }))
   }, [tasks, location])
 

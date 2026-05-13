@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { acceptTask, getTaskById } from '../../services/tasksService'
 import { useAuth } from '../../contexts/useAuth'
 
-// Detalle de tarea conectado a Supabase. Permite aceptarla si el visitante no es el requester.
+// Detalle de tarea conectado a Supabase. Permite aceptarla si el visitante no es el creador.
 export default function TaskDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -72,14 +72,10 @@ export default function TaskDetail() {
     )
   }
 
-  const requester = task.requester || {}
-  const isOwner = user?.id === task.requester_id
-  const isHelper = user?.id === task.helper_id
-  const priceEuros = Math.round((task.price_cents ?? 0) / 100)
-  const canAccept = !isOwner && task.status === 'open' && !task.helper_id
-  const ratingLabel = requester.completed_tasks > 0
-    ? `${requester.rating ?? 0} estrellas · ${requester.completed_tasks} tareas completadas`
-    : 'Sin valoraciones todavia'
+  const isOwner = user?.id === task.created_by
+  const isHelper = user?.id === task.accepted_by
+  const priceEuros = Number(task.price ?? 0)
+  const canAccept = !isOwner && task.status === 'open' && !task.accepted_by
 
   return (
     <main className="app-screen">
@@ -93,22 +89,14 @@ export default function TaskDetail() {
         </div>
       </header>
 
-      {task.image_url && (
-        <img className="task-detail-image" src={task.image_url} alt={task.title} />
-      )}
-
       <section className="detail-panel">
         <div className="detail-row">
           <span>Ubicacion</span>
-          <strong>{requester.neighborhood || `${task.latitude.toFixed(3)}, ${task.longitude.toFixed(3)}`}</strong>
+          <strong>{`${Number(task.lat).toFixed(3)}, ${Number(task.lng).toFixed(3)}`}</strong>
         </div>
         <div className="detail-row">
           <span>Precio</span>
           <strong>{priceEuros} EUR</strong>
-        </div>
-        <div className="detail-row">
-          <span>Urgencia</span>
-          <strong>{task.urgency}</strong>
         </div>
         <div className="detail-row">
           <span>Categoria</span>
@@ -123,18 +111,6 @@ export default function TaskDetail() {
       <section className="detail-panel">
         <h2>Descripcion</h2>
         <p>{task.description}</p>
-      </section>
-
-      <section className="user-strip">
-        <div className="avatar-small">
-          {requester.avatar_url
-            ? <img src={requester.avatar_url} alt={requester.full_name || requester.username} />
-            : (requester.full_name?.charAt(0).toUpperCase() || '?')}
-        </div>
-        <div>
-          <strong>{requester.full_name || requester.username || 'Usuario helpMe'}</strong>
-          <p>{ratingLabel}</p>
-        </div>
       </section>
 
       {error && <p className="auth-message error">{error}</p>}

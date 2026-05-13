@@ -4,7 +4,8 @@ import BottomNav from '../../shared/components/BottomNav/BottomNav'
 import { useAuth } from '../../contexts/useAuth'
 import { getMyChats } from '../../services/chatService'
 
-// Lista de chats reales del usuario autenticado. Reemplaza el link hardcodeado del BottomNav.
+// Lista de chats reales del usuario autenticado. Sin embed de profiles: mostramos
+// el titulo de la tarea y un id corto del otro usuario como referencia.
 export default function Chats() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -56,17 +57,13 @@ export default function Chats() {
 
       <ul className="chat-list">
         {chats.map((chat) => {
-          const counterpart = chat.requester_id === user?.id ? chat.helper : chat.requester
-          const name = counterpart?.full_name || counterpart?.username || 'Usuario helpMe'
-          const initial = name.charAt(0).toUpperCase()
+          const counterpartId = chat.user1_id === user?.id ? chat.user2_id : chat.user1_id
+          const name = counterpartId ? `Usuario ${counterpartId.slice(0, 6)}` : 'Vecino'
+          const initial = name.charAt(8)?.toUpperCase() || 'U'
           return (
             <li key={chat.id}>
               <button className="chat-list-item" onClick={() => navigate(`/chat/${chat.task_id}`)}>
-                <span className="avatar-small">
-                  {counterpart?.avatar_url
-                    ? <img src={counterpart.avatar_url} alt={name} />
-                    : initial}
-                </span>
+                <span className="avatar-small">{initial}</span>
                 <span>
                   <strong>{name}</strong>
                   <p>{chat.task?.title} · {chat.task?.status}</p>

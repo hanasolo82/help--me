@@ -1,29 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
-import { allowedCategories, allowedUrgencies, createTask } from '../../services/tasksService'
-import { uploadTaskImage, validateImageFile } from '../../services/storageService'
+import { allowedCategories, createTask } from '../../services/tasksService'
 import { resolveUserLocation } from '../../services/locationService'
 
-// Sugerencias de precio (en EUR). Se convierten a centimos al guardar para evitar floats.
 const priceSuggestions = [3, 5, 10]
 
-// Publicacion de tarea conectada a Supabase: valida, sube imagen opcional y crea fila en tasks.
+// Publicacion de tarea conectada a Supabase: valida y crea fila en tasks.
 export default function CreateTask() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState(allowedCategories[0])
-  const [urgency, setUrgency] = useState(allowedUrgencies[0])
   const [priceEuros, setPriceEuros] = useState(5)
   const [location, setLocation] = useState(null)
   const [locationStatus, setLocationStatus] = useState('idle')
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState('')
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
 
-  // Pide ubicacion al entrar para que el usuario no tenga que tocar nada extra.
   useEffect(() => {
     let cancelled = false
     setLocationStatus('loading')
@@ -44,38 +38,6 @@ export default function CreateTask() {
     }
   }, [])
 
-  // Libera el objectURL de la preview cuando cambia o se desmonta.
-  useEffect(() => {
-    if (!imagePreview) return
-    return () => URL.revokeObjectURL(imagePreview)
-  }, [imagePreview])
-
-  function handleImageChange(event) {
-    const file = event.target.files?.[0]
-    if (!file) {
-      setImageFile(null)
-      setImagePreview('')
-      return
-    }
-
-    try {
-      validateImageFile(file)
-    } catch (err) {
-      setError(err.message)
-      event.target.value = ''
-      return
-    }
-
-    setError('')
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-  }
-
-  function clearImage() {
-    setImageFile(null)
-    setImagePreview('')
-  }
-
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
@@ -88,22 +50,13 @@ export default function CreateTask() {
     setStatus('loading')
 
     try {
-      let imageUrl = null
-
-      if (imageFile) {
-        const uploaded = await uploadTaskImage(imageFile)
-        imageUrl = uploaded.publicUrl
-      }
-
       const created = await createTask({
         title,
         description,
         category,
-        urgency,
-        priceCents: Math.round(Number(priceEuros) * 100),
-        latitude: location.latitude,
-        longitude: location.longitude,
-        imageUrl,
+        price: Number(priceEuros),
+        lat: location.latitude,
+        lng: location.longitude,
       })
 
       navigate(`/task/${created.id}`, { replace: true })
@@ -177,19 +130,6 @@ export default function CreateTask() {
           )}
         </div>
 
-        <div className="field">
-          <span>Imagen (opcional)</span>
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} />
-          {imagePreview && (
-            <div className="image-preview">
-              <img src={imagePreview} alt="Vista previa" />
-              <button type="button" className="secondary-action" onClick={clearImage}>
-                Quitar imagen
-              </button>
-            </div>
-          )}
-        </div>
-
         <div className="choice-group">
           <span>Categoria</span>
           <div className="chips">
@@ -230,22 +170,6 @@ export default function CreateTask() {
             onChange={(event) => setPriceEuros(event.target.value)}
             aria-label="Precio personalizado"
           />
-        </div>
-
-        <div className="choice-group">
-          <span>Urgencia</span>
-          <div className="chips">
-            {allowedUrgencies.map((item) => (
-              <button
-                type="button"
-                key={item}
-                className={urgency === item ? 'chip selected' : 'chip'}
-                onClick={() => setUrgency(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
         </div>
 
         {error && <p className="auth-message error">{error}</p>}
