@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Login, { LoginPanel } from '../Login/Login'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
 
@@ -35,9 +34,6 @@ export default function Landing() {
   const navigate = useNavigate()
   // Si ya se aceptaron cookies, no volvemos a mostrar el modal en cada visita.
   const [showCookies, setShowCookies] = useState(() => localStorage.getItem('helpme-cookies') !== 'accepted')
-  const [showLogin, setShowLogin] = useState(false)
-  // authMode cambia el texto del modal entre entrar y registrarse.
-  const [authMode, setAuthMode] = useState('login')
   const [darkMode, setDarkMode] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   // Guarda imagenes que fallaron para mostrar el fallback visual en vez de una imagen rota.
@@ -61,7 +57,7 @@ export default function Landing() {
     setShowCookies(false)
   }
 
-  // Abre login/registro. Si ya hay sesion real y pulsa Entrar, va directo a Home.
+  // Envia a login/registro. Si ya hay sesion real y pulsa Entrar, va directo a Home.
   async function openAuth(mode) {
     const alreadyAuthenticated = await getCurrentUser()
 
@@ -70,8 +66,7 @@ export default function Landing() {
       return
     }
 
-    setAuthMode(mode)
-    setShowLogin(true)
+    navigate(mode === 'register' ? '/login?mode=register' : '/login')
   }
 
   return (
@@ -245,19 +240,6 @@ export default function Landing() {
           </section>
         </div>
       )}
-
-      {showLogin && !showCookies && (
-        <div className={styles.modalLayer} role="dialog" aria-modal="true" aria-labelledby="login-title">
-          <section className={styles.loginModal}>
-            <button className={styles.closeButton} onClick={() => setShowLogin(false)} aria-label="Cerrar login">
-              ×
-            </button>
-            <LoginPanel titleId="login-title" mode={authMode} />
-          </section>
-        </div>
-      )}
     </main>
   )
 }
-
-export { Login }

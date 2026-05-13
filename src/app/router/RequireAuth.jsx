@@ -1,50 +1,36 @@
-import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
-import { getCurrentUser } from '../../services/authService'
-import { isSupabaseConfigured } from '../../lib/supabaseClient'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../contexts/useAuth'
 
-// Componente guardia: bloquea rutas internas si no hay Supabase configurado o sesion valida.
-export default function RequireAuth({ children }) {
-  const [status, setStatus] = useState('checking')
+// Guardia de rutas privadas:
+// - sin sesion => /login
+// - con sesion pero sin profile => /onboarding
+// - con sesion y profile => pantalla privada
+export default function RequireAuth({ children, requireProfile = true }) {
+  const { isConfigured, user, profile, loading, profileLoading } = useAuth()
+  const location = useLocation()
 
-  useEffect(() => {
-    let isMounted = true
-
-    // Comprueba la sesion de forma asincrona para no renderizar pantallas privadas antes de tiempo.
-    async function checkAuth() {
-      if (!isSupabaseConfigured) {
-        setStatus('missing-config')
-        return
-      }
-
-      const user = await getCurrentUser()
-
-      if (isMounted) {
-        setStatus(user ? 'authenticated' : 'anonymous')
-      }
-    }
-
-    checkAuth()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  if (status === 'checking') {
+  if (loading || profileLoading) {
     return (
       <main className="auth-screen">
         <section className="auth-panel">
           <p className="eyebrow">Seguridad</p>
           <h1>Comprobando sesion</h1>
-          <p className="muted">Validando tu usuario con Supabase Auth.</p>
+          <p className="muted">Validando Supabase Auth y tu profile.</p>
         </section>
       </main>
     )
   }
 
-  if (status === 'missing-config' || status === 'anonymous') {
-    return <Navigate to="/" replace />
+  if (!isConfigured) {
+    return <Navigate to="/login" replace state={{ from: location, reason: 'missing-config' }} />
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />
+  }
+
+  if (requireProfile && !profile) {
+    return <Navigate to="/onboarding" replace />
   }
 
   return children

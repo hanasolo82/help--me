@@ -1,16 +1,43 @@
 import { useState } from 'react'
-import { sendEmailMagicLink, sendPhoneOtp, signInWithGoogle } from '../../services/authService'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/useAuth'
 import { sanitizeText } from '../../lib/security'
+import { signInWithEmail, signInWithGoogle, signUpWithEmail } from '../../services/authService'
+import { getProfileByUserId } from '../../services/profilesService'
 
-// Panel reutilizable: sirve tanto para modal en Landing como para ruta /login.
-export function LoginPanel({ titleId, mode = 'login' }) {
-  const [method, setMethod] = useState('phone')
-  const [identifier, setIdentifier] = useState('')
+// Panel reutilizable para la pagina /login. Mantiene la logica en servicios, no en Supabase directo.
+export function LoginPanel({ titleId, initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [status, setStatus] = useState('idle')
   const [message, setMessage] = useState('')
+  const navigate = useNavigate()
+  const { refreshProfile } = useAuth()
   const isRegister = mode === 'register'
 
-  // OAuth redirige fuera de la app hacia Supabase/Google y vuelve a /home.
+  async function finishEmailAuth(authAction) {
+    setStatus('loading')
+    setMessage('')
+
+    try {
+      const result = await authAction({ email, password })
+
+      if (!result.session) {
+        setStatus('sent')
+        setMessage('Revisa tu correo para confirmar la cuenta antes de entrar.')
+        return
+      }
+
+      const nextProfile = await getProfileByUserId(result.user.id)
+      await refreshProfile()
+      navigate(nextProfile ? '/home' : '/onboarding', { replace: true })
+    } catch (error) {
+      setStatus('error')
+      setMessage(error.message)
+    }
+  }
+
   async function handleGoogleAuth() {
     setStatus('loading')
     setMessage('')
@@ -23,39 +50,18 @@ export function LoginPanel({ titleId, mode = 'login' }) {
     }
   }
 
-  // Envia OTP por telefono o magic link por correo segun el metodo elegido.
-  async function handleOtpAuth() {
-    setStatus('loading')
-    setMessage('')
-
-    try {
-      if (method === 'phone') {
-        await sendPhoneOtp(identifier)
-        setMessage('Codigo enviado. Revisa tu telefono para continuar.')
-      } else {
-        await sendEmailMagicLink(identifier)
-        setMessage('Magic link enviado. Revisa tu correo para continuar.')
-      }
-
-      setStatus('sent')
-    } catch (error) {
-      setStatus('error')
-      setMessage(error.message)
-    }
-  }
-
   return (
     <section className="auth-panel">
-      <p className="eyebrow">helpMe</p>
-      <h1 id={titleId}>{isRegister ? 'Crea tu cuenta local' : 'Entra a tu red local'}</h1>
+      <p className="eyebrow">helpMe Auth</p>
+      <h1 id={titleId}>{isRegister ? 'Crea tu cuenta' : 'Entra en helpMe'}</h1>
       <p className="muted">
         {isRegister
-          ? 'Registrate con Google, telefono o correo para empezar a pedir y dar ayuda.'
-          : 'Sin contrasena tradicional. Elige Google, telefono o magic link por correo.'}
+          ? 'Crea una cuenta con email/password o continua con Google. Luego completaras onboarding.'
+          : 'Accede con Google o con email/password. Si falta profile, iremos a onboarding.'}
       </p>
 
       <button className="oauth-action" onClick={handleGoogleAuth} disabled={status === 'loading'}>
-        Continuar con Google
+        Continue with Google
       </button>
 
       <div className="auth-divider">
@@ -63,39 +69,64 @@ export function LoginPanel({ titleId, mode = 'login' }) {
       </div>
 
       <div className="segmented">
-        <button className={method === 'phone' ? 'selected' : ''} onClick={() => setMethod('phone')}>
-          Telefono
+        <button className={mode === 'login' ? 'selected' : ''} onClick={() => setMode('login')}>
+          Entrar
         </button>
-        <button className={method === 'email' ? 'selected' : ''} onClick={() => setMethod('email')}>
-          Correo
+        <button className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')}>
+          Registrarse
         </button>
       </div>
 
       <label className="field">
-        <span>{method === 'phone' ? 'Telefono' : 'Correo electronico'}</span>
+        <span>Email</span>
         <input
-          value={identifier}
-          onChange={(event) => setIdentifier(sanitizeText(event.target.value, 254))}
-          placeholder={method === 'phone' ? '+34 600 000 000' : 'tu@email.com'}
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(sanitizeText(event.target.value, 254))}
+          placeholder="tu@email.com"
+        />
+      </label>
+
+      <label className="field">
+        <span>Contrasena</span>
+        <input
+          autoComplete={isRegister ? 'new-password' : 'current-password'}
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Minimo 8 caracteres"
         />
       </label>
 
       {message && <p className={status === 'error' ? 'auth-message error' : 'auth-message'}>{message}</p>}
 
-      <button className="primary-action" onClick={handleOtpAuth} disabled={status === 'loading'}>
-        {isRegister
-          ? method === 'phone' ? 'Crear cuenta con codigo' : 'Crear cuenta con correo'
-          : method === 'phone' ? 'Enviar codigo' : 'Enviar magic link'}
+      <button
+        className="primary-action"
+        onClick={() => finishEmailAuth(isRegister ? signUpWithEmail : signInWithEmail)}
+        disabled={status === 'loading'}
+      >
+        {isRegister ? 'Crear cuenta' : 'Entrar'}
       </button>
     </section>
   )
 }
 
-// Ruta /login de respaldo. El flujo principal usa este mismo panel dentro de un modal.
+// Pagina /login. Es una pantalla real, no un modal, para soportar redirecciones OAuth y mobile futuro.
 export default function Login() {
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const initialMode = params.get('mode') === 'register' ? 'register' : 'login'
+  const missingConfig = location.state?.reason === 'missing-config'
+
   return (
     <main className="auth-screen">
-      <LoginPanel />
+      {missingConfig && (
+        <section className="auth-panel auth-warning">
+          <p className="eyebrow">Configuracion</p>
+          <p className="muted">Faltan VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.</p>
+        </section>
+      )}
+      <LoginPanel key={initialMode} titleId="login-title" initialMode={initialMode} />
     </main>
   )
 }

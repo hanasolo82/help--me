@@ -31,6 +31,30 @@ export function validatePhone(phone) {
   }
 }
 
+// Password minimo para email/password. La politica fuerte final tambien debe configurarse en Supabase.
+export function validatePassword(password) {
+  const value = String(password ?? '')
+  const isValid = value.length >= 8
+
+  return {
+    value,
+    isValid,
+    error: isValid ? null : 'La contrasena debe tener al menos 8 caracteres.',
+  }
+}
+
+// Username publico: simple, portable y facil de validar igual en frontend, SQL y futuro movil.
+export function validateUsername(username) {
+  const value = sanitizeText(username, 30).toLowerCase()
+  const isValid = /^[a-z0-9_]{3,30}$/.test(value)
+
+  return {
+    value,
+    isValid,
+    error: isValid ? null : 'Username: 3-30 caracteres, solo letras, numeros y guion bajo.',
+  }
+}
+
 // Evita ejecutar llamadas Auth/API si faltan variables de entorno publicas de Vite.
 export function assertSupabaseReady() {
   if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {

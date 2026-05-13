@@ -5,12 +5,13 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
+  username text not null unique check (username ~ '^[a-z0-9_]{3,30}$'),
   full_name text not null check (char_length(full_name) between 2 and 80),
   avatar_url text,
-  phone text,
-  rating_total integer not null default 0 check (rating_total >= 0),
-  rating_count integer not null default 0 check (rating_count >= 0),
+  neighborhood text not null check (char_length(neighborhood) between 2 and 80),
+  rating numeric(2,1) not null default 0 check (rating >= 0 and rating <= 5),
   completed_tasks integer not null default 0 check (completed_tasks >= 0),
+  verified boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -52,6 +53,7 @@ create table if not exists public.messages (
 );
 
 create index if not exists profiles_created_at_idx on public.profiles(created_at desc);
+create index if not exists profiles_username_idx on public.profiles(username);
 create index if not exists tasks_requester_id_idx on public.tasks(requester_id);
 create index if not exists tasks_helper_id_idx on public.tasks(helper_id);
 create index if not exists tasks_status_category_idx on public.tasks(status, category);
