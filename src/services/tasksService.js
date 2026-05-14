@@ -1,10 +1,16 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 
-// Valores permitidos por frontend. Si anades una categoria, anade tambien el CHECK en SQL si existe.
+// Nota: categorias permitidas por el frontend para crear y filtrar tareas.
+// Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
 export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
 
-// Columnas reales de public.tasks. No hay FK declarada hacia profiles, asi que no anidamos perfiles.
+// Nota Supabase - public.tasks:
+// Estas son las columnas que este servicio pide cada vez que lee una tarea.
+// Si amplias public.tasks con mas datos (image_url, urgency, neighborhood, etc.),
+// anade aqui las columnas que quieras recibir en las consultas.
+// Si la columna tambien se guarda al crear una tarea, ampliala en validateTaskInput y createTask.
+// No se anidan profiles porque este servicio asume que no hay FK directa declarada hacia profiles.
 const TASK_SELECT = `
   id,
   created_by,
@@ -19,7 +25,10 @@ const TASK_SELECT = `
   created_at
 `
 
-// Valida y limpia los datos antes de enviarlos a Supabase. Esto no sustituye RLS ni constraints SQL.
+// Nota funcion:
+// Limpia y valida los datos del formulario antes de usarlos en una insercion.
+// Devuelve errores legibles y una version saneada de los valores.
+// Esto protege el frontend, pero no sustituye las RLS ni los constraints SQL de Supabase.
 export function validateTaskInput(input) {
   const title = sanitizeText(input.title, 90)
   const description = sanitizeText(input.description, 600)
@@ -44,7 +53,11 @@ export function validateTaskInput(input) {
   }
 }
 
-// Crea una tarea real en Supabase usando el usuario autenticado como created_by.
+// Nota funcion:
+// Crea una tarea en public.tasks usando el usuario autenticado como created_by.
+// Tambien fuerza status='open' para que una tarea nueva entre como disponible.
+// Nota Supabase - public.tasks:
+// Si anades columnas obligatorias sin default, incluyelas en validateTaskInput y en este insert.
 export async function createTask(input) {
   assertSupabaseReady()
   const validation = validateTaskInput(input)
@@ -76,7 +89,11 @@ export async function createTask(input) {
   return data
 }
 
-// Lista tareas abiertas que NO son del usuario actual (vista del helper).
+// Nota funcion:
+// Lista tareas abiertas para la vista de helper.
+// Excluye las tareas creadas por el usuario actual y permite filtrar por categoria.
+// Nota Supabase - public.tasks:
+// Si quieres mostrar mas campos en las tarjetas/listados, anadelos primero a TASK_SELECT.
 export async function getOpenTasks({ category } = {}) {
   assertSupabaseReady()
 
@@ -106,7 +123,11 @@ export async function getOpenTasks({ category } = {}) {
   return data
 }
 
-// Tareas del usuario autenticado, sea como creator o como helper.
+// Nota funcion:
+// Devuelve tareas relacionadas con el usuario autenticado.
+// role='requester' busca tareas creadas por el usuario; role='helper' busca tareas aceptadas.
+// Nota Supabase - public.tasks:
+// Si cambias created_by/accepted_by por otros nombres en la tabla, actualiza el mapeo column.
 export async function getMyTasks({ role = 'requester' } = {}) {
   assertSupabaseReady()
 
@@ -131,7 +152,11 @@ export async function getMyTasks({ role = 'requester' } = {}) {
   return data
 }
 
-// Lee una tarea por id.
+// Nota funcion:
+// Lee una tarea concreta por id.
+// maybeSingle permite devolver null si no existe o si las RLS impiden verla.
+// Nota Supabase - public.tasks:
+// Cualquier dato adicional que necesite la pantalla de detalle debe estar incluido en TASK_SELECT.
 export async function getTaskById(taskId) {
   assertSupabaseReady()
 
@@ -148,8 +173,13 @@ export async function getTaskById(taskId) {
   return data
 }
 
-// Acepta una tarea abierta: asigna accepted_by y crea el chat correspondiente.
-// Si la insercion del chat falla, revierte accepted_by para que la tarea quede disponible.
+// Nota funcion:
+// Acepta una tarea abierta, asigna accepted_by y cambia el estado a assigned.
+// Despues crea el chat entre creador y helper.
+// Si la insercion del chat falla, revierte accepted_by para que la tarea vuelva a quedar disponible.
+// Nota Supabase - public.tasks/public.chats:
+// Al ampliar public.tasks, revisa TASK_SELECT. Al ampliar public.chats con columnas obligatorias
+// (por ejemplo last_message_at, status o metadata), anadelas en el insert del chat y en chatService.
 export async function acceptTask(taskId) {
   assertSupabaseReady()
 
@@ -202,7 +232,11 @@ export async function acceptTask(taskId) {
   return { task, chat }
 }
 
-// Marca una tarea como completada. Solo el creador deberia poder hacerlo desde la UI.
+// Nota funcion:
+// Marca una tarea como completada cuando esta assigned o in_progress.
+// La UI deberia ofrecer esta accion solo al creador; Supabase/RLS debe reforzar esa regla.
+// Nota Supabase - public.tasks:
+// Si anades completed_at, completed_by o datos de cierre, actualiza este update.
 export async function markTaskCompleted(taskId) {
   assertSupabaseReady()
 
@@ -225,7 +259,11 @@ export async function markTaskCompleted(taskId) {
   return data
 }
 
-// Cancela una tarea propia que todavia no se haya completado.
+// Nota funcion:
+// Cancela una tarea que todavia no esta completada.
+// Devuelve la tarea actualizada o null si las condiciones/RLS no permiten el cambio.
+// Nota Supabase - public.tasks:
+// Si anades cancel_reason, cancelled_at o cancelled_by, actualiza este update y valida esos datos.
 export async function cancelTask(taskId) {
   assertSupabaseReady()
 
