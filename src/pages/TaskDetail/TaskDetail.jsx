@@ -8,28 +8,38 @@ export default function TaskDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [task, setTask] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [taskState, setTaskState] = useState({ taskId: '', task: null, error: '' })
   const [accepting, setAccepting] = useState(false)
-  const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const loading = taskState.taskId !== id
+  const task = loading ? null : taskState.task
+  const error = actionError || (loading ? '' : taskState.error)
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
 
     getTaskById(id)
       .then((data) => {
         if (cancelled) return
+        setActionError('')
         if (!data) {
-          setError('Tarea no encontrada o ya no esta disponible.')
+          setTaskState({
+            taskId: id,
+            task: null,
+            error: 'Tarea no encontrada o ya no esta disponible.',
+          })
+          return
         }
-        setTask(data)
+        setTaskState({ taskId: id, task: data, error: '' })
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || 'No se pudo cargar la tarea.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setTaskState({
+            taskId: id,
+            task: null,
+            error: err.message || 'No se pudo cargar la tarea.',
+          })
+        }
       })
 
     return () => {
@@ -39,13 +49,13 @@ export default function TaskDetail() {
 
   async function handleAccept() {
     setAccepting(true)
-    setError('')
+    setActionError('')
 
     try {
       await acceptTask(id)
       navigate(`/chat/${id}`, { replace: true })
     } catch (err) {
-      setError(err.message || 'No se pudo aceptar la tarea.')
+      setActionError(err.message || 'No se pudo aceptar la tarea.')
       setAccepting(false)
     }
   }
@@ -76,6 +86,7 @@ export default function TaskDetail() {
   const isHelper = user?.id === task.accepted_by
   const priceEuros = Number(task.price ?? 0)
   const canAccept = !isOwner && task.status === 'open' && !task.accepted_by
+  const canOpenChat = !canAccept && (isOwner || isHelper) && ['assigned', 'in_progress', 'completed'].includes(task.status)
 
   return (
     <main className="app-screen">
@@ -91,7 +102,7 @@ export default function TaskDetail() {
 
       <section className="detail-panel">
         <div className="detail-row">
-          <span>Ubicacion</span>
+          <span>Ubicacion Aproximada</span>
           <strong>{`${Number(task.lat).toFixed(3)}, ${Number(task.lng).toFixed(3)}`}</strong>
         </div>
         <div className="detail-row">
@@ -121,7 +132,7 @@ export default function TaskDetail() {
         </button>
       )}
 
-      {!canAccept && (isOwner || isHelper) && task.status !== 'open' && (
+      {canOpenChat && (
         <button className="primary-action sticky-action" onClick={() => navigate(`/chat/${task.id}`)}>
           Abrir chat
         </button>
@@ -129,6 +140,14 @@ export default function TaskDetail() {
 
       {isOwner && task.status === 'open' && (
         <p className="muted">Esta es tu tarea. Espera a que alguien la acepte.</p>
+      )}
+
+      {isOwner && task.status === 'draft' && (
+        <p className="muted">Esta tarea sigue como borrador. Publicala desde "Tareas solicitadas" cuando quieras.</p>
+      )}
+
+      {isOwner && task.status === 'cancelled' && (
+        <p className="muted">Esta tarea se ha cancelado y ya no aparece en la lista principal.</p>
       )}
     </main>
   )

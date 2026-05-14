@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
-import { allowedCategories, createTask } from '../../services/tasksService'
+import { allowedCategories, canEditTask, createTask, getTaskById, updateTask } from '../../services/tasksService'
 import { resolveUserLocation } from '../../services/locationService'
 
 const priceSuggestions = [3, 5, 10]
@@ -9,18 +9,67 @@ const priceSuggestions = [3, 5, 10]
 // Publicacion de tarea conectada a Supabase: valida y crea fila en tasks.
 export default function CreateTask() {
   const navigate = useNavigate()
+  const routeLocation = useLocation()
+  const taskId = new URLSearchParams(routeLocation.search).get('taskId')
+  const isEditing = Boolean(taskId)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState(allowedCategories[0])
   const [priceEuros, setPriceEuros] = useState(5)
   const [location, setLocation] = useState(null)
-  const [locationStatus, setLocationStatus] = useState('idle')
+  const [editingTask, setEditingTask] = useState(null)
+  const [locationStatus, setLocationStatus] = useState('loading')
+  const [loadingTask, setLoadingTask] = useState(Boolean(taskId))
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
 
   useEffect(() => {
     let cancelled = false
-    setLocationStatus('loading')
+
+    if (taskId) {
+      getTaskById(taskId)
+        .then((task) => {
+          if (cancelled) return
+
+          if (!task) {
+            setError('No encontramos la tarea que quieres editar.')
+            setLocationStatus('error')
+            setLoadingTask(false)
+            return
+          }
+
+          if (!canEditTask(task)) {
+            setError('Esta tarea ya no se puede editar porque ya fue aceptada o esta en curso.')
+            setLocationStatus('error')
+            setLoadingTask(false)
+            return
+          }
+
+          setTitle(task.title || '')
+          setDescription(task.description || '')
+          setCategory(task.category || allowedCategories[0])
+          setPriceEuros(Number(task.price ?? 0))
+          setEditingTask(task)
+          setLocation({
+            latitude: Number(task.lat),
+            longitude: Number(task.lng),
+            label: 'Ubicacion guardada',
+          })
+          setLocationStatus('ready')
+          setLoadingTask(false)
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            setError(err.message || 'No se pudo cargar la tarea.')
+            setLocationStatus('error')
+            setLoadingTask(false)
+          }
+        })
+
+      return () => {
+        cancelled = true
+      }
+    }
 
     resolveUserLocation()
       .then((resolved) => {
@@ -36,7 +85,7 @@ export default function CreateTask() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [taskId])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -50,33 +99,47 @@ export default function CreateTask() {
     setStatus('loading')
 
     try {
-      const created = await createTask({
+      const payload = {
         title,
         description,
         category,
         price: Number(priceEuros),
         lat: location.latitude,
         lng: location.longitude,
-      })
+      }
 
-      navigate(`/task/${created.id}`, { replace: true })
+      const saved = isEditing ? await updateTask(taskId, payload) : await createTask(payload)
+
+      navigate('/home', { replace: true, state: { mode: 'need', taskId: saved.id } })
     } catch (err) {
       setStatus('error')
-      setError(err.message || 'No se pudo publicar la tarea.')
+      setError(err.message || 'No se pudo guardar la tarea.')
     }
   }
 
   const isSubmitting = status === 'loading'
+  const canSubmitEdit = !isEditing || canEditTask(editingTask)
+  const submitLabel = isEditing ? 'Guardar cambios' : 'Guardar'
+  const titleLabel = isEditing ? 'Editar tarea' : 'Nueva tarea'
+  const headingLabel = isEditing ? 'Guardar cambios' : 'Guardar ayuda'
+
+  if (loadingTask) {
+    return (
+      <main className="app-screen with-nav">
+        <p className="muted">Cargando tarea...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="app-screen with-nav">
       <header className="page-header">
-        <button className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
+        <button className="icon-button" onClick={() => navigate('/home', { state: { mode: 'need' } })} aria-label="Volver">
           ←
         </button>
         <div>
-          <p className="eyebrow">Nueva tarea</p>
-          <h1>Publicar ayuda</h1>
+          <p className="eyebrow">{titleLabel}</p>
+          <h1>{headingLabel}</h1>
         </div>
       </header>
 
@@ -174,8 +237,8 @@ export default function CreateTask() {
 
         {error && <p className="auth-message error">{error}</p>}
 
-        <button className="success-action" type="submit" disabled={isSubmitting || locationStatus !== 'ready'}>
-          {isSubmitting ? 'Publicando...' : 'Publicar tarea'}
+        <button className="success-action" type="submit" disabled={isSubmitting || locationStatus !== 'ready' || !canSubmitEdit}>
+          {isSubmitting ? (isEditing ? 'Guardando cambios...' : 'Guardando...') : submitLabel}
         </button>
       </form>
 

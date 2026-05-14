@@ -12,6 +12,7 @@ create table if not exists public.profiles (
   rating numeric(2,1) not null default 0 check (rating >= 0 and rating <= 5),
   completed_tasks integer not null default 0 check (completed_tasks >= 0),
   verified boolean not null default false,
+  account_status text not null default 'active' check (account_status in ('active', 'unavailable', 'suspended')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -25,11 +26,14 @@ create table if not exists public.tasks (
   category text not null check (category in ('Mascotas', 'Recados', 'Compras', 'Ayuda tecnica')),
   price_cents integer not null check (price_cents between 0 and 50000),
   urgency text not null check (urgency in ('Ahora', 'Hoy', 'Flexible')),
-  status text not null default 'open' check (status in ('open', 'assigned', 'in_progress', 'completed', 'cancelled')),
+  status text not null default 'draft' check (status in ('draft', 'open', 'assigned', 'in_progress', 'completed', 'cancelled')),
   latitude double precision not null check (latitude between -90 and 90),
   longitude double precision not null check (longitude between -180 and 180),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  published_at timestamptz,
+  cancelled_at timestamptz,
+  modified_at timestamptz,
   completed_at timestamptz,
   check (helper_id is null or helper_id <> requester_id)
 );
@@ -57,6 +61,9 @@ create index if not exists profiles_username_idx on public.profiles(username);
 create index if not exists tasks_requester_id_idx on public.tasks(requester_id);
 create index if not exists tasks_helper_id_idx on public.tasks(helper_id);
 create index if not exists tasks_status_category_idx on public.tasks(status, category);
+create index if not exists tasks_published_at_idx on public.tasks(published_at desc);
+create index if not exists tasks_cancelled_at_idx on public.tasks(cancelled_at desc);
+create index if not exists tasks_modified_at_idx on public.tasks(modified_at desc);
 create index if not exists chats_task_id_idx on public.chats(task_id);
 create index if not exists chats_participants_idx on public.chats(requester_id, helper_id);
 create index if not exists messages_chat_id_created_at_idx on public.messages(chat_id, created_at);
@@ -90,7 +97,8 @@ create policy "Authenticated users can view open and related tasks"
 on public.tasks for select
 to authenticated
 using (
-  status = 'open'
+  status = 'draft' and requester_id = (select auth.uid())
+  or status = 'open'
   or requester_id = (select auth.uid())
   or helper_id = (select auth.uid())
 );
@@ -102,7 +110,7 @@ to authenticated
 with check (
   requester_id = (select auth.uid())
   and helper_id is null
-  and status = 'open'
+  and status in ('draft', 'open')
 );
 
 drop policy if exists "Requester or helper can update related tasks" on public.tasks;
@@ -116,6 +124,15 @@ using (
 with check (
   requester_id = (select auth.uid())
   or helper_id = (select auth.uid())
+);
+
+drop policy if exists "Requester can delete own tasks" on public.tasks;
+create policy "Requester can delete own tasks"
+on public.tasks for delete
+to authenticated
+using (
+  requester_id = (select auth.uid())
+  and status in ('draft', 'open', 'assigned', 'in_progress')
 );
 
 drop policy if exists "Participants can view chats" on public.chats;

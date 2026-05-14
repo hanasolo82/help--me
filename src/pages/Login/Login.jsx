@@ -326,6 +326,7 @@ export default function Login() {
   const params = new URLSearchParams(location.search)
   const initialMode = params.get('mode') === 'register' ? 'register' : 'login'
   const missingConfig = location.state?.reason === 'missing-config'
+  const accountDeactivated = location.state?.reason === 'account-deactivated'
 
   return (
     <main className="auth-screen">
@@ -333,6 +334,12 @@ export default function Login() {
         <section className="auth-panel auth-warning">
           <p className="eyebrow">Configuracion</p>
           <p className="muted">Faltan VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.</p>
+        </section>
+      )}
+      {accountDeactivated && (
+        <section className="auth-panel auth-warning">
+          <p className="eyebrow">Cuenta dada de baja</p>
+          <p className="muted">Tu profile se ha marcado como no disponible y la sesion se ha cerrado.</p>
         </section>
       )}
       <LoginPanel key={initialMode} titleId="login-title" initialMode={initialMode} />

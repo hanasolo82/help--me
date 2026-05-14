@@ -1,5 +1,6 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
+import { signOut } from '../../services/authService'
 
 // Guardia de rutas privadas:
 // - sin sesion => /login
@@ -8,6 +9,7 @@ import { useAuth } from '../../contexts/useAuth'
 export default function RequireAuth({ children, requireProfile = true }) {
   const { isConfigured, user, profile, loading, profileLoading } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
 
   if (loading || profileLoading) {
     return (
@@ -31,6 +33,30 @@ export default function RequireAuth({ children, requireProfile = true }) {
 
   if (requireProfile && !profile) {
     return <Navigate to="/onboarding" replace />
+  }
+
+  if (requireProfile && profile?.account_status && profile.account_status !== 'active') {
+    return (
+      <main className="auth-screen">
+        <section className="auth-panel">
+          <p className="eyebrow">Cuenta no disponible</p>
+          <h1>Tu profile esta dado de baja</h1>
+          <p className="muted">
+            Esta cuenta ya no puede acceder a las pantallas privadas. Tus tareas quedan conservadas, pero no visibles
+            como ofertas activas.
+          </p>
+          <button
+            className="primary-action"
+            onClick={async () => {
+              await signOut({ scope: 'global' })
+              navigate('/', { replace: true })
+            }}
+          >
+            Volver a home
+          </button>
+        </section>
+      </main>
+    )
   }
 
   return children

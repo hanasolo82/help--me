@@ -36,6 +36,7 @@ export default function Landing() {
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
   const [darkMode, setDarkMode] = useState(false)
+  const [navMenuOpen, setNavMenuOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   const [failedImages, setFailedImages] = useState({})
 
@@ -73,6 +74,28 @@ export default function Landing() {
         <a className={styles.brand} href="#inicio" aria-label="helpMe inicio">
           helpMe
         </a>
+
+        <div className={styles.mobileNav}>
+          <button
+            className={styles.mobileNavButton}
+            onClick={() => setNavMenuOpen((value) => !value)}
+            aria-expanded={navMenuOpen}
+            aria-controls="landing-mobile-nav"
+          >
+            Menu
+          </button>
+          <nav
+            id="landing-mobile-nav"
+            className={navMenuOpen ? `${styles.mobileNavMenu} ${styles.mobileNavMenuOpen}` : styles.mobileNavMenu}
+            aria-label="Navegacion de bienvenida"
+          >
+            {navLinks.map((link) => (
+              <a key={link.href} href={link.href} onClick={() => setNavMenuOpen(false)}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        </div>
 
         <nav className={styles.links} aria-label="Navegacion de bienvenida">
           {navLinks.map((link) => (

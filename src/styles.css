@@ -180,7 +180,8 @@ p {
 
 .primary-action,
 .success-action,
-.secondary-action {
+.secondary-action,
+.danger-action {
   width: 100%;
   max-width: 22.5rem;
   border: 0;
@@ -194,7 +195,8 @@ p {
 
 .primary-action:hover,
 .success-action:hover,
-.secondary-action:hover {
+.secondary-action:hover,
+.danger-action:hover {
   transform: translate(-1px, -1px);
   box-shadow: 5px 5px 0 var(--cc-navy);
 }
@@ -214,6 +216,12 @@ p {
   border: 2px solid var(--cc-navy);
   background: var(--cc-white);
   color: var(--cc-navy);
+}
+
+.danger-action {
+  border: 2px solid var(--cc-navy);
+  background: #b00020;
+  color: var(--cc-white);
 }
 
 .oauth-action {
@@ -562,6 +570,96 @@ p {
   font-weight: 900;
 }
 
+.profile-actions {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 22.5rem);
+  margin: 1rem auto 0;
+}
+
+.profile-actions .primary-action,
+.profile-actions .secondary-action,
+.profile-actions .danger-action {
+  max-width: none;
+}
+
+.deactivate-panel {
+  display: grid;
+  gap: 0;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    padding 0.2s ease;
+}
+
+.deactivate-panel.is-open {
+  gap: 1rem;
+  border: 2px solid var(--cc-navy);
+  background: var(--cc-white);
+  padding: 1rem;
+  box-shadow: 6px 6px 0 var(--cc-navy);
+}
+
+.deactivate-copy {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-0.25rem);
+  transition:
+    max-height 0.24s ease,
+    opacity 0.18s ease,
+    transform 0.2s ease;
+}
+
+.deactivate-panel.is-open .deactivate-copy {
+  max-height: 14rem;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.deactivate-copy h2 {
+  margin: 0.35rem 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.deactivate-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  transition: gap 0.2s ease;
+}
+
+.deactivate-panel.is-open .deactivate-actions {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.deactivate-cancel {
+  max-height: 0;
+  border-width: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  box-shadow: none;
+  pointer-events: none;
+  transition:
+    max-height 0.2s ease,
+    padding 0.2s ease,
+    opacity 0.18s ease;
+}
+
+.deactivate-panel.is-open .deactivate-cancel {
+  max-height: 4rem;
+  border-width: 2px;
+  padding: 14px;
+  opacity: 1;
+  box-shadow: 4px 4px 0 var(--cc-navy);
+  pointer-events: auto;
+}
+
 @media (min-width: 760px) {
   .app-screen,
   .auth-screen,
@@ -590,6 +688,7 @@ p {
   .primary-action,
   .success-action,
   .secondary-action,
+  .danger-action,
   .oauth-action {
     max-width: none;
   }

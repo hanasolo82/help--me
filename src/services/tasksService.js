@@ -10,7 +10,8 @@ export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecni
 // Si amplias public.tasks con mas datos (image_url, urgency, neighborhood, etc.),
 // anade aqui las columnas que quieras recibir en las consultas.
 // Si la columna tambien se guarda al crear una tarea, ampliala en validateTaskInput y createTask.
-// No se anidan profiles porque este servicio asume que no hay FK directa declarada hacia profiles.
+// El profile del creador se carga despues con attachCreatorProfiles porque aqui no anidamos FKs.
+// published_at y cancelled_at se usan para mostrar el tiempo real de publicacion/cancelacion.
 const TASK_SELECT = `
   id,
   created_by,
@@ -22,8 +23,75 @@ const TASK_SELECT = `
   status,
   lat,
   lng,
+  published_at,
+  cancelled_at,
+  modified_at,
   created_at
 `
+
+const AVAILABLE_PROFILE_STATUS = 'active'
+const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
+
+function isProfileAvailable(profile) {
+  return profile?.account_status === AVAILABLE_PROFILE_STATUS
+}
+
+async function attachCreatorProfiles(tasks) {
+  if (!tasks?.length) {
+    return tasks || []
+  }
+
+  const creatorIds = [...new Set(tasks.map((task) => task.created_by).filter(Boolean))]
+
+  if (creatorIds.length === 0) {
+    return tasks
+  }
+
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select(CREATOR_PROFILE_SELECT)
+    .in('id', creatorIds)
+
+  if (error) {
+    throw error
+  }
+
+  const profilesById = new Map((profiles || []).map((profile) => [profile.id, profile]))
+
+  return tasks.map((task) => ({
+    ...task,
+    creator_profile: profilesById.get(task.created_by) || null,
+  }))
+}
+
+function keepTasksWithAvailableCreators(tasks) {
+  return tasks.filter((task) => isProfileAvailable(task.creator_profile))
+}
+
+export function canEditTask(task) {
+  return Boolean(
+    task &&
+    !task.accepted_by &&
+    ['draft', 'open'].includes(task.status)
+  )
+}
+
+function getTaskTimelineDate(task) {
+  return task?.published_at || task?.created_at || null
+}
+
+function sortRequesterTasks(tasks) {
+  return [...tasks].sort((left, right) => {
+    const leftDate = new Date(getTaskTimelineDate(left) || 0).getTime()
+    const rightDate = new Date(getTaskTimelineDate(right) || 0).getTime()
+
+    if (leftDate !== rightDate) {
+      return leftDate - rightDate
+    }
+
+    return new Date(left.created_at || 0).getTime() - new Date(right.created_at || 0).getTime()
+  })
+}
 
 // Nota funcion:
 // Limpia y valida los datos del formulario antes de usarlos en una insercion.
@@ -55,7 +123,7 @@ export function validateTaskInput(input) {
 
 // Nota funcion:
 // Crea una tarea en public.tasks usando el usuario autenticado como created_by.
-// Tambien fuerza status='open' para que una tarea nueva entre como disponible.
+// Tambien fuerza status='draft' para que la tarea se guarde sin publicar hasta que el usuario lo decida.
 // Nota Supabase - public.tasks:
 // Si anades columnas obligatorias sin default, incluyelas en validateTaskInput y en este insert.
 export async function createTask(input) {
@@ -77,7 +145,9 @@ export async function createTask(input) {
     .insert({
       ...validation.value,
       created_by: userData.user.id,
-      status: 'open',
+      status: 'draft',
+      published_at: null,
+      modified_at: null,
     })
     .select(TASK_SELECT)
     .single()
@@ -86,7 +156,108 @@ export async function createTask(input) {
     throw error
   }
 
-  return data
+  const tasksWithProfiles = await attachCreatorProfiles([data])
+  return tasksWithProfiles[0]
+}
+
+// Nota funcion:
+// Actualiza una tarea propia sin cambiar su id ni su created_at.
+// Solo permite editar borradores o tareas publicadas que aun no hayan sido aceptadas.
+// Nota Supabase - public.tasks:
+// Si anades mas campos editables, incluyelos en validateTaskInput y en este update.
+export async function updateTask(taskId, input) {
+  assertSupabaseReady()
+
+  const validation = validateTaskInput(input)
+
+  if (!validation.isValid) {
+    throw new Error(validation.errors[0])
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    throw new Error('Necesitas iniciar sesion para editar una tarea.')
+  }
+
+  const candidateTask = await getTaskById(taskId)
+
+  if (!candidateTask || candidateTask.created_by !== userData.user.id || !canEditTask(candidateTask)) {
+    throw new Error('La tarea no se puede editar.')
+  }
+
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      ...validation.value,
+      modified_at: now,
+      updated_at: now,
+    })
+    .eq('id', taskId)
+    .eq('created_by', userData.user.id)
+    .in('status', ['draft', 'open'])
+    .is('accepted_by', null)
+    .select(TASK_SELECT)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('La tarea no se pudo actualizar.')
+  }
+
+  const tasksWithProfiles = await attachCreatorProfiles([data])
+  return tasksWithProfiles[0]
+}
+
+// Nota funcion:
+// Publica una tarea propia que aun estaba en borrador.
+// Cambia el estado a open y fija published_at para que el contador de "abierta/publicada"
+// empiece en ese momento, no en el instante de creacion.
+// Nota Supabase - public.tasks:
+// Si a futuro anades published_at obligatorio, manten este update en sincronía con el schema.
+export async function publishTask(taskId) {
+  assertSupabaseReady()
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    throw new Error('Necesitas iniciar sesion para publicar una tarea.')
+  }
+
+  const candidateTask = await getTaskById(taskId)
+
+  if (!candidateTask || candidateTask.created_by !== userData.user.id || candidateTask.status !== 'draft') {
+    throw new Error('La tarea no se puede publicar.')
+  }
+
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      status: 'open',
+      published_at: now,
+      updated_at: now,
+    })
+    .eq('id', taskId)
+    .eq('created_by', userData.user.id)
+    .eq('status', 'draft')
+    .select(TASK_SELECT)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('La tarea no se pudo publicar.')
+  }
+
+  const tasksWithProfiles = await attachCreatorProfiles([data])
+  return tasksWithProfiles[0]
 }
 
 // Nota funcion:
@@ -120,7 +291,8 @@ export async function getOpenTasks({ category } = {}) {
     throw error
   }
 
-  return data
+  const tasksWithProfiles = await attachCreatorProfiles(data)
+  return keepTasksWithAvailableCreators(tasksWithProfiles)
 }
 
 // Nota funcion:
@@ -143,13 +315,19 @@ export async function getMyTasks({ role = 'requester' } = {}) {
     .from('tasks')
     .select(TASK_SELECT)
     .eq(column, userData.user.id)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: role === 'requester' })
 
   if (error) {
     throw error
   }
 
-  return data
+  const tasksWithProfiles = await attachCreatorProfiles(data)
+
+  if (role === 'requester') {
+    return sortRequesterTasks(tasksWithProfiles.filter((task) => task.status !== 'cancelled'))
+  }
+
+  return tasksWithProfiles
 }
 
 // Nota funcion:
@@ -170,7 +348,26 @@ export async function getTaskById(taskId) {
     throw error
   }
 
-  return data
+  if (!data) {
+    return data
+  }
+
+  const tasksWithProfiles = await attachCreatorProfiles([data])
+  const taskWithProfile = tasksWithProfiles[0]
+  const { data: userData } = await supabase.auth.getUser()
+  const userId = userData?.user?.id
+  const canSeeUnavailableCreator =
+    userId && (taskWithProfile.created_by === userId || taskWithProfile.accepted_by === userId)
+
+  if (!isProfileAvailable(taskWithProfile.creator_profile) && !canSeeUnavailableCreator) {
+    return null
+  }
+
+  if (taskWithProfile.status === 'draft' && taskWithProfile.created_by !== userId) {
+    return null
+  }
+
+  return taskWithProfile
 }
 
 // Nota funcion:
@@ -190,6 +387,16 @@ export async function acceptTask(taskId) {
   }
 
   const helperId = userData.user.id
+  const candidateTask = await getTaskById(taskId)
+
+  if (
+    !candidateTask ||
+    !isProfileAvailable(candidateTask.creator_profile) ||
+    candidateTask.status !== 'open' ||
+    candidateTask.accepted_by
+  ) {
+    throw new Error('La tarea ya no esta disponible.')
+  }
 
   const { data: task, error: taskError } = await supabase
     .from('tasks')
@@ -260,18 +467,30 @@ export async function markTaskCompleted(taskId) {
 }
 
 // Nota funcion:
-// Cancela una tarea que todavia no esta completada.
+// Cancela una tarea propia marcandola como cancelled.
 // Devuelve la tarea actualizada o null si las condiciones/RLS no permiten el cambio.
 // Nota Supabase - public.tasks:
-// Si anades cancel_reason, cancelled_at o cancelled_by, actualiza este update y valida esos datos.
+// Si anades cancel_reason o cancelled_by, actualiza este update y valida esos datos.
 export async function cancelTask(taskId) {
   assertSupabaseReady()
 
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    throw new Error('Necesitas iniciar sesion.')
+  }
+
+  const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('tasks')
-    .update({ status: 'cancelled' })
+    .update({
+      status: 'cancelled',
+      cancelled_at: now,
+      updated_at: now,
+    })
     .eq('id', taskId)
-    .in('status', ['open', 'assigned', 'in_progress'])
+    .eq('created_by', userData.user.id)
+    .in('status', ['draft', 'open', 'assigned', 'in_progress'])
     .select(TASK_SELECT)
     .maybeSingle()
 

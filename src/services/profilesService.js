@@ -31,6 +31,34 @@ export async function getCurrentProfile() {
   return getProfileByUserId(authData.user.id)
 }
 
+// Da de baja el profile sin borrar datos historicos. Las tareas quedan guardadas,
+// pero dejan de mostrarse como disponibles al estar el creador en unavailable.
+export async function deactivateCurrentProfile() {
+  assertSupabaseReady()
+
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !authData.user) {
+    throw new Error('Necesitas una sesion valida para dar de baja el profile.')
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      account_status: 'unavailable',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', authData.user.id)
+    .select()
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 // Valida datos del onboarding antes de escribir en Supabase.
 export function validateProfileInput(input) {
   const usernameResult = validateUsername(input.username)
