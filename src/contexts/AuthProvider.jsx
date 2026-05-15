@@ -57,15 +57,16 @@ export function AuthProvider({ children }) {
       }
 
       // getUser() valida el JWT contra el servidor (no es solo lectura de localStorage).
-      // Si el token es invalido o expiro, devolvera null y RequireAuth redirigira a /login.
-      const validatedUser = await getCurrentUser()
+      // En paralelo leemos la session local: si el token es valido vamos a usar las dos.
+      const [validatedUser, sessionResult] = await Promise.all([
+        getCurrentUser(),
+        supabase.auth.getSession(),
+      ])
 
       if (!isMounted) return
 
       if (validatedUser) {
-        const { data } = await supabase.auth.getSession()
-        if (!isMounted) return
-        setSession(data.session)
+        setSession(sessionResult.data.session)
         setUser(validatedUser)
         await loadProfile(validatedUser)
       } else {

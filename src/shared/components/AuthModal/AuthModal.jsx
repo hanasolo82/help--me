@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LoginPanel } from '../../../pages/Login/Login'
+import AuthPanel from '../AuthPanel/AuthPanel'
 import styles from './AuthModal.module.css'
 
 // Modal de auth montado sobre la landing. Cierra al pulsar fuera, ESC o el boton de salida.
@@ -71,7 +71,7 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
           ×
         </button>
 
-        <LoginPanel
+        <AuthPanel
           key={mode}
           titleId="auth-modal-title"
           initialMode={mode}

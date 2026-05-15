@@ -13,7 +13,11 @@ export default function RequireAuth({ children, requireProfile = true }) {
   const navigate = useNavigate()
   useDocumentMeta({ noindex: true })
 
-  if (loading || profileLoading) {
+  // Solo bloqueamos en el bootstrap inicial (loading=true) o cuando aun no tenemos profile
+  // y el provider lo esta cargando. Refrescos posteriores no deben mostrar splash.
+  const isBootstrapping = loading || (profileLoading && requireProfile && !profile)
+
+  if (isBootstrapping) {
     return (
       <main className="auth-screen">
         <section className="auth-panel">
@@ -51,10 +55,10 @@ export default function RequireAuth({ children, requireProfile = true }) {
             className="primary-action"
             onClick={async () => {
               await signOut({ scope: 'global' })
-              navigate('/', { replace: true })
+              navigate('/login', { replace: true, state: { reason: 'account-deactivated' } })
             }}
           >
-            Volver a home
+            Volver a inicio
           </button>
         </section>
       </main>
