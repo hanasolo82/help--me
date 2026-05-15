@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/useAuth'
 import { estimatePasswordStrength, validateEmail } from '../../lib/security'
 import { clearRememberedEmail, readRememberedEmail } from '../../lib/consent'
 import Turnstile from '../../shared/components/Turnstile'
+import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import {
   resendSignupConfirmation,
   signInWithEmail,
@@ -327,6 +328,13 @@ export default function Login() {
   const initialMode = params.get('mode') === 'register' ? 'register' : 'login'
   const missingConfig = location.state?.reason === 'missing-config'
   const accountDeactivated = location.state?.reason === 'account-deactivated'
+
+  useDocumentMeta({
+    title: initialMode === 'register' ? 'Crea tu cuenta' : 'Entrar',
+    description:
+      'Accede a helpMe con Google o con email y contrasena para publicar tareas o ayudar a tus vecinos.',
+    path: '/login',
+  })
 
   return (
     <main className="auth-screen">

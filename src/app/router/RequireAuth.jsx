@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
+import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 
 // Guardia de rutas privadas:
 // - sin sesion => /login
@@ -10,6 +11,7 @@ export default function RequireAuth({ children, requireProfile = true }) {
   const { isConfigured, user, profile, loading, profileLoading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  useDocumentMeta({ noindex: true })
 
   if (loading || profileLoading) {
     return (

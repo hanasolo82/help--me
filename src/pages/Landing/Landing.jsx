@@ -4,6 +4,49 @@ import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
 import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
+import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
+
+const LANDING_JSONLD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'helpMe',
+      url: 'https://helpme.app/',
+      areaServed: 'Zaragoza, ES',
+      description: 'Plataforma de micro-ayuda local entre vecinos.',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: '¿Como funciona helpMe?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Publica titulo, ubicacion, precio y urgencia en menos de un minuto. Un vecino cercano la acepta y coordinais el cierre por chat.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '¿Que categorias hay?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Mascotas, recados, compras y ayuda tecnica son las categorias del MVP.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '¿En que zonas opera?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'En la fase inicial validamos una microzona en Zaragoza (barrio Delicias) y vamos ampliando segun demanda.',
+          },
+        },
+      ],
+    },
+  ],
+}
 
 // Links de la navbar. Puedes anadir, quitar o cambiar secciones desde este array.
 const landingLinks = [
@@ -33,6 +76,12 @@ const heroSlides = [
 ]
 
 export default function Landing() {
+  useDocumentMeta({
+    title: 'Micro-ayuda local entre vecinos',
+    description:
+      'helpMe conecta a quien necesita ayuda con vecinos cercanos: mascotas, recados, compras y ayuda tecnica resueltos en minutos.',
+    path: '/',
+  })
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
   const [darkMode, setDarkMode] = useState(false)
@@ -251,6 +300,11 @@ export default function Landing() {
 
       <AuthModal open={authModal.open} mode={authModal.mode} onClose={closeAuth} />
       <CookieConsent />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(LANDING_JSONLD) }}
+      />
     </main>
   )
 }

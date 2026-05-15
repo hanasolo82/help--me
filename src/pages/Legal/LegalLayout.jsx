@@ -1,5 +1,6 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import styles from './LegalLayout.module.css'
+import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 
 const sections = [
   { to: '/legal/terms', label: 'Terminos' },
@@ -8,8 +9,14 @@ const sections = [
 ]
 
 // Wrapper con cabecera, navegacion entre documentos legales y pie con fecha de revision.
-export default function LegalLayout({ title, kicker = 'Legal', lastUpdated, children }) {
+export default function LegalLayout({ title, kicker = 'Legal', lastUpdated, description, children }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  useDocumentMeta({
+    title,
+    description: description || `${title} de helpMe. Documento legal aplicable a usuarios de la plataforma.`,
+    path: location.pathname,
+  })
 
   return (
     <main className={styles.layout}>

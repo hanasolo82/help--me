@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /legal/terms
+Allow: /legal/privacy
+Allow: /legal/cookies
+Disallow: /home
+Disallow: /onboarding
+Disallow: /task/
+Disallow: /create
+Disallow: /chat/
+Disallow: /chats
+Disallow: /complete/
+Disallow: /profile
+Disallow: /reset-password
+
+Sitemap: https://helpme.app/sitemap.xml
