@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
-import { currentUser, requireUser } from '../lib/authHelpers'
+import { requireUser } from '../lib/authHelpers'
+import { getCurrentUser } from './authService'
 
 // Nota: categorias permitidas por el frontend para crear y filtrar tareas.
 // Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
@@ -170,7 +171,7 @@ export async function updateTask(taskId, input) {
 
   const user = await requireUser('Necesitas iniciar sesion para editar una tarea.')
 
-  const candidateTask = await getTaskById(taskId)
+  const candidateTask = await getTaskById(taskId, { viewer: user })
 
   if (!candidateTask || candidateTask.created_by !== user.id || !canEditTask(candidateTask)) {
     throw new Error('La tarea no se puede editar.')
@@ -212,7 +213,7 @@ export async function updateTask(taskId, input) {
 export async function publishTask(taskId) {
   const user = await requireUser('Necesitas iniciar sesion para publicar una tarea.')
 
-  const candidateTask = await getTaskById(taskId)
+  const candidateTask = await getTaskById(taskId, { viewer: user })
 
   if (!candidateTask || candidateTask.created_by !== user.id || candidateTask.status !== 'draft') {
     throw new Error('La tarea no se puede publicar.')
@@ -252,7 +253,7 @@ export async function publishTask(taskId) {
 export async function getOpenTasks({ category } = {}) {
   assertSupabaseReady()
 
-  const user = await currentUser()
+  const user = await getCurrentUser()
   const userId = user?.id
 
   let query = supabase
@@ -312,7 +313,7 @@ export async function getMyTasks({ role = 'requester' } = {}) {
 // maybeSingle permite devolver null si no existe o si las RLS impiden verla.
 // Nota Supabase - public.tasks:
 // Cualquier dato adicional que necesite la pantalla de detalle debe estar incluido en TASK_SELECT.
-export async function getTaskById(taskId) {
+export async function getTaskById(taskId, { viewer } = {}) {
   assertSupabaseReady()
 
   const { data, error } = await supabase
@@ -331,8 +332,10 @@ export async function getTaskById(taskId) {
 
   const tasksWithProfiles = await attachCreatorProfiles([data])
   const taskWithProfile = tasksWithProfiles[0]
-  const viewer = await currentUser()
-  const userId = viewer?.id
+  // Si el caller ya tiene el user (interno: acceptTask/updateTask/publishTask),
+  // reutilizamos su valor para no hacer un round trip extra a auth.getUser().
+  const resolvedViewer = viewer !== undefined ? viewer : await getCurrentUser()
+  const userId = resolvedViewer?.id
   const canSeeUnavailableCreator =
     userId && (taskWithProfile.created_by === userId || taskWithProfile.accepted_by === userId)
 
@@ -357,7 +360,7 @@ export async function getTaskById(taskId) {
 export async function acceptTask(taskId) {
   const user = await requireUser('Necesitas iniciar sesion para aceptar una tarea.')
   const helperId = user.id
-  const candidateTask = await getTaskById(taskId)
+  const candidateTask = await getTaskById(taskId, { viewer: user })
 
   if (
     !candidateTask ||

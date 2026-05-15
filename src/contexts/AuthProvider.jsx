@@ -56,8 +56,8 @@ export function AuthProvider({ children }) {
         return
       }
 
-      // getUser() valida el JWT contra el servidor (no es solo lectura de localStorage).
-      // En paralelo leemos la session local: si el token es valido vamos a usar las dos.
+      // getUser() valida el JWT contra el servidor; getSession() solo lee localStorage.
+      // Si el token es invalido getUser devuelve null y descartamos la session local.
       const [validatedUser, sessionResult] = await Promise.all([
         getCurrentUser(),
         supabase.auth.getSession(),

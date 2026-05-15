@@ -20,6 +20,24 @@ const STATUS = Object.freeze({
   error: 'error',
 })
 
+const VIEW_COPY = Object.freeze({
+  remembered: {
+    title: 'Bienvenido de vuelta',
+    subtitle: 'Introduce tu contrasena para continuar.',
+    submit: 'Entrar',
+  },
+  register: {
+    title: 'Crea tu cuenta',
+    subtitle: 'Crea una cuenta con email y contrasena o continua con Google.',
+    submit: 'Crear cuenta',
+  },
+  login: {
+    title: 'Entra en helpMe',
+    subtitle: 'Accede con Google o con email y contrasena.',
+    submit: 'Entrar',
+  },
+})
+
 // Panel de autenticacion reusable entre la pagina /login y el AuthModal de la landing.
 // Si hay un email recordado en localStorage, el formulario se compacta a solo password.
 export default function AuthPanel({ titleId, initialMode = 'login', onSuccess }) {
@@ -42,6 +60,8 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   const hasRemembered = Boolean(rememberedEmail)
   const isRegister = mode === 'register' && !hasRemembered
   const captchaRequired = Boolean(TURNSTILE_SITE_KEY)
+  const view = hasRemembered ? 'remembered' : isRegister ? 'register' : 'login'
+  const copy = VIEW_COPY[view]
 
   const handleCaptcha = useCallback((token) => setCaptchaToken(token), [])
   const resetCaptcha = useCallback(() => {
@@ -147,18 +167,8 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   return (
     <section className="auth-panel">
       <p className="eyebrow">helpMe Auth</p>
-      <h1 id={titleId}>
-        {hasRemembered
-          ? 'Bienvenido de vuelta'
-          : isRegister ? 'Crea tu cuenta' : 'Entra en helpMe'}
-      </h1>
-      <p className="muted">
-        {hasRemembered
-          ? 'Introduce tu contrasena para continuar.'
-          : isRegister
-            ? 'Crea una cuenta con email y contrasena o continua con Google.'
-            : 'Accede con Google o con email y contrasena.'}
-      </p>
+      <h1 id={titleId}>{copy.title}</h1>
+      <p className="muted">{copy.subtitle}</p>
 
       {!hasRemembered && (
         <>
@@ -293,7 +303,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
           className="primary-action"
           disabled={status === STATUS.loading || (captchaRequired && !captchaToken)}
         >
-          {hasRemembered ? 'Entrar' : isRegister ? 'Crear cuenta' : 'Entrar'}
+          {copy.submit}
         </button>
 
         {status === STATUS.sent && isRegister && (

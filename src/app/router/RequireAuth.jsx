@@ -13,8 +13,7 @@ export default function RequireAuth({ children, requireProfile = true }) {
   const navigate = useNavigate()
   useDocumentMeta({ noindex: true })
 
-  // Solo bloqueamos en el bootstrap inicial (loading=true) o cuando aun no tenemos profile
-  // y el provider lo esta cargando. Refrescos posteriores no deben mostrar splash.
+  // Ignoramos profileLoading cuando ya hay profile: un refresh no debe pisar la pantalla.
   const isBootstrapping = loading || (profileLoading && requireProfile && !profile)
 
   if (isBootstrapping) {

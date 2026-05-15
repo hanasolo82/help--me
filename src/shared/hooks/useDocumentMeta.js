@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 
 const SITE_NAME = 'helpMe'
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://helpme.app'
+const SITE_ORIGIN = (import.meta.env.VITE_SITE_URL || 'https://helpme.app').replace(/\/$/, '')
 
-function setMeta(selector, attribute, value) {
+function upsertMeta(attrKey, name, value) {
   if (!value) return
-  let element = document.head.querySelector(selector)
-  if (!element) {
-    element = document.createElement('meta')
-    const [, key] = selector.match(/\[(name|property)="([^"]+)"\]/) || []
-    if (key) element.setAttribute(key, selector.split('"')[1])
-    document.head.appendChild(element)
+  let el = document.head.querySelector(`meta[${attrKey}="${name}"]`)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attrKey, name)
+    document.head.appendChild(el)
   }
-  element.setAttribute(attribute, value)
+  if (el.getAttribute('content') !== value) {
+    el.setAttribute('content', value)
+  }
 }
 
 function setCanonical(href) {
@@ -23,7 +24,9 @@ function setCanonical(href) {
     link.setAttribute('rel', 'canonical')
     document.head.appendChild(link)
   }
-  link.setAttribute('href', href)
+  if (link.getAttribute('href') !== href) {
+    link.setAttribute('href', href)
+  }
 }
 
 // Hook ligero (sin dependencias) para gestionar SEO por ruta: titulo, description,
@@ -31,28 +34,24 @@ function setCanonical(href) {
 export function useDocumentMeta({ title, description, path, noindex = false } = {}) {
   useEffect(() => {
     const fullTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} · Micro-ayuda local entre vecinos`
-    document.title = fullTitle
+    if (document.title !== fullTitle) {
+      document.title = fullTitle
+    }
 
-    setMeta('meta[name="description"]', 'content', description)
-    setMeta('meta[property="og:title"]', 'content', fullTitle)
-    setMeta('meta[property="og:description"]', 'content', description)
-    setMeta('meta[name="twitter:title"]', 'content', fullTitle)
-    setMeta('meta[name="twitter:description"]', 'content', description)
+    upsertMeta('name', 'description', description)
+    upsertMeta('property', 'og:title', fullTitle)
+    upsertMeta('property', 'og:description', description)
+    upsertMeta('name', 'twitter:title', fullTitle)
+    upsertMeta('name', 'twitter:description', description)
 
-    const canonical = path ? `${SITE_URL.replace(/\/$/, '')}${path}` : SITE_URL
+    const canonical = path ? `${SITE_ORIGIN}${path}` : SITE_ORIGIN
     setCanonical(canonical)
-    setMeta('meta[property="og:url"]', 'content', canonical)
+    upsertMeta('property', 'og:url', canonical)
 
-    let robots = document.head.querySelector('meta[name="robots"]')
     if (noindex) {
-      if (!robots) {
-        robots = document.createElement('meta')
-        robots.setAttribute('name', 'robots')
-        document.head.appendChild(robots)
-      }
-      robots.setAttribute('content', 'noindex, nofollow')
-    } else if (robots) {
-      robots.remove()
+      upsertMeta('name', 'robots', 'noindex, nofollow')
+    } else {
+      document.head.querySelector('meta[name="robots"]')?.remove()
     }
   }, [title, description, path, noindex])
 }

@@ -14,7 +14,7 @@ export default function LegalLayout({ title, kicker = 'Legal', lastUpdated, desc
   const location = useLocation()
   useDocumentMeta({
     title,
-    description: description || `${title} de helpMe. Documento legal aplicable a usuarios de la plataforma.`,
+    description: description ?? `${title} de helpMe. Documento legal aplicable a usuarios de la plataforma.`,
     path: location.pathname,
   })
 

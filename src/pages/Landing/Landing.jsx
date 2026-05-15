@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
@@ -90,7 +90,6 @@ export default function Landing() {
   const [failedImages, setFailedImages] = useState({})
 
   const currentSlide = heroSlides[slideIndex]
-  const navLinks = useMemo(() => landingLinks, [])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -138,7 +137,7 @@ export default function Landing() {
             className={navMenuOpen ? `${styles.mobileNavMenu} ${styles.mobileNavMenuOpen}` : styles.mobileNavMenu}
             aria-label="Navegacion de bienvenida"
           >
-            {navLinks.map((link) => (
+            {landingLinks.map((link) => (
               <a key={link.href} href={link.href} onClick={() => setNavMenuOpen(false)}>
                 {link.label}
               </a>
@@ -147,7 +146,7 @@ export default function Landing() {
         </div>
 
         <nav className={styles.links} aria-label="Navegacion de bienvenida">
-          {navLinks.map((link) => (
+          {landingLinks.map((link) => (
             <a key={link.href} href={link.href}>
               {link.label}
             </a>
