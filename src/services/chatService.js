@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
+import { requireUser } from '../lib/authHelpers'
 
 // Devuelve el chat asociado a una tarea (creado al aceptar). Sin embed de profiles
 // porque las FKs van a auth.users; los nombres se podran resolver aparte si hace falta.
@@ -46,25 +47,19 @@ export async function getMessages(chatId) {
 
 // Envia un mensaje validando longitud. sender_id se rellena con el usuario autenticado.
 export async function sendMessage(chatId, content) {
-  assertSupabaseReady()
-
   const clean = sanitizeText(content, 1200)
 
   if (clean.length < 1) {
     throw new Error('El mensaje no puede estar vacio.')
   }
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para enviar mensajes.')
-  }
+  const user = await requireUser('Necesitas iniciar sesion para enviar mensajes.')
 
   const { data, error } = await supabase
     .from('messages')
     .insert({
       chat_id: chatId,
-      sender_id: userData.user.id,
+      sender_id: user.id,
       content: clean,
     })
     .select()
@@ -102,15 +97,8 @@ export function subscribeToMessages(chatId, onInsert) {
 
 // Lista los chats donde el usuario actual es user1 o user2, con la tarea asociada.
 export async function getMyChats() {
-  assertSupabaseReady()
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion.')
-  }
-
-  const userId = userData.user.id
+  const user = await requireUser()
+  const userId = user.id
 
   const { data, error } = await supabase
     .from('chats')

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
-import { assertSupabaseReady } from '../lib/security'
+import { requireUser } from '../lib/authHelpers'
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -24,18 +24,13 @@ export function validateImageFile(file) {
 // Sube una imagen al bucket dado bajo {userId}/{timestamp-aleatorio}.{ext} y devuelve la URL publica.
 // La RLS del bucket exige que el primer segmento de la ruta sea el id del usuario autenticado.
 export async function uploadImage(bucket, file) {
-  assertSupabaseReady()
   validateImageFile(file)
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para subir imagenes.')
-  }
+  const user = await requireUser('Necesitas iniciar sesion para subir imagenes.')
 
   const extension = file.name.includes('.') ? file.name.split('.').pop().toLowerCase() : 'jpg'
   const safeExtension = /^[a-z0-9]{1,5}$/.test(extension) ? extension : 'jpg'
-  const path = `${userData.user.id}/${Date.now()}-${crypto.randomUUID()}.${safeExtension}`
+  const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${safeExtension}`
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)

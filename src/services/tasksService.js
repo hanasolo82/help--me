@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
+import { currentUser, requireUser } from '../lib/authHelpers'
 
 // Nota: categorias permitidas por el frontend para crear y filtrar tareas.
 // Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
@@ -127,24 +128,19 @@ export function validateTaskInput(input) {
 // Nota Supabase - public.tasks:
 // Si anades columnas obligatorias sin default, incluyelas en validateTaskInput y en este insert.
 export async function createTask(input) {
-  assertSupabaseReady()
   const validation = validateTaskInput(input)
 
   if (!validation.isValid) {
     throw new Error(validation.errors[0])
   }
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para publicar una tarea.')
-  }
+  const user = await requireUser('Necesitas iniciar sesion para publicar una tarea.')
 
   const { data, error } = await supabase
     .from('tasks')
     .insert({
       ...validation.value,
-      created_by: userData.user.id,
+      created_by: user.id,
       status: 'draft',
       published_at: null,
       modified_at: null,
@@ -166,23 +162,17 @@ export async function createTask(input) {
 // Nota Supabase - public.tasks:
 // Si anades mas campos editables, incluyelos en validateTaskInput y en este update.
 export async function updateTask(taskId, input) {
-  assertSupabaseReady()
-
   const validation = validateTaskInput(input)
 
   if (!validation.isValid) {
     throw new Error(validation.errors[0])
   }
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para editar una tarea.')
-  }
+  const user = await requireUser('Necesitas iniciar sesion para editar una tarea.')
 
   const candidateTask = await getTaskById(taskId)
 
-  if (!candidateTask || candidateTask.created_by !== userData.user.id || !canEditTask(candidateTask)) {
+  if (!candidateTask || candidateTask.created_by !== user.id || !canEditTask(candidateTask)) {
     throw new Error('La tarea no se puede editar.')
   }
 
@@ -195,7 +185,7 @@ export async function updateTask(taskId, input) {
       updated_at: now,
     })
     .eq('id', taskId)
-    .eq('created_by', userData.user.id)
+    .eq('created_by', user.id)
     .in('status', ['draft', 'open'])
     .is('accepted_by', null)
     .select(TASK_SELECT)
@@ -220,17 +210,11 @@ export async function updateTask(taskId, input) {
 // Nota Supabase - public.tasks:
 // Si a futuro anades published_at obligatorio, manten este update en sincronía con el schema.
 export async function publishTask(taskId) {
-  assertSupabaseReady()
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para publicar una tarea.')
-  }
+  const user = await requireUser('Necesitas iniciar sesion para publicar una tarea.')
 
   const candidateTask = await getTaskById(taskId)
 
-  if (!candidateTask || candidateTask.created_by !== userData.user.id || candidateTask.status !== 'draft') {
+  if (!candidateTask || candidateTask.created_by !== user.id || candidateTask.status !== 'draft') {
     throw new Error('La tarea no se puede publicar.')
   }
 
@@ -243,7 +227,7 @@ export async function publishTask(taskId) {
       updated_at: now,
     })
     .eq('id', taskId)
-    .eq('created_by', userData.user.id)
+    .eq('created_by', user.id)
     .eq('status', 'draft')
     .select(TASK_SELECT)
     .maybeSingle()
@@ -268,8 +252,8 @@ export async function publishTask(taskId) {
 export async function getOpenTasks({ category } = {}) {
   assertSupabaseReady()
 
-  const { data: userData } = await supabase.auth.getUser()
-  const userId = userData?.user?.id
+  const user = await currentUser()
+  const userId = user?.id
 
   let query = supabase
     .from('tasks')
@@ -301,20 +285,13 @@ export async function getOpenTasks({ category } = {}) {
 // Nota Supabase - public.tasks:
 // Si cambias created_by/accepted_by por otros nombres en la tabla, actualiza el mapeo column.
 export async function getMyTasks({ role = 'requester' } = {}) {
-  assertSupabaseReady()
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion.')
-  }
-
+  const user = await requireUser()
   const column = role === 'helper' ? 'accepted_by' : 'created_by'
 
   const { data, error } = await supabase
     .from('tasks')
     .select(TASK_SELECT)
-    .eq(column, userData.user.id)
+    .eq(column, user.id)
     .order('created_at', { ascending: role === 'requester' })
 
   if (error) {
@@ -354,8 +331,8 @@ export async function getTaskById(taskId) {
 
   const tasksWithProfiles = await attachCreatorProfiles([data])
   const taskWithProfile = tasksWithProfiles[0]
-  const { data: userData } = await supabase.auth.getUser()
-  const userId = userData?.user?.id
+  const viewer = await currentUser()
+  const userId = viewer?.id
   const canSeeUnavailableCreator =
     userId && (taskWithProfile.created_by === userId || taskWithProfile.accepted_by === userId)
 
@@ -378,15 +355,8 @@ export async function getTaskById(taskId) {
 // Al ampliar public.tasks, revisa TASK_SELECT. Al ampliar public.chats con columnas obligatorias
 // (por ejemplo last_message_at, status o metadata), anadelas en el insert del chat y en chatService.
 export async function acceptTask(taskId) {
-  assertSupabaseReady()
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion para aceptar una tarea.')
-  }
-
-  const helperId = userData.user.id
+  const user = await requireUser('Necesitas iniciar sesion para aceptar una tarea.')
+  const helperId = user.id
   const candidateTask = await getTaskById(taskId)
 
   if (
@@ -472,13 +442,7 @@ export async function markTaskCompleted(taskId) {
 // Nota Supabase - public.tasks:
 // Si anades cancel_reason o cancelled_by, actualiza este update y valida esos datos.
 export async function cancelTask(taskId) {
-  assertSupabaseReady()
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError || !userData.user) {
-    throw new Error('Necesitas iniciar sesion.')
-  }
+  const user = await requireUser()
 
   const now = new Date().toISOString()
   const { data, error } = await supabase
@@ -489,7 +453,7 @@ export async function cancelTask(taskId) {
       updated_at: now,
     })
     .eq('id', taskId)
-    .eq('created_by', userData.user.id)
+    .eq('created_by', user.id)
     .in('status', ['draft', 'open', 'assigned', 'in_progress'])
     .select(TASK_SELECT)
     .maybeSingle()

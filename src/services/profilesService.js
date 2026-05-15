@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText, validateUsername } from '../lib/security'
+import { requireUser } from '../lib/authHelpers'
 
 // Lee el profile desacoplado de auth.users. Si no existe, onboarding debe crearlo.
 export async function getProfileByUserId(userId) {
@@ -20,27 +21,14 @@ export async function getProfileByUserId(userId) {
 
 // Lee el profile del usuario autenticado actual. Es la forma mas segura de consultar "mi profile".
 export async function getCurrentProfile() {
-  assertSupabaseReady()
-
-  const { data: authData, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !authData.user) {
-    throw new Error('No hay una sesion valida para leer el profile.')
-  }
-
-  return getProfileByUserId(authData.user.id)
+  const user = await requireUser('No hay una sesion valida para leer el profile.')
+  return getProfileByUserId(user.id)
 }
 
 // Da de baja el profile sin borrar datos historicos. Las tareas quedan guardadas,
 // pero dejan de mostrarse como disponibles al estar el creador en unavailable.
 export async function deactivateCurrentProfile() {
-  assertSupabaseReady()
-
-  const { data: authData, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !authData.user) {
-    throw new Error('Necesitas una sesion valida para dar de baja el profile.')
-  }
+  const user = await requireUser('Necesitas una sesion valida para dar de baja el profile.')
 
   const { data, error } = await supabase
     .from('profiles')
@@ -48,7 +36,7 @@ export async function deactivateCurrentProfile() {
       account_status: 'unavailable',
       updated_at: new Date().toISOString(),
     })
-    .eq('id', authData.user.id)
+    .eq('id', user.id)
     .select()
     .single()
 
@@ -85,23 +73,18 @@ export function validateProfileInput(input) {
 
 // Crea el profile obligatorio usando SIEMPRE el id real del usuario autenticado en Supabase.
 export async function createProfile(input) {
-  assertSupabaseReady()
   const validation = validateProfileInput(input)
 
   if (!validation.isValid) {
     throw new Error(validation.errors[0])
   }
 
-  const { data: authData, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !authData.user) {
-    throw new Error('Necesitas una sesion valida para crear tu profile.')
-  }
+  const user = await requireUser('Necesitas una sesion valida para crear tu profile.')
 
   const { data, error } = await supabase
     .from('profiles')
     .insert({
-      id: authData.user.id,
+      id: user.id,
       ...validation.value,
     })
     .select()
