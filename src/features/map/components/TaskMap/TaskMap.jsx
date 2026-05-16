@@ -5,13 +5,24 @@ import styles from './TaskMap.module.css'
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
 const defaultCenter = [41.6523, -0.9019]
 
-// Marcador custom para el usuario.
-const userIcon = L.divIcon({
-  className: styles.userMarker,
-  html: '<span>Tu</span>',
-  iconSize: [42, 42],
-  iconAnchor: [21, 21],
-})
+function buildUserIcon({ avatarUrl, initial }) {
+  // Cuando hay imagen, el marcador es solo la foto: sin caja, sin borde, sin sombra.
+  if (avatarUrl) {
+    return L.divIcon({
+      className: styles.userMarkerImage,
+      html: `<img src="${avatarUrl}" alt="" />`,
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
+    })
+  }
+
+  return L.divIcon({
+    className: styles.userMarker,
+    html: `<span>${initial || 'Tu'}</span>`,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+  })
+}
 
 function createTaskIcon(priceEuros) {
   return L.divIcon({
@@ -29,8 +40,18 @@ function RecenterMap({ center }) {
 }
 
 // Mapa con OpenStreetMap. Las tareas vienen con lat/lng y price (euros) directos del schema.
-export default function TaskMap({ tasks, userLocation, radiusKm, onTaskSelect, distances }) {
+// El marcador del usuario usa el map_avatar_url del profile si esta disponible.
+export default function TaskMap({
+  tasks,
+  userLocation,
+  radiusKm,
+  onTaskSelect,
+  distances,
+  userAvatarUrl,
+  userInitial,
+}) {
   const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
+  const userIcon = buildUserIcon({ avatarUrl: userAvatarUrl, initial: userInitial })
 
   return (
     <div className={styles.mapShell}>

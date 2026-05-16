@@ -1,121 +1,141 @@
-import { supabase } from '../lib/supabaseClient'
-import { assertSupabaseReady, sanitizeText } from '../lib/security'
+import { getTaskById } from './tasksService'
 import { requireUser } from '../lib/authHelpers'
+import { sanitizeText } from '../lib/security'
+import {
+  createOrGetDirectConversation,
+  editMessage as editConversationMessage,
+  getConversationById,
+  getMessages as getConversationMessages,
+  getMyConversations,
+  markConversationAsRead,
+  normalizeMessageRow,
+  sendMessage as sendConversationMessage,
+  softDeleteMessage as softDeleteConversationMessage,
+  subscribeToConversationMessages,
+} from '../features/chat/api/chatApi'
 
-// Devuelve el chat asociado a una tarea (creado al aceptar). Sin embed de profiles
-// porque las FKs van a auth.users; los nombres se podran resolver aparte si hace falta.
+function mapLegacyMessage(message) {
+  if (!message) return null
+
+  return {
+    ...message,
+    content: message.body,
+    updated_at: message.edited_at || message.deleted_at || message.created_at,
+  }
+}
+
+function mapLegacyConversation(conversation, task = null) {
+  if (!conversation) return null
+
+  const participants = conversation.participants || []
+  const user1 = participants[0]?.user_id || task?.created_by || null
+  const user2 =
+    participants.find((participant) => participant.user_id !== user1)?.user_id ||
+    task?.accepted_by ||
+    null
+
+  return {
+    ...conversation,
+    task_id: task?.id || null,
+    task,
+    user1_id: user1,
+    user2_id: user2,
+  }
+}
+
+async function resolveTaskConversation(taskId) {
+  const user = await requireUser('Necesitas iniciar sesion para abrir el chat.')
+  const task = await getTaskById(taskId, { viewer: user })
+
+  if (!task) {
+    throw new Error('La tarea no esta disponible.')
+  }
+
+  const otherUserId = task.created_by === user.id ? task.accepted_by : task.created_by
+
+  if (!otherUserId) {
+    throw new Error('Todavia no hay otro usuario para abrir este chat.')
+  }
+
+  const conversationId = await createOrGetDirectConversation(otherUserId)
+  const conversation = await getConversationById(conversationId)
+
+  return {
+    task,
+    conversation: mapLegacyConversation(conversation, task) || {
+      id: conversationId,
+      task_id: task.id,
+      task,
+      participants: [],
+      user1_id: task.created_by,
+      user2_id: otherUserId,
+    },
+  }
+}
+
 export async function getChatByTaskId(taskId) {
-  assertSupabaseReady()
-
-  const { data, error } = await supabase
-    .from('chats')
-    .select(`
-      id,
-      task_id,
-      user1_id,
-      user2_id,
-      created_at,
-      task:tasks!chats_task_id_fkey ( id, title, status, created_by, accepted_by )
-    `)
-    .eq('task_id', taskId)
-    .maybeSingle()
-
-  if (error) {
-    throw error
-  }
-
-  return data
+  const { conversation, task } = await resolveTaskConversation(taskId)
+  return mapLegacyConversation(conversation, task)
 }
 
-// Lee los mensajes del chat ordenados cronologicamente.
+export async function getOrCreateChatByTaskId(taskId) {
+  const { conversation, task } = await resolveTaskConversation(taskId)
+  return mapLegacyConversation(conversation, task)
+}
+
 export async function getMessages(chatId) {
-  assertSupabaseReady()
-
-  const { data, error } = await supabase
-    .from('messages')
-    .select('id, chat_id, sender_id, content, created_at')
-    .eq('chat_id', chatId)
-    .order('created_at', { ascending: true })
-    .limit(200)
-
-  if (error) {
-    throw error
-  }
-
-  return data
+  const messages = await getConversationMessages(chatId)
+  return messages.map(mapLegacyMessage)
 }
 
-// Envia un mensaje validando longitud. sender_id se rellena con el usuario autenticado.
-export async function sendMessage(chatId, content) {
-  const clean = sanitizeText(content, 1200)
+export async function sendMessage(chatId, content, clientTempId = null) {
+  const clean = sanitizeText(content, 2000)
 
-  if (clean.length < 1) {
+  if (!clean.length) {
     throw new Error('El mensaje no puede estar vacio.')
   }
 
-  const user = await requireUser('Necesitas iniciar sesion para enviar mensajes.')
-
-  const { data, error } = await supabase
-    .from('messages')
-    .insert({
-      chat_id: chatId,
-      sender_id: user.id,
-      content: clean,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    throw error
-  }
-
-  return data
+  const sentMessage = await sendConversationMessage(chatId, clean, clientTempId)
+  return mapLegacyMessage(sentMessage)
 }
 
-// Suscripcion realtime a inserts de mensajes de un chat. Devuelve funcion para desuscribirse.
-export function subscribeToMessages(chatId, onInsert) {
-  assertSupabaseReady()
+export async function updateMessage(messageId, content) {
+  const clean = sanitizeText(content, 2000)
 
-  const channel = supabase
-    .channel(`messages:${chatId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${chatId}`,
-      },
-      (payload) => onInsert(payload.new),
-    )
-    .subscribe()
-
-  return () => {
-    supabase.removeChannel(channel)
+  if (!clean.length) {
+    throw new Error('El mensaje no puede estar vacio.')
   }
+
+  const updatedMessage = await editConversationMessage(messageId, clean)
+  return mapLegacyMessage(updatedMessage)
 }
 
-// Lista los chats donde el usuario actual es user1 o user2, con la tarea asociada.
+export async function deleteMessage(messageId) {
+  const deletedMessage = await softDeleteConversationMessage(messageId)
+  return mapLegacyMessage(deletedMessage)
+}
+
+export function subscribeToMessages(chatId, handlers = {}) {
+  const callbacks = typeof handlers === 'function' ? { onInsert: handlers } : handlers
+
+  return subscribeToConversationMessages(chatId, {
+    onInsert: (message) => callbacks.onInsert?.(mapLegacyMessage(message)),
+    onUpdate: (message, previousMessage) => callbacks.onUpdate?.(mapLegacyMessage(message), mapLegacyMessage(previousMessage)),
+    onDelete: (message) => callbacks.onDelete?.(mapLegacyMessage(message)),
+  })
+}
+
 export async function getMyChats() {
-  const user = await requireUser()
-  const userId = user.id
+  const conversations = await getMyConversations()
+  return conversations.map((conversation) => mapLegacyConversation(conversation))
+}
 
-  const { data, error } = await supabase
-    .from('chats')
-    .select(`
-      id,
-      task_id,
-      user1_id,
-      user2_id,
-      created_at,
-      task:tasks!chats_task_id_fkey ( id, title, status, created_by, accepted_by )
-    `)
-    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    throw error
-  }
-
-  return data
+export {
+  createOrGetDirectConversation,
+  getConversationById,
+  getConversationById as getDirectConversationById,
+  getConversationMessages,
+  getMyConversations,
+  markConversationAsRead,
+  normalizeMessageRow,
 }

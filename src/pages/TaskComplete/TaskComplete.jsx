@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { getTaskById, markTaskCompleted } from '../../services/tasksService'
+import { getOrCreateChatByTaskId } from '../../services/chatService'
 
 // Pantalla de cierre: el creador confirma completada. No hay tabla ratings en este esquema.
 export default function TaskComplete() {
@@ -52,7 +53,9 @@ export default function TaskComplete() {
   }
 
   function handleReject() {
-    navigate(`/chat/${taskId}`)
+    getOrCreateChatByTaskId(taskId)
+      .then((chat) => navigate(`/chat/${chat.id}`))
+      .catch(() => navigate('/chats'))
   }
 
   if (!task && !error) {
@@ -79,7 +82,7 @@ export default function TaskComplete() {
         <section className="completion-panel">
           <h1>Solo el solicitante puede cerrar la tarea</h1>
           <p className="muted">Espera a que la otra persona confirme el cierre.</p>
-          <button className="primary-action" onClick={() => navigate(`/chat/${taskId}`)}>
+          <button className="primary-action" onClick={handleReject}>
             Volver al chat
           </button>
         </section>

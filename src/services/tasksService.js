@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 import { requireUser } from '../lib/authHelpers'
 import { getCurrentUser } from './authService'
+import { createOrGetDirectConversation } from '../features/chat/api/chatApi'
 
 // Nota: categorias permitidas por el frontend para crear y filtrar tareas.
 // Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
@@ -32,7 +33,7 @@ const TASK_SELECT = `
 `
 
 const AVAILABLE_PROFILE_STATUS = 'active'
-const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
+const CREATOR_PROFILE_SELECT = 'id, username, display_name, full_name, avatar_url, rating, account_status'
 
 function isProfileAvailable(profile) {
   return profile?.account_status === AVAILABLE_PROFILE_STATUS
@@ -389,17 +390,10 @@ export async function acceptTask(taskId) {
     throw new Error('La tarea ya no esta disponible.')
   }
 
-  const { data: chat, error: chatError } = await supabase
-    .from('chats')
-    .insert({
-      task_id: task.id,
-      user1_id: task.created_by,
-      user2_id: helperId,
-    })
-    .select()
-    .single()
-
-  if (chatError) {
+  try {
+    const conversationId = await createOrGetDirectConversation(task.created_by)
+    return { task, conversation: { id: conversationId } }
+  } catch (chatError) {
     await supabase
       .from('tasks')
       .update({ accepted_by: null, status: 'open' })
@@ -408,8 +402,6 @@ export async function acceptTask(taskId) {
 
     throw chatError
   }
-
-  return { task, chat }
 }
 
 // Nota funcion:

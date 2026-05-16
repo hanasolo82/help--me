@@ -12,6 +12,7 @@ import Chat from "../../pages/Chat/Chat";
 import Chats from "../../pages/Chats/Chats";
 import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
+import SettingsPage from "../../pages/Settings/SettingsPage";
 import Cookies from "../../pages/Legal/Cookies";
 import Privacy from "../../pages/Legal/Privacy";
 import Terms from "../../pages/Legal/Terms";
@@ -36,6 +37,7 @@ export default function AppRouter() {
       <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />
       <Route path="/complete/:id" element={<RequireAuth><TaskComplete /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+      <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
     </Routes>
   );
 }

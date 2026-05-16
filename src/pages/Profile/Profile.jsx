@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/useAuth'
 import { getMyTasks } from '../../services/tasksService'
 import { signOut } from '../../services/authService'
 import { deactivateCurrentProfile } from '../../services/profilesService'
+import { getAvatarInitial } from '../../utils/avatar'
 
 // Perfil del usuario autenticado. Lee profile real de Supabase y cuenta tareas como requester/helper.
 export default function Profile() {
@@ -44,7 +45,7 @@ export default function Profile() {
     try {
       await signOut()
     } finally {
-      navigate('/', { replace: true })
+      window.location.replace('/')
     }
   }
 
@@ -78,7 +79,8 @@ export default function Profile() {
     )
   }
 
-  const initial = (profile.full_name || profile.username || '?').charAt(0).toUpperCase()
+  const displayName = profile.display_name || profile.full_name || profile.username || 'Vecino'
+  const initial = getAvatarInitial(displayName)
   const confianza = profile.rating >= 4.5 ? 'Alto' : profile.rating >= 3.5 ? 'Medio' : 'En construccion'
 
   return (
@@ -89,14 +91,14 @@ export default function Profile() {
         </button>
         <div>
           <p className="eyebrow">Perfil</p>
-          <h1>{profile.full_name}</h1>
+          <h1>{displayName}</h1>
         </div>
       </header>
 
       <section className="profile-card">
         <div className="profile-avatar">
           {profile.avatar_url
-            ? <img src={profile.avatar_url} alt={profile.full_name} />
+            ? <img src={profile.avatar_url} alt={displayName} />
             : initial}
         </div>
         <h2>@{profile.username}</h2>
@@ -105,6 +107,7 @@ export default function Profile() {
           {profile.verified ? ' · verificado' : ''}
         </p>
         <p className="muted">{profile.neighborhood}</p>
+        {profile.bio && <p className="muted">{profile.bio}</p>}
       </section>
 
       <section className="stats-grid">
@@ -166,7 +169,7 @@ export default function Profile() {
         </section>
       </div>
 
-      <BottomNav active="profile" />
+      <BottomNav active="configuracion" />
     </main>
   )
 }

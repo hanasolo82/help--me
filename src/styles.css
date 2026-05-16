@@ -8,6 +8,31 @@
   --cc-yellow: #ffd300;
   --cc-cream: #fff0e5;
   --cc-white: #ffffff;
+
+  /* Tokens semanticos. Cualquier pantalla los hereda; ThemeApplier solo cambia los --cc-*. */
+  --bg: var(--cc-cream);
+  --surface: var(--cc-white);
+  --text: var(--cc-navy);
+  --accent: var(--cc-blue);
+  --highlight: var(--cc-yellow);
+  --shadow: var(--cc-navy);
+
+  /* BottomNav: usado en Home, Profile, Settings, Chats... siempre debe seguir la paleta. */
+  --nav-bg: rgba(255, 255, 255, 0.98);
+  --nav-link: var(--cc-navy);
+  --nav-border: var(--cc-navy);
+  --nav-shadow: var(--cc-navy);
+  --nav-active-bg: var(--cc-blue);
+  --nav-active-text: #ffffff;
+
+  /* TaskCard: aunque solo se usa en Home, exponerlo aqui evita doble fuente de verdad. */
+  --task-card-bg: var(--cc-white);
+  --task-card-text: var(--cc-navy);
+  --task-card-border: var(--cc-navy);
+  --task-card-shadow: var(--cc-navy);
+  --task-card-accent: var(--cc-blue);
+  --task-card-highlight: var(--cc-yellow);
+
   font-size: clamp(15px, 0.92vw + 0.65rem, 18px);
 }
 
@@ -455,6 +480,86 @@ p {
   bottom: 16px;
 }
 
+.two-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.message-action {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+}
+
+.message-action img {
+  width: 22px;
+  height: 22px;
+}
+
+.task-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 22, 47, 0.68);
+}
+
+.task-chat-modal {
+  width: min(100%, 42rem);
+  max-height: min(90vh, 42rem);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-white);
+  box-shadow: 12px 12px 0 var(--cc-navy);
+}
+
+.task-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 16px;
+  border-bottom: 2px solid var(--cc-navy);
+  background: var(--cc-white);
+}
+
+.task-chat-header h2 {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.task-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px;
+  overflow: auto;
+}
+
+.task-chat-composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  padding: 12px 16px 16px;
+  border-top: 2px solid var(--cc-navy);
+  background: var(--cc-white);
+}
+
+.task-chat-composer input {
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.25rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--cc-cream);
+}
+
 .chat-screen {
   width: min(100%, 54rem);
   display: grid;
@@ -486,6 +591,13 @@ p {
   border-radius: 4px;
   padding: 12px;
   line-height: 1.45;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.message-header {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .incoming {
@@ -498,6 +610,107 @@ p {
   align-self: flex-end;
   background: var(--cc-blue);
   color: var(--cc-white);
+}
+
+.message-meta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.message-edited {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.message-action-link {
+  border: 0;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+  opacity: 0.95;
+  padding: 0.3rem 0.55rem;
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+.message-action-link.primary {
+  color: var(--cc-blue);
+}
+
+.message-action-link.danger {
+  color: #b00020;
+  background: #fff4f6;
+}
+
+.message-action-link.icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+}
+
+.message-action-link.icon img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.message-edit-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.message-edit-form textarea {
+  width: 100%;
+  min-height: 88px;
+  border: 2px solid var(--cc-navy);
+  border-radius: 4px;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  padding: 0.6rem 0.75rem;
+  resize: vertical;
+}
+
+.message-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.message-edit-actions .message-action-link {
+  max-width: none;
+  width: auto;
+}
+
+.message-error {
+  border: 2px solid var(--cc-navy);
+  border-radius: 4px;
+  background: #fff4f6;
+  color: #b00020;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 0.7rem;
 }
 
 .chat-actions {

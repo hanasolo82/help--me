@@ -1,6 +1,7 @@
 import styles from './TaskCard.module.css'
 import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
+import messageIcon from '../../../../assets/icons/message.svg'
 
 // Card de tarea conectada a Supabase. Las columnas siguen el esquema actual:
 // id, title, description, price (numeric en euros), category, lat, lng, status, created_by, accepted_by.
@@ -83,6 +84,12 @@ function formatPublicationAge(task) {
   return `Publicada el ${openedAt.toLocaleDateString('es-ES')}`
 }
 
+function ChatIcon() {
+  return (
+    <img src={messageIcon} alt="" aria-hidden="true" />
+  )
+}
+
 export default function TaskCard({
   task,
   distanceKm,
@@ -91,6 +98,9 @@ export default function TaskCard({
   onCancelAction,
   showEditAction = false,
   onEditAction,
+  showChatAction = false,
+  onChatAction,
+  chatActionDisabled = false,
   expanded = false,
   primaryActionLabel = 'Ver detalle',
   primaryActionVariant = 'primary',
@@ -103,12 +113,14 @@ export default function TaskCard({
 }) {
   const priceEuros = Number(task.price ?? 0)
   const creator = task.creator_profile
-  const creatorName = creator?.full_name || creator?.username || 'Vecino'
+  const creatorName = creator?.display_name || creator?.full_name || creator?.username || 'Vecino'
   const creatorInitial = creatorName.charAt(0).toUpperCase()
   const creatorRating = Number(creator?.rating ?? 0)
-  const ratingLabel = Number.isFinite(creatorRating) ? `${creatorRating.toFixed(1)}/5` : '0/5'
+  const ratingValue = Number.isFinite(creatorRating) ? Math.max(0, Math.min(5, Math.round(creatorRating))) : 0
+  const ratingLabel = `${ratingValue}/5`
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
+  const isPublishActionLabel = (label) => label === 'Publicar tarea'
   const metaItems = [
     task.category,
     statusLabels[task.status] || task.status,
@@ -123,7 +135,7 @@ export default function TaskCard({
           {creator?.avatar_url ? <img src={creator.avatar_url} alt="" /> : creatorInitial}
         </span>
         <div>
-          <strong>{creatorName}<span></span></strong>
+          <strong>{creatorName}</strong>
           <p className={styles.ratingLine}>
             <img src={starIcon} alt="" aria-hidden="true" />
             <span>{ratingLabel}</span>
@@ -131,8 +143,21 @@ export default function TaskCard({
         </div>
       </div>
 
-      {(showEditAction || showCancelAction) && (
+      {(showEditAction || showCancelAction || showChatAction) && (
         <div className={styles.cardActions}>
+          {showChatAction && (
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={onChatAction}
+              aria-label="Abrir chat"
+              title="Abrir chat"
+              disabled={chatActionDisabled}
+            >
+              <ChatIcon />
+            </button>
+          )}
+
           {showEditAction && (
             <button
               type="button"
@@ -205,6 +230,8 @@ export default function TaskCard({
             className={
               isDetailActionLabel(primaryActionLabel)
                 ? styles.detailButton
+                : isPublishActionLabel(primaryActionLabel)
+                  ? styles.publishButton
                 : primaryActionVariant === 'link'
                   ? 'link-button'
                   : styles.button

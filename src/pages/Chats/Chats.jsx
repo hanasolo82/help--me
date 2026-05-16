@@ -1,80 +1,78 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../shared/components/BottomNav/BottomNav'
-import { useAuth } from '../../contexts/useAuth'
 import { getMyChats } from '../../services/chatService'
+import ConversationList from '../../features/chat/components/ConversationList'
 
-// Lista de chats reales del usuario autenticado. Sin embed de profiles: mostramos
-// el titulo de la tarea y un id corto del otro usuario como referencia.
 export default function Chats() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const [chats, setChats] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [conversations, setConversations] = useState([])
+  const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState('')
+  const loading = !loaded
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
 
-    getMyChats()
-      .then((data) => {
-        if (!cancelled) setChats(data || [])
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message || 'No se pudieron cargar tus chats.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+    void (async () => {
+      try {
+        const data = await getMyChats()
+        if (cancelled) return
+        setConversations(data || [])
+        setError('')
+      } catch (err) {
+        if (cancelled) return
+        setError(err?.message || 'No se pudieron cargar tus conversaciones.')
+      } finally {
+        if (!cancelled) {
+          setLoaded(true)
+        }
+      }
+    })()
 
     return () => {
       cancelled = true
     }
   }, [])
 
+  const sortedConversations = useMemo(() => {
+    return [...conversations].sort((left, right) => {
+      const leftDate = new Date(left.last_message_at || left.created_at || 0).getTime()
+      const rightDate = new Date(right.last_message_at || right.created_at || 0).getTime()
+      return rightDate - leftDate
+    })
+  }, [conversations])
+
   return (
     <main className="app-screen with-nav">
       <header className="page-header">
-        <button className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
-          ←
+        <button type="button" className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
+          {'<'}
         </button>
         <div>
           <p className="eyebrow">Conversaciones</p>
-          <h1>Tus chats</h1>
+          <h1>Tus chats privados</h1>
+          <p className="muted">Solo veras conversaciones donde participas.</p>
         </div>
       </header>
 
       {loading && <p className="muted">Cargando...</p>}
       {error && <p className="auth-message error">{error}</p>}
 
-      {!loading && !error && chats.length === 0 && (
+      {!loading && !error && sortedConversations.length === 0 && (
         <article className="empty-state">
-          <h3>Todavia no tienes chats</h3>
-          <p>Cuando aceptes una tarea o alguien acepte la tuya, aparecera aqui.</p>
+          <h3>Todavia no tienes conversaciones</h3>
+          <p>Cuando abras un chat desde una tarea o con otro usuario, aparecera aqui.</p>
         </article>
       )}
 
-      <ul className="chat-list">
-        {chats.map((chat) => {
-          const counterpartId = chat.user1_id === user?.id ? chat.user2_id : chat.user1_id
-          const name = counterpartId ? `Usuario ${counterpartId.slice(0, 6)}` : 'Vecino'
-          const initial = name.charAt(8)?.toUpperCase() || 'U'
-          return (
-            <li key={chat.id}>
-              <button className="chat-list-item" onClick={() => navigate(`/chat/${chat.task_id}`)}>
-                <span className="avatar-small">{initial}</span>
-                <span>
-                  <strong>{name}</strong>
-                  <p>{chat.task?.title} · {chat.task?.status}</p>
-                </span>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+      <ConversationList
+        conversations={sortedConversations}
+        currentConversationId={null}
+        onSelectConversation={(conversation) => navigate(`/chat/${conversation.id}`)}
+      />
 
-      <BottomNav active="chats" />
+      <BottomNav active="mensajes" />
     </main>
   )
 }

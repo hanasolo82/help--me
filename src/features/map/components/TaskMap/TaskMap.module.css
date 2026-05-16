@@ -19,6 +19,7 @@
   border-radius: 0.25rem;
   box-shadow: 0.2rem 0.2rem 0 #10162f;
   font-weight: 900;
+  overflow: hidden;
 }
 
 .userMarker {
@@ -37,4 +38,18 @@
   place-items: center;
   width: 100%;
   height: 100%;
+}
+
+/* Variante con imagen: solo la foto, sin caja ni sombra ni fondo. */
+.userMarkerImage {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.userMarkerImage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

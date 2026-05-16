@@ -62,8 +62,11 @@ create table if not exists public.messages (
   chat_id uuid not null references public.chats(id) on delete cascade,
   sender_id uuid not null references auth.users(id) on delete cascade,
   content text not null check (char_length(content) between 1 and 1200),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+alter table public.messages replica identity full;
 
 -- Ratings (pendiente de UI; trigger recalcula rating/completed_tasks del helper).
 create table if not exists public.ratings (
@@ -201,6 +204,43 @@ create policy "Participants can send messages"
 on public.messages for insert
 to authenticated
 with check (
+  sender_id = (select auth.uid())
+  and exists (
+    select 1
+    from public.chats c
+    where c.id = chat_id
+    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
+  )
+);
+
+drop policy if exists "Participants can update own messages" on public.messages;
+create policy "Participants can update own messages"
+on public.messages for update
+to authenticated
+using (
+  sender_id = (select auth.uid())
+  and exists (
+    select 1
+    from public.chats c
+    where c.id = chat_id
+    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
+  )
+)
+with check (
+  sender_id = (select auth.uid())
+  and exists (
+    select 1
+    from public.chats c
+    where c.id = chat_id
+    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
+  )
+);
+
+drop policy if exists "Participants can delete own messages" on public.messages;
+create policy "Participants can delete own messages"
+on public.messages for delete
+to authenticated
+using (
   sender_id = (select auth.uid())
   and exists (
     select 1
