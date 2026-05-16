@@ -165,9 +165,6 @@ export default function Landing() {
           <button className={styles.ghostButton} onClick={() => openAuth('login')}>
             Entrar
           </button>
-          <button className={styles.loginButton} onClick={() => openAuth('register')}>
-            Registrarse
-          </button>
         </div>
       </header>
 
@@ -181,8 +178,8 @@ export default function Landing() {
           </p>
 
           <div className={styles.heroActions}>
-            <button className={styles.primaryCta} onClick={() => openAuth('register')}>
-              Registrarse
+            <button className={styles.primaryCta} onClick={() => openAuth('login')}>
+              Entrar
             </button>
             <a className={styles.secondaryCta} href="#como-funciona">
               Ver resumen

@@ -248,8 +248,7 @@ p {
 .success-action:hover,
 .secondary-action:hover,
 .danger-action:hover,
-.oauth-action:hover,
-.password-toggle:hover {
+.oauth-action:hover {
   transform: translate(-0.05rem, -0.05rem);
   box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
 }
@@ -387,7 +386,8 @@ p {
   font-size: 12px;
   font-weight: 900;
   padding: 6px 10px;
-  transition: 0.16s ease;
+  box-shadow: none;
+  transition: none;
 }
 
 .auth-aux-placeholder {

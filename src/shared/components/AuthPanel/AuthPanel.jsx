@@ -165,7 +165,6 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
 
   return (
       <section className="auth-panel">
-      <p className="eyebrow">helpMe Auth</p>
       <h1 id={titleId}>{copy.title}</h1>
 
       {!hasRemembered && (
