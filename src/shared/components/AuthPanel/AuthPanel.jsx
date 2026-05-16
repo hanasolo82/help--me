@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/useAuth'
 import { estimatePasswordStrength, validateEmail } from '../../../lib/security'
 import { clearRememberedEmail, readRememberedEmail } from '../../../lib/consent'
 import Turnstile from '../Turnstile'
+import googleIcon from '../../../assets/icons/goggle.svg'
 import {
   resendSignupConfirmation,
   signInWithEmail,
@@ -23,17 +24,15 @@ const STATUS = Object.freeze({
 const VIEW_COPY = Object.freeze({
   remembered: {
     title: 'Bienvenido de vuelta',
-    subtitle: 'Introduce tu contrasena para continuar.',
     submit: 'Entrar',
   },
   register: {
     title: 'Crea tu cuenta',
-    subtitle: 'Crea una cuenta con email y contrasena o continua con Google.',
+   
     submit: 'Crear cuenta',
   },
   login: {
     title: 'Entra en helpMe',
-    subtitle: 'Accede con Google o con email y contrasena.',
     submit: 'Entrar',
   },
 })
@@ -165,10 +164,9 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   const strength = isRegister ? estimatePasswordStrength(password) : null
 
   return (
-    <section className="auth-panel">
+      <section className="auth-panel">
       <p className="eyebrow">helpMe Auth</p>
       <h1 id={titleId}>{copy.title}</h1>
-      <p className="muted">{copy.subtitle}</p>
 
       {!hasRemembered && (
         <>
@@ -178,6 +176,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
             onClick={handleGoogleAuth}
             disabled={status === STATUS.loading}
           >
+            <img src={googleIcon} alt="" aria-hidden="true" />
             Continuar con Google
           </button>
 
@@ -185,7 +184,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
             <span>o</span>
           </div>
 
-          <div className="segmented" role="tablist" aria-label="Modo de autenticacion">
+          <div className="segmented" role="tablist" aria-label="Modo de autenticacion" data-mode={mode}>
             <button
               type="button"
               role="tab"
@@ -244,7 +243,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
         )}
 
         <label className="field">
-          <span>Contrasena</span>
+          <span>Contraseña</span>
           <div className="password-field">
             <input
               ref={passwordInputRef}
@@ -254,31 +253,37 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
               minLength={isRegister ? 12 : 8}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder={isRegister ? 'Minimo 12 caracteres' : 'Tu contrasena'}
+              placeholder={isRegister ? 'Minimo 12 caracteres' : 'Tu contraseña'}
             />
             <button
               type="button"
               className="password-toggle"
               onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+              aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contraseña'}
               aria-pressed={showPassword}
             >
               {showPassword ? 'Ocultar' : 'Mostrar'}
             </button>
           </div>
-          {strength && password && (
-            <div className="strength-meter" aria-live="polite">
-              <div className={`strength-bar strength-${strength.score}`} />
-              <span className="strength-label">{strength.label}</span>
-            </div>
-          )}
+          <div
+            className={
+              isRegister && strength && password
+                ? 'strength-meter'
+                : 'strength-meter strength-meter-placeholder'
+            }
+            aria-live={isRegister && strength && password ? 'polite' : undefined}
+            aria-hidden={!(isRegister && strength && password)}
+          >
+            <div className={`strength-bar strength-${isRegister && strength ? strength.score : 0}`} />
+            <span className="strength-label">{isRegister && strength && password ? strength.label : ' '}</span>
+          </div>
         </label>
 
-        {!isRegister && (
-          <p className="auth-aux">
-            <Link to="/forgot-password">Olvide mi contrasena</Link>
-          </p>
-        )}
+        <p className={isRegister ? 'auth-aux auth-aux-placeholder' : 'auth-aux'}>
+          <Link to="/forgot-password" tabIndex={isRegister ? -1 : 0} aria-hidden={isRegister}>
+            Olvide mi contrasena
+          </Link>
+        </p>
 
         {captchaRequired && (
           <Turnstile
@@ -300,7 +305,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
 
         <button
           type="submit"
-          className="primary-action"
+          className="primary-action auth-submit-action"
           disabled={status === STATUS.loading || (captchaRequired && !captchaToken)}
         >
           {copy.submit}
