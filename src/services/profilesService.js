@@ -7,6 +7,8 @@ import { uploadAvatar } from './storageService'
 const DEFAULT_THEME = 'light'
 const DEFAULT_ACCENT_COLOR = DEFAULT_PALETTE.primary
 const DEFAULT_SEARCH_RADIUS_KM = 10
+const DEFAULT_HELPER_ENABLED = false
+const DEFAULT_AVAILABILITY_ENABLED = true
 
 function normalizeTheme(theme) {
   return theme === 'dark' ? 'dark' : DEFAULT_THEME
@@ -27,6 +29,15 @@ function normalizeBoolean(value, fallback = false) {
 function normalizeInteger(value, fallback, { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = {}) {
   const parsed = Number.parseInt(value, 10)
 
+  if (!Number.isFinite(parsed)) return fallback
+
+  return Math.min(max, Math.max(min, parsed))
+}
+
+function normalizeDecimal(value, fallback = null, { min = Number.NEGATIVE_INFINITY, max = Number.POSITIVE_INFINITY } = {}) {
+  if (value === null || value === undefined || value === '') return fallback
+
+  const parsed = Number(value)
   if (!Number.isFinite(parsed)) return fallback
 
   return Math.min(max, Math.max(min, parsed))
@@ -95,9 +106,26 @@ function buildDefaultProfileValues(user, attempt = 0) {
     avatar_url: sanitizeText(user?.user_metadata?.avatar_url || user?.user_metadata?.picture, 500) || null,
     map_avatar_url: null,
     neighborhood: buildNeighborhoodFromUser(user),
+    city: sanitizeText(user?.user_metadata?.city, 80) || null,
+    country: sanitizeText(user?.user_metadata?.country, 80) || null,
+    lat: null,
+    lng: null,
     rating: 0,
     completed_tasks: 0,
+    reviews_count: 0,
+    response_time_minutes: null,
+    helper_enabled: DEFAULT_HELPER_ENABLED,
+    availability_enabled: DEFAULT_AVAILABILITY_ENABLED,
+    hourly_rate: null,
     verified: false,
+    verified_email: false,
+    verified_phone: false,
+    verified_identity: false,
+    identity_verified: false,
+    stripe_onboarding_completed: false,
+    stripe_account_id: null,
+    stripe_charges_enabled: false,
+    stripe_payouts_enabled: false,
     account_status: 'active',
     theme: DEFAULT_THEME,
     accent_color: DEFAULT_ACCENT_COLOR,
@@ -232,6 +260,10 @@ export function validateProfileInput(input) {
       display_name: displayName,
       full_name: displayName,
       neighborhood,
+      city: sanitizeText(input.city, 80) || null,
+      country: sanitizeText(input.country, 80) || null,
+      lat: normalizeDecimal(input.lat, null, { min: -90, max: 90 }),
+      lng: normalizeDecimal(input.lng, null, { min: -180, max: 180 }),
       avatar_url: avatarUrl || null,
       map_avatar_url: null,
       bio: sanitizeText(input.bio, 160) || null,
@@ -242,6 +274,18 @@ export function validateProfileInput(input) {
       notify_nearby_tasks: normalizeBoolean(input.notifyNearbyTasks, true),
       notify_messages: normalizeBoolean(input.notifyMessages, true),
       notify_payments: normalizeBoolean(input.notifyPayments, true),
+      helper_enabled: normalizeBoolean(input.helperEnabled, DEFAULT_HELPER_ENABLED),
+      availability_enabled: normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED),
+      response_time_minutes: normalizeInteger(input.responseTimeMinutes, null, { min: 1, max: 1440 }),
+      hourly_rate: normalizeDecimal(input.hourlyRate, null, { min: 0, max: 9999 }),
+      verified_email: normalizeBoolean(input.verifiedEmail, false),
+      verified_phone: normalizeBoolean(input.verifiedPhone, false),
+      verified_identity: normalizeBoolean(input.verifiedIdentity, false),
+      identity_verified: normalizeBoolean(input.identityVerified, false),
+      stripe_onboarding_completed: normalizeBoolean(input.stripeOnboardingCompleted, false),
+      stripe_account_id: sanitizeText(input.stripeAccountId, 120) || null,
+      stripe_charges_enabled: normalizeBoolean(input.stripeChargesEnabled, false),
+      stripe_payouts_enabled: normalizeBoolean(input.stripePayoutsEnabled, false),
       account_status: 'active',
     },
   }
@@ -301,6 +345,22 @@ function normalizeProfileUpdateInput(input) {
     updates.bio = sanitizeText(input.bio, 160) || null
   }
 
+  if (Object.prototype.hasOwnProperty.call(input, 'city')) {
+    updates.city = sanitizeText(input.city, 80) || null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'country')) {
+    updates.country = sanitizeText(input.country, 80) || null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'lat')) {
+    updates.lat = normalizeDecimal(input.lat, null, { min: -90, max: 90 })
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'lng')) {
+    updates.lng = normalizeDecimal(input.lng, null, { min: -180, max: 180 })
+  }
+
   if (Object.prototype.hasOwnProperty.call(input, 'theme')) {
     updates.theme = normalizeTheme(input.theme)
   }
@@ -327,6 +387,54 @@ function normalizeProfileUpdateInput(input) {
 
   if (Object.prototype.hasOwnProperty.call(input, 'notifyPayments')) {
     updates.notify_payments = normalizeBoolean(input.notifyPayments, true)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'helperEnabled')) {
+    updates.helper_enabled = normalizeBoolean(input.helperEnabled, DEFAULT_HELPER_ENABLED)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'availabilityEnabled')) {
+    updates.availability_enabled = normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'responseTimeMinutes')) {
+    updates.response_time_minutes = normalizeInteger(input.responseTimeMinutes, null, { min: 1, max: 1440 })
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'hourlyRate')) {
+    updates.hourly_rate = normalizeDecimal(input.hourlyRate, null, { min: 0, max: 9999 })
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'verifiedEmail')) {
+    updates.verified_email = normalizeBoolean(input.verifiedEmail, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'verifiedPhone')) {
+    updates.verified_phone = normalizeBoolean(input.verifiedPhone, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'verifiedIdentity')) {
+    updates.verified_identity = normalizeBoolean(input.verifiedIdentity, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'identityVerified')) {
+    updates.identity_verified = normalizeBoolean(input.identityVerified, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'stripeOnboardingCompleted')) {
+    updates.stripe_onboarding_completed = normalizeBoolean(input.stripeOnboardingCompleted, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'stripeAccountId')) {
+    updates.stripe_account_id = sanitizeText(input.stripeAccountId, 120) || null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'stripeChargesEnabled')) {
+    updates.stripe_charges_enabled = normalizeBoolean(input.stripeChargesEnabled, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'stripePayoutsEnabled')) {
+    updates.stripe_payouts_enabled = normalizeBoolean(input.stripePayoutsEnabled, false)
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'avatarUrl')) {

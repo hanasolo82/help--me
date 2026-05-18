@@ -13,7 +13,7 @@ export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecni
 // Si amplias public.tasks con mas datos (image_url, urgency, neighborhood, etc.),
 // anade aqui las columnas que quieras recibir en las consultas.
 // Si la columna tambien se guarda al crear una tarea, ampliala en validateTaskInput y createTask.
-// El profile del creador se carga despues con attachCreatorProfiles porque aqui no anidamos FKs.
+// El profile del creador y del ayudante se carga despues con attachTaskProfiles porque aqui no anidamos FKs.
 // published_at y cancelled_at se usan para mostrar el tiempo real de publicacion/cancelacion.
 const TASK_SELECT = `
   id,
@@ -33,27 +33,27 @@ const TASK_SELECT = `
 `
 
 const AVAILABLE_PROFILE_STATUS = 'active'
-const CREATOR_PROFILE_SELECT = 'id, username, display_name, full_name, avatar_url, rating, account_status'
+const CREATOR_PROFILE_SELECT = 'id, username, display_name, full_name, avatar_url, rating, verified, account_status'
 
 function isProfileAvailable(profile) {
   return profile?.account_status === AVAILABLE_PROFILE_STATUS
 }
 
-async function attachCreatorProfiles(tasks) {
+async function attachTaskProfiles(tasks) {
   if (!tasks?.length) {
     return tasks || []
   }
 
-  const creatorIds = [...new Set(tasks.map((task) => task.created_by).filter(Boolean))]
+  const profileIds = [...new Set(tasks.flatMap((task) => [task.created_by, task.accepted_by]).filter(Boolean))]
 
-  if (creatorIds.length === 0) {
+  if (profileIds.length === 0) {
     return tasks
   }
 
   const { data: profiles, error } = await supabase
     .from('profiles')
     .select(CREATOR_PROFILE_SELECT)
-    .in('id', creatorIds)
+    .in('id', profileIds)
 
   if (error) {
     throw error
@@ -64,6 +64,7 @@ async function attachCreatorProfiles(tasks) {
   return tasks.map((task) => ({
     ...task,
     creator_profile: profilesById.get(task.created_by) || null,
+    accepted_profile: profilesById.get(task.accepted_by) || null,
   }))
 }
 
@@ -72,11 +73,7 @@ function keepTasksWithAvailableCreators(tasks) {
 }
 
 export function canEditTask(task) {
-  return Boolean(
-    task &&
-    !task.accepted_by &&
-    ['draft', 'open'].includes(task.status)
-  )
+  return Boolean(task && !task.accepted_by && ['draft', 'open'].includes(task.status))
 }
 
 function getTaskTimelineDate(task) {
@@ -154,7 +151,7 @@ export async function createTask(input) {
     throw error
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles([data])
+  const tasksWithProfiles = await attachTaskProfiles([data])
   return tasksWithProfiles[0]
 }
 
@@ -201,7 +198,7 @@ export async function updateTask(taskId, input) {
     throw new Error('La tarea no se pudo actualizar.')
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles([data])
+  const tasksWithProfiles = await attachTaskProfiles([data])
   return tasksWithProfiles[0]
 }
 
@@ -242,7 +239,7 @@ export async function publishTask(taskId) {
     throw new Error('La tarea no se pudo publicar.')
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles([data])
+  const tasksWithProfiles = await attachTaskProfiles([data])
   return tasksWithProfiles[0]
 }
 
@@ -277,7 +274,7 @@ export async function getOpenTasks({ category } = {}) {
     throw error
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles(data)
+  const tasksWithProfiles = await attachTaskProfiles(data)
   return keepTasksWithAvailableCreators(tasksWithProfiles)
 }
 
@@ -300,7 +297,7 @@ export async function getMyTasks({ role = 'requester' } = {}) {
     throw error
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles(data)
+  const tasksWithProfiles = await attachTaskProfiles(data)
 
   if (role === 'requester') {
     return sortRequesterTasks(tasksWithProfiles.filter((task) => task.status !== 'cancelled'))
@@ -331,7 +328,7 @@ export async function getTaskById(taskId, { viewer } = {}) {
     return data
   }
 
-  const tasksWithProfiles = await attachCreatorProfiles([data])
+  const tasksWithProfiles = await attachTaskProfiles([data])
   const taskWithProfile = tasksWithProfiles[0]
   // Si el caller ya tiene el user (interno: acceptTask/updateTask/publishTask),
   // reutilizamos su valor para no hacer un round trip extra a auth.getUser().

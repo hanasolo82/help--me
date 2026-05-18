@@ -1,0 +1,127 @@
+.shell {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.summary,
+.panel,
+.footer,
+.panelHeader {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.summary {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0.9rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.35rem;
+  background: var(--cc-white);
+}
+
+.label {
+  display: block;
+  color: var(--cc-blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.summary strong {
+  font-weight: 900;
+  word-break: break-word;
+}
+
+.panel {
+  padding: 0.9rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.35rem;
+  background: var(--cc-cream);
+  box-shadow: none;
+}
+
+.panelHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.panelHeader h2 {
+  margin: 0.2rem 0 0.15rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.mapShell {
+  min-height: clamp(18rem, 50vw, 28rem);
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.35rem;
+  overflow: hidden;
+  background: var(--cc-white);
+}
+
+.map {
+  width: 100%;
+  min-height: clamp(18rem, 50vw, 28rem);
+}
+
+.footer {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.coordsBox {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.8rem 0.9rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 0.35rem;
+  background: var(--cc-white);
+}
+
+.coordsBox span {
+  color: var(--cc-blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.coordsBox strong {
+  font-weight: 900;
+  word-break: break-word;
+}
+
+.footerActions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pointMarker {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--cc-navy);
+  border-radius: 999px;
+  background: var(--cc-white);
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+}
+
+.pointMarker span {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--cc-blue);
+}
+
+.pointMarkerActive {
+  background: var(--cc-yellow);
+}
+
+@media (min-width: 760px) {
+  .footer {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}

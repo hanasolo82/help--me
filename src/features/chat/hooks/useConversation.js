@@ -1,43 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getConversationById, markConversationAsRead } from '../api/chatApi'
 
 export function useConversation(conversationId) {
-  const [conversation, setConversation] = useState(null)
-  const [loadedConversationId, setLoadedConversationId] = useState(null)
-  const [error, setError] = useState('')
-  const loading = Boolean(conversationId) && loadedConversationId !== conversationId
+  const query = useQuery({
+    queryKey: ['conversation', conversationId],
+    queryFn: () => getConversationById(conversationId),
+    enabled: Boolean(conversationId),
+    staleTime: 30_000,
+  })
 
   useEffect(() => {
-    let cancelled = false
-
-    if (!conversationId) return undefined
-
-    getConversationById(conversationId)
-      .then((data) => {
-        if (cancelled) return
-        setConversation(data)
-        setLoadedConversationId(conversationId)
-        setError('')
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setConversation(null)
-        setLoadedConversationId(conversationId)
-        setError(err?.message || 'No se pudo cargar la conversacion.')
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [conversationId])
-
-  useEffect(() => {
-    if (!conversationId || !conversation) {
+    if (!conversationId || !query.data) {
       return undefined
     }
 
     markConversationAsRead(conversationId).catch(() => {})
-  }, [conversation, conversationId])
+  }, [conversationId, query.data])
 
-  return { conversation, loading, error, setConversation }
+  return {
+    conversation: query.data || null,
+    loading: query.isLoading && !query.data,
+    error: query.error?.message || '',
+  }
 }

@@ -65,7 +65,7 @@
   border: 2px solid var(--settings-border);
   border-radius: 0.35rem;
   background: var(--settings-surface);
-  box-shadow: 0.4rem 0.4rem 0 var(--settings-shadow);
+  box-shadow: none;
 }
 
 .progressCard {
@@ -121,7 +121,7 @@
 
 .stateCardError {
   border-color: #b00020;
-  box-shadow: 0.4rem 0.4rem 0 #b00020;
+  box-shadow: none;
 }
 
 .stateActions,
@@ -167,7 +167,7 @@
 
 .cardAccent {
   border-color: var(--settings-accent, #2563eb);
-  box-shadow: 0.4rem 0.4rem 0 var(--settings-accent, #2563eb);
+  box-shadow: none;
 }
 
 .cardHeader {
@@ -365,7 +365,7 @@
 
 .mapAvatarOptionActive {
   border-color: var(--settings-accent);
-  box-shadow: 0.3rem 0.3rem 0 var(--settings-accent);
+  box-shadow: none;
 }
 
 .mapAvatarOptionPlaceholder {

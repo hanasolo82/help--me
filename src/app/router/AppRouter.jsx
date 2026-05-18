@@ -6,6 +6,11 @@ import Login from "../../pages/Login/Login";
 import ForgotPassword from "../../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../../pages/ResetPassword/ResetPassword";
 import Onboarding from "../../pages/Onboarding/Onboarding";
+import OnboardingBasicsStep from "../../features/onboarding/pages/OnboardingBasicsStep";
+import OnboardingSkillsStep from "../../features/onboarding/pages/OnboardingSkillsStep";
+import OnboardingLocationStep from "../../features/onboarding/pages/OnboardingLocationStep";
+import OnboardingAvailabilityStep from "../../features/onboarding/pages/OnboardingAvailabilityStep";
+import OnboardingVerificationStep from "../../features/onboarding/pages/OnboardingVerificationStep";
 import TaskDetail from "../../pages/TaskDetail/TaskDetail";
 import CreateTask from "../../pages/CreateTask/CreateTask";
 import Chat from "../../pages/Chat/Chat";
@@ -29,13 +34,20 @@ export default function AppRouter() {
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cookies" element={<Cookies />} />
-      <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>} />
+      <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>}>
+        <Route index element={<OnboardingBasicsStep />} />
+        <Route path="skills" element={<OnboardingSkillsStep />} />
+        <Route path="location" element={<OnboardingLocationStep />} />
+        <Route path="availability" element={<OnboardingAvailabilityStep />} />
+        <Route path="verification" element={<OnboardingVerificationStep />} />
+      </Route>
       <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/task/:id" element={<RequireAuth><TaskDetail /></RequireAuth>} />
       <Route path="/create" element={<RequireAuth><CreateTask /></RequireAuth>} />
       <Route path="/chat/:id" element={<RequireAuth><Chat /></RequireAuth>} />
       <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />
       <Route path="/complete/:id" element={<RequireAuth><TaskComplete /></RequireAuth>} />
+      <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
     </Routes>

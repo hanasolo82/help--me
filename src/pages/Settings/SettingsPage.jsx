@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import BottomNav from '../../shared/components/BottomNav/BottomNav'
 import { useAuth } from '../../contexts/useAuth'
 import { sanitizeText } from '../../lib/security'
 import { signOut } from '../../services/authService'
@@ -44,19 +43,13 @@ function buildFormFromProfile(profile) {
 }
 
 function useObjectUrl(file) {
-  const [url, setUrl] = useState('')
+  const url = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
 
   useEffect(() => {
-    if (!file) {
-      setUrl('')
-      return undefined
-    }
+    if (!url) return undefined
 
-    const nextUrl = URL.createObjectURL(file)
-    setUrl(nextUrl)
-
-    return () => URL.revokeObjectURL(nextUrl)
-  }, [file])
+    return () => URL.revokeObjectURL(url)
+  }, [url])
 
   return url
 }
@@ -117,7 +110,7 @@ export default function SettingsPage() {
     return () => {
       cancelled = true
     }
-  }, [authProfileId, reloadKey, user?.id])
+  }, [authProfile, authProfileId, reloadKey, user?.id])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -245,8 +238,6 @@ export default function SettingsPage() {
           </form>
         )}
       </main>
-
-      <BottomNav />
     </SettingsProvider>
   )
 }

@@ -102,7 +102,7 @@ p {
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
   background-color: var(--cc-white);
-  box-shadow: 6px 6px 0 var(--cc-navy);
+  box-shadow: none;
 }
 
 .auth-panel,
@@ -240,15 +240,23 @@ p {
   cursor: pointer;
   font-weight: 900;
   padding: 14px;
-  box-shadow: 4px 4px 0 var(--cc-navy);
-  transition: 0.16s ease;
+  box-shadow: none;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .primary-action:hover,
 .success-action:hover,
 .secondary-action:hover,
 .danger-action:hover,
-.oauth-action:hover {
+.oauth-action:hover,
+.icon-button:hover,
+.chip:hover,
+.segmented button:hover {
   transform: translate(-0.05rem, -0.05rem);
   box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
 }
@@ -470,7 +478,8 @@ p {
   background: var(--cc-white);
   cursor: pointer;
   font-size: 20px;
-  box-shadow: 3px 3px 0 var(--cc-navy);
+  box-shadow: none;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 
 .form-stack {
@@ -526,7 +535,7 @@ p {
   border-radius: 4px;
   background: var(--cc-white);
   padding: 16px;
-  box-shadow: 6px 6px 0 var(--cc-navy);
+  box-shadow: none;
 }
 
 .user-strip p {
@@ -593,7 +602,7 @@ p {
   border: 2px solid var(--cc-navy);
   border-radius: 0.25rem;
   background: var(--cc-white);
-  box-shadow: 12px 12px 0 var(--cc-navy);
+  box-shadow: none;
 }
 
 .task-chat-header {
@@ -886,7 +895,7 @@ p {
   border: 2px solid var(--cc-navy);
   background: var(--cc-white);
   padding: 1rem;
-  box-shadow: 6px 6px 0 var(--cc-navy);
+  box-shadow: none;
 }
 
 .deactivate-copy {
@@ -944,7 +953,7 @@ p {
   border-width: 2px;
   padding: 14px;
   opacity: 1;
-  box-shadow: 4px 4px 0 var(--cc-navy);
+  box-shadow: none;
   pointer-events: auto;
 }
 
@@ -1041,7 +1050,7 @@ p {
   border: 2px solid var(--cc-navy);
   border-radius: 0.25rem;
   padding: 0.75rem 1rem;
-  box-shadow: 0.25rem 0.25rem 0 var(--cc-navy);
+  box-shadow: none;
   cursor: pointer;
 }
 
@@ -1109,4 +1118,28 @@ p {
 .auth-legal a {
   color: var(--cc-blue);
   font-weight: 900;
+}
+
+.create-task-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.create-task-main,
+.create-task-side {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.create-task-side {
+  align-content: start;
+}
+
+@media (min-width: 980px) {
+  .create-task-form {
+    grid-template-columns: minmax(0, 1.25fr) minmax(22rem, 0.85fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
 }

@@ -118,6 +118,8 @@ export default function TaskCard({
   const creatorRating = Number(creator?.rating ?? 0)
   const ratingValue = Number.isFinite(creatorRating) ? Math.max(0, Math.min(5, Math.round(creatorRating))) : 0
   const ratingLabel = `${ratingValue}/5`
+  const helper = task.accepted_profile
+  const helperName = helper?.display_name || helper?.full_name || helper?.username || 'Ayudante'
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
@@ -140,6 +142,11 @@ export default function TaskCard({
             <img src={starIcon} alt="" aria-hidden="true" />
             <span>{ratingLabel}</span>
           </p>
+          {helper && (
+            <p className={styles.helperLine}>
+              Ayudante: {helperName}
+            </p>
+          )}
         </div>
       </div>
 

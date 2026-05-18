@@ -1,4 +1,5 @@
 const GEOJS_URL = 'https://get.geojs.io/v1/ip/geo.json'
+const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse'
 
 // Pide ubicacion precisa al navegador. En movil dispara el permiso del sistema/navegador.
 function getBrowserLocation() {
@@ -53,6 +54,60 @@ export async function resolveUserLocation() {
     return await getBrowserLocation()
   } catch {
     return getGeoJsLocation()
+  }
+}
+
+function buildStreetLabel(address = {}) {
+  const road = address.road || address.pedestrian || address.footway || address.avenue || address.street
+  const houseNumber = address.house_number || address.houseNumber
+  const neighborhood = address.neighbourhood || address.suburb || address.quarter
+  const city = address.city || address.town || address.village || address.municipality
+
+  const streetPart = [road, houseNumber].filter(Boolean).join(' ')
+  const locationPart = [neighborhood, city].filter(Boolean).join(' · ')
+
+  return [streetPart, locationPart].filter(Boolean).join(' · ') || null
+}
+
+// Geocodificacion inversa para mostrar calle y numero aproximados a partir de coordenadas.
+// Sirve para el selector de ubicacion de tareas y para etiquetas de mapa sin persistir texto extra.
+export async function reverseGeocodeLocation(latitude, longitude) {
+  const lat = Number(latitude)
+  const lng = Number(longitude)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null
+  }
+
+  const url = new URL(NOMINATIM_REVERSE_URL)
+  url.searchParams.set('format', 'jsonv2')
+  url.searchParams.set('lat', String(lat))
+  url.searchParams.set('lon', String(lng))
+  url.searchParams.set('zoom', '18')
+  url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('accept-language', 'es')
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error('No se pudo resolver la direccion del punto seleccionado.')
+  }
+
+  const data = await response.json()
+  const address = data?.address || {}
+  const label = buildStreetLabel(address) || data?.display_name || null
+
+  return {
+    label,
+    road: address.road || address.pedestrian || address.footway || null,
+    houseNumber: address.house_number || null,
+    neighborhood: address.neighbourhood || address.suburb || address.quarter || null,
+    city: address.city || address.town || address.village || address.municipality || null,
+    raw: data,
   }
 }
 

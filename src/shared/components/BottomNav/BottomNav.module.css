@@ -3,7 +3,7 @@
   right: 12px;
   bottom: 12px;
   left: 12px;
-  z-index: 60;
+  z-index: 1000;
   display: flex;
   width: min(calc(100% - 24px), 78rem);
   max-width: 78rem;
@@ -12,8 +12,9 @@
   border: 2px solid var(--nav-border, #10162f);
   border-radius: 4px;
   background: var(--nav-bg, rgba(255, 255, 255, 0.98));
-  box-shadow: 6px 6px 0 var(--nav-shadow, #10162f);
+  box-shadow: none;
   overflow: hidden;
+  pointer-events: auto;
 }
 
 .indicator {
@@ -58,18 +59,11 @@
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    color 160ms ease,
-    transform 160ms ease;
+  transition: color 160ms ease;
 }
 
 .active {
   color: var(--nav-active-text, #ffffff);
-}
-
-.link:hover,
-.active:hover {
-  transform: translateY(-1px);
 }
 
 @keyframes indicator-slide {

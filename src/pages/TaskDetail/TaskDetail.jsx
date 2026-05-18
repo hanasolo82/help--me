@@ -1,18 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
-import { acceptTask, getTaskById } from '../../services/tasksService'
-import {
-  deleteMessage,
-  getMessages,
-  getOrCreateChatByTaskId,
-  sendMessage,
-  updateMessage,
-  subscribeToMessages,
-} from '../../services/chatService'
-import { createOptimisticMessage, markOptimisticMessageFailed } from '../../features/chat/utils/optimisticMessages'
+import { acceptTask } from '../../services/tasksService'
+import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
-import MessageList from '../../components/chat/MessageList'
+import { useTaskById } from '../../hooks/useTaskById'
+import TaskChatModal from '../../components/task/TaskChatModal'
 import messageIcon from '../../assets/icons/message.svg'
 
 // Detalle de tarea conectado a Supabase. Permite aceptarla o abrir chat con el creador.
@@ -21,209 +15,76 @@ export default function TaskDetail() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
-  const [taskState, setTaskState] = useState({ taskId: '', task: null, error: '' })
-  const [accepting, setAccepting] = useState(false)
-  const [actionError, setActionError] = useState('')
-  const [chatOpen, setChatOpen] = useState(Boolean(location.state?.openChat))
-  const [chatState, setChatState] = useState({ status: 'idle', chat: null, messages: [], error: '' })
-  const [messageText, setMessageText] = useState('')
-  const [sendingMessage, setSendingMessage] = useState(false)
-  const messagesEndRef = useRef(null)
+  const queryClient = useQueryClient()
+  const { task, loading, error } = useTaskById(id)
+  const [chatOpen, setChatOpen] = useState(() => Boolean(location.state?.openChat))
+  const [taskLocationLabel, setTaskLocationLabel] = useState('')
+  const [taskLocationStatus, setTaskLocationStatus] = useState('idle')
 
-  const loading = taskState.taskId !== id
-  const task = loading ? null : taskState.task
-  const error = actionError || (loading ? '' : taskState.error)
+  const acceptMutation = useMutation({
+    mutationFn: () => acceptTask(id),
+    onSuccess: async ({ conversation }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
+      ])
+      navigate(`/chat/${conversation.id}`, { replace: true })
+    },
+  })
+
+  const creatorProfile = task?.creator_profile || {}
+  const helperProfile = task?.accepted_profile || {}
+  const creatorName = creatorProfile.display_name || creatorProfile.full_name || creatorProfile.username || 'Vecino'
+  const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Ayudante'
+  const creatorInitial = getAvatarInitial(creatorName)
+  const helperInitial = getAvatarInitial(helperName)
+  const priceEuros = Number(task?.price ?? 0)
+  const hasCoordinates = Number.isFinite(Number(task?.lat)) && Number.isFinite(Number(task?.lng))
 
   useEffect(() => {
     let cancelled = false
 
-    getTaskById(id)
-      .then((data) => {
-        if (cancelled) return
-        setActionError('')
-        if (!data) {
-          setTaskState({
-            taskId: id,
-            task: null,
-            error: 'Tarea no encontrada o ya no esta disponible.',
-          })
-          return
-        }
-        setTaskState({ taskId: id, task: data, error: '' })
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setTaskState({
-            taskId: id,
-            task: null,
-            error: err.message || 'No se pudo cargar la tarea.',
-          })
-        }
-      })
+    async function resolveLocationLabel() {
+      if (!hasCoordinates) {
+        setTaskLocationLabel('')
+        setTaskLocationStatus('idle')
+        return
+      }
 
-    return () => {
-      cancelled = true
-    }
-  }, [id])
-
-  useEffect(() => {
-    if (location.state?.openChat) {
-      setChatOpen(true)
-    }
-  }, [location.state?.openChat])
-
-  useEffect(() => {
-    if (!chatOpen || !task) {
-      return undefined
-    }
-
-    let cancelled = false
-    let unsubscribe = null
-
-    async function bootstrapChat() {
-      setChatState({ status: 'loading', chat: null, messages: [], error: '' })
+      setTaskLocationStatus('loading')
 
       try {
-        const chat = await getOrCreateChatByTaskId(id)
+        const result = await reverseGeocodeLocation(task.lat, task.lng)
         if (cancelled) return
 
-        const history = await getMessages(chat.id)
+        setTaskLocationLabel(result?.label || '')
+        setTaskLocationStatus('success')
+      } catch {
         if (cancelled) return
 
-        setChatState({ status: 'ready', chat, messages: history || [], error: '' })
-        unsubscribe = subscribeToMessages(chat.id, {
-          onInsert: (newMessage) => {
-            setChatState((current) => {
-              if (current.chat?.id !== chat.id) {
-                return current
-              }
-
-              if (current.messages.some((message) => message.id === newMessage.id)) {
-                return current
-              }
-
-              return {
-                ...current,
-                messages: [...current.messages, newMessage],
-              }
-            })
-          },
-          onUpdate: (updatedMessage) => {
-            setChatState((current) => ({
-              ...current,
-              messages: current.messages.map((message) =>
-                message.id === updatedMessage.id ? updatedMessage : message,
-              ),
-            }))
-          },
-          onDelete: (deletedMessage) => {
-            setChatState((current) => ({
-              ...current,
-              messages: current.messages.filter((message) => message.id !== deletedMessage.id),
-            }))
-          },
-        })
-      } catch (err) {
-        if (cancelled) return
-        setChatState({
-          status: 'error',
-          chat: null,
-          messages: [],
-          error: err.message || 'No se pudo abrir el chat.',
-        })
+        setTaskLocationLabel('')
+        setTaskLocationStatus('error')
       }
     }
 
-    bootstrapChat()
+    resolveLocationLabel()
 
     return () => {
       cancelled = true
-      if (unsubscribe) unsubscribe()
     }
-  }, [chatOpen, id, task])
+  }, [hasCoordinates, task?.lat, task?.lng])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatOpen, chatState.messages])
+  const isOwner = user?.id === task?.created_by
+  const isHelper = user?.id === task?.accepted_by
+  const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
+  const canOpenChat =
+    Boolean(task) &&
+    ((task.status === 'open' && !isOwner) ||
+      (['assigned', 'in_progress', 'completed'].includes(task.status) && (isOwner || isHelper)))
 
   async function handleAccept() {
-    setAccepting(true)
-    setActionError('')
-
-    try {
-      const { conversation } = await acceptTask(id)
-      navigate(`/chat/${conversation.id}`, { replace: true })
-    } catch (err) {
-      setActionError(err.message || 'No se pudo aceptar la tarea.')
-      setAccepting(false)
-    }
-  }
-
-  function handleOpenChat() {
-    setActionError('')
-    setChatOpen(true)
-  }
-
-  async function handleSendMessage(event) {
-    event.preventDefault()
-
-    if (!chatState.chat || !messageText.trim() || sendingMessage) {
-      return
-    }
-
-    setSendingMessage(true)
-    setChatState((current) => ({ ...current, error: '' }))
-    const tempMessage = createOptimisticMessage({
-      conversationId: chatState.chat.id,
-      senderId: user?.id,
-      body: messageText.trim(),
-    })
-    setChatState((current) => ({
-      ...current,
-      messages: [...current.messages, tempMessage],
-    }))
-    setMessageText('')
-
-    try {
-      const sentMessage = await sendMessage(chatState.chat.id, messageText, tempMessage.client_temp_id)
-      setChatState((current) => ({
-        ...current,
-        messages: current.messages.map((message) =>
-          message.id === tempMessage.id || message.client_temp_id === tempMessage.client_temp_id
-            ? { ...sentMessage, client_temp_id: tempMessage.client_temp_id }
-            : message,
-        ),
-      }))
-    } catch (err) {
-      setChatState((current) => ({
-        ...current,
-        error: err.message || 'No se pudo enviar el mensaje.',
-        messages: current.messages.map((message) =>
-          message.id === tempMessage.id || message.client_temp_id === tempMessage.client_temp_id
-            ? markOptimisticMessageFailed(message, err.message || 'No se pudo enviar el mensaje.')
-            : message,
-        ),
-      }))
-    } finally {
-      setSendingMessage(false)
-    }
-  }
-
-  async function handleEditMessage(messageId, nextContent) {
-    const updated = await updateMessage(messageId, nextContent)
-    setChatState((current) => ({
-      ...current,
-      messages: current.messages.map((message) => (message.id === updated.id ? updated : message)),
-    }))
-    return updated
-  }
-
-  async function handleDeleteMessage(messageId) {
-    await deleteMessage(messageId)
-    setChatState((current) => ({
-      ...current,
-      messages: current.messages.filter((message) => message.id !== messageId),
-    }))
+    acceptMutation.mutate()
   }
 
   if (loading) {
@@ -243,21 +104,10 @@ export default function TaskDetail() {
           </button>
           <h1>Tarea no disponible</h1>
         </header>
-        <p className="auth-message error">{error}</p>
+        <p className="auth-message error">{error || 'Tarea no encontrada o ya no esta disponible.'}</p>
       </main>
     )
   }
-
-  const isOwner = user?.id === task.created_by
-  const isHelper = user?.id === task.accepted_by
-  const creatorProfile = task.creator_profile || {}
-  const creatorName = creatorProfile.display_name || creatorProfile.full_name || creatorProfile.username || 'Vecino'
-  const creatorInitial = getAvatarInitial(creatorName)
-  const priceEuros = Number(task.price ?? 0)
-  const canAccept = !isOwner && task.status === 'open' && !task.accepted_by
-  const canOpenChat =
-    (task.status === 'open' && !isOwner) ||
-    (['assigned', 'in_progress', 'completed'].includes(task.status) && (isOwner || isHelper))
 
   return (
     <main className="app-screen">
@@ -279,12 +129,30 @@ export default function TaskDetail() {
           <div>
             <strong>{creatorName}</strong>
             <p>{creatorProfile.rating ? `${creatorProfile.rating}/5` : 'Vecino de confianza'}</p>
+            {creatorProfile.verified && <p>Perfil verificado</p>}
           </div>
         </div>
 
+        {task.accepted_profile && (
+          <div className="user-strip">
+            <span className="avatar-small">
+              {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
+            </span>
+            <div>
+              <strong>{helperName}</strong>
+              <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Ayudante asignado'}</p>
+              {helperProfile.verified && <p>Perfil verificado</p>}
+            </div>
+          </div>
+        )}
+
         <div className="detail-row">
-          <span>Ubicacion Aproximada</span>
-          <strong>{`${Number(task.lat).toFixed(3)}, ${Number(task.lng).toFixed(3)}`}</strong>
+          <span>Ubicacion</span>
+          <strong>
+            {taskLocationStatus === 'loading'
+              ? 'Buscando direccion...'
+              : taskLocationLabel || 'Direccion privada'}
+          </strong>
         </div>
         <div className="detail-row">
           <span>Precio</span>
@@ -305,14 +173,16 @@ export default function TaskDetail() {
         <p>{task.description}</p>
       </section>
 
-      {error && <p className="auth-message error">{error}</p>}
+      {(error || acceptMutation.error) && (
+        <p className="auth-message error">{error || acceptMutation.error?.message || 'Ha ocurrido un error.'}</p>
+      )}
 
       <div className="two-actions">
         {canOpenChat && (
           <button
             type="button"
             className="icon-button message-action"
-            onClick={handleOpenChat}
+            onClick={() => setChatOpen(true)}
             aria-label="Abrir chat"
             title="Abrir chat"
           >
@@ -321,8 +191,13 @@ export default function TaskDetail() {
         )}
 
         {canAccept && (
-          <button className="primary-action sticky-action" onClick={handleAccept} disabled={accepting}>
-            {accepting ? 'Aceptando...' : 'Aceptar tarea'}
+          <button
+            type="button"
+            className="primary-action sticky-action"
+            onClick={handleAccept}
+            disabled={acceptMutation.isPending}
+          >
+            {acceptMutation.isPending ? 'Aceptando...' : 'Aceptar tarea'}
           </button>
         )}
       </div>
@@ -339,62 +214,11 @@ export default function TaskDetail() {
         <p className="muted">Esta tarea se ha cancelado y ya no aparece en la lista principal.</p>
       )}
 
-      {chatOpen && (
-        <div
-          className="task-chat-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="task-chat-title"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setChatOpen(false)
-            }
-          }}
-        >
-          <section className="task-chat-modal">
-            <header className="task-chat-header">
-              <div>
-                <p className="eyebrow">Mensaje</p>
-                <h2 id="task-chat-title">{creatorName}</h2>
-                <p className="muted">{task.title}</p>
-              </div>
-              <button className="icon-button" onClick={() => setChatOpen(false)} aria-label="Cerrar chat">
-                ×
-              </button>
-            </header>
-
-            {chatState.status === 'loading' && <p className="muted" style={{ padding: '16px' }}>Abriendo chat...</p>}
-            {chatState.status === 'error' && <p className="auth-message error" style={{ margin: '16px' }}>{chatState.error}</p>}
-
-            {chatState.status === 'ready' && (
-              <>
-                <section className="task-chat-messages" aria-live="polite">
-                  <MessageList
-                    messages={chatState.messages}
-                    currentUserId={user?.id}
-                    onEditMessage={handleEditMessage}
-                    onDeleteMessage={handleDeleteMessage}
-                  />
-                  <div ref={messagesEndRef} />
-                </section>
-
-                <form className="task-chat-composer" onSubmit={handleSendMessage}>
-                  <input
-                    value={messageText}
-                    onChange={(event) => setMessageText(event.target.value)}
-                    placeholder="Escribe un mensaje"
-                    maxLength={1200}
-                    disabled={sendingMessage}
-                  />
-                  <button type="submit" className="primary-action" disabled={sendingMessage || !messageText.trim()}>
-                    Enviar
-                  </button>
-                </form>
-              </>
-            )}
-          </section>
-        </div>
-      )}
+      <TaskChatModal
+        open={chatOpen}
+        task={task}
+        onClose={() => setChatOpen(false)}
+      />
     </main>
   )
 }

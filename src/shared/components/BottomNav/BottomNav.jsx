@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink, useLocation } from 'react-router-dom'
 import styles from './BottomNav.module.css'
+import { useBottomNavStore } from '../../../stores/useBottomNavStore'
 
 const TOUCHED_KEY = 'helpMe:bottom-nav-touched'
 const tabOrder = ['mapa', 'mensajes', 'configuracion']
@@ -13,6 +15,8 @@ const tabByPath = {
   '/chats': 'mensajes',
   '/settings': 'configuracion',
 }
+
+const visiblePaths = new Set(['/home', '/chats', '/settings', '/create', '/profile'])
 
 function TabItem({ className, href, children, onOpen, state, onSelect }) {
   if (onOpen) {
@@ -38,12 +42,16 @@ function TabItem({ className, href, children, onOpen, state, onSelect }) {
 }
 
 // Barra inferior principal de la app.
-export default function BottomNav({ onOpenMap, onOpenMessages, onOpenSettings }) {
+export default function BottomNav() {
   const [selectedTab, setSelectedTab] = useState('')
+  const [previousTab, setPreviousTab] = useState('')
   const [indicatorVersion, setIndicatorVersion] = useState(0)
+  const [portalTarget] = useState(() => (typeof document !== 'undefined' ? document.body : null))
   const location = useLocation()
   const currentTabRef = useRef('')
-  const previousTabRef = useRef('')
+  const onOpenMap = useBottomNavStore((state) => state.onOpenMap)
+  const onOpenMessages = useBottomNavStore((state) => state.onOpenMessages)
+  const onOpenSettings = useBottomNavStore((state) => state.onOpenSettings)
 
   function updateSelection(nextTab) {
     if (currentTabRef.current === nextTab) {
@@ -51,7 +59,7 @@ export default function BottomNav({ onOpenMap, onOpenMessages, onOpenSettings })
       return
     }
 
-    previousTabRef.current = currentTabRef.current
+    setPreviousTab(currentTabRef.current)
     currentTabRef.current = nextTab
     setSelectedTab(nextTab)
     setIndicatorVersion((current) => current + 1)
@@ -78,13 +86,21 @@ export default function BottomNav({ onOpenMap, onOpenMessages, onOpenSettings })
     return selectedTab === tabKey ? styles.active : styles.link
   }
 
-  return (
+  if (!visiblePaths.has(location.pathname)) {
+    return null
+  }
+
+  if (!portalTarget) {
+    return null
+  }
+
+  return createPortal(
     <nav
       className={styles.nav}
       aria-label="Navegacion principal"
       style={{
         '--tab-index': tabIndexByKey[selectedTab] ?? 0,
-        '--prev-tab-index': tabIndexByKey[previousTabRef.current] ?? tabIndexByKey[selectedTab] ?? 0,
+        '--prev-tab-index': tabIndexByKey[previousTab] ?? tabIndexByKey[selectedTab] ?? 0,
       }}
       data-selected={selectedTab || 'none'}
     >
@@ -122,6 +138,7 @@ export default function BottomNav({ onOpenMap, onOpenMessages, onOpenSettings })
       >
         Configuracion
       </TabItem>
-    </nav>
+    </nav>,
+    document.body,
   )
 }

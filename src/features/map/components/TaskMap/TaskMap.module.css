@@ -17,7 +17,7 @@
   place-items: center;
   border: 0.125rem solid #10162f;
   border-radius: 0.25rem;
-  box-shadow: 0.2rem 0.2rem 0 #10162f;
+  box-shadow: none;
   font-weight: 900;
   overflow: hidden;
 }

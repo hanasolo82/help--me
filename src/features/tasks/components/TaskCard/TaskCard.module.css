@@ -46,6 +46,13 @@
   font: inherit;
 }
 
+.helperLine {
+  color: var(--task-card-accent, #1804c9);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .cardActions {
   position: absolute;
   top: 0.85rem;
