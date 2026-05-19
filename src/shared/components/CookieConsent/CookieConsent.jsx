@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { hasDecidedConsent, readConsent, writeConsent } from '../../../lib/consent'
 import styles from './CookieConsent.module.css'
@@ -6,13 +6,9 @@ import styles from './CookieConsent.module.css'
 // Banner de consentimiento de cookies con tres opciones (necesarias / aceptar todo / configurar)
 // y modal granular. Cumple LSSI + RGPD: rechazar es tan facil como aceptar.
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(() => !hasDecidedConsent())
   const [configOpen, setConfigOpen] = useState(false)
   const [draft, setDraft] = useState(readConsent())
-
-  useEffect(() => {
-    setVisible(!hasDecidedConsent())
-  }, [])
 
   function persistAndClose(consent) {
     writeConsent(consent)
