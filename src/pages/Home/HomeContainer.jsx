@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
 import { cancelTask, publishTask } from '../../services/tasksService'
-import { useBottomNavStore } from '../../stores/useBottomNavStore'
 import { useHomeModals } from './hooks/useHomeModals'
 import { useHomeFilters } from './hooks/useHomeFilters'
 import { useHomeLocation } from './hooks/useHomeLocation'
@@ -78,9 +77,6 @@ export default function HomeContainer() {
     isLoading: isChatsLoading,
     error: chatsError,
   } = useChats()
-
-  const setBottomNavActions = useBottomNavStore((state) => state.setActions)
-  const clearBottomNavActions = useBottomNavStore((state) => state.clearActions)
 
   useEffect(() => {
     if (routeLocation.state?.mode === 'need') {
@@ -204,18 +200,6 @@ export default function HomeContainer() {
 
     requestLocation()
   }, [location, mode, requestLocation, status])
-
-  useEffect(() => {
-    setBottomNavActions({
-      onOpenMap: openMap,
-      onOpenMessages: openChatsModal,
-      onOpenSettings: openSettingsModal,
-    })
-
-    return () => {
-      clearBottomNavActions()
-    }
-  }, [clearBottomNavActions, openChatsModal, openMap, openSettingsModal, setBottomNavActions])
 
   return (
     <HomeView

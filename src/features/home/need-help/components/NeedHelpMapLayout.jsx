@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Circle, MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { Circle, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import { useAvailableHelpers } from '../hooks/useAvailableHelpers'
 import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
@@ -13,6 +13,43 @@ function RecenterMap({ center }) {
   useEffect(() => {
     map.setView(center, map.getZoom(), { animate: true })
   }, [center, map])
+
+  return null
+}
+
+function ViewportReporter({ onViewportChange }) {
+  useMapEvents({
+    load(event) {
+      if (!onViewportChange) return
+      const bounds = event.target.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+    moveend(event) {
+      if (!onViewportChange) return
+      const bounds = event.target.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+    zoomend(event) {
+      if (!onViewportChange) return
+      const bounds = event.target.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+  })
 
   return null
 }
@@ -34,6 +71,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
   const [radiusKm, setRadiusKm] = useState(Number(profile?.search_radius_km ?? 10) || 10)
   const [selectedSkillId, setSelectedSkillId] = useState('all')
   const [onlyAvailable, setOnlyAvailable] = useState(false)
+  const [mapBounds, setMapBounds] = useState(null)
 
   const {
     center,
@@ -61,6 +99,27 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
     () => (selectedHelper ? [selectedHelper.lat, selectedHelper.lng] : searchCenter),
     [searchCenter, selectedHelper],
   )
+  const viewportHelpers = useMemo(() => {
+    if (!mapBounds) {
+      return helpers
+    }
+
+    return helpers.filter((helper) => {
+      const lat = Number(helper?.lat)
+      const lng = Number(helper?.lng)
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return false
+      }
+
+      return (
+        lat <= mapBounds.north &&
+        lat >= mapBounds.south &&
+        lng <= mapBounds.east &&
+        lng >= mapBounds.west
+      )
+    })
+  }, [helpers, mapBounds])
 
   function handleSelectHelper(helper) {
     selectHelper(helper)
@@ -99,6 +158,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
           <div className={styles.mapShell}>
             <MapContainer center={focusCenter} zoom={13} scrollWheelZoom className={styles.map}>
               <RecenterMap center={focusCenter} />
+              <ViewportReporter onViewportChange={setMapBounds} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -141,6 +201,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
         <div className={mobileView === 'map' ? `${styles.panelPane} ${styles.hiddenOnMobile}` : styles.panelPane}>
           <HelperListPanel
             helpers={helpers}
+            visibleHelpers={viewportHelpers}
             selectedHelperId={selectedHelperId}
             onSelectHelper={handleSelectHelper}
             onOpenProfile={(helper) => navigate(`/profile/${helper.id}`)}

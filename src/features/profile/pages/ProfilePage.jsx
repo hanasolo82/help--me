@@ -10,9 +10,6 @@ import RatingSummary from '../../reviews/components/RatingSummary'
 import ReviewsList from '../../reviews/components/ReviewsList'
 import VerificationBadges from '../../verification/components/VerificationBadges'
 import WeeklyAvailabilityGrid from '../../availability/components/WeeklyAvailabilityGrid'
-import HelpersMap from '../../map/components/HelpersMap'
-import MapFilters from '../../map/components/MapFilters'
-import NearbyHelpersFeed from '../../map/components/NearbyHelpersFeed'
 import styles from '../styles/profileNetwork.module.css'
 
 const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -85,10 +82,8 @@ export default function ProfilePage() {
   const { user, profile: authProfile } = useAuth()
   const profileId = params.id || user?.id || authProfile?.id || null
   const [activeSkillId, setActiveSkillId] = useState('all')
-  const [mapRadius, setMapRadius] = useState(10)
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
-  const { profile, skills, reviews, verifications, availability, nearbyHelpers, favoriteState, isLoading, error, isOwnProfile } =
-    useProfilePageData(profileId, { radiusKm: mapRadius })
+  const { profile, skills, reviews, verifications, availability, favoriteState, isLoading, error, isOwnProfile } =
+    useProfilePageData(profileId)
   const favoriteMutation = useFavoriteProfile(profile?.id)
 
   const displayName = getProfileName(profile)
@@ -98,15 +93,7 @@ export default function ProfilePage() {
     if (activeSkillId === 'all') return skills
     return skills.filter((skill) => skill?.skill?.category === activeSkillId || skill?.skill?.id === activeSkillId)
   }, [activeSkillId, skills])
-  const nearbyFilteredHelpers = useMemo(() => {
-    return nearbyHelpers.filter((helper) => {
-      if (onlyAvailable && helper.availability_enabled === false) return false
-      if (activeSkillId === 'all') return true
-      return (helper.skills ?? []).some((skill) => skill?.category === activeSkillId || skill?.id === activeSkillId)
-    })
-  }, [activeSkillId, nearbyHelpers, onlyAvailable])
   const reviewSummary = useMemo(() => summarizeReviews(reviews), [reviews])
-  const hasCoordinates = Number.isFinite(Number(profile?.lat)) && Number.isFinite(Number(profile?.lng))
   const helperAvailable = profile?.helper_enabled ?? false
   const availabilitySummary = deriveAvailabilitySummary(availability)
   const primarySkills = profileSkills.slice(0, 6)
@@ -299,44 +286,6 @@ export default function ProfilePage() {
         </div>
 
         <WeeklyAvailabilityGrid slots={availability} availabilityEnabled={profile.availability_enabled} />
-      </section>
-
-      <section className={`${styles.section} ${styles.mapSection}`}>
-        <div>
-          <div className={styles.sectionHeader}>
-            <p className="eyebrow">Mapa</p>
-            <h2 className={styles.sectionTitle}>Helpers cercanos</h2>
-            <p className={styles.sectionLead}>El mapa deja de ser de tareas y pasa a mostrar personas confiables alrededor.</p>
-          </div>
-
-          {hasCoordinates ? (
-            <HelpersMap
-              helpers={nearbyFilteredHelpers}
-              center={{ lat: profile.lat, lng: profile.lng }}
-              radiusKm={mapRadius}
-              onHelperSelect={(helper) => navigate(`/profile/${helper.id}`)}
-              userLabel={locationLabel}
-            />
-          ) : (
-            <div className={styles.emptyState}>
-              <strong>Falta ubicación aproximada.</strong>
-              <p className="muted">Cuando añadas ciudad o coordenadas, activaremos el mapa de helpers.</p>
-            </div>
-          )}
-        </div>
-
-        <div className={styles.section}>
-          <MapFilters
-            skills={skillCategories}
-            activeSkillId={activeSkillId}
-            onSkillChange={setActiveSkillId}
-            radiusKm={mapRadius}
-            onRadiusChange={setMapRadius}
-            onlyAvailable={onlyAvailable}
-            onOnlyAvailableChange={setOnlyAvailable}
-          />
-          <NearbyHelpersFeed helpers={nearbyFilteredHelpers} onHelperSelect={(helper) => navigate(`/profile/${helper.id}`)} />
-        </div>
       </section>
     </main>
   )

@@ -4,6 +4,7 @@ import styles from './NeedHelpMapLayout.module.css'
 
 export default function HelperListPanel({
   helpers = [],
+  visibleHelpers = [],
   selectedHelperId = null,
   onSelectHelper,
   onOpenProfile,
@@ -36,6 +37,7 @@ export default function HelperListPanel({
       <div className={styles.panelMeta}>
         <p className="muted">{locationLabel}</p>
         <strong>{helpers.length} helpers cerca de ti</strong>
+        <span className="muted">{visibleHelpers.length} visibles en esta pantalla del mapa</span>
       </div>
 
       {!hasLocation && (
@@ -54,14 +56,14 @@ export default function HelperListPanel({
       {error && <p className="auth-message error">{error}</p>}
 
       <div className={styles.listScroll}>
-        {!loading && !error && helpers.length === 0 ? (
+        {!loading && !error && visibleHelpers.length === 0 ? (
           <article className={styles.emptyState}>
-            <strong>No encontramos helpers cercanos.</strong>
-            <p className="muted">Prueba con otro radio, activa la ubicación o amplía los filtros.</p>
+            <strong>No hay helpers visibles en esta parte del mapa.</strong>
+            <p className="muted">Mueve o amplía el mapa para ver personas disponibles en tu área.</p>
           </article>
         ) : null}
 
-        {helpers.map((helper) => (
+        {visibleHelpers.map((helper) => (
           <HelperCard
             key={helper.id}
             helper={helper}

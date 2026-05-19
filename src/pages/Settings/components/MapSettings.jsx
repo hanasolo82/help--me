@@ -80,6 +80,18 @@ export default function MapSettings() {
         </label>
 
         <div className={styles.field}>
+          <span>Disponible para ayudar</span>
+          <button
+            type="button"
+            className={form.availabilityEnabled ? `${styles.switch} ${styles.switchOn}` : styles.switch}
+            onClick={() => setField('availabilityEnabled', !form.availabilityEnabled)}
+            aria-pressed={form.availabilityEnabled}
+          >
+            <span>{form.availabilityEnabled ? 'Sí' : 'No'}</span>
+          </button>
+        </div>
+
+        <div className={styles.field}>
           <span>Mostrar ubicación aproximada</span>
           <button
             type="button"
