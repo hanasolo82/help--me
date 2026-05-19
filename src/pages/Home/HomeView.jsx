@@ -1,14 +1,13 @@
 import styles from './Home.module.css'
 import HomeHeader from '../../components/home/HomeHeader'
 import ModeSwitcher from '../../components/home/ModeSwitcher'
-import CategoryFilter from '../../components/home/CategoryFilter'
-import RadiusFilter from '../../components/home/RadiusFilter'
-import HomeMap from '../../components/home/HomeMap'
-import TaskFeed from '../../components/home/TaskFeed'
 import ChatsModal from '../../components/home/ChatsModal'
 import TaskChatModal from '../../components/home/TaskChatModal'
+import NeedHelpMapLayout from '../../features/home/need-help/components/NeedHelpMapLayout'
+import OfferHelpMapLayout from '../../features/home/offer-help/components/OfferHelpMapLayout'
 
 export default function HomeView({
+  profile,
   locationLabel,
   displayName,
   avatarUrl,
@@ -25,11 +24,7 @@ export default function HomeView({
   onRadiusChange,
   categories,
   radiusOptions,
-  helperTitle,
-  helperSubtitle,
   isHelperMode,
-  onOpenMap,
-  onOpenCreateTask,
   visibleTasks,
   isTasksLoading,
   tasksError,
@@ -42,18 +37,11 @@ export default function HomeView({
   onCancelTask,
   onOpenTaskChat,
   onEditTask,
-  showMap,
-  showLocationPanel,
   location,
   locationStatus,
   locationError,
-  showApproxLocation,
+  onRequestNeedLocation,
   userAvatarUrl,
-  radiusKm,
-  onCloseMap,
-  onRequestLocation,
-  onClearLocation,
-  onDismissLocationPanel,
   chats,
   isChatsLoading,
   chatsError,
@@ -64,7 +52,7 @@ export default function HomeView({
   onCloseTaskChat,
 }) {
   return (
-    <main className={styles.home}>
+    <main className={isHelperMode ? styles.home : `${styles.home} ${styles.homeWide}`}>
       <HomeHeader
         locationLabel={locationLabel}
         displayName={displayName}
@@ -78,49 +66,41 @@ export default function HomeView({
 
       <ModeSwitcher mode={mode} onChange={onModeChange} />
 
-      <section className={styles.filters} aria-label="Filtros de tareas">
-        <CategoryFilter category={category} onChange={onCategoryChange} options={categories} />
-        <RadiusFilter radius={radius} onChange={onRadiusChange} options={radiusOptions} />
-      </section>
-
-      <TaskFeed
-        title={helperTitle}
-        subtitle={helperSubtitle}
-        actionLabel={isHelperMode ? 'Mapa' : 'Nueva tarea'}
-        onAction={isHelperMode ? onOpenMap : onOpenCreateTask}
-        tasks={visibleTasks}
-        loading={isTasksLoading}
-        error={tasksError}
-        count={visibleTasks.length}
-        isHelperMode={isHelperMode}
-        currentUserId={currentUserId}
-        expandedTaskIds={expandedTaskIds}
-        publishingTaskId={publishingTaskId}
-        distancesById={distancesById}
-        onToggleTaskDetails={onToggleTaskDetails}
-        onPublishTask={onPublishTask}
-        onCancelTask={onCancelTask}
-        onOpenTaskChat={onOpenTaskChat}
-        onEditTask={onEditTask}
-      />
-
-      <HomeMap
-        open={showMap}
-        showLocationPanel={showLocationPanel}
-        location={location}
-        locationStatus={locationStatus}
-        locationError={locationError}
-        showApproxLocation={showApproxLocation}
-        userAvatarUrl={userAvatarUrl}
-        userInitial={userInitial}
-        radiusKm={radiusKm}
-        tasks={visibleTasks}
-        distancesById={distancesById}
-        onClose={onCloseMap}
-        onRequestLocation={onRequestLocation}
-        onClearLocation={onClearLocation}
-        onDismissLocationPanel={onDismissLocationPanel}
-      />
+      {isHelperMode ? (
+        <OfferHelpMapLayout
+          profile={profile}
+          location={location}
+          userAvatarUrl={userAvatarUrl}
+          userInitial={userInitial}
+          radiusKm={radius}
+          visibleTasks={visibleTasks}
+          isLoading={isTasksLoading}
+          error={tasksError}
+          distancesById={distancesById}
+          currentUserId={currentUserId}
+          expandedTaskIds={expandedTaskIds}
+          publishingTaskId={publishingTaskId}
+          onToggleTaskDetails={onToggleTaskDetails}
+          onPublishTask={onPublishTask}
+          onCancelTask={onCancelTask}
+          onOpenTaskChat={onOpenTaskChat}
+          onEditTask={onEditTask}
+          category={category}
+          onCategoryChange={onCategoryChange}
+          categories={categories}
+          radius={radius}
+          onRadiusChange={onRadiusChange}
+          radiusOptions={radiusOptions}
+        />
+      ) : (
+        <NeedHelpMapLayout
+          profile={profile}
+          location={location}
+          locationStatus={locationStatus}
+          locationError={locationError}
+          onRequestLocation={onRequestNeedLocation}
+        />
+      )}
 
       <ChatsModal
         open={showChatsModal}

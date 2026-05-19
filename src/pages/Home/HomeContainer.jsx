@@ -89,7 +89,7 @@ export default function HomeContainer() {
       return
     }
 
-    if (routeLocation.state?.openMap) {
+    if (routeLocation.state?.openMap && mode !== 'need') {
       setMode('help')
       setShowLocationPanel(true)
       setShowMap(true)
@@ -101,6 +101,7 @@ export default function HomeContainer() {
   }, [
     location,
     navigate,
+    mode,
     requestLocation,
     routeLocation.state,
     setMode,
@@ -110,6 +111,10 @@ export default function HomeContainer() {
   ])
 
   const openMap = useCallback(() => {
+    if (mode === 'need') {
+      return
+    }
+
     setMode('help')
     closeChatsModal()
     closeSettingsModal()
@@ -125,6 +130,7 @@ export default function HomeContainer() {
     closeSettingsModal,
     closeTaskChat,
     location,
+    mode,
     requestLocation,
     setMode,
     setShowLocationPanel,
@@ -180,10 +186,6 @@ export default function HomeContainer() {
     [navigate],
   )
 
-  const handleOpenCreateTask = useCallback(() => {
-    navigate('/create')
-  }, [navigate])
-
   const handleCloseMap = useCallback(() => {
     setShowMap(false)
   }, [setShowMap])
@@ -195,6 +197,13 @@ export default function HomeContainer() {
   const handleClearLocation = useCallback(() => {
     clearLocation()
   }, [clearLocation])
+
+  useEffect(() => {
+    if (mode !== 'need' && mode !== 'help') return
+    if (location || status !== 'idle') return
+
+    requestLocation()
+  }, [location, mode, requestLocation, status])
 
   useEffect(() => {
     setBottomNavActions({
@@ -210,6 +219,7 @@ export default function HomeContainer() {
 
   return (
     <HomeView
+      profile={profile}
       locationLabel={locationLabel}
       displayName={displayName}
       avatarUrl={profile?.avatar_url || null}
@@ -230,7 +240,6 @@ export default function HomeContainer() {
       categories={categories}
       radiusOptions={radiusOptions}
       onOpenMap={openMap}
-      onOpenCreateTask={handleOpenCreateTask}
       visibleTasks={visibleTasks}
       isTasksLoading={isTasksLoading}
       tasksError={tasksError}
@@ -248,6 +257,7 @@ export default function HomeContainer() {
       location={location}
       locationStatus={status}
       locationError={error}
+      onRequestNeedLocation={requestLocation}
       showApproxLocation={showApproxLocation}
       userAvatarUrl={userAvatarUrl}
       radiusKm={radius}

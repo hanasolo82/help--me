@@ -1,17 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
-import {
-  editMessage,
-  markConversationAsRead,
-  sendMessage,
-  softDeleteMessage,
-} from '../api/chatApi'
 import { useConversation } from '../hooks/useConversation'
+import { useConversationComposer } from '../hooks/useConversationComposer'
 import { useMessages } from '../hooks/useMessages'
-import { useRealtimeMessages } from '../hooks/useRealtimeMessages'
 import { useTypingIndicator } from '../hooks/useTypingIndicator'
-import { createOptimisticMessage, markOptimisticMessageFailed } from '../utils/optimisticMessages'
 import MessageList from '../components/MessageList'
 import MessageInput from '../components/MessageInput'
 import TypingIndicator from '../components/TypingIndicator'
@@ -38,30 +31,22 @@ export default function ChatPage() {
   } = useMessages(conversationId)
   const { typingUsers, setTyping } = useTypingIndicator(conversationId)
   const [draft, setDraft] = useState('')
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
   const messageEndRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const stickToBottomRef = useRef(true)
   const loadingOlderRef = useRef(false)
-
-  useRealtimeMessages(conversationId, {
-    onInsert: (message) => {
-      if (!message) return
-      appendMessage(message)
-    },
-    onUpdate: (nextMessage) => {
-      if (!nextMessage) return
-      updateMessage(nextMessage)
-      if (nextMessage.deleted_at) {
-        // Keep soft-deleted messages visible with their deleted marker.
-        updateMessage(nextMessage)
-      }
-    },
-    onDelete: (deletedMessage) => {
-      if (!deletedMessage) return
-      removeMessage(deletedMessage)
-    },
+  const {
+    sending,
+    error,
+    sendDraft,
+    retryMessage,
+    editMessageById,
+    deleteMessageById,
+  } = useConversationComposer(conversationId, {
+    currentUserId: user?.id,
+    appendMessage,
+    updateMessage,
+    removeMessage,
   })
 
   const counterpart = conversation?.participants?.find((participant) => participant.user_id !== user?.id) || null
@@ -74,64 +59,15 @@ export default function ChatPage() {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  useEffect(() => {
-    if (!conversationId || !conversation) {
-      return undefined
-    }
-
-    const timer = window.setTimeout(() => {
-      markConversationAsRead(conversationId).catch(() => {})
-    }, 500)
-
-    return () => window.clearTimeout(timer)
-  }, [conversation, conversationId])
-
   async function handleSend() {
-    if (!draft.trim() || sending || !conversationId || !user?.id) return
-
-    const tempMessage = createOptimisticMessage({
-      conversationId,
-      senderId: user.id,
-      body: draft.trim(),
-    })
-
-    setDraft('')
-    setError('')
-    setSending(true)
-    appendMessage(tempMessage)
+    const nextDraft = draft.trim()
+    if (!nextDraft) return
 
     try {
-      const persisted = await sendMessage(conversationId, draft.trim(), tempMessage.client_temp_id)
-      updateMessage({
-        ...persisted,
-        client_temp_id: tempMessage.client_temp_id,
-      })
+      await sendDraft(nextDraft)
       setDraft('')
-    } catch (err) {
-      updateMessage(markOptimisticMessageFailed(tempMessage, err?.message || 'No se pudo enviar el mensaje.'))
-      setError(err?.message || 'No se pudo enviar el mensaje.')
-    } finally {
-      setSending(false)
-    }
-  }
-
-  async function handleRetry(message) {
-    if (!message?.client_temp_id || sending) return
-
-    setError('')
-    setSending(true)
-
-    try {
-      const persisted = await sendMessage(conversationId, message.body || message.content, message.client_temp_id)
-      updateMessage({
-        ...persisted,
-        client_temp_id: message.client_temp_id,
-      })
-    } catch (err) {
-      updateMessage(markOptimisticMessageFailed(message, err?.message || 'No se pudo enviar el mensaje.'))
-      setError(err?.message || 'No se pudo enviar el mensaje.')
-    } finally {
-      setSending(false)
+    } catch {
+      // El error ya se expone desde el hook y se pinta en la UI.
     }
   }
 
@@ -139,13 +75,11 @@ export default function ChatPage() {
     const nextBody = window.prompt('Editar mensaje', message.body || message.content || '')
     if (nextBody == null) return
 
-    const persisted = await editMessage(message.id, nextBody)
-    updateMessage(persisted)
+    await editMessageById(message.id, nextBody)
   }
 
   async function handleDelete(message) {
-    const persisted = await softDeleteMessage(message.id)
-    updateMessage(persisted)
+    await deleteMessageById(message.id)
   }
 
   if (conversationLoading) {
@@ -205,7 +139,7 @@ export default function ChatPage() {
               currentUserId={user?.id}
               onEditMessage={handleEdit}
               onDeleteMessage={handleDelete}
-              onRetryMessage={handleRetry}
+              onRetryMessage={retryMessage}
               loadingMore={loadingMore}
               hasMore={hasMore}
               onLoadMore={async () => {

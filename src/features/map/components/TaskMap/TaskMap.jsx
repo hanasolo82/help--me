@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
@@ -39,6 +39,46 @@ function RecenterMap({ center }) {
   return null
 }
 
+function MapViewportReporter({ onViewportChange }) {
+  useMapEvents({
+    moveend(event) {
+      if (!onViewportChange) return
+      const map = event.target
+      const bounds = map.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+    zoomend(event) {
+      if (!onViewportChange) return
+      const map = event.target
+      const bounds = map.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+    load(event) {
+      if (!onViewportChange) return
+      const map = event.target
+      const bounds = map.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    },
+  })
+
+  return null
+}
+
 // Mapa con OpenStreetMap. Las tareas vienen con lat/lng y price (euros) directos del schema.
 // El marcador del usuario usa el map_avatar_url del profile si esta disponible.
 export default function TaskMap({
@@ -49,6 +89,7 @@ export default function TaskMap({
   distances,
   userAvatarUrl,
   userInitial,
+  onViewportChange,
 }) {
   const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
   const userIcon = buildUserIcon({ avatarUrl: userAvatarUrl, initial: userInitial })
@@ -57,6 +98,7 @@ export default function TaskMap({
     <div className={styles.mapShell}>
       <MapContainer center={center} zoom={14} scrollWheelZoom className={styles.map}>
         <RecenterMap center={center} />
+        <MapViewportReporter onViewportChange={onViewportChange} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

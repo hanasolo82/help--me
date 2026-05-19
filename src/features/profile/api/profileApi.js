@@ -19,6 +19,10 @@ function haversineDistanceKm(lat1, lng1, lat2, lng2) {
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
+function isVisibleNeedHelpHelper(profile) {
+  return profile?.helper_enabled === true && profile?.availability_enabled === true
+}
+
 export async function getProfileById(profileId) {
   if (!profileId) return null
 
@@ -170,6 +174,7 @@ export async function getNearbyHelpers({
     .from('profiles')
     .select('id, username, full_name, display_name, avatar_url, map_avatar_url, bio, rating, completed_tasks, reviews_count, verified, verified_email, verified_phone, verified_identity, identity_verified, helper_enabled, availability_enabled, hourly_rate, response_time_minutes, lat, lng, city, country, neighborhood, account_status')
     .eq('helper_enabled', true)
+    .eq('availability_enabled', true)
     .eq('account_status', 'active')
     .not('lat', 'is', null)
     .not('lng', 'is', null)
@@ -191,6 +196,7 @@ export async function getNearbyHelpers({
   }
 
   let helpers = (data ?? [])
+    .filter(isVisibleNeedHelpHelper)
     .map((helper) => {
       const helperLat = toNumber(helper.lat)
       const helperLng = toNumber(helper.lng)

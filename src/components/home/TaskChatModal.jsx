@@ -1,15 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/useAuth'
 import MessageList from '../../components/chat/MessageList'
-import {
-  deleteMessage,
-  getMessages,
-  getOrCreateChatByTaskId,
-  sendMessage,
-  subscribeToMessages,
-  updateMessage,
-} from '../../services/chatService'
-import { createOptimisticMessage, markOptimisticMessageFailed } from '../../features/chat/utils/optimisticMessages'
+import { getMessages, getOrCreateChatByTaskId } from '../../services/chatService'
+import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
 
 function getCounterpartName(task, userId) {
   const counterpartProfile =
@@ -32,7 +25,42 @@ export default function TaskChatModal({ open, task, onClose }) {
   const [messages, setMessages] = useState([])
   const [error, setError] = useState('')
   const [draftMessage, setDraftMessage] = useState('')
-  const [sending, setSending] = useState(false)
+  const appendMessage = useCallback((message) => {
+    setMessages((current) => {
+      if (current.some((item) => item.id === message.id || item.client_temp_id === message.client_temp_id)) {
+        return current
+      }
+
+      return [...current, message]
+    })
+  }, [])
+
+  const updateMessage = useCallback((message) => {
+    setMessages((current) =>
+      current.map((item) =>
+        item.id === message.id || item.client_temp_id === message.client_temp_id ? message : item,
+      ),
+    )
+  }, [])
+
+  const removeMessage = useCallback((message) => {
+    setMessages((current) =>
+      current.filter((item) => item.id !== message.id && item.client_temp_id !== message.client_temp_id),
+    )
+  }, [])
+
+  const {
+    sending,
+    error: composerError,
+    sendDraft,
+    editMessageById,
+    deleteMessageById,
+  } = useConversationComposer(chat?.id, {
+    currentUserId: user?.id,
+    appendMessage,
+    updateMessage,
+    removeMessage,
+  })
 
   useEffect(() => {
     if (!open || !taskId) {
@@ -40,7 +68,6 @@ export default function TaskChatModal({ open, task, onClose }) {
     }
 
     let cancelled = false
-    let unsubscribe = null
 
     async function bootstrap() {
       setStatus('loading')
@@ -57,26 +84,6 @@ export default function TaskChatModal({ open, task, onClose }) {
         setChat(nextChat)
         setMessages(history || [])
         setStatus('ready')
-
-        unsubscribe = subscribeToMessages(nextChat.id, {
-          onInsert: (newMessage) => {
-            setMessages((current) => {
-              if (current.some((message) => message.id === newMessage.id)) {
-                return current
-              }
-
-              return [...current, newMessage]
-            })
-          },
-          onUpdate: (updatedMessage) => {
-            setMessages((current) =>
-              current.map((message) => (message.id === updatedMessage.id ? updatedMessage : message)),
-            )
-          },
-          onDelete: (deletedMessage) => {
-            setMessages((current) => current.filter((message) => message.id !== deletedMessage.id))
-          },
-        })
       } catch (loadError) {
         if (cancelled) return
 
@@ -91,9 +98,6 @@ export default function TaskChatModal({ open, task, onClose }) {
 
     return () => {
       cancelled = true
-      if (unsubscribe) {
-        unsubscribe()
-      }
     }
   }, [open, taskId])
 
@@ -116,51 +120,30 @@ export default function TaskChatModal({ open, task, onClose }) {
       return
     }
 
-    setSending(true)
     setError('')
-
-    const tempMessage = createOptimisticMessage({
-      conversationId: chat.id,
-      senderId: user?.id,
-      body: messageText,
-    })
-
-    setMessages((current) => [...current, tempMessage])
     setDraftMessage('')
-
     try {
-      const sentMessage = await sendMessage(chat.id, messageText, tempMessage.client_temp_id)
-      setMessages((current) =>
-        current.map((message) =>
-          message.id === tempMessage.id || message.client_temp_id === tempMessage.client_temp_id
-            ? { ...sentMessage, client_temp_id: tempMessage.client_temp_id }
-            : message,
-        ),
-      )
+      await sendDraft(messageText)
     } catch (sendError) {
-      const message = sendError?.message || 'No se pudo enviar el mensaje.'
-      setError(message)
-      setMessages((current) =>
-        current.map((item) =>
-          item.id === tempMessage.id || item.client_temp_id === tempMessage.client_temp_id
-            ? markOptimisticMessageFailed(item, message)
-            : item,
-        ),
-      )
-    } finally {
-      setSending(false)
+      setError(sendError?.message || composerError || 'No se pudo enviar el mensaje.')
     }
   }
 
   async function handleEditTaskChatMessage(messageId, nextContent) {
-    const updated = await updateMessage(messageId, nextContent)
-    setMessages((current) => current.map((message) => (message.id === updated.id ? updated : message)))
+    const updated = await editMessageById(messageId, nextContent)
+    setMessages((current) =>
+      current.map((message) =>
+        message.id === updated.id || message.client_temp_id === updated.client_temp_id ? updated : message,
+      ),
+    )
     return updated
   }
 
   async function handleDeleteTaskChatMessage(messageId) {
-    await deleteMessage(messageId)
-    setMessages((current) => current.filter((message) => message.id !== messageId))
+    await deleteMessageById(messageId)
+    setMessages((current) =>
+      current.filter((message) => message.id !== messageId && message.client_temp_id !== messageId),
+    )
   }
 
   return (

@@ -21,6 +21,11 @@
     color 0.2s ease;
 }
 
+.homeWide {
+  max-width: none;
+  width: 100%;
+}
+
 .header {
   width: 100%;
   display: flex;
