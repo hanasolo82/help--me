@@ -1,22 +1,15 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText, validateUsername } from '../lib/security'
 import { requireUser } from '../lib/authHelpers'
-import { DEFAULT_PALETTE, isValidPalettePrimary } from '../lib/palettes'
 import { uploadAvatar } from './storageService'
 
 const DEFAULT_THEME = 'light'
-const DEFAULT_ACCENT_COLOR = DEFAULT_PALETTE.primary
 const DEFAULT_SEARCH_RADIUS_KM = 10
 const DEFAULT_HELPER_ENABLED = false
 const DEFAULT_AVAILABILITY_ENABLED = true
 
 function normalizeTheme(theme) {
   return theme === 'dark' ? 'dark' : DEFAULT_THEME
-}
-
-function normalizeAccentColor(accentColor) {
-  const value = sanitizeText(accentColor, 7).toLowerCase()
-  return isValidPalettePrimary(value) ? value : DEFAULT_ACCENT_COLOR
 }
 
 function normalizeBoolean(value, fallback = false) {
@@ -128,7 +121,6 @@ function buildDefaultProfileValues(user, attempt = 0) {
     stripe_payouts_enabled: false,
     account_status: 'active',
     theme: DEFAULT_THEME,
-    accent_color: DEFAULT_ACCENT_COLOR,
     search_radius_km: DEFAULT_SEARCH_RADIUS_KM,
     show_approx_location: true,
     notify_nearby_tasks: true,
@@ -268,7 +260,6 @@ export function validateProfileInput(input) {
       map_avatar_url: null,
       bio: sanitizeText(input.bio, 160) || null,
       theme: normalizeTheme(input.theme),
-      accent_color: normalizeAccentColor(input.accentColor),
       search_radius_km: normalizeInteger(input.searchRadiusKm, DEFAULT_SEARCH_RADIUS_KM, { min: 1, max: 100 }),
       show_approx_location: normalizeBoolean(input.showApproxLocation, true),
       notify_nearby_tasks: normalizeBoolean(input.notifyNearbyTasks, true),
@@ -363,10 +354,6 @@ function normalizeProfileUpdateInput(input) {
 
   if (Object.prototype.hasOwnProperty.call(input, 'theme')) {
     updates.theme = normalizeTheme(input.theme)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'accentColor')) {
-    updates.accent_color = normalizeAccentColor(input.accentColor)
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'searchRadiusKm')) {

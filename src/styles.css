@@ -73,6 +73,7 @@ p {
 .app-screen,
 .auth-screen,
 .chat-screen {
+  /* app shell: pages/Home/Home.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Profile/Profile.jsx, pages/Chat/Chat.jsx, pages/Settings/SettingsPage.jsx */
   min-height: 100vh;
   width: min(100%, 78rem);
   margin: 0 auto;
@@ -88,6 +89,7 @@ p {
 }
 
 .auth-screen {
+  /* auth flow: pages/Login/Login.jsx, pages/ForgotPassword/ForgotPassword.jsx, pages/ResetPassword/ResetPassword.jsx, app/router/RequireAuth.jsx */
   width: min(100%, 34rem);
   display: grid;
   place-items: center;
@@ -99,6 +101,7 @@ p {
 .detail-panel,
 .profile-card,
 .stats-grid article {
+  /* shared panels: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
   background-color: var(--cc-white);
@@ -107,11 +110,13 @@ p {
 
 .auth-panel,
 .completion-panel {
+  /* auth and completion cards: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx */
   width: 100%;
   padding: 1.35rem;
 }
 
 .auth-panel {
+  /* auth form surface: shared/components/AuthPanel/AuthPanel.jsx */
   display: grid;
   gap: 0.75rem;
   box-shadow: none;
@@ -119,6 +124,7 @@ p {
 
 .auth-panel h1,
 .completion-panel h1 {
+  /* auth/completion titles: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx */
   margin: 0.2rem 0 0.15rem;
   font-size: clamp(1.75rem, 4vw, 2.4rem);
   font-weight: 900;
@@ -130,6 +136,7 @@ p {
 }
 
 .eyebrow {
+  /* tiny label utility: shared/components/AuthPanel/AuthPanel.jsx, app/router/RequireAuth.jsx, pages/* */
   color: var(--cc-blue);
   font-size: 0.82rem;
   font-weight: 900;
@@ -137,6 +144,7 @@ p {
 }
 
 .muted {
+  /* secondary text utility: shared/components/AuthPanel/AuthPanel.jsx, pages/Home/HomeHeader.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   color: var(--cc-navy);
   line-height: 1.5;
 }
@@ -144,11 +152,13 @@ p {
 .segmented,
 .chips,
 .two-actions {
+  /* grouped action rows: shared/components/AuthPanel/AuthPanel.jsx, pages/Login/Login.jsx, pages/Home/HomeView.jsx, features/profile/pages/ProfilePage.jsx */
   display: flex;
   gap: 8px;
 }
 
 .segmented {
+  /* auth mode switch: shared/components/AuthPanel/AuthPanel.jsx */
   position: relative;
   overflow: hidden;
   margin: 0;
@@ -176,6 +186,7 @@ p {
 
 .segmented button,
 .chip {
+  /* segmented tabs + chips: shared/components/AuthPanel/AuthPanel.jsx, pages/Home/HomeView.jsx, features/profile/components/SkillFilter.jsx */
   flex: 1;
   border: 0;
   border-radius: 2px;
@@ -198,12 +209,14 @@ p {
 
 .field,
 .choice-group {
+  /* form primitives: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   display: grid;
   gap: 8px;
 }
 
 .field span,
 .choice-group > span {
+  /* form labels: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   color: var(--cc-navy);
   font-size: 14px;
   font-weight: 900;
@@ -211,6 +224,7 @@ p {
 
 .field input,
 .field textarea {
+  /* form inputs: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   width: 100%;
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
@@ -226,6 +240,7 @@ p {
 
 .field:has(textarea),
 .success-action {
+  /* wide form controls: shared/components/AuthPanel/AuthPanel.jsx, pages/Settings/SettingsPage.jsx */
   grid-column: 1 / -1;
 }
 
@@ -233,6 +248,7 @@ p {
 .success-action,
 .secondary-action,
 .danger-action {
+  /* global CTA buttons: shared/components/AuthPanel/AuthPanel.jsx, shared/components/AuthModal/AuthModal.jsx, pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Home/HomeView.jsx */
   width: 100%;
   max-width: 22.5rem;
   border: 0;
@@ -262,12 +278,14 @@ p {
 }
 
 .primary-action {
+  /* primary CTA: shared/components/AuthPanel/AuthPanel.jsx, pages/*, features/* */
   margin-top: 0;
   background: var(--cc-blue);
   color: var(--cc-white);
 }
 
 .primary-action.auth-submit-action {
+  /* submit button in auth panel: shared/components/AuthPanel/AuthPanel.jsx */
   border: 2px solid var(--cc-navy);
   background-color: var(--cc-white);
   color: var(--cc-navy);
@@ -283,23 +301,27 @@ p {
 }
 
 .success-action {
+  /* affirmative action: pages/TaskComplete/TaskComplete.jsx, pages/Settings/SettingsPage.jsx */
   background: var(--cc-white);
   color: var(--cc-navy);
 }
 
 .secondary-action {
+  /* secondary CTA: pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   border: 2px solid var(--cc-navy);
   background: var(--cc-white);
   color: var(--cc-navy);
 }
 
 .danger-action {
+  /* destructive CTA: pages/Settings/SettingsPage.jsx, features/profile/pages/ProfilePage.jsx */
   border: 2px solid var(--cc-navy);
   background: #b00020;
   color: var(--cc-white);
 }
 
 .oauth-action {
+  /* oauth button: shared/components/AuthPanel/AuthPanel.jsx */
   width: 100%;
   max-width: 22.5rem;
   border: 2px solid var(--cc-navy);
@@ -333,6 +355,7 @@ p {
 }
 
 .auth-divider {
+  /* divider in auth panel: shared/components/AuthPanel/AuthPanel.jsx */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -349,6 +372,7 @@ p {
 }
 
 .auth-message {
+  /* feedback banner: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
   background: var(--cc-yellow);
@@ -369,10 +393,12 @@ p {
 }
 
 .password-field {
+  /* auth password field wrapper: shared/components/AuthPanel/AuthPanel.jsx */
   position: relative;
 }
 
 .password-field input {
+  /* auth password input: shared/components/AuthPanel/AuthPanel.jsx */
   width: 100%;
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
@@ -382,6 +408,7 @@ p {
 }
 
 .password-toggle {
+  /* show/hide password button: shared/components/AuthPanel/AuthPanel.jsx */
   position: absolute;
   top: 50%;
   right: 8px;
@@ -404,12 +431,14 @@ p {
 }
 
 .field-error {
+  /* inline validation error: shared/components/AuthPanel/AuthPanel.jsx, pages/Settings/SettingsPage.jsx */
   color: #b00020;
   font-size: 13px;
   font-weight: 900;
 }
 
 .strength-meter {
+  /* password strength widget: shared/components/AuthPanel/AuthPanel.jsx */
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -421,6 +450,7 @@ p {
 }
 
 .strength-bar {
+  /* password strength progress bar: shared/components/AuthPanel/AuthPanel.jsx */
   height: 8px;
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
@@ -434,12 +464,14 @@ p {
 .strength-bar.strength-4 { background: linear-gradient(to right, #1b5e20 0%, #1b5e20 100%); }
 
 .strength-label {
+  /* password strength label: shared/components/AuthPanel/AuthPanel.jsx */
   font-size: 12px;
   font-weight: 900;
   color: var(--cc-navy);
 }
 
 .auth-aux {
+  /* helper text under auth form: shared/components/AuthPanel/AuthPanel.jsx */
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
@@ -452,6 +484,7 @@ p {
 }
 
 .turnstile-widget {
+  /* captcha container: shared/components/Turnstile.jsx, shared/components/AuthPanel/AuthPanel.jsx */
   display: flex;
   justify-content: center;
   min-height: 65px;
@@ -459,6 +492,7 @@ p {
 
 .page-header,
 .chat-header {
+  /* generic page headers: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx, pages/Chats/Chats.jsx, pages/Chat/Chat.jsx */
   display: flex;
   align-items: center;
   gap: 0.9rem;
@@ -466,11 +500,13 @@ p {
 }
 
 .page-header h1 {
+  /* main page titles: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx, pages/Chats/Chats.jsx */
   font-size: clamp(1.65rem, 4vw, 2.6rem);
   font-weight: 900;
 }
 
 .icon-button {
+  /* tiny icon button: shared/components/AuthPanel/AuthPanel.jsx, pages/Settings/SettingsPage.jsx, pages/Home/HomeHeader.jsx */
   width: 42px;
   height: 42px;
   border: 2px solid var(--cc-navy);
@@ -483,6 +519,7 @@ p {
 }
 
 .form-stack {
+  /* form grid container: pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   align-items: start;
@@ -494,12 +531,14 @@ p {
 }
 
 .chip {
+  /* filter chip: shared/components/AuthPanel/AuthPanel.jsx, features/skills/components/SkillFilter.jsx, features/home/* */
   flex: 0 1 auto;
   border: 2px solid var(--cc-navy);
   background: var(--cc-white);
 }
 
 .detail-panel {
+  /* detail cards: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
   display: grid;
   gap: 14px;
   margin-bottom: 16px;
@@ -507,27 +546,32 @@ p {
 }
 
 .detail-panel h2 {
+  /* detail panel titles: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
   font-size: 18px;
   font-weight: 900;
 }
 
 .detail-panel p {
+  /* detail panel text: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
   color: var(--cc-navy);
   line-height: 1.55;
 }
 
 .detail-row {
+  /* label/value row: pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
 .detail-row span {
+  /* highlighted value in detail row: pages/TaskDetail/TaskDetail.jsx */
   color: var(--cc-blue);
   font-weight: 900;
 }
 
 .user-strip {
+  /* user summary strip: pages/Profile/Profile.jsx, features/profile/pages/ProfilePage.jsx */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -546,6 +590,7 @@ p {
 
 .avatar-small,
 .profile-avatar {
+  /* avatars: pages/Chats/Chats.jsx, pages/Profile/Profile.jsx, features/profile/pages/ProfilePage.jsx, shared/ui/chat/ConversationList.jsx */
   display: grid;
   place-items: center;
   border-radius: 4px;
@@ -555,22 +600,26 @@ p {
 }
 
 .avatar-small {
+  /* compact avatar: shared/ui/chat/ConversationList.jsx, pages/Chats/Chats.jsx */
   width: 44px;
   height: 44px;
 }
 
 .sticky-action {
+  /* sticky CTA wrapper: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx */
   position: sticky;
   bottom: 16px;
 }
 
 .two-actions {
+  /* paired buttons: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx */
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .message-action {
+  /* icon action button in chat/task detail: shared/ui/chat/MessageBubble.jsx, components/home/TaskChatModal.jsx */
   display: inline-grid;
   place-items: center;
   width: 42px;
@@ -584,6 +633,7 @@ p {
 }
 
 .task-chat-overlay {
+  /* contextual task chat modal: components/home/TaskChatModal.jsx */
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -594,6 +644,7 @@ p {
 }
 
 .task-chat-modal {
+  /* contextual task chat modal card: components/home/TaskChatModal.jsx */
   width: min(100%, 42rem);
   max-height: min(90vh, 42rem);
   display: grid;
@@ -606,6 +657,7 @@ p {
 }
 
 .task-chat-header {
+  /* contextual task chat header: components/home/TaskChatModal.jsx */
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -616,11 +668,13 @@ p {
 }
 
 .task-chat-header h2 {
+  /* contextual task chat title: components/home/TaskChatModal.jsx */
   font-size: 1.25rem;
   font-weight: 900;
 }
 
 .task-chat-messages {
+  /* contextual task chat messages area: components/home/TaskChatModal.jsx */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -629,6 +683,7 @@ p {
 }
 
 .task-chat-composer {
+  /* contextual task chat composer: components/home/TaskChatModal.jsx */
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
@@ -638,6 +693,7 @@ p {
 }
 
 .task-chat-composer input {
+  /* contextual task chat input: components/home/TaskChatModal.jsx */
   border: 2px solid var(--cc-navy);
   border-radius: 0.25rem;
   padding: 0.6rem 0.75rem;
@@ -645,12 +701,14 @@ p {
 }
 
 .chat-screen {
+  /* main chat page shell: pages/Chat/Chat.jsx, features/chat/pages/ChatPage.jsx */
   width: min(100%, 54rem);
   display: grid;
   grid-template-rows: auto 1fr auto;
 }
 
 .chat-header {
+  /* main chat page header: features/chat/pages/ChatPage.jsx */
   margin: 0;
   padding: 16px;
   border-bottom: 2px solid var(--cc-navy);
@@ -658,12 +716,14 @@ p {
 }
 
 .chat-header p {
+  /* chat subtitle: features/chat/pages/ChatPage.jsx */
   color: var(--cc-blue);
   font-size: 14px;
   font-weight: 900;
 }
 
 .messages {
+  /* main chat message list: shared/ui/chat/MessageList.jsx, features/chat/pages/ChatPage.jsx */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -671,6 +731,7 @@ p {
 }
 
 .message {
+  /* chat bubble shell: shared/ui/chat/MessageBubble.jsx, features/chat/pages/ChatPage.jsx */
   max-width: 80%;
   border-radius: 4px;
   padding: 12px;
@@ -680,29 +741,34 @@ p {
 }
 
 .message-header {
+  /* message bubble header: shared/ui/chat/MessageBubble.jsx */
   display: flex;
   justify-content: flex-end;
 }
 
 .incoming {
+  /* incoming bubble style: shared/ui/chat/MessageBubble.jsx */
   align-self: flex-start;
   background: var(--cc-white);
   border: 2px solid var(--cc-navy);
 }
 
 .outgoing {
+  /* outgoing bubble style: shared/ui/chat/MessageBubble.jsx */
   align-self: flex-end;
   background: var(--cc-blue);
   color: var(--cc-white);
 }
 
 .message-meta {
+  /* message timestamp/meta: shared/ui/chat/MessageBubble.jsx */
   font-size: 0.72rem;
   font-weight: 700;
   opacity: 0.8;
 }
 
 .message-footer {
+  /* footer with meta + actions: shared/ui/chat/MessageBubble.jsx */
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -710,18 +776,21 @@ p {
 }
 
 .message-edited {
+  /* edited flag: shared/ui/chat/MessageBubble.jsx */
   font-size: 0.72rem;
   font-weight: 700;
   opacity: 0.8;
 }
 
 .message-actions {
+  /* message action row: shared/ui/chat/MessageBubble.jsx */
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
 
 .message-action-link {
+  /* chat action pill: shared/ui/chat/MessageBubble.jsx */
   border: 0;
   background: var(--cc-white);
   color: var(--cc-navy);
@@ -735,15 +804,18 @@ p {
 }
 
 .message-action-link.primary {
+  /* edit action: shared/ui/chat/MessageBubble.jsx */
   color: var(--cc-blue);
 }
 
 .message-action-link.danger {
+  /* delete action: shared/ui/chat/MessageBubble.jsx */
   color: #b00020;
   background: #fff4f6;
 }
 
 .message-action-link.icon {
+  /* icon-only chat action: shared/ui/chat/MessageBubble.jsx */
   width: 1.75rem;
   height: 1.75rem;
   display: inline-grid;
@@ -760,11 +832,13 @@ p {
 }
 
 .message-edit-form {
+  /* inline edit form: shared/ui/chat/MessageBubble.jsx */
   display: grid;
   gap: 0.5rem;
 }
 
 .message-edit-form textarea {
+  /* inline edit textarea: shared/ui/chat/MessageBubble.jsx */
   width: 100%;
   min-height: 88px;
   border: 2px solid var(--cc-navy);
@@ -776,6 +850,7 @@ p {
 }
 
 .message-edit-actions {
+  /* inline edit controls: shared/ui/chat/MessageBubble.jsx */
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -788,6 +863,7 @@ p {
 }
 
 .message-error {
+  /* chat error banner: shared/ui/chat/MessageBubble.jsx, features/chat/pages/ChatPage.jsx */
   border: 2px solid var(--cc-navy);
   border-radius: 4px;
   background: #fff4f6;
@@ -798,6 +874,7 @@ p {
 }
 
 .chat-actions {
+  /* main chat composer row: features/chat/pages/ChatPage.jsx */
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 10px;
@@ -813,11 +890,13 @@ p {
 }
 
 .center-screen {
+  /* centered empty/loading state: pages/Profile/Profile.jsx, pages/Chats/Chats.jsx, pages/TaskComplete/TaskComplete.jsx */
   display: grid;
   place-items: center;
 }
 
 .rating-value {
+  /* rating summary text: features/reviews/components/RatingSummary.jsx */
   margin: 6px 0 18px;
   color: var(--cc-navy);
   font-weight: 900;
@@ -825,6 +904,7 @@ p {
 }
 
 .profile-card {
+  /* profile header card: features/profile/pages/ProfilePage.jsx */
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -838,18 +918,21 @@ p {
 }
 
 .profile-avatar {
+  /* profile avatar: features/profile/pages/ProfilePage.jsx, pages/Profile/Profile.jsx */
   width: 76px;
   height: 76px;
   font-size: 28px;
 }
 
 .stats-grid {
+  /* stats grid: features/profile/pages/ProfilePage.jsx */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: 0.75rem;
 }
 
 .stats-grid article {
+  /* stat tile: features/profile/pages/ProfilePage.jsx */
   display: grid;
   gap: 6px;
   padding: 16px 10px;
@@ -857,17 +940,20 @@ p {
 }
 
 .stats-grid strong {
+  /* stat value: features/profile/pages/ProfilePage.jsx */
   font-size: 20px;
   font-weight: 900;
 }
 
 .stats-grid span {
+  /* stat label: features/profile/pages/ProfilePage.jsx */
   color: var(--cc-blue);
   font-size: 12px;
   font-weight: 900;
 }
 
 .profile-actions {
+  /* profile action stack: features/profile/pages/ProfilePage.jsx */
   display: grid;
   gap: 1rem;
   width: min(100%, 22.5rem);
@@ -881,6 +967,7 @@ p {
 }
 
 .deactivate-panel {
+  /* deactivate account flow: pages/Settings/components/SecuritySettings.jsx */
   display: grid;
   gap: 0;
   border-radius: 4px;
@@ -899,6 +986,7 @@ p {
 }
 
 .deactivate-copy {
+  /* explanatory text in deactivate flow: pages/Settings/components/SecuritySettings.jsx */
   max-height: 0;
   opacity: 0;
   overflow: hidden;
@@ -916,12 +1004,14 @@ p {
 }
 
 .deactivate-copy h2 {
+  /* deactivate heading: pages/Settings/components/SecuritySettings.jsx */
   margin: 0.35rem 0;
   font-size: 1.15rem;
   font-weight: 900;
 }
 
 .deactivate-actions {
+  /* deactivate action row: pages/Settings/components/SecuritySettings.jsx */
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
@@ -934,6 +1024,7 @@ p {
 }
 
 .deactivate-cancel {
+  /* cancel button in deactivate flow: pages/Settings/components/SecuritySettings.jsx */
   max-height: 0;
   border-width: 0;
   padding-top: 0;
@@ -992,12 +1083,14 @@ p {
 }
 
 .image-preview {
+  /* preview panel: pages/CreateTask/CreateTask.jsx, features/tasks/components/TaskLocationPicker.jsx */
   display: grid;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
 
 .image-preview img {
+  /* preview image: pages/CreateTask/CreateTask.jsx, features/tasks/components/TaskLocationPicker.jsx */
   width: 100%;
   max-height: 14rem;
   object-fit: cover;
@@ -1006,6 +1099,7 @@ p {
 }
 
 .task-detail-image {
+  /* task detail hero image: pages/TaskDetail/TaskDetail.jsx */
   display: block;
   width: min(100%, 48rem);
   max-height: 16rem;
@@ -1016,6 +1110,7 @@ p {
 }
 
 .chat-composer {
+  /* legacy chat composer wrapper: pages/Chats/Chats.jsx, features/chat/pages/ChatPage.jsx */
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
@@ -1025,6 +1120,7 @@ p {
 }
 
 .chat-composer input {
+  /* legacy chat input: pages/Chats/Chats.jsx, features/chat/pages/ChatPage.jsx */
   border: 2px solid var(--cc-navy);
   border-radius: 0.25rem;
   padding: 0.6rem 0.75rem;
@@ -1032,6 +1128,7 @@ p {
 }
 
 .chat-list {
+  /* chat list wrapper: pages/Chats/Chats.jsx */
   list-style: none;
   padding: 0;
   margin: 0;
@@ -1040,6 +1137,7 @@ p {
 }
 
 .chat-list-item {
+  /* chat list row: pages/Chats/Chats.jsx, shared/ui/chat/ConversationList.jsx */
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
@@ -1055,11 +1153,13 @@ p {
 }
 
 .chat-list-item strong {
+  /* chat list title: pages/Chats/Chats.jsx, shared/ui/chat/ConversationList.jsx */
   display: block;
   font-weight: 900;
 }
 
 .chat-list-item p {
+  /* chat list subtitle: pages/Chats/Chats.jsx, shared/ui/chat/ConversationList.jsx */
   color: var(--cc-blue);
   font-weight: 700;
   font-size: 0.85rem;
@@ -1067,6 +1167,7 @@ p {
 
 .avatar-small img,
 .profile-avatar img {
+  /* avatar image fill: shared/ui/chat/ConversationList.jsx, features/profile/pages/ProfilePage.jsx */
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1074,6 +1175,7 @@ p {
 }
 
 .empty-state {
+  /* generic empty state: shared/ui/chat/EmptyChatState.jsx, pages/Chats/Chats.jsx, pages/TaskDetail/TaskDetail.jsx */
   text-align: center;
   padding: 1.5rem 1rem;
   border: 2px dashed var(--cc-navy);
@@ -1081,6 +1183,7 @@ p {
 }
 
 .remembered-account {
+  /* remembered email/account block: shared/components/AuthPanel/AuthPanel.jsx */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1099,6 +1202,7 @@ p {
 }
 
 .link-button {
+  /* text link button: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
   background: transparent;
   border: none;
   color: var(--cc-blue);
@@ -1109,6 +1213,7 @@ p {
 }
 
 .auth-legal {
+  /* legal text in auth screens: shared/components/AuthPanel/AuthPanel.jsx */
   font-size: 0.85rem;
   color: var(--cc-navy);
   text-align: center;
@@ -1121,18 +1226,21 @@ p {
 }
 
 .create-task-form {
+  /* create task layout: pages/CreateTask/CreateTask.jsx */
   display: grid;
   gap: 1.25rem;
 }
 
 .create-task-main,
 .create-task-side {
+  /* create task columns: pages/CreateTask/CreateTask.jsx */
   display: grid;
   gap: 1rem;
   min-width: 0;
 }
 
 .create-task-side {
+  /* sidebar column in create task: pages/CreateTask/CreateTask.jsx */
   align-content: start;
 }
 

@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
-import { DEFAULT_PALETTE } from '../lib/palettes'
 
 const LIGHT_THEME = {
   '--cc-navy': '#10162f',
@@ -69,7 +68,6 @@ export default function ThemeApplier() {
     const tokens = appliedTheme === 'dark' ? DARK_THEME : LIGHT_THEME
 
     root.setAttribute('data-theme', appliedTheme)
-    root.setAttribute('data-palette', DEFAULT_PALETTE.key)
 
     Object.entries(tokens).forEach(([key, value]) => {
       root.style.setProperty(key, value)
