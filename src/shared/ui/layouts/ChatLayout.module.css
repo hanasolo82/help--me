@@ -1,0 +1,10 @@
+.screen {
+  min-height: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}

@@ -5,6 +5,7 @@ import { useConversation } from '../hooks/useConversation'
 import { useConversationComposer } from '../hooks/useConversationComposer'
 import { useMessages } from '../hooks/useMessages'
 import { useTypingIndicator } from '../hooks/useTypingIndicator'
+import ChatLayout from '../../../shared/ui/layouts/ChatLayout'
 import MessageList from '../components/MessageList'
 import MessageInput from '../components/MessageInput'
 import TypingIndicator from '../components/TypingIndicator'
@@ -106,8 +107,8 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="app-screen">
-      <section className="chat-screen">
+    <ChatLayout
+      header={
         <header className="chat-header">
           <button type="button" className="icon-button" onClick={() => navigate('/chats')} aria-label="Volver">
             {'<'}
@@ -118,65 +119,65 @@ export default function ChatPage() {
             <p>{conversation.last_message_at ? `Ultima actividad ${new Date(conversation.last_message_at).toLocaleString('es-ES')}` : 'Sin actividad todavia'}</p>
           </div>
         </header>
+      }
+    >
+      <section
+        ref={scrollContainerRef}
+        className="messages"
+        aria-live="polite"
+        onScroll={(event) => {
+          const element = event.currentTarget
+          const distanceToBottom = element.scrollHeight - element.scrollTop - element.clientHeight
+          stickToBottomRef.current = distanceToBottom < 120
+        }}
+      >
+        {messagesError && <p className="auth-message error">{messagesError}</p>}
 
-        <section
-          ref={scrollContainerRef}
-          className="messages"
-          aria-live="polite"
-          onScroll={(event) => {
-            const element = event.currentTarget
-            const distanceToBottom = element.scrollHeight - element.scrollTop - element.clientHeight
-            stickToBottomRef.current = distanceToBottom < 120
-          }}
-        >
-          {messagesError && <p className="auth-message error">{messagesError}</p>}
+        {loadingInitial ? (
+          <p className="muted">Cargando mensajes...</p>
+        ) : (
+          <MessageList
+            messages={messages}
+            currentUserId={user?.id}
+            onEditMessage={handleEdit}
+            onDeleteMessage={handleDelete}
+            onRetryMessage={retryMessage}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
+            onLoadMore={async () => {
+              const beforeHeight = scrollContainerRef.current?.scrollHeight || 0
+              loadingOlderRef.current = true
+              await loadOlder()
+              requestAnimationFrame(() => {
+                const nextHeight = scrollContainerRef.current?.scrollHeight || 0
+                if (scrollContainerRef.current && loadingOlderRef.current) {
+                  scrollContainerRef.current.scrollTop += nextHeight - beforeHeight
+                }
+                loadingOlderRef.current = false
+              })
+            }}
+          />
+        )}
 
-          {loadingInitial ? (
-            <p className="muted">Cargando mensajes...</p>
-          ) : (
-            <MessageList
-              messages={messages}
-              currentUserId={user?.id}
-              onEditMessage={handleEdit}
-              onDeleteMessage={handleDelete}
-              onRetryMessage={retryMessage}
-              loadingMore={loadingMore}
-              hasMore={hasMore}
-              onLoadMore={async () => {
-                const beforeHeight = scrollContainerRef.current?.scrollHeight || 0
-                loadingOlderRef.current = true
-                await loadOlder()
-                requestAnimationFrame(() => {
-                  const nextHeight = scrollContainerRef.current?.scrollHeight || 0
-                  if (scrollContainerRef.current && loadingOlderRef.current) {
-                    scrollContainerRef.current.scrollTop += nextHeight - beforeHeight
-                  }
-                  loadingOlderRef.current = false
-                })
-              }}
-            />
-          )}
-
-          <div ref={messageEndRef} />
-        </section>
-
-        <div style={{ padding: '0 16px 8px' }}>
-          <TypingIndicator typingUsers={typingUsers} />
-          {error && <p className="auth-message error">{error}</p>}
-        </div>
-
-        <MessageInput
-          value={draft}
-          onChange={(value) => {
-            setDraft(value)
-            setTyping(Boolean(value.trim())).catch(() => {})
-          }}
-          onSubmit={handleSend}
-          sending={sending}
-          placeholder="Escribe un mensaje"
-          maxLength={2000}
-        />
+        <div ref={messageEndRef} />
       </section>
-    </main>
+
+      <div style={{ padding: '0 16px 8px' }}>
+        <TypingIndicator typingUsers={typingUsers} />
+        {error && <p className="auth-message error">{error}</p>}
+      </div>
+
+      <MessageInput
+        value={draft}
+        onChange={(value) => {
+          setDraft(value)
+          setTyping(Boolean(value.trim())).catch(() => {})
+        }}
+        onSubmit={handleSend}
+        sending={sending}
+        placeholder="Escribe un mensaje"
+        maxLength={2000}
+      />
+    </ChatLayout>
   )
 }
