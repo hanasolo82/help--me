@@ -10,6 +10,7 @@ import RatingSummary from '../../reviews/components/RatingSummary'
 import ReviewsList from '../../reviews/components/ReviewsList'
 import VerificationBadges from '../../verification/components/VerificationBadges'
 import WeeklyAvailabilityGrid from '../../availability/components/WeeklyAvailabilityGrid'
+import SectionHeader from '../../../shared/ui/SectionHeader'
 import styles from '../styles/profileNetwork.module.css'
 
 const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -226,11 +227,12 @@ export default function ProfilePage() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className="eyebrow">Skills</p>
-          <h2 className={styles.sectionTitle}>Habilidades visibles y filtrables</h2>
-          <p className={styles.sectionLead}>Haz más fácil elegir a la persona correcta mostrando experiencia real.</p>
-        </div>
+        <SectionHeader
+          eyebrow="Skills"
+          title="Habilidades visibles y filtrables"
+          lead="Haz más fácil elegir a la persona correcta mostrando experiencia real."
+          titleClassName={styles.sectionTitle}
+        />
 
         {skillCategories.length > 0 ? (
           <SkillFilter skills={skillCategories} activeSkillId={activeSkillId} onChange={setActiveSkillId} />
@@ -258,32 +260,35 @@ export default function ProfilePage() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className="eyebrow">Confianza</p>
-          <h2 className={styles.sectionTitle}>Verificaciones y reputación</h2>
-          <p className={styles.sectionLead}>La identidad, el teléfono y el email empiezan a ser señales centrales del producto.</p>
-        </div>
+        <SectionHeader
+          eyebrow="Confianza"
+          title="Verificaciones y reputación"
+          lead="La identidad, el teléfono y el email empiezan a ser señales centrales del producto."
+          titleClassName={styles.sectionTitle}
+        />
 
         <VerificationBadges profile={profile} verifications={verifications} />
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className="eyebrow">Reviews</p>
-          <h2 className={styles.sectionTitle}>Opiniones reales de tareas completadas</h2>
-          <p className={styles.sectionLead}>La reputación se construye con cada intercambio completado dentro de helpMe.</p>
-        </div>
+        <SectionHeader
+          eyebrow="Reviews"
+          title="Opiniones reales de tareas completadas"
+          lead="La reputación se construye con cada intercambio completado dentro de helpMe."
+          titleClassName={styles.sectionTitle}
+        />
 
         <RatingSummary profile={profile} reviews={reviews} />
         <ReviewsList reviews={reviews} />
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className="eyebrow">Disponibilidad</p>
-          <h2 className={styles.sectionTitle}>Horarios y actividad semanal</h2>
-          <p className={styles.sectionLead}>{availabilitySummary}</p>
-        </div>
+        <SectionHeader
+          eyebrow="Disponibilidad"
+          title="Horarios y actividad semanal"
+          lead={availabilitySummary}
+          titleClassName={styles.sectionTitle}
+        />
 
         <WeeklyAvailabilityGrid slots={availability} availabilityEnabled={profile.availability_enabled} />
       </section>

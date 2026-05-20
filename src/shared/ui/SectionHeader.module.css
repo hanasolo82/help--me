@@ -1,0 +1,25 @@
+.header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  font-weight: 900;
+}
+
+.lead {
+  color: color-mix(in srgb, var(--text) 84%, transparent);
+  line-height: 1.5;
+}
+
+.compact {
+  gap: 0.15rem;
+}

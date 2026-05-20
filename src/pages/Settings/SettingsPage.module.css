@@ -170,19 +170,9 @@
   box-shadow: none;
 }
 
-.cardHeader {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.cardHeader h2 {
+.cardTitle {
   font-size: 1.15rem;
   font-weight: 900;
-}
-
-.cardHeader span {
-  color: color-mix(in srgb, var(--text) 84%, transparent);
-  line-height: 1.5;
 }
 
 .grid {
