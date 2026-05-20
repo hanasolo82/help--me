@@ -1,10 +1,10 @@
-import styles from './Home.module.css'
 import HomeHeader from '../../components/home/HomeHeader'
 import ModeSwitcher from '../../components/home/ModeSwitcher'
 import ChatsModal from '../../components/home/ChatsModal'
 import TaskChatModal from '../../components/home/TaskChatModal'
 import NeedHelpMapLayout from '../../features/home/need-help/components/NeedHelpMapLayout'
 import OfferHelpMapLayout from '../../features/home/offer-help/components/OfferHelpMapLayout'
+import HomeLayout from '../../shared/ui/layouts/HomeLayout'
 
 export default function HomeView({
   profile,
@@ -52,20 +52,22 @@ export default function HomeView({
   onCloseTaskChat,
 }) {
   return (
-    <main className={isHelperMode ? styles.home : `${styles.home} ${styles.homeWide}`}>
-      <HomeHeader
-        locationLabel={locationLabel}
-        displayName={displayName}
-        avatarUrl={avatarUrl}
-        userInitial={userInitial}
-        onOpenChats={onOpenChats}
-        onOpenSettings={onOpenSettings}
-        onOpenProfile={onOpenProfile}
-        onLogout={onLogout}
-      />
-
-      <ModeSwitcher mode={mode} onChange={onModeChange} />
-
+    <HomeLayout
+      wide={!isHelperMode}
+      header={
+        <HomeHeader
+          locationLabel={locationLabel}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          userInitial={userInitial}
+          onOpenChats={onOpenChats}
+          onOpenSettings={onOpenSettings}
+          onOpenProfile={onOpenProfile}
+          onLogout={onLogout}
+        />
+      }
+      switcher={<ModeSwitcher mode={mode} onChange={onModeChange} />}
+    >
       {isHelperMode ? (
         <OfferHelpMapLayout
           profile={profile}
@@ -117,6 +119,6 @@ export default function HomeView({
         task={activeTaskChat}
         onClose={onCloseTaskChat}
       />
-    </main>
+    </HomeLayout>
   )
 }

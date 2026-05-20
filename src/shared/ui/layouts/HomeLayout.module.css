@@ -1,0 +1,38 @@
+.shell {
+  --session-border: color-mix(in srgb, var(--accent) 72%, var(--text));
+  --session-shadow: color-mix(in srgb, var(--accent) 42%, var(--text));
+  --session-shadow-strong: color-mix(in srgb, var(--accent) 62%, var(--text));
+
+  min-height: 100vh;
+  width: 100%;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+  background-image:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 28%);
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto, auto;
+  color: var(--text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.wide {
+  max-width: none;
+  width: 100%;
+}
+
+.content {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (max-width: 42rem) {
+  .shell {
+    padding-inline: 0.75rem;
+  }
+}
