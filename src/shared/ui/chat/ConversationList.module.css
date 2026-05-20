@@ -1,0 +1,37 @@
+.list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.item {
+  width: 100%;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.85rem;
+  text-align: left;
+}
+
+.item strong {
+  display: block;
+}
+
+.item p {
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-right: 0.75rem;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 900;
+}

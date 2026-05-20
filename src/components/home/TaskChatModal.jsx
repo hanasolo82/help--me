@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/useAuth'
-import MessageList from '../../components/chat/MessageList'
+import MessageList from '../../shared/ui/chat/MessageList'
 import { getMessages, getOrCreateChatByTaskId } from '../../services/chatService'
 import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
 

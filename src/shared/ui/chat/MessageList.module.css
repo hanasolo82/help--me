@@ -1,0 +1,13 @@
+.loadMore {
+  padding: 4px 0 8px;
+}
+
+.loadMoreButton {
+  border: 0;
+  background: transparent;
+}
+
+.list {
+  display: grid;
+  gap: 0.75rem;
+}

@@ -1,0 +1,70 @@
+.message {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem 0.9rem;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--surface);
+}
+
+.outgoing {
+  margin-left: auto;
+}
+
+.incoming {
+  margin-right: auto;
+}
+
+.header,
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.actionLink {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+}
+
+.content {
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mutedContent {
+  color: var(--muted, #6b7280);
+}
+
+.meta {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.badge {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.errorAction {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+}
