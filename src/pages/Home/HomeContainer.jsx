@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
 import { cancelTask, publishTask } from '../../services/tasksService'
@@ -12,23 +12,17 @@ import HomeView from './HomeView'
 
 export default function HomeContainer() {
   const { profile, user } = useAuth()
-  const routeLocation = useLocation()
   const navigate = useNavigate()
 
   const {
-    showMap,
-    showLocationPanel,
     showChatsModal,
     showTaskChatModal,
     activeTaskChat,
     expandedTaskIds,
     publishingTaskId,
-    setShowMap,
-    setShowLocationPanel,
     openChatsModal,
     closeChatsModal,
     openSettingsModal,
-    closeSettingsModal,
     openTaskChat,
     closeTaskChat,
     setPublishingTaskId,
@@ -43,8 +37,6 @@ export default function HomeContainer() {
     setCategory,
     setRadius,
     isHelperMode,
-    helperTitle,
-    helperSubtitle,
     categories,
     radiusOptions,
   } = useHomeFilters(profile)
@@ -53,10 +45,8 @@ export default function HomeContainer() {
     status,
     error,
     requestLocation,
-    clearLocation,
     displayName,
     userInitial,
-    showApproxLocation,
     locationLabel,
     userAvatarUrl,
   } = useHomeLocation(profile)
@@ -77,62 +67,6 @@ export default function HomeContainer() {
     isLoading: isChatsLoading,
     error: chatsError,
   } = useChats()
-
-  useEffect(() => {
-    if (routeLocation.state?.mode === 'need') {
-      setMode('need')
-      navigate('/home', { replace: true, state: null })
-      return
-    }
-
-    if (routeLocation.state?.openMap && mode !== 'need') {
-      setMode('help')
-      setShowLocationPanel(true)
-      setShowMap(true)
-      if (!location && status !== 'loading') {
-        requestLocation()
-      }
-      navigate('/home', { replace: true, state: null })
-    }
-  }, [
-    location,
-    navigate,
-    mode,
-    requestLocation,
-    routeLocation.state,
-    setMode,
-    setShowLocationPanel,
-    setShowMap,
-    status,
-  ])
-
-  const openMap = useCallback(() => {
-    if (mode === 'need') {
-      return
-    }
-
-    setMode('help')
-    closeChatsModal()
-    closeSettingsModal()
-    closeTaskChat()
-    setShowLocationPanel(true)
-    setShowMap(true)
-
-    if (!location && status !== 'loading') {
-      requestLocation()
-    }
-  }, [
-    closeChatsModal,
-    closeSettingsModal,
-    closeTaskChat,
-    location,
-    mode,
-    requestLocation,
-    setMode,
-    setShowLocationPanel,
-    setShowMap,
-    status,
-  ])
 
   const handleLogout = useCallback(async () => {
     try {
@@ -182,18 +116,6 @@ export default function HomeContainer() {
     [navigate],
   )
 
-  const handleCloseMap = useCallback(() => {
-    setShowMap(false)
-  }, [setShowMap])
-
-  const handleDismissLocationPanel = useCallback(() => {
-    setShowLocationPanel(false)
-  }, [setShowLocationPanel])
-
-  const handleClearLocation = useCallback(() => {
-    clearLocation()
-  }, [clearLocation])
-
   useEffect(() => {
     if (mode !== 'need' && mode !== 'help') return
     if (location || status !== 'idle') return
@@ -218,12 +140,9 @@ export default function HomeContainer() {
       onCategoryChange={setCategory}
       radius={radius}
       onRadiusChange={setRadius}
-      helperTitle={helperTitle}
-      helperSubtitle={helperSubtitle}
       isHelperMode={isHelperMode}
       categories={categories}
       radiusOptions={radiusOptions}
-      onOpenMap={openMap}
       visibleTasks={visibleTasks}
       isTasksLoading={isTasksLoading}
       tasksError={tasksError}
@@ -236,19 +155,11 @@ export default function HomeContainer() {
       onCancelTask={handleCancelTask}
       onOpenTaskChat={openTaskChat}
       onEditTask={handleEditTask}
-      showMap={showMap}
-      showLocationPanel={showLocationPanel}
       location={location}
       locationStatus={status}
       locationError={error}
       onRequestNeedLocation={requestLocation}
-      showApproxLocation={showApproxLocation}
       userAvatarUrl={userAvatarUrl}
-      radiusKm={radius}
-      onCloseMap={handleCloseMap}
-      onRequestLocation={requestLocation}
-      onClearLocation={handleClearLocation}
-      onDismissLocationPanel={handleDismissLocationPanel}
       chats={chats}
       isChatsLoading={isChatsLoading}
       chatsError={chatsError}

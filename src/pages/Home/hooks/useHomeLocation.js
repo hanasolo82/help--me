@@ -7,7 +7,6 @@ export function useHomeLocation(profile) {
 
   const displayName = profile?.display_name || profile?.full_name || profile?.username || 'helpMe'
   const userInitial = getAvatarInitial(displayName)
-  const showApproxLocation = profile?.show_approx_location ?? true
   const locationLabel = locationState.location?.label || profile?.neighborhood || 'Activa tu ubicacion'
   const userAvatarUrl = profile?.map_avatar_url || profile?.avatar_url || null
 
@@ -16,17 +15,9 @@ export function useHomeLocation(profile) {
       ...locationState,
       displayName,
       userInitial,
-      showApproxLocation,
       locationLabel,
       userAvatarUrl,
     }),
-    [
-      displayName,
-      locationLabel,
-      locationState,
-      showApproxLocation,
-      userAvatarUrl,
-      userInitial,
-    ],
+    [displayName, locationLabel, locationState, userAvatarUrl, userInitial],
   )
 }

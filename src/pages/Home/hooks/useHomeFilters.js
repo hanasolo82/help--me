@@ -14,8 +14,6 @@ export function useHomeFilters(profile) {
   }, [profile?.search_radius_km, setRadius])
 
   const isHelperMode = mode === 'help'
-  const helperTitle = isHelperMode ? 'Tareas cerca de ti' : 'Tareas solicitadas'
-  const helperSubtitle = isHelperMode ? `${radius} km · ${category}` : 'Publica cada borrador cuando quieras mostrarlo'
 
   return useMemo(
     () => ({
@@ -26,21 +24,9 @@ export function useHomeFilters(profile) {
       setCategory,
       setRadius,
       isHelperMode,
-      helperTitle,
-      helperSubtitle,
       categories,
       radiusOptions,
     }),
-    [
-      category,
-      helperSubtitle,
-      helperTitle,
-      isHelperMode,
-      mode,
-      radius,
-      setCategory,
-      setMode,
-      setRadius,
-    ],
+    [category, isHelperMode, mode, radius, setCategory, setMode, setRadius],
   )
 }

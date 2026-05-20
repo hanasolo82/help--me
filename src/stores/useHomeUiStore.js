@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 
 const initialState = {
-  showMap: false,
-  showLocationPanel: true,
   showChatsModal: false,
   showSettingsModal: false,
   showTaskChatModal: false,
@@ -13,12 +11,8 @@ const initialState = {
 
 export const useHomeUiStore = create((set) => ({
   ...initialState,
-  setShowMap: (showMap) => set({ showMap }),
-  setShowLocationPanel: (showLocationPanel) => set({ showLocationPanel }),
   openChatsModal: () =>
     set({
-      showMap: false,
-      showLocationPanel: true,
       showChatsModal: true,
       showSettingsModal: false,
       showTaskChatModal: false,
@@ -27,16 +21,13 @@ export const useHomeUiStore = create((set) => ({
   closeChatsModal: () => set({ showChatsModal: false }),
   openSettingsModal: () =>
     set({
-      showMap: false,
       showChatsModal: false,
       showSettingsModal: true,
       showTaskChatModal: false,
       activeTaskChat: null,
     }),
-  closeSettingsModal: () => set({ showSettingsModal: false }),
   openTaskChat: (task) =>
     set({
-      showMap: false,
       showChatsModal: false,
       showSettingsModal: false,
       showTaskChatModal: true,
@@ -58,4 +49,3 @@ export const useHomeUiStore = create((set) => ({
     })),
   resetHomeUi: () => set(initialState),
 }))
-
