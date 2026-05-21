@@ -86,6 +86,7 @@
 .themeButton,
 .loginButton,
 .primaryCta,
+.primaryCtaSecondary,
 .secondaryCta {
   border-radius: 0.25rem;
   cursor: pointer;
@@ -156,6 +157,19 @@
   min-height: 3rem;
   width: min(100%, 14rem);
   padding: 0.85rem 1.15rem;
+}
+
+.primaryCtaSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  width: min(100%, 14rem);
+  border: 0.125rem solid var(--shadow);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.85rem 1.15rem;
+  box-shadow: 0.25rem 0.25rem 0 var(--shadow);
 }
 
 .secondaryCta {
@@ -605,6 +619,7 @@
   }
 
   .primaryCta,
+  .primaryCtaSecondary,
   .secondaryCta {
     width: 100%;
     max-width: none;

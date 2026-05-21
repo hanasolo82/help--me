@@ -181,8 +181,8 @@ export default function ProfilePage() {
                 <button type="button" className="primary-action" onClick={() => navigate('/settings')}>
                   Editar perfil
                 </button>
-                <button type="button" className="secondary-action" onClick={() => navigate('/settings')}>
-                  Ajustes
+                <button type="button" className="secondary-action" onClick={() => navigate(-1)}>
+                  Atrás
                 </button>
               </>
             ) : (

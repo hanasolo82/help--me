@@ -11,6 +11,10 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
+        // Aqui se controla la persistencia de la sesion del usuario en el navegador.
+        // `persistSession: true` => Supabase guarda la sesion en localStorage.
+        // El "tiempo" real no se define aqui: lo marca la caducidad de la sesion/JWT en Supabase Auth.
+        // Si quieres cambiar expiracion o sesiones globales, hazlo en la configuracion de Supabase Auth.
         // PKCE evita interception del code en redirecciones OAuth/recover en SPAs.
         flowType: 'pkce',
         persistSession: true,

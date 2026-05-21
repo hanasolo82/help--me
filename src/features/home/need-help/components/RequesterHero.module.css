@@ -1,0 +1,58 @@
+.hero {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  box-shadow: 0.35rem 0.35rem 0 var(--shadow);
+}
+
+.headerRow {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.copy {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.copy h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.searchField {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.searchField input {
+  width: 100%;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0.9rem 1rem;
+  font-weight: 900;
+}
+
+.headerRow :global(.primary-action) {
+  width: auto;
+  max-width: none;
+}
+
+@media (max-width: 42rem) {
+  .headerRow {
+    flex-direction: column;
+  }
+
+  .headerRow :global(.primary-action) {
+    width: 100%;
+  }
+}

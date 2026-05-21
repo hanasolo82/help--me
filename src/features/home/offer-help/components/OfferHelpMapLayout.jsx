@@ -4,6 +4,7 @@ import CategoryFilter from '../../../../components/home/CategoryFilter'
 import RadiusFilter from '../../../../components/home/RadiusFilter'
 import TaskFeed from '../../../../components/home/TaskFeed'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
+import HomeEmptyState from '../../components/HomeEmptyState'
 import styles from '../../need-help/components/NeedHelpMapLayout.module.css'
 
 export default function OfferHelpMapLayout({
@@ -51,6 +52,10 @@ export default function OfferHelpMapLayout({
   }, [location, profile?.city, profile?.lat, profile?.lng, profile?.neighborhood])
 
   const taskCount = visibleTasks?.length || 0
+  const nextRadiusOption = useMemo(
+    () => radiusOptions.find((option) => option > radius) || radiusOptions[radiusOptions.length - 1],
+    [radius, radiusOptions],
+  )
   const viewportTasks = useMemo(() => {
     if (!mapBounds) {
       return visibleTasks || []
@@ -129,10 +134,13 @@ export default function OfferHelpMapLayout({
           </div>
 
           {!taskCount && !isLoading && !error && (
-            <div className={styles.emptyState}>
-              <strong>No hay tareas visibles en esta zona.</strong>
-              <p className="muted">Amplia el radio o ajusta los filtros para encontrar más oportunidades.</p>
-            </div>
+            <HomeEmptyState
+              title="No hay tareas visibles en esta zona"
+              description="Amplia el radio o ajusta los filtros para encontrar más oportunidades."
+              actionLabel="Ampliar radio"
+              onAction={() => onRadiusChange(nextRadiusOption)}
+              tone="neutral"
+            />
           )}
         </section>
 

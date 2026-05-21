@@ -1,0 +1,91 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 66;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(16, 22, 47, 0.72);
+}
+
+.modal {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 42rem);
+  max-height: min(96vh, 52rem);
+  overflow: auto;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  padding: 1.1rem;
+  box-shadow: none;
+}
+
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+}
+
+.closeButton {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--highlight);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.helperHint,
+.locationHint {
+  display: grid;
+  gap: 0.45rem;
+  border: 0.125rem solid var(--shadow);
+  border-radius: 0.25rem;
+  background: var(--bg);
+  padding: 0.85rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.inlineRow {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.visibility,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.visibility :global(.chip) {
+  width: auto;
+}
+
+.actions :global(.secondary-action),
+.actions :global(.primary-action) {
+  width: auto;
+  max-width: none;
+}
+
+@media (min-width: 760px) {
+  .inlineRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

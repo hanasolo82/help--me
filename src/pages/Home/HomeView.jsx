@@ -1,10 +1,9 @@
 import HomeHeader from '../../components/home/HomeHeader'
-import ModeSwitcher from '../../components/home/ModeSwitcher'
 import ChatsModal from '../../components/home/ChatsModal'
 import TaskChatModal from '../../components/home/TaskChatModal'
-import NeedHelpMapLayout from '../../features/home/need-help/components/NeedHelpMapLayout'
-import OfferHelpMapLayout from '../../features/home/offer-help/components/OfferHelpMapLayout'
 import HomeLayout from '../../shared/ui/layouts/HomeLayout'
+import NeedHomeMode from './modes/NeedHomeMode'
+import HelperHomeMode from './modes/HelperHomeMode'
 
 export default function HomeView({
   profile,
@@ -15,9 +14,8 @@ export default function HomeView({
   onOpenChats,
   onOpenSettings,
   onOpenProfile,
+  onOpenHelper,
   onLogout,
-  mode,
-  onModeChange,
   category,
   onCategoryChange,
   radius,
@@ -50,6 +48,8 @@ export default function HomeView({
   showTaskChatModal,
   activeTaskChat,
   onCloseTaskChat,
+  onStartHelperOnboarding,
+  onNeedHelp,
 }) {
   return (
     <HomeLayout
@@ -60,42 +60,47 @@ export default function HomeView({
           displayName={displayName}
           avatarUrl={avatarUrl}
           userInitial={userInitial}
+          onOpenHelper={onOpenHelper}
           onOpenChats={onOpenChats}
           onOpenSettings={onOpenSettings}
           onOpenProfile={onOpenProfile}
           onLogout={onLogout}
         />
       }
-      switcher={<ModeSwitcher mode={mode} onChange={onModeChange} />}
     >
       {isHelperMode ? (
-        <OfferHelpMapLayout
+        <HelperHomeMode
           profile={profile}
-          location={location}
-          userAvatarUrl={userAvatarUrl}
-          userInitial={userInitial}
-          radiusKm={radius}
-          visibleTasks={visibleTasks}
-          isLoading={isTasksLoading}
-          error={tasksError}
-          distancesById={distancesById}
-          currentUserId={currentUserId}
-          expandedTaskIds={expandedTaskIds}
-          publishingTaskId={publishingTaskId}
-          onToggleTaskDetails={onToggleTaskDetails}
-          onPublishTask={onPublishTask}
-          onCancelTask={onCancelTask}
-          onOpenTaskChat={onOpenTaskChat}
-          onEditTask={onEditTask}
-          category={category}
-          onCategoryChange={onCategoryChange}
-          categories={categories}
-          radius={radius}
-          onRadiusChange={onRadiusChange}
-          radiusOptions={radiusOptions}
+          onStartHelperOnboarding={onStartHelperOnboarding}
+          onNeedHelp={onNeedHelp}
+          helperHomeProps={{
+            profile,
+            location,
+            userAvatarUrl,
+            userInitial,
+            radiusKm: radius,
+            visibleTasks,
+            isLoading: isTasksLoading,
+            error: tasksError,
+            distancesById,
+            currentUserId,
+            expandedTaskIds,
+            publishingTaskId,
+            onToggleTaskDetails,
+            onPublishTask,
+            onCancelTask,
+            onOpenTaskChat,
+            onEditTask,
+            category,
+            onCategoryChange,
+            categories,
+            radius,
+            onRadiusChange,
+            radiusOptions,
+          }}
         />
       ) : (
-        <NeedHelpMapLayout
+        <NeedHomeMode
           profile={profile}
           location={location}
           locationStatus={locationStatus}

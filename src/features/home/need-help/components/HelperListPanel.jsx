@@ -1,5 +1,6 @@
 import HelperCard from './HelperCard'
 import HelperFiltersBar from './HelperFiltersBar'
+import HomeEmptyState from '../../components/HomeEmptyState'
 import styles from './NeedHelpMapLayout.module.css'
 
 export default function HelperListPanel({
@@ -21,6 +22,7 @@ export default function HelperListPanel({
   locationLabel = 'Tu zona',
   hasLocation = false,
   onRequestLocation,
+  onPublishRequest,
 }) {
   return (
     <aside className={styles.panelShell}>
@@ -57,10 +59,13 @@ export default function HelperListPanel({
 
       <div className={styles.listScroll}>
         {!loading && !error && visibleHelpers.length === 0 ? (
-          <article className={styles.emptyState}>
-            <strong>No hay helpers visibles en esta parte del mapa.</strong>
-            <p className="muted">Mueve o amplía el mapa para ver personas disponibles en tu área.</p>
-          </article>
+          <HomeEmptyState
+            title="No hay personas disponibles en esta parte del mapa"
+            description="Activa tu ubicación, amplía el mapa o publica una solicitud para que la comunidad pueda responder."
+            actionLabel={onPublishRequest ? 'Publicar solicitud' : onRequestLocation ? 'Usar mi ubicación' : null}
+            onAction={onPublishRequest || onRequestLocation}
+            tone="warning"
+          />
         ) : null}
 
         {visibleHelpers.map((helper) => (

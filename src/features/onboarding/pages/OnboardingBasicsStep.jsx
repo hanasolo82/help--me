@@ -1,54 +1,65 @@
 import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
-import { sanitizeText } from '../../../lib/security'
 import { saveOnboardingBasics } from '../api/onboardingApi'
 import { useOnboardingOutlet } from '../hooks/useOnboardingOutlet'
 import OnboardingFrame from '../components/OnboardingFrame'
-import OnboardingModeSelect from '../components/OnboardingModeSelect'
+import LocationAutocomplete from '../components/LocationAutocomplete'
 import styles from '../styles/onboarding.module.css'
 
 export default function OnboardingBasicsStep() {
   const navigate = useNavigate()
   const { profile, user, refreshProfile } = useAuth()
   const { draft, setDraft } = useOnboardingOutlet()
+  const [submitError, setSubmitError] = useState('')
 
   const mutation = useMutation({
     mutationFn: (payload) => saveOnboardingBasics(payload, profile),
     onSuccess: async () => {
-      await refreshProfile()
-      navigate('/onboarding/skills')
+      void refreshProfile()
+      navigate(draft.mode === 'help' ? '/onboarding/skills' : '/home')
+    },
+    onError: (error) => {
+      setSubmitError(error?.message || 'No pudimos guardar tu perfil. Revisa los datos e inténtalo otra vez.')
     },
   })
 
   function updateField(field, value, maxLength = 120) {
     setDraft((current) => ({
       ...current,
-      [field]: sanitizeText(value, maxLength),
-    }))
-  }
-
-  function handleModeChange(mode) {
-    setDraft((current) => ({
-      ...current,
-      mode,
-      helperEnabled: mode === 'help',
+      [field]: value.slice(0, maxLength),
     }))
   }
 
   function handleSubmit(event) {
     event.preventDefault()
+    setSubmitError('')
+    const fullName =
+      [draft.firstName, draft.lastName].filter(Boolean).join(' ').trim() ||
+      profile?.display_name ||
+      profile?.full_name ||
+      user?.user_metadata?.full_name ||
+      user?.email?.split('@')?.[0] ||
+      'Vecino'
+    const municipality = draft.municipality || draft.city || draft.displayLocation || ''
+    const country = draft.country || 'España'
+
+    if (!municipality.trim()) {
+      setSubmitError('Selecciona o escribe tu ubicación antes de continuar.')
+      return
+    }
 
     mutation.mutate({
-      username: draft.username || user?.email?.split('@')?.[0] || '',
-      fullName: draft.fullName,
+      fullName,
       bio: draft.bio,
-      neighborhood: draft.neighborhood,
-      city: draft.city,
-      country: draft.country,
+      neighborhood: municipality,
+      city: draft.city || draft.municipality || municipality,
+      country,
       lat: draft.lat,
       lng: draft.lng,
       helperEnabled: draft.helperEnabled,
+      helperStatus: draft.helperStatus,
       searchRadiusKm: draft.searchRadiusKm,
       responseTimeMinutes: draft.responseTimeMinutes,
       hourlyRate: draft.hourlyRate,
@@ -60,50 +71,73 @@ export default function OnboardingBasicsStep() {
   }
 
   return (
-    <OnboardingFrame
-      title="Cuéntanos quién eres"
-      lead="Creamos la identidad base del perfil antes de pasar a skills, ubicación y confianza."
-      footer={<p className={styles.smallNote}>Puedes ajustar todo después desde Settings, pero aquí dejamos la base bien preparada.</p>}
-    >
-      <form className={styles.stepBody} onSubmit={handleSubmit}>
-        <OnboardingModeSelect value={draft.mode} onChange={handleModeChange} />
+<OnboardingFrame
+  title="Crea tu perfil"
+  lead="Configura tu perfil básico para entrar en la comunidad, encontrar ayuda cerca de ti y publicar tu primera solicitud."
+  onBack={() => navigate(-1)}
+  footer={
+    <p className={styles.smallNote}>
+      Más adelante podrás activar el modo ayudante y completar las verificaciones necesarias para aparecer en el mapa.
+    </p>
+  }
+>
+  <form className={styles.stepBody} onSubmit={handleSubmit}>
+    <div className={styles.split}>
+      <label className="field">
+        <span>Nombre</span>
+        <input
+          value={draft.firstName}
+          onChange={(event) =>
+            updateField('firstName', event.target.value, 40)
+          }
+          placeholder="Mario"
+        />
+      </label>
 
-        <div className={styles.split}>
-          <label className="field">
-            <span>Username único</span>
-            <input value={draft.username} onChange={(event) => updateField('username', event.target.value, 30)} placeholder="mario_delicias" />
-          </label>
+      <label className="field">
+        <span>Apellidos</span>
+        <input
+          value={draft.lastName}
+          onChange={(event) =>
+            updateField('lastName', event.target.value, 80)
+          }
+          placeholder="García López"
+        />
+      </label>
+    </div>
 
-          <label className="field">
-            <span>Nombre visible</span>
-            <input value={draft.fullName} onChange={(event) => updateField('fullName', event.target.value, 80)} placeholder="Mario García" />
-          </label>
-        </div>
+    <label className="field">
+      <span>Preséntate brevemente</span>
+      <textarea
+        value={draft.bio}
+        onChange={(event) =>
+          updateField('bio', event.target.value, 160)
+        }
+        placeholder="Busco ayuda puntual cerca de mi zona y también me interesa colaborar más adelante."
+      />
+    </label>
 
-        <label className="field">
-          <span>Bio corta</span>
-          <textarea value={draft.bio} onChange={(event) => updateField('bio', event.target.value, 160)} placeholder="Ayudo con recados y tareas pequeñas por mi barrio." />
-        </label>
+    <LocationAutocomplete draft={draft} setDraft={setDraft} />
 
-        <div className={styles.split}>
-          <label className="field">
-            <span>Barrio o zona</span>
-            <input value={draft.neighborhood} onChange={(event) => updateField('neighborhood', event.target.value, 80)} placeholder="Zaragoza · Delicias" />
-          </label>
+    <div className={styles.actions}>
+      <p className="muted">
+        Solo te llevará un minuto. Podrás completar el resto de tu perfil más adelante.
+      </p>
 
-          <label className="field">
-            <span>Ciudad</span>
-            <input value={draft.city} onChange={(event) => updateField('city', event.target.value, 80)} placeholder="Zaragoza" />
-          </label>
-        </div>
+      {submitError ? (
+        <p className="auth-message" role="alert">
+          {submitError}
+        </p>
+      ) : null}
 
-        <div className={styles.actions}>
-          <p className="muted">Al continuar, creamos tu profile base y pasamos a elegir skills.</p>
-          <button className="primary-action" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Guardando...' : 'Continuar'}
-          </button>
-        </div>
-      </form>
-    </OnboardingFrame>
+      <button
+        className="primary-action"
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? 'Guardando...' : 'Continuar'}
+      </button>
+    </div>
+  </form>
+</OnboardingFrame>
   )
 }

@@ -102,6 +102,9 @@ export async function saveProfileVerification(profileId, values) {
     verified_phone: Boolean(values.verified_phone),
     verified_identity: Boolean(values.verified_identity),
     identity_verified: Boolean(values.identity_verified),
+    ...(Object.prototype.hasOwnProperty.call(values, 'helper_status')
+      ? { helper_status: values.helper_status }
+      : {}),
     updated_at: new Date().toISOString(),
   }
 
@@ -132,4 +135,3 @@ export async function saveProfileVerification(profileId, values) {
 
   return profileUpdates
 }
-

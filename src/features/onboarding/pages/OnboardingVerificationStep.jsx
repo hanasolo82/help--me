@@ -2,6 +2,8 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
 import { saveProfileVerification } from '../api/onboardingApi'
+import { HELPER_STATUS } from '../../helper-onboarding/utils/helperPermissions'
+import { updateCurrentProfile } from '../../../services/profilesService'
 import { useOnboardingOutlet } from '../hooks/useOnboardingOutlet'
 import OnboardingFrame from '../components/OnboardingFrame'
 import styles from '../styles/onboarding.module.css'
@@ -15,6 +17,12 @@ export default function OnboardingVerificationStep() {
   const mutation = useMutation({
     mutationFn: (payload) => saveProfileVerification(profileId, payload),
     onSuccess: async () => {
+      if (draft.mode === 'help') {
+        await updateCurrentProfile({
+          helperStatus: HELPER_STATUS.UNDER_REVIEW,
+          helperEnabled: false,
+        })
+      }
       await refreshProfile()
       navigate('/home', { replace: true })
     },
@@ -35,6 +43,7 @@ export default function OnboardingVerificationStep() {
       payment_verified: false,
       identity_verified: draft.identityVerified,
       background_checked: false,
+      helper_status: draft.mode === 'help' ? HELPER_STATUS.UNDER_REVIEW : HELPER_STATUS.NOT_STARTED,
     })
   }
 

@@ -5,6 +5,9 @@ import { getCurrentUser } from '../../services/authService'
 import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
+import { clearHelperHomeIntent, setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
+import HelperIntro from '../../features/helper-onboarding/components/HelperIntro'
+import HelperJourneyModal from '../../features/helper-onboarding/components/HelperJourneyModal'
 
 const LANDING_JSONLD = {
   '@context': 'https://schema.org',
@@ -84,6 +87,9 @@ export default function Landing() {
   })
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
+  const [helperIntroOpen, setHelperIntroOpen] = useState(false)
+  const [helperJourneyOpen, setHelperJourneyOpen] = useState(false)
+  const [pendingJourney, setPendingJourney] = useState('')
   const [darkMode, setDarkMode] = useState(false)
   const [navMenuOpen, setNavMenuOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -99,21 +105,83 @@ export default function Landing() {
     return () => window.clearInterval(intervalId)
   }, [])
 
-  // Si ya hay sesion y se pulsa "Entrar", saltamos directos a Home sin pedir password.
-  async function openAuth(mode) {
-    if (mode === 'login') {
-      const alreadyAuthenticated = await getCurrentUser()
-      if (alreadyAuthenticated) {
-        navigate('/home')
+  async function startJourney(mode) {
+    setHelperHomeIntent(mode)
+
+    const alreadyAuthenticated = await getCurrentUser()
+    if (alreadyAuthenticated) {
+      if (mode === 'help') {
+        setHelperIntroOpen(true)
         return
       }
+
+      navigate('/home', { state: { mode: 'need' } })
+      return
     }
 
-    setAuthModal({ open: true, mode })
+    if (mode === 'help') {
+      setPendingJourney('help')
+      setAuthModal({ open: true, mode: 'register' })
+      return
+    }
+
+    setAuthModal({ open: true, mode: 'login' })
+  }
+
+  async function openLogin() {
+    const alreadyAuthenticated = await getCurrentUser()
+    if (alreadyAuthenticated) {
+      navigate('/home')
+      return
+    }
+
+    setAuthModal({ open: true, mode: 'login' })
   }
 
   function closeAuth() {
     setAuthModal((current) => ({ ...current, open: false }))
+  }
+
+  function handleAuthSuccess({ destination }) {
+    setAuthModal((current) => ({ ...current, open: false }))
+
+    if (pendingJourney === 'help') {
+      setPendingJourney('')
+      setHelperIntroOpen(true)
+      return
+    }
+
+    navigate(destination, { replace: true, state: destination === '/home' ? { mode: 'need' } : undefined })
+  }
+
+  function closeHelperJourney() {
+    setHelperJourneyOpen(false)
+    setPendingJourney('')
+  }
+
+  function closeHelperIntro() {
+    setHelperIntroOpen(false)
+  }
+
+  function startHelperJourneyFromIntro() {
+    setHelperIntroOpen(false)
+    setHelperJourneyOpen(true)
+  }
+
+  function switchToNeedHelp() {
+    clearHelperHomeIntent()
+    setHelperHomeIntent('need')
+    setPendingJourney('')
+    setHelperIntroOpen(false)
+    setHelperJourneyOpen(false)
+    navigate('/home', { replace: true, state: { mode: 'need' } })
+  }
+
+  function finishHelperJourney() {
+    setHelperJourneyOpen(false)
+    setPendingJourney('')
+    setHelperHomeIntent('help')
+    navigate('/home', { state: { mode: 'help' }, replace: true })
   }
 
   return (
@@ -162,7 +230,7 @@ export default function Landing() {
           >
             <span></span>
           </button>
-          <button className={styles.ghostButton} onClick={() => openAuth('login')}>
+          <button className={styles.ghostButton} onClick={openLogin}>
             Entrar
           </button>
         </div>
@@ -178,8 +246,11 @@ export default function Landing() {
           </p>
 
           <div className={styles.heroActions}>
-            <button className={styles.primaryCta} onClick={() => openAuth('login')}>
-              Entrar
+            <button className={styles.primaryCta} onClick={() => startJourney('need')}>
+              Necesito ayuda
+            </button>
+            <button className={styles.primaryCtaSecondary} onClick={() => startJourney('help')}>
+              Quiero ayudar
             </button>
             <a className={styles.secondaryCta} href="#como-funciona">
               Ver resumen
@@ -277,9 +348,14 @@ export default function Landing() {
       <section id="faq" className={styles.finalCta}>
         <p className={styles.kicker}>MVP</p>
         <h2>Primero validamos una microzona. Luego escalamos.</h2>
-        <button className={styles.primaryCta} onClick={() => openAuth('register')}>
-          Probar helpMe
-        </button>
+        <div className={styles.heroActions}>
+          <button className={styles.primaryCta} onClick={() => startJourney('need')}>
+            Necesito ayuda
+          </button>
+          <button className={styles.primaryCtaSecondary} onClick={() => startJourney('help')}>
+            Quiero ayudar
+          </button>
+        </div>
       </section>
 
       <footer className={styles.footer}>
@@ -294,7 +370,23 @@ export default function Landing() {
         </nav>
       </footer>
 
-      <AuthModal open={authModal.open} mode={authModal.mode} onClose={closeAuth} />
+      <AuthModal
+        open={authModal.open}
+        mode={authModal.mode}
+        onClose={closeAuth}
+        onSuccess={handleAuthSuccess}
+      />
+      <HelperIntro
+        open={helperIntroOpen}
+        onClose={closeHelperIntro}
+        onStart={startHelperJourneyFromIntro}
+        onNeedHelp={switchToNeedHelp}
+      />
+      <HelperJourneyModal
+        open={helperJourneyOpen}
+        onClose={closeHelperJourney}
+        onFinish={finishHelperJourney}
+      />
       <CookieConsent />
 
       <script

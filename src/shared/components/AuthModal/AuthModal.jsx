@@ -5,7 +5,7 @@ import styles from './AuthModal.module.css'
 
 // Modal de auth montado sobre la landing. Cierra al pulsar fuera, ESC o el boton de salida.
 // Mantiene scroll lock y devuelve foco al elemento que lo abrio.
-export default function AuthModal({ open, mode = 'login', onClose }) {
+export default function AuthModal({ open, mode = 'login', onClose, onSuccess }) {
   const navigate = useNavigate()
   const dialogRef = useRef(null)
   const previouslyFocusedRef = useRef(null)
@@ -48,9 +48,14 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
     }
   }
 
-  function handleSuccess({ destination }) {
+  function handleSuccess(payload) {
     handleClose()
-    navigate(destination, { replace: true })
+    if (onSuccess) {
+      onSuccess(payload)
+      return
+    }
+
+    navigate(payload.destination, { replace: true })
   }
 
   return (

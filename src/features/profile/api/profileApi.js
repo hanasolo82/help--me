@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabaseClient'
 import { requireUser } from '../../../lib/authHelpers'
+import { canAppearOnMap } from '../../helper-onboarding/utils/helperPermissions'
 
 function toNumber(value) {
   const parsed = Number(value)
@@ -17,10 +18,6 @@ function haversineDistanceKm(lat1, lng1, lat2, lng2) {
       Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2)
 
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-function isVisibleNeedHelpHelper(profile) {
-  return profile?.helper_enabled === true && profile?.availability_enabled === true
 }
 
 export async function getProfileById(profileId) {
@@ -172,9 +169,7 @@ export async function getNearbyHelpers({
 
   let query = supabase
     .from('profiles')
-    .select('id, username, full_name, display_name, avatar_url, map_avatar_url, bio, rating, completed_tasks, reviews_count, verified, verified_email, verified_phone, verified_identity, identity_verified, helper_enabled, availability_enabled, hourly_rate, response_time_minutes, lat, lng, city, country, neighborhood, account_status')
-    .eq('helper_enabled', true)
-    .eq('availability_enabled', true)
+    .select('id, username, full_name, display_name, avatar_url, map_avatar_url, bio, rating, completed_tasks, reviews_count, verified, verified_email, verified_phone, verified_identity, identity_verified, helper_enabled, helper_status, availability_enabled, hourly_rate, response_time_minutes, lat, lng, city, country, neighborhood, account_status')
     .eq('account_status', 'active')
     .not('lat', 'is', null)
     .not('lng', 'is', null)
@@ -195,8 +190,7 @@ export async function getNearbyHelpers({
     throw error
   }
 
-  let helpers = (data ?? [])
-    .filter(isVisibleNeedHelpHelper)
+  const helpersWithDistance = (data ?? [])
     .map((helper) => {
       const helperLat = toNumber(helper.lat)
       const helperLng = toNumber(helper.lng)
@@ -211,19 +205,46 @@ export async function getNearbyHelpers({
     .filter(Boolean)
     .filter((helper) => helper.distance_km <= radiusKm)
     .sort((a, b) => a.distance_km - b.distance_km)
-    .slice(0, limit)
+    .slice(0, limit * 2)
 
-  if (category) {
-    helpers = helpers.filter((helper) =>
-      (helper.skills ?? []).some((skill) => skill?.category === category || skill?.name === category),
-    )
+  if (helpersWithDistance.length === 0) {
+    return []
   }
+
+  const helperIds = helpersWithDistance.map((helper) => helper.id)
+
+  const { data: verificationRows, error: verificationError } = await supabase
+    .from('profile_verifications')
+    .select('profile_id, email_verified, phone_verified, payment_verified, identity_verified, background_checked')
+    .in('profile_id', helperIds)
+
+  if (verificationError) {
+    throw verificationError
+  }
+
+  const verificationByProfileId = new Map(
+    (verificationRows ?? []).map((row) => [
+      row.profile_id,
+      {
+        email_verified: row.email_verified,
+        phone_verified: row.phone_verified,
+        payment_verified: row.payment_verified,
+        identity_verified: row.identity_verified,
+        background_checked: row.background_checked,
+      },
+    ]),
+  )
+
+  let helpers = helpersWithDistance
+    .map((helper) => ({
+      ...helper,
+      profile_verifications: verificationByProfileId.get(helper.id) || null,
+    }))
+    .filter(canAppearOnMap)
 
   if (helpers.length === 0) {
     return []
   }
-
-  const helperIds = helpers.map((helper) => helper.id)
 
   const { data: skillRows, error: skillError } = await supabase
     .from('profile_skills')
@@ -248,9 +269,19 @@ export async function getNearbyHelpers({
     skillRowsByProfileId.set(row.profile_id, current)
   }
 
+  helpers = helpers
+    .map((helper) => ({
+      ...helper,
+      skills: (skillRowsByProfileId.get(helper.id) ?? []).map((entry) => entry.skill).filter(Boolean).slice(0, 3),
+    }))
+    .filter((helper) =>
+      !category ||
+      (helper.skills ?? []).some((skill) => skill?.category === category || skill?.name === category),
+    )
+    .slice(0, limit)
+
   return helpers.map((helper) => ({
     ...helper,
-    skills: (skillRowsByProfileId.get(helper.id) ?? []).map((entry) => entry.skill).filter(Boolean).slice(0, 3),
   }))
 }
 

@@ -65,9 +65,18 @@ function toMapCenter(location, profileCenter) {
   return [41.6523, -0.9019]
 }
 
-export default function NeedHelpMapLayout({ profile, location, locationStatus, locationError, onRequestLocation }) {
+export default function NeedHelpMapLayout({
+  profile,
+  location,
+  locationStatus,
+  locationError,
+  onRequestLocation,
+  preferredMobileView,
+  onPreviewHelper,
+  onPublishRequest,
+}) {
   const navigate = useNavigate()
-  const [mobileView, setMobileView] = useState('map')
+  const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
   const [radiusKm, setRadiusKm] = useState(Number(profile?.search_radius_km ?? 10) || 10)
   const [selectedSkillId, setSelectedSkillId] = useState('all')
   const [onlyAvailable, setOnlyAvailable] = useState(false)
@@ -93,6 +102,12 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
     selectedHelperId,
     selectHelper,
   } = useSelectedHelper(helpers)
+
+  useEffect(() => {
+    if (preferredMobileView) {
+      setMobileView(preferredMobileView)
+    }
+  }, [preferredMobileView])
 
   const searchCenter = useMemo(() => toMapCenter(location, center), [center, location])
   const focusCenter = useMemo(
@@ -124,6 +139,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
   function handleSelectHelper(helper) {
     selectHelper(helper)
     setMobileView('map')
+    onPreviewHelper?.(helper)
   }
 
   return (
@@ -150,7 +166,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
           <div className={styles.mapHeader}>
             <div>
               <p className="eyebrow">Necesito ayuda</p>
-              <h2>Helpers cercanos y confiables</h2>
+              <h2>Personas disponibles</h2>
               <p className="muted">Explora personas disponibles, revisa su perfil y elige a quién contactar.</p>
             </div>
           </div>
@@ -185,9 +201,9 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
 
           {!hasLocation && locationStatus !== 'loading' && (
             <div className={styles.locationNotice}>
-              <strong>No hemos podido fijar tu zona.</strong>
+              <strong>No hemos podido fijar tu zona de referencia.</strong>
               <p className="muted">
-                {locationError || 'Activa la ubicación o usa tu perfil para ver helpers cercanos.'}
+                {locationError || 'Activa la ubicación o usa tu perfil para ver personas cercanas.'}
               </p>
               {onRequestLocation && (
                 <button type="button" className="primary-action" onClick={onRequestLocation}>
@@ -218,6 +234,7 @@ export default function NeedHelpMapLayout({ profile, location, locationStatus, l
             locationLabel={location?.label || profile?.neighborhood || profile?.city || 'Tu zona'}
             hasLocation={hasLocation}
             onRequestLocation={onRequestLocation}
+            onPublishRequest={onPublishRequest}
           />
         </div>
       </div>

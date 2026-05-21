@@ -2,7 +2,9 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
+import { HELPER_STATUS } from '../../helper-onboarding/utils/helperPermissions'
 import { replaceProfileAvailability } from '../api/onboardingApi'
+import { updateCurrentProfile } from '../../../services/profilesService'
 import { useOnboardingOutlet } from '../hooks/useOnboardingOutlet'
 import OnboardingFrame from '../components/OnboardingFrame'
 import styles from '../styles/onboarding.module.css'
@@ -37,6 +39,9 @@ export default function OnboardingAvailabilityStep() {
   const mutation = useMutation({
     mutationFn: (payload) => replaceProfileAvailability(profileId, payload.slots, payload.availabilityEnabled),
     onSuccess: async () => {
+      if (draft.mode === 'help') {
+        await updateCurrentProfile({ helperStatus: HELPER_STATUS.TERMS_PENDING })
+      }
       await refreshProfile()
       navigate('/onboarding/verification')
     },

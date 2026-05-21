@@ -2,8 +2,10 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
+import { HELPER_STATUS } from '../../helper-onboarding/utils/helperPermissions'
 import { getSkillsCatalog } from '../../profile/api/profileApi'
 import { replaceProfileSkills } from '../api/onboardingApi'
+import { updateCurrentProfile } from '../../../services/profilesService'
 import { useOnboardingOutlet } from '../hooks/useOnboardingOutlet'
 import OnboardingFrame from '../components/OnboardingFrame'
 import SkillBadge from '../../skills/components/SkillBadge'
@@ -35,6 +37,9 @@ export default function OnboardingSkillsStep() {
         ...current,
         selectedSkillRows: rows,
       }))
+      if (draft.mode === 'help') {
+        await updateCurrentProfile({ helperStatus: HELPER_STATUS.CONTACT_PENDING })
+      }
       await refreshProfile()
       navigate('/onboarding/location')
     },

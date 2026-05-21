@@ -1,4 +1,17 @@
 import { useCallback, useState } from 'react'
+import { reverseGeocodeLocation } from '../services/locationService'
+
+function buildReadableLocationLabel(place) {
+  if (!place) return 'Tu zona'
+
+  const parts = [place.neighborhood, place.city, place.province, place.country].filter(Boolean)
+
+  if (parts.length === 0) {
+    return 'Tu zona'
+  }
+
+  return parts.slice(0, 2).join(' · ')
+}
 
 export function useUserLocation() {
   const [location, setLocation] = useState(null)
@@ -17,13 +30,32 @@ export function useUserLocation() {
     setStatus('loading')
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          label: 'Ubicacion precisa',
-        })
+      async (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+
+        try {
+          const place = await reverseGeocodeLocation(lat, lng)
+
+          setLocation({
+            lat,
+            lng,
+            accuracy: position.coords.accuracy,
+            label: buildReadableLocationLabel(place),
+            neighborhood: place?.neighborhood || null,
+            city: place?.city || null,
+            province: place?.province || null,
+            country: place?.country || null,
+          })
+        } catch {
+          setLocation({
+            lat,
+            lng,
+            accuracy: position.coords.accuracy,
+            label: 'Tu zona',
+          })
+        }
+
         setStatus('success')
       },
       (geoError) => {

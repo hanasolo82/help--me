@@ -128,6 +128,14 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
         navigate(destination, { replace: true })
       }
     } catch (error) {
+      if (isRegister && error?.code === 'email_taken') {
+        setEmailError(error.message)
+        setStatus(STATUS.error)
+        setMessage('')
+        resetCaptcha()
+        return
+      }
+
       setStatus(STATUS.error)
       setMessage(error.message)
       resetCaptcha()
@@ -229,7 +237,12 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
               aria-invalid={Boolean(emailError)}
               aria-describedby={emailError ? 'email-error' : undefined}
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                if (emailError) {
+                  setEmailError('')
+                }
+              }}
               onBlur={handleEmailBlur}
               placeholder="tu@email.com"
             />

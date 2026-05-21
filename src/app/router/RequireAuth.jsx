@@ -2,6 +2,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
+import { needsRequesterProfile } from '../../features/requester-onboarding/utils/requesterPermissions'
 
 // Guardia de rutas privadas:
 // - sin sesion => /login
@@ -36,7 +37,7 @@ export default function RequireAuth({ children, requireProfile = true }) {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (requireProfile && !profile) {
+  if (requireProfile && (!profile || needsRequesterProfile(profile))) {
     return <Navigate to="/onboarding" replace />
   }
 

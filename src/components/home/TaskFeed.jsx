@@ -1,6 +1,7 @@
 import styles from '../../pages/Home/Home.module.css'
 import { canEditTask } from '../../services/tasksService'
 import TaskCard from './TaskCard'
+import HomeEmptyState from '../../features/home/components/HomeEmptyState'
 
 const TASK_CANCELABLE_STATUSES = new Set(['draft', 'open', 'assigned', 'in_progress'])
 
@@ -104,16 +105,18 @@ export default function TaskFeed({
       </div>
 
       {!loading && !error && (tasks || []).length === 0 && (
-        <article className={styles.emptyState}>
-          <h3>{isHelperMode ? 'No hay tareas con estos filtros' : 'Aun no tienes tareas solicitadas'}</h3>
-          <p>
-            {isHelperMode
+        <HomeEmptyState
+          title={isHelperMode ? 'No hay tareas con estos filtros' : 'Aun no tienes tareas solicitadas'}
+          description={
+            isHelperMode
               ? 'Amplia el radio o cambia el tipo de actividad para ver mas oportunidades.'
-              : 'Pulsa "Nueva tarea" para pedir tu primera ayuda.'}
-          </p>
-        </article>
+              : 'Pulsa "Nueva tarea" para pedir tu primera ayuda.'
+          }
+          actionLabel={!isHelperMode && onAction ? 'Nueva tarea' : null}
+          onAction={!isHelperMode ? onAction : undefined}
+          tone={isHelperMode ? 'warning' : 'positive'}
+        />
       )}
     </section>
   )
 }
-

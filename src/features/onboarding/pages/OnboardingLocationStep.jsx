@@ -1,6 +1,7 @@
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
+import { HELPER_STATUS } from '../../helper-onboarding/utils/helperPermissions'
 import { sanitizeText } from '../../../lib/security'
 import { useUserLocation } from '../../../hooks/useUserLocation'
 import { updateCurrentProfile } from '../../../services/profilesService'
@@ -25,6 +26,9 @@ export default function OnboardingLocationStep() {
         showApproxLocation: true,
       }),
     onSuccess: async () => {
+      if (draft.mode === 'help') {
+        await updateCurrentProfile({ helperStatus: HELPER_STATUS.IDENTITY_PENDING })
+      }
       await refreshProfile()
       navigate('/onboarding/availability')
     },

@@ -193,7 +193,10 @@ export function onAuthStateChange(callback) {
   return data.subscription
 }
 
-// Cierra la sesion. scope='global' cierra TODAS las sesiones del usuario (todos los devices).
+// Cierra la sesion.
+// scope='local' borra solo esta sesion del navegador actual.
+// scope='global' invalida TODAS las sesiones del usuario (todos los dispositivos).
+// Este es el sitio exacto donde debes llamar si quieres un "cierre definitivo".
 export async function signOut({ scope = 'local' } = {}) {
   assertSupabaseReady()
   const { error } = await supabase.auth.signOut({ scope })
@@ -233,9 +236,12 @@ function normalizeAuthError(error, { context } = {}) {
   }
 
   // En signup, si el usuario ya existe Supabase puede devolver "User already registered".
-  // Lo neutralizamos a un mensaje generico para no confirmar la existencia del email.
+  // Marcamos el caso de forma distinguible para que el formulario lo refleje en el input
+  // de email, pero seguimos evitando exponer detalles innecesarios en el resto de errores.
   if (context === 'signup' && normalizedMessage.includes('already registered')) {
-    return new Error('Si el correo es valido recibiras instrucciones por email.')
+    const takenError = new Error('Ese correo ya está registrado. Inicia sesión o usa otro.')
+    takenError.code = 'email_taken'
+    return takenError
   }
 
   return error instanceof Error ? error : new Error('Ha ocurrido un error de autenticacion.')

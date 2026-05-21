@@ -16,7 +16,7 @@ function getBrowserLocation() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          label: 'Ubicacion precisa',
+          label: 'Tu zona',
         })
       },
       reject,
@@ -107,6 +107,8 @@ export async function reverseGeocodeLocation(latitude, longitude) {
     houseNumber: address.house_number || null,
     neighborhood: address.neighbourhood || address.suburb || address.quarter || null,
     city: address.city || address.town || address.village || address.municipality || null,
+    province: address.state || address.province || address.county || address.region || null,
+    region: address.region || address.state || null,
     raw: data,
   }
 }

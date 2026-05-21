@@ -1,0 +1,100 @@
+.shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--cc-navy);
+  border-radius: 4px;
+  background: var(--cc-white);
+  min-height: 28rem;
+}
+
+.mapBlur {
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(24, 4, 201, 0.2), transparent 25%),
+    radial-gradient(circle at 80% 30%, rgba(255, 211, 0, 0.28), transparent 22%),
+    linear-gradient(135deg, #fff 0%, #f2efe6 50%, #e4ded2 100%);
+  filter: blur(1.6px) saturate(0.7);
+  opacity: 0.8;
+}
+
+.mapBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 999px;
+  background: var(--cc-white);
+  padding: 0.5rem 0.9rem;
+  font-weight: 900;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: end;
+  background: linear-gradient(to top, rgba(16, 22, 47, 0.12), transparent 45%);
+  pointer-events: none;
+}
+
+.card {
+  pointer-events: auto;
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 4px;
+  background: var(--cc-white);
+  box-shadow: 0.35rem 0.35rem 0 var(--cc-navy);
+}
+
+.title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+}
+
+.copy {
+  line-height: 1.5;
+}
+
+.progress {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bar {
+  height: 0.7rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 999px;
+  background: var(--cc-cream);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--cc-blue);
+}
+
+.steps {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+

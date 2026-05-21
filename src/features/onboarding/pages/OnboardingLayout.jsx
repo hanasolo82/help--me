@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
+import { getDetectedProvince, getProvinceForMunicipality } from '../utils/locationCatalog'
 import styles from '../styles/onboarding.module.css'
-import OnboardingProgress from '../components/OnboardingProgress'
+
+const HELPER_ONBOARDING_PROGRESS_KEY = 'helpme-helper-onboarding-progress-v1'
 
 const STEPS = [
   { key: 'basics', path: '/onboarding', label: 'Perfil' },
@@ -17,30 +19,97 @@ function getStepIndex(pathname) {
   return index === -1 ? 0 : index
 }
 
-function buildInitialDraft(user, profile, routeState) {
-  const defaultMode = routeState?.mode === 'need' ? 'need' : 'help'
+function readHelperOnboardingProgress(storageKey) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    const raw = window.localStorage.getItem(storageKey)
+    const parsed = raw ? JSON.parse(raw) : null
+
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function writeHelperOnboardingProgress(storageKey, progress) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(progress))
+}
+
+function clearHelperOnboardingProgress(storageKey) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.removeItem(storageKey)
+}
+
+function buildInitialDraft(user, profile, routeState, savedProgress) {
+  const defaultMode = routeState?.mode === 'help' ? 'help' : 'need'
+  const savedDraft = savedProgress?.draft && typeof savedProgress.draft === 'object' ? savedProgress.draft : {}
+  const mode = routeState?.mode === 'help' ? 'help' : defaultMode
+  const fullNameSource = profile?.display_name || profile?.full_name || user?.user_metadata?.full_name || savedDraft.fullName || ''
+  const fullNameParts = fullNameSource.trim().replace(/\s+/g, ' ').split(' ')
+  const municipality =
+    savedDraft.municipality ||
+    profile?.city ||
+    profile?.neighborhood ||
+    savedDraft.city ||
+    savedDraft.neighborhood ||
+    ''
+  const detectedProvince =
+    savedDraft.province ||
+    getProvinceForMunicipality(savedDraft.municipality || savedDraft.city || savedDraft.neighborhood) ||
+    getProvinceForMunicipality(profile?.city || profile?.neighborhood) ||
+    user?.user_metadata?.province ||
+    user?.user_metadata?.region ||
+    getDetectedProvince(profile?.country) ||
+    ''
+  const formattedAddress =
+    savedDraft.formattedAddress ||
+    savedDraft.displayLocation ||
+    [municipality, detectedProvince, profile?.country || user?.user_metadata?.country].filter(Boolean).join(', ') ||
+    ''
+
   return {
-    mode: defaultMode,
-    username: profile?.username || '',
-    fullName: profile?.display_name || profile?.full_name || user?.user_metadata?.full_name || '',
-    bio: profile?.bio || '',
-    neighborhood: profile?.neighborhood || '',
-    city: profile?.city || user?.user_metadata?.city || '',
-    country: profile?.country || user?.user_metadata?.country || '',
-    lat: profile?.lat ?? null,
-    lng: profile?.lng ?? null,
-    helperEnabled: profile?.helper_enabled ?? defaultMode === 'help',
-    searchRadiusKm: profile?.search_radius_km ?? 10,
-    responseTimeMinutes: profile?.response_time_minutes ?? '',
-    hourlyRate: profile?.hourly_rate ?? '',
-    availabilityEnabled: profile?.availability_enabled ?? true,
-    verifiedEmail: profile?.verified_email ?? Boolean(user?.email_confirmed_at),
-    verifiedPhone: profile?.verified_phone ?? false,
-    verifiedIdentity: profile?.verified_identity ?? false,
-    identityVerified: profile?.identity_verified ?? false,
-    selectedSkills: [],
-    selectedSkillRows: [],
-    availabilitySlots: [],
+    mode,
+    username: profile?.username || savedDraft.username || '',
+    firstName: savedDraft.firstName || fullNameParts[0] || '',
+    lastName: savedDraft.lastName || fullNameParts.slice(1).join(' ') || '',
+    fullName: fullNameSource,
+    province: detectedProvince,
+    bio: profile?.bio || savedDraft.bio || '',
+    municipality,
+    displayLocation: formattedAddress,
+    neighborhood: municipality,
+    city: municipality,
+    country: profile?.country || user?.user_metadata?.country || savedDraft.country || 'España',
+    countryCode: profile?.country_code || savedDraft.countryCode || '',
+    region: profile?.region || savedDraft.region || '',
+    formattedAddress,
+    placeId: savedDraft.placeId || '',
+    lat: profile?.lat ?? savedDraft.lat ?? null,
+    lng: profile?.lng ?? savedDraft.lng ?? null,
+    helperEnabled: profile?.helper_enabled ?? savedDraft.helperEnabled ?? false,
+    searchRadiusKm: profile?.search_radius_km ?? savedDraft.searchRadiusKm ?? 10,
+    responseTimeMinutes: profile?.response_time_minutes ?? savedDraft.responseTimeMinutes ?? '',
+    hourlyRate: profile?.hourly_rate ?? savedDraft.hourlyRate ?? '',
+    availabilityEnabled: profile?.availability_enabled ?? savedDraft.availabilityEnabled ?? true,
+    verifiedEmail: profile?.verified_email ?? savedDraft.verifiedEmail ?? Boolean(user?.email_confirmed_at),
+    verifiedPhone: profile?.verified_phone ?? savedDraft.verifiedPhone ?? false,
+    verifiedIdentity: profile?.verified_identity ?? savedDraft.verifiedIdentity ?? false,
+    identityVerified: profile?.identity_verified ?? savedDraft.identityVerified ?? false,
+    helperStatus:
+      profile?.helper_status ?? savedDraft.helperStatus ?? (mode === 'help' ? 'profile_incomplete' : 'not_started'),
+    selectedSkills: savedDraft.selectedSkills || [],
+    selectedSkillRows: savedDraft.selectedSkillRows || [],
+    availabilitySlots: savedDraft.availabilitySlots || [],
   }
 }
 
@@ -48,37 +117,65 @@ export default function OnboardingLayout() {
   const { user, profile, refreshProfile, loading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const [draft, setDraft] = useState(() => buildInitialDraft(user, profile, location.state))
+  const storageKey = useMemo(
+    () => `${HELPER_ONBOARDING_PROGRESS_KEY}:${user?.id || 'anonymous'}`,
+    [user?.id],
+  )
+  const savedProgress = useMemo(() => readHelperOnboardingProgress(storageKey), [storageKey])
+  const [draft, setDraft] = useState(() => buildInitialDraft(user, profile, location.state, savedProgress))
+  const returnTo = location.state?.returnTo || savedProgress?.returnTo || '/home'
+  const isHelperFlow = draft.mode === 'help'
+  const activeSteps = isHelperFlow ? STEPS : STEPS.slice(0, 1)
 
   const stepIndex = getStepIndex(location.pathname)
+
+  useEffect(() => {
+    if (isHelperFlow && location.pathname === '/onboarding' && savedProgress?.path && savedProgress.path !== '/onboarding') {
+      navigate(savedProgress.path, { replace: true })
+    }
+  }, [isHelperFlow, location.pathname, navigate, savedProgress?.path])
+
+  useEffect(() => {
+    if (!user?.id) {
+      return
+    }
+
+    writeHelperOnboardingProgress(storageKey, {
+      userId: user.id,
+      path: location.pathname,
+      returnTo,
+      draft,
+      updatedAt: new Date().toISOString(),
+    })
+  }, [draft, location.pathname, returnTo, storageKey, user?.id])
 
   const contextValue = useMemo(
     () => ({
       draft,
       setDraft,
-      steps: STEPS,
+      steps: activeSteps,
       currentStep: stepIndex,
       goNext() {
-        const nextStep = STEPS[Math.min(stepIndex + 1, STEPS.length - 1)]
+        const nextStep = activeSteps[Math.min(stepIndex + 1, activeSteps.length - 1)]
         navigate(nextStep.path)
       },
       goBack() {
-        const previousStep = STEPS[Math.max(stepIndex - 1, 0)]
+        const previousStep = activeSteps[Math.max(stepIndex - 1, 0)]
         navigate(previousStep.path)
       },
       finish() {
-        refreshProfile().finally(() => navigate('/home', { replace: true }))
+        clearHelperOnboardingProgress(storageKey)
+        refreshProfile().finally(() => navigate(returnTo, { replace: true }))
       },
       refreshProfile,
     }),
-    [draft, navigate, refreshProfile, stepIndex],
+    [activeSteps, draft, navigate, refreshProfile, returnTo, storageKey, stepIndex],
   )
 
   if (loading) {
     return (
       <main className="auth-screen">
         <section className="auth-panel">
-          <p className="eyebrow">Onboarding</p>
           <h1>Preparando tu perfil</h1>
           <p className="muted">Estamos validando tu sesión para construir el flujo de confianza.</p>
         </section>
@@ -86,14 +183,13 @@ export default function OnboardingLayout() {
     )
   }
 
-  if (profile && location.pathname === '/onboarding') {
+  if (profile && location.pathname === '/onboarding' && !isHelperFlow) {
     return <Navigate to="/home" replace />
   }
 
   return (
     <main className="auth-screen">
       <div className={styles.shell}>
-        <OnboardingProgress steps={STEPS} currentStep={stepIndex} />
         <Outlet context={contextValue} />
       </div>
     </main>

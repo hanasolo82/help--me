@@ -20,6 +20,41 @@
   box-shadow: none;
 }
 
+.headerRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  border: 2px solid var(--cc-navy);
+  border-radius: 999px;
+  background: var(--cc-cream);
+  color: var(--cc-navy);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  background: var(--cc-yellow);
+}
+
+.backIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  display: block;
+}
+
+.backButton:focus-visible {
+  outline: 3px solid var(--cc-blue);
+  outline-offset: 2px;
+}
+
 .progress {
   display: grid;
   gap: 0.45rem;

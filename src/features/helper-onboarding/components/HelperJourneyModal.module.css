@@ -1,0 +1,99 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--cc-navy) 64%, rgba(0, 0, 0, 0.58));
+  overflow: hidden;
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 54rem);
+  height: min(calc(100vh - 1.5rem), 56rem);
+  overflow: auto;
+  background: var(--cc-white);
+  color: var(--cc-navy);
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.55rem;
+  box-shadow: 0.85rem 0.85rem 0 var(--cc-navy);
+  padding: clamp(1rem, 3vw, 1.4rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 0.25rem;
+  background: var(--cc-yellow);
+  color: var(--cc-navy);
+  font-size: 1.4rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 0.2rem;
+  font-family: inherit;
+  line-height: 0;
+}
+
+.header {
+  display: grid;
+  gap: 0.35rem;
+  padding-right: 2.5rem;
+}
+
+.header h2 {
+  font-size: clamp(1.6rem, 3.2vw, 2.15rem);
+  line-height: 1.05;
+}
+
+.progress {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.bar {
+  height: 0.8rem;
+  border: 0.125rem solid var(--cc-navy);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cc-cream);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--cc-blue);
+}
+
+.error {
+  color: #b00020;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+@media (max-width: 719px) {
+  .backdrop {
+    padding: 0;
+  }
+
+  .modal {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: 0;
+    border-right: 0;
+  }
+}
