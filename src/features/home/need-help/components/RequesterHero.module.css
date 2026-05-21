@@ -4,7 +4,7 @@
   padding: 1rem;
   border: 0.125rem solid var(--shadow);
   border-radius: 0.25rem;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
   box-shadow: 0.35rem 0.35rem 0 var(--shadow);
 }
 
@@ -36,7 +36,7 @@
   width: 100%;
   border: 0.125rem solid var(--shadow);
   border-radius: 0.25rem;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   color: var(--text);
   padding: 0.9rem 1rem;
   font-weight: 900;

@@ -11,7 +11,7 @@
   background-image:
     radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 28%);
-  background-color: var(--bg);
+  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto, auto;

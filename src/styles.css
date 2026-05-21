@@ -57,12 +57,12 @@ body::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.08;
+  opacity: 0.06;
   background-image: url('./assets/icons/fondo-garabatos-garabatos.png');
   background-repeat: repeat;
   background-position: 0 0;
   background-size: 520px auto;
-  animation: doodle-drift 120s linear infinite;
+  animation: doodle-drift 180s linear infinite;
   will-change: background-position;
 }
 
@@ -1285,6 +1285,6 @@ p {
   }
 
   to {
-    background-position: 520px 0;
+    background-position: 1040px 0;
   }
 }
