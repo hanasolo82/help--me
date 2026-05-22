@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../contexts/useAuth'
 import { estimatePasswordStrength, validateEmail } from '../../../lib/security'
 import { clearRememberedEmail, readRememberedEmail } from '../../../lib/consent'
 import Turnstile from '../Turnstile'
@@ -54,7 +53,6 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   const emailInputRef = useRef(null)
   const passwordInputRef = useRef(null)
   const navigate = useNavigate()
-  const { refreshProfile } = useAuth()
 
   const hasRemembered = Boolean(rememberedEmail)
   const isRegister = mode === 'register' && !hasRemembered
@@ -119,13 +117,10 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
         return
       }
 
-      const nextProfile = await refreshProfile()
-      const destination = nextProfile ? '/home' : '/onboarding'
-
       if (onSuccess) {
-        onSuccess({ destination, profile: nextProfile })
+        onSuccess({ destination: '/auth/callback' })
       } else {
-        navigate(destination, { replace: true })
+        navigate('/auth/callback', { replace: true })
       }
     } catch (error) {
       if (isRegister && error?.code === 'email_taken') {
@@ -172,7 +167,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   const strength = isRegister ? estimatePasswordStrength(password) : null
 
   return (
-      <section className="auth-panel">
+    <section className="auth-panel">
       <h1 id={titleId}>{copy.title}</h1>
 
       {!hasRemembered && (

@@ -4,7 +4,7 @@ import { clearRememberedEmail, rememberEmail } from '../lib/consent'
 
 // URLs publicas para callbacks de Supabase. Solo deben coincidir con la allow-list
 // configurada en Supabase Auth > URL Configuration para evitar open redirect.
-const redirectTo = `${window.location.origin}/home`
+const redirectTo = `${window.location.origin}/auth/callback`
 const resetRedirectTo = `${window.location.origin}/reset-password`
 
 // Inicia OAuth con Google. La redireccion la gestiona Supabase, no guardamos passwords.

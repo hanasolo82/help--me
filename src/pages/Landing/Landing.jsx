@@ -5,9 +5,7 @@ import { getCurrentUser } from '../../services/authService'
 import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
-import { clearHelperHomeIntent, setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
-import HelperIntro from '../../features/helper-onboarding/components/HelperIntro'
-import HelperJourneyModal from '../../features/helper-onboarding/components/HelperJourneyModal'
+import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 
 const LANDING_JSONLD = {
   '@context': 'https://schema.org',
@@ -87,9 +85,6 @@ export default function Landing() {
   })
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
-  const [helperIntroOpen, setHelperIntroOpen] = useState(false)
-  const [helperJourneyOpen, setHelperJourneyOpen] = useState(false)
-  const [pendingJourney, setPendingJourney] = useState('')
   const [darkMode, setDarkMode] = useState(false)
   const [navMenuOpen, setNavMenuOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -110,17 +105,11 @@ export default function Landing() {
 
     const alreadyAuthenticated = await getCurrentUser()
     if (alreadyAuthenticated) {
-      if (mode === 'help') {
-        setHelperIntroOpen(true)
-        return
-      }
-
-      navigate('/home', { state: { mode: 'need' } })
+      navigate('/auth/callback', { replace: true })
       return
     }
 
     if (mode === 'help') {
-      setPendingJourney('help')
       setAuthModal({ open: true, mode: 'register' })
       return
     }
@@ -131,7 +120,7 @@ export default function Landing() {
   async function openLogin() {
     const alreadyAuthenticated = await getCurrentUser()
     if (alreadyAuthenticated) {
-      navigate('/home')
+      navigate('/auth/callback', { replace: true })
       return
     }
 
@@ -144,44 +133,7 @@ export default function Landing() {
 
   function handleAuthSuccess({ destination }) {
     setAuthModal((current) => ({ ...current, open: false }))
-
-    if (pendingJourney === 'help') {
-      setPendingJourney('')
-      setHelperIntroOpen(true)
-      return
-    }
-
-    navigate(destination, { replace: true, state: destination === '/home' ? { mode: 'need' } : undefined })
-  }
-
-  function closeHelperJourney() {
-    setHelperJourneyOpen(false)
-    setPendingJourney('')
-  }
-
-  function closeHelperIntro() {
-    setHelperIntroOpen(false)
-  }
-
-  function startHelperJourneyFromIntro() {
-    setHelperIntroOpen(false)
-    setHelperJourneyOpen(true)
-  }
-
-  function switchToNeedHelp() {
-    clearHelperHomeIntent()
-    setHelperHomeIntent('need')
-    setPendingJourney('')
-    setHelperIntroOpen(false)
-    setHelperJourneyOpen(false)
-    navigate('/home', { replace: true, state: { mode: 'need' } })
-  }
-
-  function finishHelperJourney() {
-    setHelperJourneyOpen(false)
-    setPendingJourney('')
-    setHelperHomeIntent('help')
-    navigate('/home', { state: { mode: 'help' }, replace: true })
+    navigate(destination, { replace: true })
   }
 
   return (
@@ -375,17 +327,6 @@ export default function Landing() {
         mode={authModal.mode}
         onClose={closeAuth}
         onSuccess={handleAuthSuccess}
-      />
-      <HelperIntro
-        open={helperIntroOpen}
-        onClose={closeHelperIntro}
-        onStart={startHelperJourneyFromIntro}
-        onNeedHelp={switchToNeedHelp}
-      />
-      <HelperJourneyModal
-        open={helperJourneyOpen}
-        onClose={closeHelperJourney}
-        onFinish={finishHelperJourney}
       />
       <CookieConsent />
 
