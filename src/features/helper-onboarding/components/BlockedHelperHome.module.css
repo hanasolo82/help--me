@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   display: grid;
   gap: 1rem;
 }
@@ -6,10 +6,12 @@
 .frame {
   position: relative;
   overflow: hidden;
-  border: 2px solid var(--cc-navy);
-  border-radius: 4px;
-  background: var(--cc-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px);
   min-height: 28rem;
+  box-shadow: var(--shadow-md);
 }
 
 .mapBlur {
@@ -29,11 +31,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 999px;
-  background: var(--cc-white);
+  background: rgba(255, 255, 255, 0.76);
   padding: 0.5rem 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
 }
 
 .overlay {
@@ -41,7 +44,7 @@
   inset: 0;
   display: grid;
   align-content: end;
-  background: linear-gradient(to top, rgba(16, 22, 47, 0.12), transparent 45%);
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.08), transparent 45%);
   pointer-events: none;
 }
 
@@ -51,15 +54,16 @@
   gap: 0.85rem;
   margin: 1rem;
   padding: 1rem;
-  border: 2px solid var(--cc-navy);
-  border-radius: 4px;
-  background: var(--cc-white);
-  box-shadow: 0.35rem 0.35rem 0 var(--cc-navy);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-lg);
 }
 
 .title {
   font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .copy {
@@ -73,16 +77,16 @@
 
 .bar {
   height: 0.7rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 999px;
-  background: var(--cc-cream);
+  background: rgba(255, 255, 255, 0.66);
   overflow: hidden;
 }
 
 .fill {
   display: block;
   height: 100%;
-  background: var(--cc-blue);
+  background: var(--color-primary);
 }
 
 .steps {

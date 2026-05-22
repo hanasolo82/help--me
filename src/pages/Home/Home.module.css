@@ -1,4 +1,6 @@
 .header {
+  position: relative;
+  z-index: 300;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -8,17 +10,17 @@
 }
 
 .location {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.88rem;
-  font-weight: 900;
+  font-weight: 700;
   margin-bottom: 0.25rem;
   text-transform: capitalize;
 }
 
 .logo {
-  color: var(--text);
+  color: var(--color-text);
   font-size: clamp(1.85rem, 3vw, 3rem);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .headerActions {
@@ -30,10 +32,10 @@
 .helperLink {
   border: 0;
   background: transparent;
-  color: var(--accent);
+  color: var(--color-primary);
   cursor: pointer;
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.25rem 0;
   box-shadow: none;
 }
@@ -46,14 +48,15 @@
 .menuWrap {
   position: relative;
   display: grid;
+  z-index: 400;
 }
 
 .landingButton,
 .avatar {
-  border: 0.125rem solid var(--session-border, var(--shadow));
-  border-radius: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   transition:
     transform 0.16s ease,
     box-shadow 0.16s ease,
@@ -64,9 +67,9 @@
 
 .landingButton {
   padding: 0.68rem 0.85rem;
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar {
@@ -75,54 +78,56 @@
   width: 2.75rem;
   height: 2.75rem;
   overflow: hidden;
-  background-color: var(--accent);
-  color: var(--surface);
-  box-shadow: none;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
 }
 
 .menuButton {
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 1.4rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   padding: 0.55rem 0.7rem 0.45rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .menuDropdown {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  z-index: 20;
+  z-index: 9999;
   display: grid;
-  min-width: 11rem;
+  width: 11rem;
+  max-width: calc(100vw - 1.5rem);
   gap: 0.35rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   padding: 0.45rem;
-  box-shadow: none;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-lg);
 }
 
 .menuItem {
   width: 100%;
-  border: 0.125rem solid transparent;
-  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: transparent;
-  color: var(--text);
+  color: var(--color-text);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.65rem 0.75rem;
   text-align: left;
 }
 
 .menuItem:hover {
-  background: var(--bg);
-  border-color: var(--shadow);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(15, 23, 42, 0.08);
 }
 
 .logoutOverlay {
@@ -132,32 +137,34 @@
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(16, 22, 47, 0.68);
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(14px);
 }
 
 .logoutModal {
   display: grid;
   gap: 0.9rem;
   width: min(100%, 28rem);
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
   padding: 1.25rem;
-  box-shadow: none;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-lg);
 }
 
 .logoutModal h2 {
   margin: 0;
-  color: var(--text);
+  color: var(--color-text);
   font-size: clamp(1.35rem, 3vw, 1.85rem);
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.1;
 }
 
 .logoutKicker {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -183,18 +190,18 @@
 .avatar:hover,
 .mapButton:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 0.3rem 0.3rem 0 var(--session-shadow-strong, var(--shadow));
+  box-shadow: var(--shadow-md);
 }
 
 .toggle {
   display: flex;
   max-width: 42rem;
-  background-color: var(--surface);
-  padding: 0.25rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.66);
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   margin-bottom: 1.25rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .activeButton,
@@ -202,24 +209,22 @@
 .inactiveButton {
   flex: 1;
   border: 0;
-  border-radius: 0.125rem;
-  padding: 0.85rem;
+  border-radius: 999px;
+  padding: 0.9rem;
   cursor: pointer;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 700;
   transition: 0.16s ease;
 }
 
 .activeButton {
-  background-color: var(--accent);
-  color: var(--surface);
-  box-shadow: none;
+  background-color: var(--color-primary);
+  color: #ffffff;
 }
 
 .activeButtonNeed {
-  background-color: var(--highlight);
-  color: var(--text);
-  box-shadow: none;
+  background-color: rgba(41, 171, 255, 0.1);
+  color: var(--color-text);
 }
 
 .inactiveButton {
@@ -240,20 +245,20 @@
 }
 
 .filters span {
-  color: var(--text);
+  color: var(--color-text);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .filters select {
   width: 100%;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  color: var(--text);
-  padding: 0.75rem;
-  font-weight: 900;
-  box-shadow: none;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
 }
 
 .tasksContainer {
@@ -269,15 +274,15 @@
 }
 
 .sectionTitle h2 {
-  color: var(--text);
+  color: var(--color-text);
   font-size: clamp(1.2rem, 2vw, 1.65rem);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .sectionTitle p {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .titleActions {
@@ -287,24 +292,24 @@
 }
 
 .titleActions span {
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0.3rem 0.65rem;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .mapButton {
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.55rem 0.8rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .taskGrid {
@@ -314,11 +319,12 @@
 }
 
 .emptyState {
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   padding: 1.25rem;
-  box-shadow: none;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyState h3 {
@@ -337,7 +343,8 @@
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(16, 22, 47, 0.68);
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(14px);
 }
 
 .mapModal {
@@ -346,11 +353,12 @@
   width: min(100%, 56rem);
   max-height: min(92vh, 48rem);
   overflow: auto;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
   padding: clamp(1rem, 2.5vw, 1.5rem);
-  box-shadow: none;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-lg);
 }
 
 .mapHeader {
@@ -362,37 +370,40 @@
 
 .mapHeader h2 {
   margin: 0;
-  color: var(--text);
+  color: var(--color-text);
   font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .mapHeader button {
   width: 2.5rem;
   height: 2.5rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
 }
 
 .mapKicker {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .permissionPanel {
   display: grid;
   gap: 0.5rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   padding: 1rem;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
 }
 
 .permissionStatusRow {
@@ -403,31 +414,32 @@
 }
 
 .permissionPanel strong {
-  color: var(--text);
-  font-weight: 900;
+  color: var(--color-text);
+  font-weight: 700;
   text-transform: capitalize;
 }
 
 .permissionPanel p {
   line-height: 1.5;
-  color: var(--text);
+  color: var(--color-text);
 }
 
 .locationCloseButton {
   flex: 0 0 auto;
   width: 2rem;
   height: 2rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--highlight);
-  color: var(--text);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 1.1rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .locationCloseButton:hover {

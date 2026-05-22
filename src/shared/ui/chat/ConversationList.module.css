@@ -1,4 +1,4 @@
-.list {
+﻿.list {
   display: grid;
   gap: 0.65rem;
 }
@@ -35,3 +35,4 @@
   color: var(--surface);
   font-weight: 900;
 }
+

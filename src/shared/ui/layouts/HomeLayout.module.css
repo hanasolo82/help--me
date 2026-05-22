@@ -1,24 +1,32 @@
 .shell {
-  --session-border: color-mix(in srgb, var(--accent) 72%, var(--text));
-  --session-shadow: color-mix(in srgb, var(--accent) 42%, var(--text));
-  --session-shadow-strong: color-mix(in srgb, var(--accent) 62%, var(--text));
-
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
   min-height: 100vh;
   width: 100%;
   max-width: 78rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 6rem;
+  padding: 1.35rem 1rem 5.5rem;
   background-image:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 28%);
-  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+    radial-gradient(circle at top right, rgba(41, 171, 255, 0.09), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 28%);
+  background-color: transparent;
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto, auto;
-  color: var(--text);
+  color: var(--color-text);
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+}
+
+.particlesLayer {
+  opacity: 0.45;
+}
+
+.shell > *:not(.particlesLayer) {
+  position: relative;
+  z-index: 1;
 }
 
 .wide {
@@ -27,8 +35,10 @@
 }
 
 .content {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 @media (max-width: 42rem) {

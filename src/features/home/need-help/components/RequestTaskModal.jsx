@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
-import { allowedCategories, createTask, publishTask } from '../../../../services/tasksService'
+import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
 import styles from './RequestTaskModal.module.css'
 
 const defaultCategories = allowedCategories
 
-function getTaskLocation(location, profile) {
+function getTaskLocation(location, profile, task) {
+  const taskLat = Number(task?.lat)
+  const taskLng = Number(task?.lng)
+  if (Number.isFinite(taskLat) && Number.isFinite(taskLng)) {
+    return { lat: taskLat, lng: taskLng, label: task?.zone || task?.location_label || task?.location || '' }
+  }
+
   const lat = Number(location?.lat ?? profile?.lat)
   const lng = Number(location?.lng ?? profile?.lng)
   const label = location?.label || profile?.displayLocation || profile?.neighborhood || profile?.city || ''
@@ -19,39 +24,28 @@ function getTaskLocation(location, profile) {
   return null
 }
 
-export default function RequestTaskModal({
-  open,
+function RequestTaskModalInner({
   onClose,
+  task,
+  initialTitle,
   selectedHelper,
   location,
   locationStatus,
   onRequestLocation,
+  onSaved,
 }) {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { profile } = useAuth()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState(defaultCategories[0])
-  const [zone, setZone] = useState('')
-  const [price, setPrice] = useState('')
-  const [visibility, setVisibility] = useState(selectedHelper ? 'private' : 'public')
+  const isEditing = Boolean(task?.id)
+  const [title, setTitle] = useState(task?.title || initialTitle || '')
+  const [description, setDescription] = useState(task?.description || '')
+  const [category, setCategory] = useState(task?.category || defaultCategories[0])
+  const [zone, setZone] = useState(task?.zone || location?.label || profile?.displayLocation || profile?.neighborhood || profile?.city || '')
+  const [price, setPrice] = useState(String(task?.price ?? ''))
+  const [visibility, setVisibility] = useState(isEditing ? 'public' : selectedHelper ? 'private' : 'public')
   const [error, setError] = useState('')
 
-  const resolvedLocation = useMemo(() => getTaskLocation(location, profile), [location, profile])
-
-  useEffect(() => {
-    if (open) {
-      setVisibility(selectedHelper ? 'private' : 'public')
-      setZone(location?.label || profile?.displayLocation || profile?.neighborhood || profile?.city || '')
-    }
-  }, [location?.label, open, profile?.city, profile?.displayLocation, profile?.neighborhood, selectedHelper])
-
-  useEffect(() => {
-    if (!open) {
-      setError('')
-    }
-  }, [open])
+  const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -68,26 +62,32 @@ export default function RequestTaskModal({
     }
 
     try {
-      const task = await createTask({
+      const payload = {
         title,
         description,
         category,
         price: Number(price || 0),
         lat: resolvedLocation.lat,
         lng: resolvedLocation.lng,
-      })
+      }
 
-      await publishTask(task.id)
+      const savedTask = isEditing ? await updateTask(task.id, payload) : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
+
+      if (!isEditing) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      }
+
       await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      if (profile?.id) {
+        await queryClient.invalidateQueries({ queryKey: ['my-tasks', profile.id] })
+      }
 
+      onSaved?.(savedTask)
       onClose?.()
-      navigate('/home', { replace: true, state: { mode: 'need' } })
     } catch (err) {
       setError(err?.message || 'No se pudo publicar la solicitud.')
     }
   }
-
-  if (!open) return null
 
   return (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
@@ -100,10 +100,12 @@ export default function RequestTaskModal({
       >
         <div className={styles.header}>
           <div>
-            <p className="eyebrow">Publicar solicitud</p>
-            <h2>Cuéntanos qué necesitas</h2>
+            <p className="eyebrow">{isEditing ? 'Editar solicitud' : 'Publicar solicitud'}</p>
+            <h2>{isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}</h2>
             <p className="muted">
-              Publica una petición clara para que las personas disponibles cerca de ti puedan responder.
+              {isEditing
+                ? 'Mantendremos la solicitud como visible si sigue abierta.'
+                : 'Publica una petición clara para que las personas disponibles cerca de ti puedan responder.'}
             </p>
           </div>
           <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Cerrar solicitud">
@@ -199,11 +201,26 @@ export default function RequestTaskModal({
               Cancelar
             </button>
             <button type="submit" className="primary-action">
-              Publicar solicitud
+              {isEditing ? 'Guardar cambios' : 'Publicar solicitud'}
             </button>
           </div>
         </form>
       </section>
     </div>
   )
+}
+
+export default function RequestTaskModal(props) {
+  if (!props.open) return null
+
+  const resetKey = [
+    props.task?.id || 'new',
+    props.initialTitle || '',
+    props.selectedHelper?.id || 'public',
+    props.location?.label || '',
+    props.locationStatus || '',
+    props.open ? 'open' : 'closed',
+  ].join('|')
+
+  return <RequestTaskModalInner key={resetKey} {...props} />
 }

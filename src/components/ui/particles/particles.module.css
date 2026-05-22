@@ -1,0 +1,66 @@
+.particles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.85;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.45));
+}
+
+.particle {
+  position: absolute;
+  top: var(--particle-top);
+  left: var(--particle-left);
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 46%),
+    radial-gradient(circle, color-mix(in srgb, var(--color-primary) 54%, white), transparent 68%);
+  opacity: var(--particle-opacity);
+  filter: blur(0.35px);
+  transform: translate3d(0, 0, 0);
+  animation:
+    particle-float var(--particle-duration) ease-in-out infinite,
+    particle-pulse calc(var(--particle-duration) * 1.6) ease-in-out infinite;
+  animation-delay: var(--particle-delay);
+}
+
+.particle:nth-child(3n) {
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle, color-mix(in srgb, var(--color-accent) 50%, white), transparent 70%);
+}
+
+.particle:nth-child(4n) {
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 52%, white), transparent 70%);
+}
+
+.particle:nth-child(5n) {
+  filter: blur(0.8px);
+}
+
+@keyframes particle-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0.7rem, -1rem, 0) scale(1.12);
+  }
+}
+
+@keyframes particle-pulse {
+  0%,
+  100% {
+    opacity: var(--particle-opacity);
+  }
+
+  50% {
+    opacity: calc(var(--particle-opacity) + 0.09);
+  }
+}

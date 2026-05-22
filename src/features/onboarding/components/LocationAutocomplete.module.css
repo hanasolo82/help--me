@@ -1,4 +1,4 @@
-.root {
+﻿.root {
   display: grid;
   gap: 0.85rem;
 }
@@ -7,13 +7,14 @@
   display: grid;
   gap: 0.35rem;
   padding: 0.85rem;
-  border: 2px solid var(--cc-navy);
-  border-radius: 0.35rem;
-  background: var(--cc-yellow);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(41, 171, 255, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .selectedMeta {
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -27,35 +28,36 @@
 .resultButton {
   width: 100%;
   text-align: left;
-  border: 2px solid var(--cc-navy);
-  border-radius: 0.35rem;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0.65rem 0.8rem;
   cursor: pointer;
   display: grid;
   gap: 0.25rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .resultButton:hover {
-  background: var(--cc-cream);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .resultLabel {
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .resultSub {
-  color: var(--cc-navy);
+  color: var(--color-text-muted);
   opacity: 0.85;
   font-size: 0.88rem;
 }
 
 .resultKind {
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--cc-blue);
+  color: var(--color-primary);
 }
 
 .statusRow {
@@ -66,15 +68,15 @@
 }
 
 .statusText {
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
 .errorText {
-  color: #b00020;
+  color: var(--color-danger);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.4;
 }
 
@@ -85,33 +87,36 @@
 }
 
 .manualButton {
-  border: 2px solid var(--cc-navy);
-  border-radius: 0.35rem;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.55rem 0.75rem;
   font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .manualButton:hover {
-  background: var(--cc-cream);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .clearButton {
-  border: 2px solid var(--cc-navy);
-  border-radius: 0.35rem;
-  background: var(--cc-cream);
-  color: var(--cc-navy);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--color-text);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.55rem 0.75rem;
   font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .manualHint {
-  color: var(--cc-navy);
+  color: var(--color-text-muted);
   font-size: 0.88rem;
   line-height: 1.4;
 }
+

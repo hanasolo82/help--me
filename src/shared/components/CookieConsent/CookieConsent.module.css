@@ -4,10 +4,10 @@
   z-index: 70;
   display: grid;
   gap: 1rem;
-  background: var(--cc-white);
-  color: var(--cc-navy);
-  border-top: 0.125rem solid var(--cc-navy);
-  box-shadow: 0 -0.5rem 0 var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-top: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
   padding: clamp(1rem, 2vw, 1.5rem);
 }
 
@@ -16,9 +16,9 @@
     grid-template-columns: 1fr auto;
     align-items: center;
     inset: auto 1rem 1rem 1rem;
-    border: 0.125rem solid var(--cc-navy);
-    border-radius: 0.5rem;
-    box-shadow: 0.75rem 0.75rem 0 var(--cc-navy);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -38,7 +38,7 @@
 }
 
 .content a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
 
@@ -47,7 +47,7 @@
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 900;
-  color: var(--cc-blue);
+  color: var(--color-primary);
 }
 
 .actions {
@@ -59,52 +59,53 @@
 
 .primaryButton,
 .secondaryButton {
-  border-radius: 0.25rem;
-  border: 0.125rem solid var(--cc-navy);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   padding: 0.6rem 1rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0.25rem 0.25rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 
 .primaryButton {
-  background: var(--cc-yellow);
-  color: var(--cc-navy);
+  background: var(--highlight);
+  color: var(--color-text);
 }
 
 .secondaryButton {
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .primaryButton:hover,
 .secondaryButton:hover {
   transform: translate(-0.05rem, -0.05rem);
-  box-shadow: 0.35rem 0.35rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
 }
 
 .modalBackdrop {
   position: fixed;
   inset: 0;
   z-index: 90;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
-  background: color-mix(in srgb, var(--cc-navy) 60%, rgba(0, 0, 0, 0.55));
-  overflow-y: auto;
+  background: color-mix(in srgb, var(--color-text) 60%, rgba(0, 0, 0, 0.55));
+  overflow: auto;
 }
 
 .configModal {
   position: relative;
   width: min(100%, 36rem);
   max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  background: var(--cc-white);
-  border: 0.125rem solid var(--cc-navy);
-  border-radius: 0.5rem;
-  box-shadow: 0.75rem 0.75rem 0 var(--cc-navy);
-  padding: 2.5rem clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
+  overflow: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 3.25rem clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
   display: grid;
   gap: 1rem;
 }
@@ -115,15 +116,17 @@
   right: 0.6rem;
   width: 2.4rem;
   height: 2.4rem;
-  border: 0.125rem solid var(--cc-navy);
-  border-radius: 0.25rem;
-  background: var(--cc-yellow);
-  color: var(--cc-navy);
-  font-size: 1.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 1.45rem;
   font-weight: 900;
   cursor: pointer;
   display: grid;
   place-items: center;
+  z-index: 2;
+  box-shadow: var(--shadow-md);
 }
 
 .list {
@@ -138,9 +141,9 @@
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border: 0.125rem solid var(--cc-navy);
-  border-radius: 0.25rem;
-  background: var(--cc-cream);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
 }
 
 .list strong {
@@ -167,6 +170,6 @@
 }
 
 .note a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }

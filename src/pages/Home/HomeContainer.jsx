@@ -33,6 +33,7 @@ export default function HomeContainer() {
     toggleExpandedTask,
   } = useHomeModals()
   const [helperJourneyOpen, setHelperJourneyOpen] = useState(false)
+  const [myRequestsDrawerOpen, setMyRequestsDrawerOpen] = useState(false)
   const {
     mode,
     category,
@@ -134,15 +135,39 @@ export default function HomeContainer() {
     navigate('/home', { replace: true, state: { mode: 'help' } })
   }, [navigate])
 
+  const handleOpenMyRequests = useCallback(() => {
+    setHelperHomeIntent('need')
+    setMyRequestsDrawerOpen(true)
+    navigate('/home', { replace: true, state: { mode: 'need' } })
+  }, [navigate])
+
+  const handleCloseMyRequests = useCallback(() => {
+    setMyRequestsDrawerOpen(false)
+  }, [])
+
   useEffect(() => {
     const routeMode = routeLocation.state?.mode
+    const routeFocusRequesterTaskId = routeLocation.state?.focusRequesterTaskId
     const storedMode = readHelperHomeIntent()
     const nextMode = routeMode || storedMode || (profile?.helper_status === 'active' ? 'help' : 'need')
 
     if (nextMode === 'need' || nextMode === 'help') {
       setMode(nextMode)
     }
-  }, [profile?.helper_status, routeLocation.state?.mode, setMode])
+
+    if (routeFocusRequesterTaskId) {
+      setMode('need')
+      setPreferredView('map')
+      setMapViewEpoch((value) => value + 1)
+      setSelectedRequesterTaskId(routeFocusRequesterTaskId)
+      setFocusRequesterTaskId(routeFocusRequesterTaskId)
+    }
+  }, [
+    profile?.helper_status,
+    routeLocation.state?.focusRequesterTaskId,
+    routeLocation.state?.mode,
+    setMode,
+  ])
 
   useEffect(() => {
     if (mode !== 'need' && mode !== 'help') return
@@ -161,6 +186,7 @@ export default function HomeContainer() {
         userInitial={userInitial}
         onOpenHelper={handleOpenHelperMode}
         onOpenChats={openChatsModal}
+        onOpenMyRequests={isHelperMode ? undefined : handleOpenMyRequests}
         onOpenSettings={openSettingsModal}
         onOpenProfile={() => navigate('/profile')}
         onLogout={handleLogout}
@@ -198,6 +224,9 @@ export default function HomeContainer() {
         onCloseTaskChat={closeTaskChat}
         onStartHelperOnboarding={handleStartHelperOnboarding}
         onNeedHelp={handleNeedHelpMode}
+        requestsDrawerOpen={myRequestsDrawerOpen}
+        onOpenRequestsDrawer={handleOpenMyRequests}
+        onCloseRequestsDrawer={handleCloseMyRequests}
       />
       <HelperJourneyModal
         open={helperJourneyOpen}

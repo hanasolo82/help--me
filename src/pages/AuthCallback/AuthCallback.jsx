@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
-import { getCurrentSession } from '../../services/authService'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { readHelperHomeIntent, clearHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { needsRequesterProfile } from '../../features/onboarding/utils/requesterPermissions'
@@ -19,7 +18,7 @@ function buildOnboardingState(intent) {
 
 export default function AuthCallback() {
   const navigate = useNavigate()
-  const { isConfigured, session, user, profile, loading, profileLoading, refreshProfile } = useAuth()
+  const { isConfigured, session, user, profile, loading, profileLoading } = useAuth()
   const resolvedRef = useRef(false)
   const intent = readHelperHomeIntent()
 
@@ -31,8 +30,6 @@ export default function AuthCallback() {
   })
 
   useEffect(() => {
-    let active = true
-
     async function resolveRedirect() {
       if (!isConfigured || resolvedRef.current) {
         return
@@ -42,30 +39,18 @@ export default function AuthCallback() {
         return
       }
 
-      const currentSession = await getCurrentSession()
-
-      if (!active || resolvedRef.current) {
-        return
-      }
-
-      if (!currentSession) {
+      if (!session) {
         clearHelperHomeIntent()
         resolvedRef.current = true
         navigate('/', { replace: true })
         return
       }
 
-      if (!user || !session) {
+      if (!user) {
         return
       }
 
-      const resolvedProfile = profile ?? (await refreshProfile())
-
-      if (!active || resolvedRef.current) {
-        return
-      }
-
-      if (!resolvedProfile || needsRequesterProfile(resolvedProfile)) {
+      if (!profile || needsRequesterProfile(profile)) {
         clearHelperHomeIntent()
         resolvedRef.current = true
         navigate('/onboarding', {
@@ -84,11 +69,7 @@ export default function AuthCallback() {
     }
 
     resolveRedirect()
-
-    return () => {
-      active = false
-    }
-  }, [isConfigured, loading, navigate, intent, profile, profileLoading, refreshProfile, session, user])
+  }, [isConfigured, loading, navigate, intent, profile, profileLoading, session, user])
 
   if (!isConfigured) {
     return <Navigate to="/" replace />

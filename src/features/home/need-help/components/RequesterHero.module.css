@@ -1,11 +1,12 @@
-.hero {
+﻿.hero {
   display: grid;
   gap: 1rem;
-  padding: 1rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: color-mix(in srgb, var(--surface) 84%, transparent);
-  box-shadow: 0.35rem 0.35rem 0 var(--shadow);
+  padding: 1.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
 }
 
 .headerRow {
@@ -23,7 +24,7 @@
 
 .copy h2 {
   font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.05;
 }
 
@@ -34,15 +35,21 @@
 
 .searchField input {
   width: 100%;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  color: var(--text);
-  padding: 0.9rem 1rem;
-  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  padding: 0.95rem 1rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
 }
 
 .headerRow :global(.primary-action) {
+  width: auto;
+  max-width: none;
+}
+
+.publishButton {
   width: auto;
   max-width: none;
 }
@@ -52,7 +59,8 @@
     flex-direction: column;
   }
 
-  .headerRow :global(.primary-action) {
+  .publishButton {
     width: 100%;
   }
 }
+

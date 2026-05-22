@@ -1,0 +1,136 @@
+﻿.panel {
+  width: 100%;
+  max-width: 100%;
+  justify-self: stretch;
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
+}
+
+.panel :global(.card) {
+  width: 100%;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.header h2 {
+  font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+  font-weight: 900;
+}
+
+.actions {
+  display: grid;
+  gap: 0.5rem;
+  min-width: min(100%, 14rem);
+}
+
+.actions :global(.primary-action),
+.actions :global(.secondary-action) {
+  width: 100%;
+  max-width: none;
+}
+
+.countRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.countCard,
+.featuredTask,
+.emptyFeatured {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.countCard {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.countCard span {
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.countCard strong {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.featuredTask {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.featuredHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.featuredHeader strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.featuredStatus {
+  flex: 0 0 auto;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999rem;
+  background: rgba(41, 171, 255, 0.1);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+}
+
+.featuredMeta {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.emptyFeatured {
+  display: grid;
+  gap: 0.35rem;
+}
+
+@media (max-width: 52rem) {
+  .panel {
+    width: 100%;
+  }
+
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .countRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+

@@ -6,6 +6,8 @@ import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
+import { ShineBorder } from '@/components/ui/shine-border'
+import Particles from '@/components/ui/particles'
 
 const LANDING_JSONLD = {
   '@context': 'https://schema.org',
@@ -138,6 +140,7 @@ export default function Landing() {
 
   return (
     <main className={darkMode ? `${styles.landing} ${styles.dark}` : styles.landing}>
+      <Particles className={styles.particlesLayer} />
       <header className={styles.navbar}>
         <a className={styles.brand} href="#inicio" aria-label="helpMe inicio">
           helpMe
@@ -289,10 +292,16 @@ export default function Landing() {
 
         <div className={styles.categoryGrid}>
           {['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica'].map((category) => (
-            <article key={category}>
+            <ShineBorder
+              key={category}
+              as="article"
+              className={styles.categoryCard}
+              contentClassName={styles.categoryCardContent}
+              borderRadius="var(--radius-lg)"
+            >
               <h3>{category}</h3>
               <p>Tareas pequenas con precio claro, urgencia visible y contacto directo.</p>
-            </article>
+            </ShineBorder>
           ))}
         </div>
       </section>

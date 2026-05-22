@@ -1,4 +1,5 @@
 import styles from './RequesterHero.module.css'
+import RippleButton from '../../../../shared/ui/RippleButton'
 
 export default function RequesterHero({ value, onChange, onPublishRequest }) {
   return (
@@ -13,9 +14,9 @@ export default function RequesterHero({ value, onChange, onPublishRequest }) {
         </div>
 
         {onPublishRequest ? (
-          <button type="button" className="primary-action" onClick={onPublishRequest}>
+          <RippleButton type="button" variant="primary" className={styles.publishButton} onClick={onPublishRequest}>
             Publicar solicitud
-          </button>
+          </RippleButton>
         ) : null}
       </div>
 

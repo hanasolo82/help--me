@@ -86,10 +86,10 @@ function sortRequesterTasks(tasks) {
     const rightDate = new Date(getTaskTimelineDate(right) || 0).getTime()
 
     if (leftDate !== rightDate) {
-      return leftDate - rightDate
+      return rightDate - leftDate
     }
 
-    return new Date(left.created_at || 0).getTime() - new Date(right.created_at || 0).getTime()
+    return new Date(right.created_at || 0).getTime() - new Date(left.created_at || 0).getTime()
   })
 }
 
@@ -283,15 +283,21 @@ export async function getOpenTasks({ category } = {}) {
 // role='requester' busca tareas creadas por el usuario; role='helper' busca tareas aceptadas.
 // Nota Supabase - public.tasks:
 // Si cambias created_by/accepted_by por otros nombres en la tabla, actualiza el mapeo column.
-export async function getMyTasks({ role = 'requester' } = {}) {
+export async function getMyTasks(profileId = null, { role = 'requester' } = {}) {
   const user = await requireUser()
+  const ownerId = profileId || user.id
+
+  if (ownerId !== user.id) {
+    throw new Error('No puedes leer solicitudes ajenas.')
+  }
+
   const column = role === 'helper' ? 'accepted_by' : 'created_by'
 
   const { data, error } = await supabase
     .from('tasks')
     .select(TASK_SELECT)
-    .eq(column, user.id)
-    .order('created_at', { ascending: role === 'requester' })
+    .eq(column, ownerId)
+    .order('created_at', { ascending: false })
 
   if (error) {
     throw error
@@ -299,11 +305,7 @@ export async function getMyTasks({ role = 'requester' } = {}) {
 
   const tasksWithProfiles = await attachTaskProfiles(data)
 
-  if (role === 'requester') {
-    return sortRequesterTasks(tasksWithProfiles.filter((task) => task.status !== 'cancelled'))
-  }
-
-  return tasksWithProfiles
+  return role === 'requester' ? sortRequesterTasks(tasksWithProfiles) : tasksWithProfiles
 }
 
 // Nota funcion:

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { hasDecidedConsent, readConsent, writeConsent } from '../../../lib/consent'
 import styles from './CookieConsent.module.css'
@@ -44,7 +45,7 @@ export default function CookieConsent() {
 
   if (!visible && !configOpen) return null
 
-  return (
+  return createPortal(
     <>
       {visible && !configOpen && (
         <section
@@ -175,5 +176,7 @@ export default function CookieConsent() {
         </div>
       )}
     </>
+    ,
+    document.body,
   )
 }

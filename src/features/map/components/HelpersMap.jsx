@@ -1,5 +1,6 @@
 import { Circle, MapContainer, TileLayer, useMap } from 'react-leaflet'
 import HelperMarker from './HelperMarker'
+import { MAP_FILL, MAP_PRIMARY } from '../../../styles/mapColors'
 import styles from '../../profile/styles/profileNetwork.module.css'
 
 const defaultCenter = [41.6523, -0.9019]
@@ -39,7 +40,7 @@ export default function HelpersMap({
         <Circle
           center={resolvedCenter}
           radius={radiusKm * 1000}
-          pathOptions={{ color: '#1804c9', fillColor: '#ffd300', fillOpacity: 0.16, weight: 3 }}
+          pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
         />
 
         {helpers.map((helper) => (

@@ -1,12 +1,13 @@
-.card {
+﻿.card {
   position: relative;
   display: grid;
   gap: 1rem;
-  background-color: var(--task-card-bg, #ffffff);
+  background-color: var(--task-card-bg, rgba(255, 255, 255, 0.72));
   padding: 1rem;
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
-  box-shadow: 0.375rem 0.375rem 0 var(--task-card-shadow, #10162f);
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
 }
 
 .userRow {
@@ -18,15 +19,15 @@
 
 .userRow strong {
   display: block;
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   font-size: 0.98rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .userRow p {
-  color: var(--task-card-accent, #1804c9);
+  color: var(--task-card-accent, var(--color-primary));
   font-size: 0.86rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -47,7 +48,7 @@
 }
 
 .helperLine {
-  color: var(--task-card-accent, #1804c9);
+  color: var(--task-card-accent, var(--color-primary));
   font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.35;
@@ -67,15 +68,15 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-md);
   background: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   cursor: pointer;
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
-  box-shadow: 0.2rem 0.2rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-sm);
 }
 
 .iconButton img {
@@ -92,7 +93,7 @@
 
 .iconButton:hover {
   transform: translate(-0.06rem, -0.06rem);
-  box-shadow: 0.28rem 0.28rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-md);
 }
 
 .avatarWrap {
@@ -101,12 +102,12 @@
   place-items: center;
   width: 3rem;
   height: 3rem;
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
-  background: var(--task-card-highlight, #ffd300);
-  color: var(--task-card-text, #10162f);
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-md);
+  background: var(--task-card-highlight, rgba(41, 171, 255, 0.12));
+  color: var(--task-card-text, var(--color-text));
   overflow: hidden;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .avatarWrap img {
@@ -122,8 +123,8 @@
   width: 100%;
   max-height: 14rem;
   object-fit: cover;
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-lg);
 }
 
 .topSection {
@@ -134,14 +135,14 @@
 }
 
 .title {
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   font-size: clamp(1rem, 1.6vw, 1.18rem);
-  font-weight: 900;
+  font-weight: 700;
   margin-bottom: 0.35rem;
 }
 
 .meta {
-  color: var(--task-card-accent, #1804c9);
+  color: var(--task-card-accent, var(--color-primary));
   font-size: 0.88rem;
   font-weight: 800;
   line-height: 1.4;
@@ -154,18 +155,18 @@
 }
 
 .price {
-  background-color: var(--task-card-highlight, #ffd300);
-  color: var(--task-card-text, #10162f);
+  background-color: var(--task-card-highlight, var(--highlight));
+  color: var(--task-card-text, var(--color-text));
   white-space: nowrap;
   padding: 0.38rem 0.7rem;
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: 999px;
   font-size: 0.88rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .description {
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   font-size: 0.92rem;
   line-height: 1.5;
   display: -webkit-box;
@@ -175,7 +176,7 @@
 }
 
 .descriptionExpanded {
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   font-size: 0.92rem;
   line-height: 1.5;
   overflow: visible;
@@ -192,15 +193,15 @@
 .detailButton,
 .publishButton {
   width: min(100%, 50%);
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-md);
   background-color: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   cursor: pointer;
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.58rem 0.7rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
   transition: 0.16s ease;
 }
 
@@ -211,9 +212,9 @@
 .publishButton {
   margin-left: auto;
   border: 0;
-  background-color: var(--task-card-accent, #1804c9);
+  background-color: var(--task-card-accent, var(--color-primary));
   color: var(--task-card-bg, #ffffff);
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .detailButton:hover,
@@ -225,20 +226,20 @@
 .button {
   width: min(100%, 17.5rem);
   border: 0;
-  border-radius: 0.25rem;
-  background-color: var(--task-card-accent, #1804c9);
+  border-radius: var(--radius-md);
+  background-color: var(--task-card-accent, var(--color-primary));
   color: var(--task-card-bg, #ffffff);
   cursor: pointer;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.82rem;
-  box-shadow: 0.25rem 0.25rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-sm);
   transition: 0.16s ease;
 }
 
 .button:hover {
   transform: translate(-0.06rem, -0.06rem);
-  box-shadow: 0.32rem 0.32rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-md);
 }
 
 .button:disabled,
@@ -250,21 +251,21 @@
 
 .buttonSecondary {
   width: min(100%, 17.5rem);
-  border: 0.125rem solid var(--task-card-border, #10162f);
-  border-radius: 0.25rem;
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-md);
   background-color: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, #10162f);
+  color: var(--task-card-text, var(--color-text));
   cursor: pointer;
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0.72rem 0.82rem;
-  box-shadow: 0.18rem 0.18rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-sm);
   transition: 0.16s ease;
 }
 
 .buttonSecondary:hover {
   transform: translate(-0.06rem, -0.06rem);
-  box-shadow: 0.26rem 0.26rem 0 var(--task-card-shadow, #10162f);
+  box-shadow: var(--shadow-md);
 }
 
 @media (max-width: 42rem) {
@@ -281,3 +282,4 @@
     margin-right: 0;
   }
 }
+

@@ -5,6 +5,8 @@ import { useAvailableHelpers } from '../hooks/useAvailableHelpers'
 import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
 import HelperMapMarker from './HelperMapMarker'
+import RequesterTaskMarker from './RequesterTaskMarker'
+import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import styles from './NeedHelpMapLayout.module.css'
 
 function RecenterMap({ center }) {
@@ -74,6 +76,10 @@ export default function NeedHelpMapLayout({
   preferredMobileView,
   onPreviewHelper,
   onPublishRequest,
+  requesterTasks = [],
+  selectedRequesterTaskId = null,
+  onSelectRequesterTask,
+  focusRequesterTaskId = null,
 }) {
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
@@ -103,16 +109,22 @@ export default function NeedHelpMapLayout({
     selectHelper,
   } = useSelectedHelper(helpers)
 
-  useEffect(() => {
-    if (preferredMobileView) {
-      setMobileView(preferredMobileView)
-    }
-  }, [preferredMobileView])
-
   const searchCenter = useMemo(() => toMapCenter(location, center), [center, location])
   const focusCenter = useMemo(
-    () => (selectedHelper ? [selectedHelper.lat, selectedHelper.lng] : searchCenter),
-    [searchCenter, selectedHelper],
+    () => {
+      const focusedRequesterTask = requesterTasks.find((task) => task.id === focusRequesterTaskId)
+
+      if (focusedRequesterTask && Number.isFinite(Number(focusedRequesterTask.lat)) && Number.isFinite(Number(focusedRequesterTask.lng))) {
+        return [Number(focusedRequesterTask.lat), Number(focusedRequesterTask.lng)]
+      }
+
+      if (selectedHelper) {
+        return [selectedHelper.lat, selectedHelper.lng]
+      }
+
+      return searchCenter
+    },
+    [focusRequesterTaskId, requesterTasks, searchCenter, selectedHelper],
   )
   const viewportHelpers = useMemo(() => {
     if (!mapBounds) {
@@ -184,7 +196,7 @@ export default function NeedHelpMapLayout({
                 <Circle
                   center={searchCenter}
                   radius={radiusKm * 1000}
-                  pathOptions={{ color: '#1804c9', fillColor: '#ffd300', fillOpacity: 0.14, weight: 3 }}
+                  pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.14, weight: 3 }}
                 />
               )}
 
@@ -196,6 +208,17 @@ export default function NeedHelpMapLayout({
                   onSelect={handleSelectHelper}
                 />
               ))}
+
+              {requesterTasks
+                .filter((task) => task.status === 'open' && Number.isFinite(Number(task.lat)) && Number.isFinite(Number(task.lng)))
+                .map((task) => (
+                  <RequesterTaskMarker
+                    key={task.id}
+                    task={task}
+                    selected={selectedRequesterTaskId === task.id}
+                    onSelect={onSelectRequesterTask}
+                  />
+                ))}
             </MapContainer>
           </div>
 

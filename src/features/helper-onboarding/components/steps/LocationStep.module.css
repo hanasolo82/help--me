@@ -1,0 +1,190 @@
+.card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.64));
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.iconWrap {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.15rem;
+}
+
+.copy {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.headingCopy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.cardKicker {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.copy h3 {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.description {
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.statusFooter {
+  justify-self: end;
+}
+
+.statusloading {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-text);
+}
+
+.statussuccess {
+  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+  color: var(--color-success);
+}
+
+.statusdenied {
+  background: color-mix(in srgb, var(--color-warning) 14%, var(--color-surface));
+  color: var(--color-warning);
+}
+
+.statusidle {
+  background: var(--color-surface-strong);
+  color: var(--color-text-muted);
+}
+
+.switch {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  align-self: start;
+  border-radius: 999px;
+}
+
+.controlColumn {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 36%, transparent);
+  outline-offset: 4px;
+}
+
+.switchTrack {
+  --track-width: 3.4rem;
+  --track-height: 2rem;
+  --thumb-size: 1.55rem;
+  position: relative;
+  display: inline-flex;
+  width: var(--track-width);
+  height: var(--track-height);
+  padding: 0.18rem;
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.switchTrack[data-on='false'] {
+  background: color-mix(in srgb, var(--color-danger) 9%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 14%, var(--color-border));
+}
+
+.switchTrack[data-on='true'] {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+}
+
+.switchThumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  transform: translateX(0);
+  transition: transform 0.22s ease, background-color 0.18s ease;
+}
+
+.switchThumb[data-on='true'] {
+  transform: translateX(1.4rem);
+  background: #ffffff;
+}
+
+.feedback {
+  margin-top: 0.15rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.feedback p {
+  margin: 0;
+}
+
+@media (max-width: 42rem) {
+  .cardTop {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .controlColumn {
+    grid-column: 3;
+  }
+}

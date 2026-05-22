@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import AuthPanel from '../AuthPanel/AuthPanel'
 import styles from './AuthModal.module.css'
@@ -58,7 +59,7 @@ export default function AuthModal({ open, mode = 'login', onClose, onSuccess }) 
     navigate(payload.destination, { replace: true })
   }
 
-  return (
+  return createPortal(
     <div
       className={styles.backdrop}
       role="dialog"
@@ -83,6 +84,7 @@ export default function AuthModal({ open, mode = 'login', onClose, onSuccess }) 
           onSuccess={handleSuccess}
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -39,9 +39,13 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
       const savedProgress = readHelperJourneyProgress()
       const savedIndex = Number(savedProgress?.stepIndex)
       const savedDraft = savedProgress?.draft && typeof savedProgress.draft === 'object' ? savedProgress.draft : {}
-      setStepIndex(Number.isFinite(savedIndex) ? Math.min(Math.max(savedIndex, 0), STEPS.length - 1) : 0)
-      setJourneyDraft(savedDraft)
-      setError('')
+      const nextStepIndex = Number.isFinite(savedIndex) ? Math.min(Math.max(savedIndex, 0), STEPS.length - 1) : 0
+
+      queueMicrotask(() => {
+        setStepIndex(nextStepIndex)
+        setJourneyDraft(savedDraft)
+        setError('')
+      })
     }
   }, [open])
 
@@ -122,6 +126,9 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
       await updateCurrentProfile({
         helperStatus: HELPER_STATUS.UNDER_REVIEW,
         helperEnabled: false,
+        visibilityEnabled: Boolean(journeyDraft?.visibilityEnabled),
+        lat: journeyDraft?.lat ?? null,
+        lng: journeyDraft?.lng ?? null,
       })
       await refreshProfile()
       clearHelperJourneyProgress()

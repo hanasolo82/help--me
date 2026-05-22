@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   display: grid;
   gap: 0.75rem;
 }
@@ -15,14 +15,14 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   padding: 0.9rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.35rem;
-  background: var(--cc-white);
+  background: var(--color-surface);
 }
 
 .label {
   display: block;
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -36,9 +36,9 @@
 
 .panel {
   padding: 0.9rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.35rem;
-  background: var(--cc-cream);
+  background: var(--color-bg);
   box-shadow: none;
 }
 
@@ -55,10 +55,10 @@
 
 .mapShell {
   min-height: clamp(18rem, 50vw, 28rem);
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.35rem;
   overflow: hidden;
-  background: var(--cc-white);
+  background: var(--color-surface);
 }
 
 .map {
@@ -74,13 +74,13 @@
   display: grid;
   gap: 0.2rem;
   padding: 0.8rem 0.9rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.35rem;
-  background: var(--cc-white);
+  background: var(--color-surface);
 }
 
 .coordsBox span {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -100,9 +100,9 @@
 .pointMarker {
   width: 28px;
   height: 28px;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: var(--cc-white);
+  background: var(--color-surface);
   box-shadow: none;
   display: grid;
   place-items: center;
@@ -112,11 +112,11 @@
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: var(--cc-blue);
+  background: var(--color-primary);
 }
 
 .pointMarkerActive {
-  background: var(--cc-yellow);
+  background: var(--highlight);
 }
 
 @media (min-width: 760px) {
@@ -125,3 +125,4 @@
     align-items: center;
   }
 }
+

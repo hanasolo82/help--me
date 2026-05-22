@@ -39,8 +39,10 @@ export async function getProfileById(profileId) {
 export async function getSkillsCatalog() {
   const { data, error } = await supabase
     .from('skills')
-    .select('id, name, icon, category')
+    .select('id, name, icon, category, sort_order, is_active')
+    .eq('is_active', true)
     .order('category', { ascending: true })
+    .order('sort_order', { ascending: true })
     .order('name', { ascending: true })
 
   if (error) {

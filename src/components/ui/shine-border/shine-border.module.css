@@ -1,0 +1,73 @@
+.shineBorder {
+  --shine-radius: var(--radius-lg);
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  padding: 1px;
+  border-radius: var(--shine-radius);
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 45%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow-sm);
+}
+
+.shineBorder::before {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    conic-gradient(
+      from 180deg,
+      transparent 0 12%,
+      color-mix(in srgb, var(--color-primary) 55%, transparent) 18%,
+      color-mix(in srgb, var(--color-accent) 42%, transparent) 27%,
+      transparent 38%,
+      color-mix(in srgb, var(--color-secondary) 48%, transparent) 55%,
+      transparent 68%,
+      color-mix(in srgb, var(--color-primary) 50%, transparent) 80%,
+      transparent 100%
+    );
+  filter: blur(16px);
+  opacity: 0.55;
+  animation: shine-spin var(--shine-duration, 9s) linear infinite;
+  pointer-events: none;
+}
+
+.shineBorderGlow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 35%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 34%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.shineBorderContent {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 100%;
+  padding: 1.2rem;
+  border-radius: calc(var(--shine-radius) - 1px);
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+}
+
+@keyframes shine-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

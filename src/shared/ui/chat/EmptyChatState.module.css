@@ -1,4 +1,4 @@
-.card {
+﻿.card {
   display: grid;
   gap: 0.35rem;
   padding: 1rem;
@@ -6,3 +6,4 @@
   border-radius: 0.25rem;
   background: var(--surface);
 }
+

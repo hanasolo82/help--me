@@ -5,9 +5,12 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import App from './App.jsx'
+import AnimatedBackground from './components/animated-background/AnimatedBackground.jsx'
 import { AuthProvider } from './contexts/AuthProvider.jsx'
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx'
 import 'leaflet/dist/leaflet.css'
+import './styles/design-tokens.css'
+import './styles/globals.css'
 import './styles.css'
 if (import.meta.env.DEV) {
   scan()
@@ -21,6 +24,7 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
+            <AnimatedBackground />
             <App />
           </AuthProvider>
         </QueryClientProvider>

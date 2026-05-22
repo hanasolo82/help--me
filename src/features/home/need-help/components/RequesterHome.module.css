@@ -2,7 +2,8 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
+  z-index: 0;
 }
 
 .requesterShell::before {
@@ -11,29 +12,26 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.06;
-  background-image: url('../../../../assets/icons/fondo-garabatos-garabatos.png');
-  background-repeat: repeat;
-  background-position: 0 0;
-  background-size: 520px auto;
-  animation: doodle-drift 180s linear infinite;
+  opacity: 0;
 }
 
 .locationHint {
   display: grid;
   gap: 0.45rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: color-mix(in srgb, var(--surface) 84%, transparent);
-  padding: 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 0.95rem;
+  box-shadow: var(--shadow-sm);
 }
 
-@keyframes doodle-drift {
-  from {
-    background-position: 0 0;
-  }
-
-  to {
-    background-position: 1040px 0;
-  }
+.publishNotice {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(41, 171, 255, 0.1);
+  color: var(--color-text);
+  padding: 0.95rem;
+  box-shadow: var(--shadow-sm);
 }

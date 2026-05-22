@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import NeedHelpMapLayout from './NeedHelpMapLayout'
 import HelperPreviewModal from './HelperPreviewModal'
 import RequestTaskModal from './RequestTaskModal'
 import RequesterHero from './RequesterHero'
+import MyRequestsDrawer from './MyRequestsDrawer'
+import { cancelTask, getMyTasks } from '../../../../services/tasksService'
 import styles from './RequesterHome.module.css'
 
 export default function RequesterHome({
@@ -12,12 +15,40 @@ export default function RequesterHome({
   locationStatus,
   locationError,
   onRequestLocation,
+  requestsDrawerOpen = false,
+  onOpenRequestsDrawer,
+  onCloseRequestsDrawer,
 }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [heroQuery, setHeroQuery] = useState('')
   const [preferredView, setPreferredView] = useState('map')
   const [selectedHelper, setSelectedHelper] = useState(null)
   const [requestTaskOpen, setRequestTaskOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState(null)
+  const [selectedRequesterTaskId, setSelectedRequesterTaskId] = useState(null)
+  const [focusRequesterTaskId, setFocusRequesterTaskId] = useState(null)
+  const [mapViewEpoch, setMapViewEpoch] = useState(0)
+  const [publishNotice, setPublishNotice] = useState('')
+  const [draftTaskTitle, setDraftTaskTitle] = useState('')
+  const myTasksQuery = useQuery({
+    queryKey: ['my-tasks', profile?.id],
+    queryFn: () => getMyTasks(profile?.id),
+    enabled: Boolean(profile?.id),
+    staleTime: 15_000,
+  })
+
+  const retireTaskMutation = useMutation({
+    mutationFn: (task) => cancelTask(task.id),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', profile?.id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+      ])
+      setSelectedRequesterTaskId(null)
+      setFocusRequesterTaskId(null)
+    },
+  })
 
   const helperCountLabel = useMemo(() => {
     const place = location?.label || profile?.neighborhood || profile?.city || profile?.country || 'tu zona'
@@ -29,7 +60,77 @@ export default function RequesterHome({
   }
 
   function handleOpenTaskModal() {
+    setSelectedHelper(null)
+    setEditingTask(null)
+    setDraftTaskTitle(heroQuery.trim())
+    setHeroQuery('')
     setRequestTaskOpen(true)
+  }
+
+  function handleOpenRequestsDrawer() {
+    onOpenRequestsDrawer?.()
+  }
+
+  function handleCloseRequestsDrawer() {
+    onCloseRequestsDrawer?.()
+  }
+
+  function handleEditTask(task) {
+    setSelectedHelper(null)
+    setEditingTask(task)
+    setRequestTaskOpen(true)
+  }
+
+  function handleFocusTask(task) {
+    if (!task) return
+    setPreferredView('map')
+    setMapViewEpoch((value) => value + 1)
+    setSelectedRequesterTaskId(task.id)
+    setFocusRequesterTaskId(task.id)
+  }
+
+  function handleRetireTask(task) {
+    if (!task) return
+
+    const shouldRetire = window.confirm(
+      '¿Quieres retirar esta solicitud?\n\nDejará de aparecer para los ayudantes, pero seguirá en tu historial.',
+    )
+
+    if (!shouldRetire) {
+      return
+    }
+
+    retireTaskMutation.mutate(task)
+  }
+
+  function handleSavedTask(task) {
+    setRequestTaskOpen(false)
+    setEditingTask(null)
+    setPublishNotice('Solicitud publicada')
+    setFocusRequesterTaskId(task?.id || null)
+    setSelectedRequesterTaskId(task?.id || null)
+    setPreferredView('map')
+
+    queryClient.invalidateQueries({ queryKey: ['my-tasks', profile?.id] })
+    queryClient.invalidateQueries({ queryKey: ['tasks'] })
+  }
+
+  function handleOpenChat(task) {
+    navigate(`/task/${task.id}`, { state: { openChat: true } })
+  }
+
+  function handleOpenDetail(task) {
+    navigate(`/task/${task.id}`)
+  }
+
+  function handleOpenSummary(task) {
+    navigate(`/task/${task.id}`)
+  }
+
+  function handleReview(task) {
+    if (task?.accepted_profile?.id) {
+      navigate(`/profile/${task.accepted_profile.id}`)
+    }
   }
 
   return (
@@ -39,6 +140,17 @@ export default function RequesterHome({
         onChange={setHeroQuery}
         onPublishRequest={handleOpenTaskModal}
       />
+
+      {publishNotice ? (
+        <section className={styles.publishNotice}>
+          <strong>{publishNotice}</strong>
+          <p className="muted">
+            {publishNotice === 'Solicitud publicada'
+              ? 'Ya es visible para ayudantes cercanos.'
+              : 'Tu solicitud quedó publicada y centrada en el mapa.'}
+          </p>
+        </section>
+      ) : null}
 
       <p className="muted">{helperCountLabel}</p>
 
@@ -57,6 +169,7 @@ export default function RequesterHome({
       ) : null}
 
       <NeedHelpMapLayout
+        key={mapViewEpoch}
         profile={profile}
         location={location}
         locationStatus={locationStatus}
@@ -65,6 +178,23 @@ export default function RequesterHome({
         preferredMobileView={preferredView}
         onPreviewHelper={handlePreviewHelper}
         onPublishRequest={handleOpenTaskModal}
+        requesterTasks={myTasksQuery.data || []}
+        selectedRequesterTaskId={selectedRequesterTaskId}
+        onSelectRequesterTask={handleFocusTask}
+        focusRequesterTaskId={focusRequesterTaskId}
+      />
+
+      <MyRequestsDrawer
+        open={requestsDrawerOpen}
+        tasks={myTasksQuery.data || []}
+        onClose={handleCloseRequestsDrawer}
+        onFocusMap={handleFocusTask}
+        onEdit={handleEditTask}
+        onRetire={handleRetireTask}
+        onOpenChat={handleOpenChat}
+        onOpenDetail={handleOpenDetail}
+        onOpenSummary={handleOpenSummary}
+        onReview={handleReview}
       />
 
       <HelperPreviewModal
@@ -84,11 +214,18 @@ export default function RequesterHome({
 
       <RequestTaskModal
         open={requestTaskOpen}
+        task={editingTask}
+        initialTitle={draftTaskTitle}
         selectedHelper={selectedHelper}
         location={location}
         locationStatus={locationStatus}
         onRequestLocation={onRequestLocation}
-        onClose={() => setRequestTaskOpen(false)}
+        onSaved={handleSavedTask}
+        onClose={() => {
+          setRequestTaskOpen(false)
+          setEditingTask(null)
+          setDraftTaskTitle('')
+        }}
       />
     </section>
   )

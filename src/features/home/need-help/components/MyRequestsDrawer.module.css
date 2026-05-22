@@ -1,0 +1,124 @@
+﻿.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  align-items: end;
+  justify-items: stretch;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.drawer {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 42rem);
+  max-height: 92vh;
+  margin-inline: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  padding: 1.1rem;
+  overflow: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.inlineDrawer {
+  width: min(60vw, 42rem);
+  max-width: min(60vw, 42rem);
+  max-height: none;
+  margin-inline: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: none;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header h2 {
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-weight: 900;
+  margin: 0;
+}
+
+.closeButton {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.section {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sectionCount {
+  min-width: 2rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999rem;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  font-weight: 700;
+  text-align: center;
+  padding: 0.2rem 0.55rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cards {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 52rem) {
+  .backdrop {
+    align-items: stretch;
+    justify-items: end;
+    padding: 1rem;
+  }
+
+  .drawer {
+    width: min(60vw, 42rem);
+    max-height: calc(100vh - 2rem);
+    height: 100%;
+    margin-inline: 0;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .inlineDrawer {
+    width: min(60vw, 42rem);
+    max-width: min(60vw, 42rem);
+    max-height: none;
+    height: auto;
+    margin-inline: 0;
+    box-shadow: none;
+  }
+}
+

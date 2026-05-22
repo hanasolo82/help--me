@@ -12,6 +12,7 @@ export default function HomeView({
   avatarUrl,
   userInitial,
   onOpenChats,
+  onOpenMyRequests,
   onOpenSettings,
   onOpenProfile,
   onOpenHelper,
@@ -50,6 +51,9 @@ export default function HomeView({
   onCloseTaskChat,
   onStartHelperOnboarding,
   onNeedHelp,
+  requestsDrawerOpen,
+  onOpenRequestsDrawer,
+  onCloseRequestsDrawer,
 }) {
   return (
     <HomeLayout
@@ -62,6 +66,7 @@ export default function HomeView({
           userInitial={userInitial}
           onOpenHelper={onOpenHelper}
           onOpenChats={onOpenChats}
+          onOpenMyRequests={onOpenMyRequests}
           onOpenSettings={onOpenSettings}
           onOpenProfile={onOpenProfile}
           onLogout={onLogout}
@@ -106,6 +111,9 @@ export default function HomeView({
           locationStatus={locationStatus}
           locationError={locationError}
           onRequestLocation={onRequestNeedLocation}
+          requestsDrawerOpen={requestsDrawerOpen}
+          onOpenRequestsDrawer={onOpenRequestsDrawer}
+          onCloseRequestsDrawer={onCloseRequestsDrawer}
         />
       )}
 

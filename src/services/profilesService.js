@@ -442,6 +442,10 @@ function normalizeProfileUpdateInput(input) {
     updates.availability_enabled = normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED)
   }
 
+  if (Object.prototype.hasOwnProperty.call(input, 'visibilityEnabled')) {
+    updates.availability_enabled = normalizeBoolean(input.visibilityEnabled, DEFAULT_AVAILABILITY_ENABLED)
+  }
+
   if (Object.prototype.hasOwnProperty.call(input, 'responseTimeMinutes')) {
     updates.response_time_minutes = normalizeInteger(input.responseTimeMinutes, null, { min: 1, max: 1440 })
   }

@@ -1,5 +1,6 @@
 import L from 'leaflet'
 import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
@@ -107,7 +108,7 @@ export default function TaskMap({
         <Circle
           center={center}
           radius={radiusKm * 1000}
-          pathOptions={{ color: '#1804c9', fillColor: '#ffd300', fillOpacity: 0.16, weight: 3 }}
+          pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
         />
 
         <Marker position={center} icon={userIcon}>

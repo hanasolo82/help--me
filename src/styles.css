@@ -1,39 +1,30 @@
-* {
+﻿* {
   box-sizing: border-box;
 }
 
 :root {
-  --cc-navy: #10162f;
-  --cc-blue: #1804c9;
-  --cc-yellow: #ffd300;
-  --cc-cream: #fff0e5;
-  --cc-white: #ffffff;
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --text: var(--color-text);
+  --accent: var(--color-primary);
+  --highlight: rgba(41, 171, 255, 0.1);
+  --shadow: rgba(15, 23, 42, 0.12);
 
-  /* Tokens semanticos. Cualquier pantalla los hereda; ThemeApplier solo cambia los --cc-*. */
-  --bg: var(--cc-cream);
-  --surface: var(--cc-white);
-  --text: var(--cc-navy);
-  --accent: var(--cc-blue);
-  --highlight: var(--cc-yellow);
-  --shadow: var(--cc-navy);
-
-  /* BottomNav: usado en Home, Profile, Settings, Chats... siempre debe seguir la paleta. */
-  --nav-bg: rgba(255, 255, 255, 0.98);
-  --nav-link: var(--cc-navy);
-  --nav-border: var(--cc-navy);
-  --nav-shadow: var(--cc-navy);
-  --nav-active-bg: var(--cc-blue);
+  --nav-bg: rgba(255, 255, 255, 0.76);
+  --nav-link: var(--color-text);
+  --nav-border: rgba(255, 255, 255, 0.18);
+  --nav-shadow: rgba(15, 23, 42, 0.08);
+  --nav-active-bg: var(--color-primary);
   --nav-active-text: #ffffff;
 
-  /* TaskCard: aunque solo se usa en Home, exponerlo aqui evita doble fuente de verdad. */
-  --task-card-bg: var(--cc-white);
-  --task-card-text: var(--cc-navy);
-  --task-card-border: var(--cc-navy);
-  --task-card-shadow: var(--cc-navy);
-  --task-card-accent: var(--cc-blue);
-  --task-card-highlight: var(--cc-yellow);
+  --task-card-bg: rgba(255, 255, 255, 0.72);
+  --task-card-text: var(--color-text);
+  --task-card-border: rgba(255, 255, 255, 0.2);
+  --task-card-shadow: rgba(15, 23, 42, 0.08);
+  --task-card-accent: var(--color-primary);
+  --task-card-highlight: rgba(41, 171, 255, 0.12);
 
-  font-size: clamp(15px, 0.92vw + 0.65rem, 18px);
+  font-size: 100%;
 }
 
 html,
@@ -44,9 +35,10 @@ body,
 
 body {
   margin: 0;
-  background: var(--cc-cream);
-  color: var(--cc-navy);
-  font-family: "Apercu", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 400;
   position: relative;
   overflow-x: hidden;
 }
@@ -57,13 +49,8 @@ body::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.06;
-  background-image: url('./assets/icons/fondo-garabatos-garabatos.png');
-  background-repeat: repeat;
-  background-position: 0 0;
-  background-size: 520px auto;
-  animation: doodle-drift 180s linear infinite;
-  will-change: background-position;
+  opacity: 0;
+  background: none;
 }
 
 #root {
@@ -97,9 +84,9 @@ p {
 .chat-screen {
   /* app shell: pages/Home/Home.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Profile/Profile.jsx, pages/Chat/Chat.jsx, pages/Settings/SettingsPage.jsx */
   min-height: 100vh;
-  width: min(100%, 78rem);
+  width: min(100%, 82rem);
   margin: 0 auto;
-  background: var(--cc-cream);
+  background: transparent;
 }
 
 .app-screen {
@@ -124,24 +111,24 @@ p {
 .profile-card,
 .stats-grid article {
   /* shared panels: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  border: 2px solid var(--cc-navy);
-  border-radius: 4px;
-  background-color: var(--cc-white);
-  box-shadow: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
 }
 
 .auth-panel,
 .completion-panel {
   /* auth and completion cards: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx */
   width: 100%;
-  padding: 1.35rem;
+  padding: 1.5rem;
 }
 
 .auth-panel {
   /* auth form surface: shared/components/AuthPanel/AuthPanel.jsx */
   display: grid;
   gap: 0.75rem;
-  box-shadow: none;
 }
 
 .auth-panel h1,
@@ -159,7 +146,7 @@ p {
 
 .eyebrow {
   /* tiny label utility: shared/components/AuthPanel/AuthPanel.jsx, app/router/RequireAuth.jsx, pages/* */
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-size: 0.82rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -167,7 +154,7 @@ p {
 
 .muted {
   /* secondary text utility: shared/components/AuthPanel/AuthPanel.jsx, pages/Home/HomeHeader.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  color: var(--cc-navy);
+  color: var(--color-text);
   line-height: 1.5;
 }
 
@@ -176,7 +163,7 @@ p {
 .two-actions {
   /* grouped action rows: shared/components/AuthPanel/AuthPanel.jsx, pages/Login/Login.jsx, pages/Home/HomeView.jsx, features/profile/pages/ProfilePage.jsx */
   display: flex;
-  gap: 8px;
+  gap: 0.65rem;
 }
 
 .segmented {
@@ -184,21 +171,22 @@ p {
   position: relative;
   overflow: hidden;
   margin: 0;
-  padding: 4px;
-  border: 2px solid var(--cc-navy);
-  border-radius: 4px;
-  background: var(--cc-cream);
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(16px);
 }
 
 .segmented::before {
   content: "";
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: calc(50% - 4px);
-  height: calc(100% - 8px);
-  border-radius: 2px;
-  background: var(--cc-blue);
+  top: 0.35rem;
+  left: 0.35rem;
+  width: calc(50% - 0.35rem);
+  height: calc(100% - 0.7rem);
+  border-radius: calc(var(--radius-md) - 4px);
+  background: var(--color-primary);
   transition: transform 0.24s ease;
 }
 
@@ -211,12 +199,12 @@ p {
   /* segmented tabs + chips: shared/components/AuthPanel/AuthPanel.jsx, pages/Home/HomeView.jsx, features/profile/components/SkillFilter.jsx */
   flex: 1;
   border: 0;
-  border-radius: 2px;
+  border-radius: 999px;
   background: transparent;
-  color: var(--cc-navy);
+  color: var(--color-text);
   cursor: pointer;
-  font-weight: 900;
-  padding: 12px;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
   position: relative;
   z-index: 1;
   transition:
@@ -226,7 +214,7 @@ p {
 
 .segmented .selected,
 .chip.selected {
-  color: var(--cc-white);
+  color: var(--color-surface);
 }
 
 .field,
@@ -239,7 +227,7 @@ p {
 .field span,
 .choice-group > span {
   /* form labels: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 900;
 }
@@ -249,11 +237,12 @@ p {
 .field select {
   /* form inputs: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   width: 100%;
-  border: 2px solid var(--cc-navy);
-  border-radius: 4px;
-  background: var(--cc-white);
-  color: var(--cc-navy);
-  padding: 13px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .field textarea {
@@ -278,12 +267,12 @@ p {
   /* global CTA buttons: shared/components/AuthPanel/AuthPanel.jsx, shared/components/AuthModal/AuthModal.jsx, pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Home/HomeView.jsx */
   width: 100%;
   max-width: 22.5rem;
-  border: 0;
-  border-radius: 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   cursor: pointer;
-  font-weight: 900;
-  padding: 14px;
-  box-shadow: none;
+  font-weight: 700;
+  padding: 0.9rem 1.1rem;
+  box-shadow: var(--shadow-sm);
   transition:
     transform 0.16s ease,
     box-shadow 0.16s ease,
@@ -301,22 +290,21 @@ p {
 .chip:hover,
 .segmented button:hover {
   transform: translate(-0.05rem, -0.05rem);
-  box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
 }
 
 .primary-action {
   /* primary CTA: shared/components/AuthPanel/AuthPanel.jsx, pages/*, features/* */
   margin-top: 0;
-  background: var(--cc-blue);
-  color: var(--cc-white);
+  background: var(--color-primary);
+  color: #ffffff;
 }
 
 .primary-action.auth-submit-action {
   /* submit button in auth panel: shared/components/AuthPanel/AuthPanel.jsx */
-  border: 2px solid var(--cc-navy);
-  background-color: var(--cc-white);
-  color: var(--cc-navy);
-  box-shadow: none;
+  border-color: rgba(15, 23, 42, 0.08);
+  background-color: rgba(255, 255, 255, 0.82);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -324,37 +312,37 @@ p {
 
 .primary-action.auth-submit-action:hover {
   transform: translate(-0.05rem, -0.05rem);
-  box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
 }
 
 .success-action {
   /* affirmative action: pages/TaskComplete/TaskComplete.jsx, pages/Settings/SettingsPage.jsx */
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--color-text);
 }
 
 .secondary-action {
   /* secondary CTA: pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  border: 2px solid var(--cc-navy);
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  border-color: rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--color-text);
 }
 
 .danger-action {
   /* destructive CTA: pages/Settings/SettingsPage.jsx, features/profile/pages/ProfilePage.jsx */
-  border: 2px solid var(--cc-navy);
-  background: #b00020;
-  color: var(--cc-white);
+  border-color: rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
 }
 
 .oauth-action {
   /* oauth button: shared/components/AuthPanel/AuthPanel.jsx */
   width: 100%;
   max-width: 22.5rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: var(--cc-white);
-  color: var(--cc-navy);
+  background-color: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   font-weight: 900;
   padding: 14px;
@@ -378,7 +366,7 @@ p {
 
 .oauth-action:hover {
   transform: translate(-0.05rem, -0.05rem);
-  box-shadow: 0.2rem 0.2rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-divider {
@@ -387,7 +375,7 @@ p {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 0.75rem;
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-weight: 900;
 }
 
@@ -395,15 +383,15 @@ p {
 .auth-divider::after {
   content: "";
   height: 2px;
-  background: var(--cc-navy);
+  background: var(--color-surface);
 }
 
 .auth-message {
   /* feedback banner: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-yellow);
-  color: var(--cc-navy);
+  background: var(--highlight);
+  color: var(--color-text);
   padding: 0.75rem;
   font-weight: 900;
   line-height: 1.4;
@@ -427,10 +415,10 @@ p {
 .password-field input {
   /* auth password input: shared/components/AuthPanel/AuthPanel.jsx */
   width: 100%;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 13px 5.5rem 13px 12px;
 }
 
@@ -440,10 +428,10 @@ p {
   top: 50%;
   right: 8px;
   transform: translateY(-50%);
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-cream);
-  color: var(--cc-navy);
+  background: var(--color-bg);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 12px;
   font-weight: 900;
@@ -479,22 +467,22 @@ p {
 .strength-bar {
   /* password strength progress bar: shared/components/AuthPanel/AuthPanel.jsx */
   height: 8px;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: linear-gradient(to right, var(--cc-white) 0%, var(--cc-white) 100%);
+  background: linear-gradient(to right, var(--color-surface) 0%, var(--color-surface) 100%);
 }
 
-.strength-bar.strength-0 { background: linear-gradient(to right, #b00020 0%, #b00020 20%, var(--cc-white) 20%); }
-.strength-bar.strength-1 { background: linear-gradient(to right, #b00020 0%, #b00020 35%, var(--cc-white) 35%); }
-.strength-bar.strength-2 { background: linear-gradient(to right, #c98a00 0%, #c98a00 55%, var(--cc-white) 55%); }
-.strength-bar.strength-3 { background: linear-gradient(to right, #2e7d32 0%, #2e7d32 80%, var(--cc-white) 80%); }
+.strength-bar.strength-0 { background: linear-gradient(to right, #b00020 0%, #b00020 20%, var(--color-surface) 20%); }
+.strength-bar.strength-1 { background: linear-gradient(to right, #b00020 0%, #b00020 35%, var(--color-surface) 35%); }
+.strength-bar.strength-2 { background: linear-gradient(to right, #c98a00 0%, #c98a00 55%, var(--color-surface) 55%); }
+.strength-bar.strength-3 { background: linear-gradient(to right, #2e7d32 0%, #2e7d32 80%, var(--color-surface) 80%); }
 .strength-bar.strength-4 { background: linear-gradient(to right, #1b5e20 0%, #1b5e20 100%); }
 
 .strength-label {
   /* password strength label: shared/components/AuthPanel/AuthPanel.jsx */
   font-size: 12px;
   font-weight: 900;
-  color: var(--cc-navy);
+  color: var(--color-text);
 }
 
 .auth-aux {
@@ -506,7 +494,7 @@ p {
 }
 
 .auth-aux a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
 
@@ -536,9 +524,9 @@ p {
   /* tiny icon button: shared/components/AuthPanel/AuthPanel.jsx, pages/Settings/SettingsPage.jsx, pages/Home/HomeHeader.jsx */
   width: 42px;
   height: 42px;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-white);
+  background: var(--color-surface);
   cursor: pointer;
   font-size: 20px;
   box-shadow: none;
@@ -560,8 +548,8 @@ p {
 .chip {
   /* filter chip: shared/components/AuthPanel/AuthPanel.jsx, features/skills/components/SkillFilter.jsx, features/home/* */
   flex: 0 1 auto;
-  border: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .detail-panel {
@@ -580,7 +568,7 @@ p {
 
 .detail-panel p {
   /* detail panel text: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
-  color: var(--cc-navy);
+  color: var(--color-text);
   line-height: 1.55;
 }
 
@@ -593,7 +581,7 @@ p {
 
 .detail-row span {
   /* highlighted value in detail row: pages/TaskDetail/TaskDetail.jsx */
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
 
@@ -602,16 +590,16 @@ p {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-white);
+  background: var(--color-surface);
   padding: 16px;
   box-shadow: none;
 }
 
 .user-strip p {
   margin-top: 4px;
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -621,8 +609,8 @@ p {
   display: grid;
   place-items: center;
   border-radius: 4px;
-  background: var(--cc-navy);
-  color: var(--cc-white);
+  background: var(--color-surface);
+  color: var(--color-surface);
   font-weight: 900;
 }
 
@@ -677,9 +665,9 @@ p {
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
-  background: var(--cc-white);
+  background: var(--color-surface);
   box-shadow: none;
 }
 
@@ -690,8 +678,8 @@ p {
   justify-content: space-between;
   gap: 1rem;
   padding: 16px;
-  border-bottom: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .task-chat-header h2 {
@@ -715,16 +703,16 @@ p {
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
   padding: 12px 16px 16px;
-  border-top: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .task-chat-composer input {
   /* contextual task chat input: components/home/TaskChatModal.jsx */
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   padding: 0.6rem 0.75rem;
-  background: var(--cc-cream);
+  background: var(--color-bg);
 }
 
 .chat-screen {
@@ -738,13 +726,13 @@ p {
   /* main chat page header: features/chat/pages/ChatPage.jsx */
   margin: 0;
   padding: 16px;
-  border-bottom: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .chat-header p {
   /* chat subtitle: features/chat/pages/ChatPage.jsx */
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 900;
 }
@@ -776,15 +764,15 @@ p {
 .incoming {
   /* incoming bubble style: shared/ui/chat/MessageBubble.jsx */
   align-self: flex-start;
-  background: var(--cc-white);
-  border: 2px solid var(--cc-navy);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .outgoing {
   /* outgoing bubble style: shared/ui/chat/MessageBubble.jsx */
   align-self: flex-end;
-  background: var(--cc-blue);
-  color: var(--cc-white);
+  background: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .message-meta {
@@ -819,8 +807,8 @@ p {
 .message-action-link {
   /* chat action pill: shared/ui/chat/MessageBubble.jsx */
   border: 0;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 900;
@@ -832,7 +820,7 @@ p {
 
 .message-action-link.primary {
   /* edit action: shared/ui/chat/MessageBubble.jsx */
-  color: var(--cc-blue);
+  color: var(--color-primary);
 }
 
 .message-action-link.danger {
@@ -868,10 +856,10 @@ p {
   /* inline edit textarea: shared/ui/chat/MessageBubble.jsx */
   width: 100%;
   min-height: 88px;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0.6rem 0.75rem;
   resize: vertical;
 }
@@ -891,7 +879,7 @@ p {
 
 .message-error {
   /* chat error banner: shared/ui/chat/MessageBubble.jsx, features/chat/pages/ChatPage.jsx */
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   background: #fff4f6;
   color: #b00020;
@@ -906,8 +894,8 @@ p {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 10px;
   padding: 12px 16px 16px;
-  border-top: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .chat-actions .primary-action,
@@ -925,7 +913,7 @@ p {
 .rating-value {
   /* rating summary text: features/reviews/components/RatingSummary.jsx */
   margin: 6px 0 18px;
-  color: var(--cc-navy);
+  color: var(--color-text);
   font-weight: 900;
   text-align: center;
 }
@@ -941,7 +929,7 @@ p {
 }
 
 .profile-card p {
-  color: var(--cc-navy);
+  color: var(--color-text);
 }
 
 .profile-avatar {
@@ -974,7 +962,7 @@ p {
 
 .stats-grid span {
   /* stat label: features/profile/pages/ProfilePage.jsx */
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-size: 12px;
   font-weight: 900;
 }
@@ -1006,8 +994,8 @@ p {
 
 .deactivate-panel.is-open {
   gap: 1rem;
-  border: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
   padding: 1rem;
   box-shadow: none;
 }
@@ -1079,8 +1067,8 @@ p {
   .app-screen,
   .auth-screen,
   .chat-screen {
-    border-right: 2px solid var(--cc-navy);
-    border-left: 2px solid var(--cc-navy);
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
   }
 }
 
@@ -1121,7 +1109,7 @@ p {
   width: 100%;
   max-height: 14rem;
   object-fit: cover;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
 }
 
@@ -1131,7 +1119,7 @@ p {
   width: min(100%, 48rem);
   max-height: 16rem;
   object-fit: cover;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   margin: 0 auto 1rem;
 }
@@ -1142,16 +1130,16 @@ p {
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-top: 2px solid var(--cc-navy);
-  background: var(--cc-white);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .chat-composer input {
   /* legacy chat input: pages/Chats/Chats.jsx, features/chat/pages/ChatPage.jsx */
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   padding: 0.6rem 0.75rem;
-  background: var(--cc-cream);
+  background: var(--color-bg);
 }
 
 .chat-list {
@@ -1171,8 +1159,8 @@ p {
   gap: 0.75rem;
   width: 100%;
   text-align: left;
-  background: var(--cc-white);
-  border: 2px solid var(--cc-navy);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   padding: 0.75rem 1rem;
   box-shadow: none;
@@ -1187,7 +1175,7 @@ p {
 
 .chat-list-item p {
   /* chat list subtitle: pages/Chats/Chats.jsx, shared/ui/chat/ConversationList.jsx */
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 0.85rem;
 }
@@ -1205,7 +1193,7 @@ p {
   /* generic empty state: shared/ui/chat/EmptyChatState.jsx, pages/Chats/Chats.jsx, pages/TaskDetail/TaskDetail.jsx */
   text-align: center;
   padding: 1.5rem 1rem;
-  border: 2px dashed var(--cc-navy);
+  border: 1px dashed var(--color-border);
   border-radius: 0.25rem;
 }
 
@@ -1216,9 +1204,9 @@ p {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  border: 2px solid var(--cc-navy);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
-  background: var(--cc-cream);
+  background: var(--color-bg);
   margin-bottom: 1rem;
 }
 
@@ -1232,7 +1220,7 @@ p {
   /* text link button: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
   background: transparent;
   border: none;
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
   text-decoration: underline;
   cursor: pointer;
@@ -1242,13 +1230,13 @@ p {
 .auth-legal {
   /* legal text in auth screens: shared/components/AuthPanel/AuthPanel.jsx */
   font-size: 0.85rem;
-  color: var(--cc-navy);
+  color: var(--color-text);
   text-align: center;
   margin-top: 1rem;
 }
 
 .auth-legal a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
 
@@ -1288,3 +1276,4 @@ p {
     background-position: 1040px 0;
   }
 }
+

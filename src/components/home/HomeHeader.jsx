@@ -8,6 +8,7 @@ export default function HomeHeader({
   userInitial,
   onOpenHelper,
   onOpenChats,
+  onOpenMyRequests,
   onOpenSettings,
   onOpenProfile,
   onLogout,
@@ -37,7 +38,7 @@ export default function HomeHeader({
       document.removeEventListener('mousedown', handleOutsideClick)
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [])
+  }, [menuOpen])
 
   function handleAction(action) {
     setMenuOpen(false)
@@ -96,6 +97,11 @@ export default function HomeHeader({
 
             {menuOpen ? (
               <div className={styles.menuDropdown} role="menu" aria-label="Acciones del home">
+                {onOpenMyRequests ? (
+                  <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenMyRequests)}>
+                    Mis solicitudes
+                  </button>
+                ) : null}
                 <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenChats)}>
                   Chats
                 </button>

@@ -1,10 +1,10 @@
-.layout {
+﻿.layout {
   width: min(100% - 2rem, 56rem);
   margin: 0 auto;
   padding-block: clamp(1.5rem, 4vw, 3rem);
   display: grid;
   gap: 1.5rem;
-  color: var(--cc-navy);
+  color: var(--color-text);
 }
 
 .header {
@@ -17,9 +17,9 @@
 .back {
   width: 2.6rem;
   height: 2.6rem;
-  border: 0.125rem solid var(--cc-navy);
+  border: 0.125rem solid var(--color-text);
   border-radius: 0.25rem;
-  background: var(--cc-yellow);
+  background: var(--highlight);
   font-size: 1.2rem;
   font-weight: 900;
   cursor: pointer;
@@ -30,12 +30,12 @@
   letter-spacing: 0.08em;
   font-size: 0.8rem;
   font-weight: 900;
-  color: var(--cc-blue);
+  color: var(--color-primary);
 }
 
 .updated {
   margin-top: 0.25rem;
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 0.9rem;
 }
@@ -47,24 +47,24 @@
 }
 
 .tab {
-  border: 0.125rem solid var(--cc-navy);
+  border: 0.125rem solid var(--color-text);
   border-radius: 0.25rem;
-  background: var(--cc-white);
-  color: var(--cc-navy);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0.5rem 0.9rem;
   font-weight: 900;
   text-decoration: none;
 }
 
 .tabActive {
-  background: var(--cc-yellow);
+  background: var(--highlight);
 }
 
 .content {
-  background: var(--cc-white);
-  border: 0.125rem solid var(--cc-navy);
+  background: var(--color-surface);
+  border: 0.125rem solid var(--color-text);
   border-radius: 0.5rem;
-  box-shadow: 0.5rem 0.5rem 0 var(--cc-navy);
+  box-shadow: var(--shadow-sm);
   padding: clamp(1.25rem, 3vw, 2rem);
   display: grid;
   gap: 1rem;
@@ -102,18 +102,18 @@
 
 .content th,
 .content td {
-  border: 1px solid var(--cc-navy);
+  border: 1px solid var(--color-text);
   padding: 0.5rem 0.7rem;
   text-align: left;
   vertical-align: top;
 }
 
 .content th {
-  background: var(--cc-yellow);
+  background: var(--highlight);
 }
 
 .content a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
 
@@ -126,6 +126,7 @@
 }
 
 .footer a {
-  color: var(--cc-blue);
+  color: var(--color-primary);
   font-weight: 900;
 }
+

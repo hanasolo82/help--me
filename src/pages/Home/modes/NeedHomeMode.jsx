@@ -1,7 +1,16 @@
 import RequesterProfileGate from '../../../features/home/need-help/components/RequesterProfileGate'
 import RequesterHome from '../../../features/home/need-help/components/RequesterHome'
 
-export default function NeedHomeMode({ profile, location, locationStatus, locationError, onRequestLocation }) {
+export default function NeedHomeMode({
+  profile,
+  location,
+  locationStatus,
+  locationError,
+  onRequestLocation,
+  requestsDrawerOpen,
+  onOpenRequestsDrawer,
+  onCloseRequestsDrawer,
+}) {
   return (
     <RequesterProfileGate profile={profile}>
       <RequesterHome
@@ -10,6 +19,9 @@ export default function NeedHomeMode({ profile, location, locationStatus, locati
         locationStatus={locationStatus}
         locationError={locationError}
         onRequestLocation={onRequestLocation}
+        requestsDrawerOpen={requestsDrawerOpen}
+        onOpenRequestsDrawer={onOpenRequestsDrawer}
+        onCloseRequestsDrawer={onCloseRequestsDrawer}
       />
     </RequesterProfileGate>
   )

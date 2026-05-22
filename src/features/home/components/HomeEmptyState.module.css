@@ -1,12 +1,18 @@
-.card {
+﻿.card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
   display: grid;
   gap: 0.85rem;
   align-items: start;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.66);
   padding: 1rem;
-  box-shadow: 0.3rem 0.3rem 0 var(--shadow);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
 }
 
 .body {
@@ -16,7 +22,7 @@
 
 .body strong {
   font-size: 1.05rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .body p {
@@ -28,17 +34,18 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 0.125rem solid var(--shadow);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 50%;
-  background: var(--highlight);
-  color: var(--text);
-  font-weight: 900;
+  background: rgba(41, 171, 255, 0.1);
+  color: var(--color-text);
+  font-weight: 700;
 }
 
 .positive .icon {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  background: rgba(41, 171, 255, 0.14);
 }
 
 .warning .icon {
-  background: color-mix(in srgb, var(--highlight) 80%, white);
+  background: rgba(41, 171, 255, 0.08);
 }
+
