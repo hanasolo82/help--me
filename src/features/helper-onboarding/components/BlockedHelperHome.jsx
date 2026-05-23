@@ -1,3 +1,4 @@
+import mapaCalleImage from '../../../assets/images/mapa_calle.png'
 import styles from './BlockedHelperHome.module.css'
 import { useHelperOnboardingProgress } from '../hooks/useHelperOnboardingProgress'
 import {
@@ -6,19 +7,43 @@ import {
   isHelperUnderReview,
 } from '../utils/helperPermissions'
 
+const STATUS_LABEL = {
+  [HELPER_STATUS.NOT_STARTED]: 'Pendiente de empezar',
+  [HELPER_STATUS.PROFILE_INCOMPLETE]: 'Perfil en construcción',
+  [HELPER_STATUS.CONTACT_PENDING]: 'Contacto por añadir',
+  [HELPER_STATUS.IDENTITY_PENDING]: 'Confianza pendiente',
+  [HELPER_STATUS.TERMS_PENDING]: 'Condiciones pendientes',
+  [HELPER_STATUS.UNDER_REVIEW]: 'En revisión',
+  [HELPER_STATUS.ACTIVE]: 'Listo para aparecer',
+  [HELPER_STATUS.REJECTED]: 'Revisión necesaria',
+  [HELPER_STATUS.SUSPENDED]: 'Visibilidad pausada',
+}
+
 const STATUS_COPY = {
-  [HELPER_STATUS.NOT_STARTED]: 'Todavía no has empezado tu perfil de ayudante.',
-  [HELPER_STATUS.PROFILE_INCOMPLETE]: 'Te faltan algunos datos para completar tu perfil.',
+  [HELPER_STATUS.NOT_STARTED]:
+    'Aún no has empezado tu perfil de ayudante. Cuando quieras, puedes completarlo a tu ritmo.',
+  [HELPER_STATUS.PROFILE_INCOMPLETE]:
+    'Te faltan algunos detalles para presentar un perfil claro, útil y confiable.',
   [HELPER_STATUS.CONTACT_PENDING]:
-    'Verifica tus datos de contacto para que la comunidad pueda confiar en tu perfil.',
+    'Añadir un medio de contacto ayuda a reforzar la confianza y la recuperación de cuenta.',
   [HELPER_STATUS.IDENTITY_PENDING]:
-    'Completa la verificación de identidad para poder aceptar solicitudes.',
-  [HELPER_STATUS.TERMS_PENDING]: 'Acepta las normas de la comunidad para continuar.',
+    'Completar este paso ayuda a que tu perfil se vea más sólido y seguro.',
+  [HELPER_STATUS.TERMS_PENDING]:
+    'Solo falta confirmar las condiciones para poder seguir adelante con tranquilidad.',
   [HELPER_STATUS.UNDER_REVIEW]:
-    'Estamos revisando tu perfil. Cuando sea aprobado, podrás aparecer en el mapa y aceptar solicitudes.',
+    'Ya has completado lo principal. Ahora estamos revisando tu perfil antes de mostrarlo en el mapa.',
   [HELPER_STATUS.REJECTED]:
-    'No hemos podido aprobar tu perfil. Revisa la información o contacta con soporte.',
-  [HELPER_STATUS.SUSPENDED]: 'Tu perfil de ayudante está suspendido temporalmente.',
+    'Hemos pausado tu visibilidad por ahora. Puedes revisar la información y volver a intentarlo.',
+  [HELPER_STATUS.SUSPENDED]:
+    'Tu visibilidad está pausada temporalmente. Cuando esté resuelto, podrás seguir con normalidad.',
+}
+
+const CHECKLIST_COPY = {
+  'Perfil base': 'Añade una presentación clara para que las personas sepan quién eres.',
+  'Ubicación': 'Activa tu zona para aparecer en búsquedas cercanas.',
+  'Skills': 'Selecciona los servicios que puedes ofrecer.',
+  'Disponibilidad': 'Marca los días en los que sueles estar disponible.',
+  'Verificación': 'Completa los últimos pasos de confianza para activar tu perfil.',
 }
 
 export default function BlockedHelperHome({ profile, onContinueHelperOnboarding, onNeedHelp }) {
@@ -30,30 +55,54 @@ export default function BlockedHelperHome({ profile, onContinueHelperOnboarding,
   return (
     <section className={styles.shell} aria-label="Acceso de helper bloqueado">
       <div className={styles.frame}>
-        <div className={styles.mapBlur} aria-hidden="true">
-          <div className={styles.mapBadge}>Mapa deshabilitado hasta completar tu perfil</div>
+        <div className={styles.mapPreview} aria-hidden="true">
+          <img className={styles.mapImage} src={mapaCalleImage} alt="" />
+          <div className={styles.mapWash} />
+          <div className={styles.mapGlow} />
+          <div className={styles.mapBadge}>Visibilidad pendiente</div>
+          <div className={styles.mapPin} />
+          <div className={styles.mapOrbit} />
         </div>
 
         <div className={styles.overlay}>
           <article className={styles.card}>
-            <p className="eyebrow">Quiero ayudar</p>
-            <h2 className={styles.title}>
-              {isHelperUnderReview(profile) ? 'Tu perfil está en revisión' : 'Tu perfil todavía no puede aparecer en el mapa'}
-            </h2>
+            <div className={styles.heroRow}>
+              <div>
+                <p className="eyebrow">Quiero ayudar</p>
+                <h2 className={styles.title}>
+                  {isHelperUnderReview(profile) ? 'Tu perfil está en revisión' : 'Tu visibilidad todavía no está activa'}
+                </h2>
+              </div>
+
+              <span className={styles.statusPill}>{STATUS_LABEL[helperStatus] || 'Pendiente'}</span>
+            </div>
+
             <p className={styles.copy}>{statusText}</p>
 
-            <div className={styles.progress} aria-label="Progreso del perfil de ayudante">
-              <strong>{progress}% completado</strong>
-              <div className={styles.bar}>
+            <div className={styles.trustNote}>
+              Estos pasos nos ayudan a mantener una comunidad más segura y a mostrar perfiles claros, útiles y confiables.
+            </div>
+
+            <div className={styles.progressCard} aria-label="Progreso del perfil de ayudante">
+              <div className={styles.progressHeader}>
+                <strong>{progress}% completado</strong>
+                
+              </div>
+              <div className={styles.bar} role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">
                 <span className={styles.fill} style={{ width: `${progress}%` }} />
               </div>
-              <small className="muted">Estado actual: {helperStatus.replaceAll('_', ' ')}</small>
             </div>
 
             <ul className={styles.steps}>
               {checklist.map((item) => (
-                <li key={item.label}>
-                  {item.done ? '✓' : '•'} {item.label}
+                <li key={item.label} className={styles.stepItem}>
+                  <span className={styles.stepMark} aria-hidden="true">
+                    {item.done ? '✓' : '•'}
+                  </span>
+                  <div className={styles.stepCopy}>
+                    <strong>{item.label}</strong>
+                    <p>{CHECKLIST_COPY[item.label] || 'Completa este paso para seguir avanzando.'}</p>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -63,13 +112,13 @@ export default function BlockedHelperHome({ profile, onContinueHelperOnboarding,
                 Continuar perfil de ayudante
               </button>
               <button type="button" className="secondary-action" onClick={onNeedHelp}>
-                Ir a Necesito ayuda
+                Pedir ayuda por ahora
               </button>
             </div>
 
             {isHelperBlocked(profile) ? (
               <p className={styles.helperNote}>
-                Recomendación: completa primero tu perfil y las verificaciones para reforzar tu visibilidad y confianza.
+                Recomendación: completa primero tu perfil para reforzar tu visibilidad y confianza.
               </p>
             ) : null}
           </article>

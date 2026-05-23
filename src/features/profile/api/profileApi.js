@@ -25,7 +25,46 @@ export async function getProfileById(profileId) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(`
+      id,
+      username,
+      full_name,
+      display_name,
+      avatar_url,
+      map_avatar_url,
+      bio,
+      neighborhood,
+      city,
+      country,
+      lat,
+      lng,
+      rating,
+      completed_tasks,
+      reviews_count,
+      response_time_minutes,
+      helper_enabled,
+      helper_status,
+      availability_enabled,
+      hourly_rate,
+      verified,
+      verified_email,
+      verified_phone,
+      verified_identity,
+      identity_verified,
+      stripe_onboarding_completed,
+      stripe_account_id,
+      stripe_charges_enabled,
+      stripe_payouts_enabled,
+      account_status,
+      theme,
+      search_radius_km,
+      show_approx_location,
+      notify_nearby_tasks,
+      notify_messages,
+      notify_payments,
+      created_at,
+      updated_at
+    `)
     .eq('id', profileId)
     .maybeSingle()
 
