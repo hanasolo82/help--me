@@ -1,7 +1,24 @@
+import { useState } from 'react'
 import StepFrame from './StepFrame'
 import styles from './IdentityStep.module.css'
+import { startStripeConnectOnboarding } from '../../services/stripeConnectService'
 
 export default function IdentityStep({ onNext, onBack }) {
+  const [loadingState, setLoadingState] = useState('idle')
+  const [error, setError] = useState('')
+
+  async function handleStartStripe() {
+    setLoadingState('loading')
+    setError('')
+
+    try {
+      await startStripeConnectOnboarding()
+    } catch (nextError) {
+      setError(nextError?.message || 'No pudimos abrir Stripe en este momento.')
+      setLoadingState('error')
+    }
+  }
+
   return (
     <StepFrame
       kicker="Confianza"
@@ -18,7 +35,7 @@ export default function IdentityStep({ onNext, onBack }) {
           <button type="button" className="secondary-action" onClick={onBack}>
             Atrás
           </button>
-          <button type="button" className={styles.primaryCta} onClick={onNext}>
+          <button type="button" className="secondary-action" onClick={onNext}>
             Continuar
           </button>
         </>
@@ -66,6 +83,38 @@ export default function IdentityStep({ onNext, onBack }) {
             </div>
           </li>
         </ul>
+      </section>
+
+      <section className={styles.stripeCard} aria-label="Stripe Connect">
+        <div className={styles.stripeHeader}>
+          <div>
+            <p className={styles.stripeKicker}>Verificación con Stripe</p>
+            <h3 className={styles.stripeTitle}>Preparación segura para ayudar</h3>
+          </div>
+          <span className={styles.stripeBadge}>Stripe Connect</span>
+        </div>
+
+        <p className={styles.stripeText}>
+          Stripe gestionará de forma segura la información necesaria para preparar tu perfil como ayudante. HelpMe no
+          almacena documentos ni datos bancarios sensibles.
+        </p>
+
+        <div className={styles.stripeActions}>
+          <button
+            type="button"
+            className={styles.stripePrimary}
+            onClick={handleStartStripe}
+            disabled={loadingState === 'loading'}
+          >
+            {loadingState === 'loading' ? 'Preparando verificación...' : 'Continuar con Stripe'}
+          </button>
+        </div>
+
+        {error ? (
+          <p className={styles.inlineError} role="alert">
+            {error}
+          </p>
+        ) : null}
       </section>
 
       <aside className={styles.privacyCard} aria-label="Privacidad">

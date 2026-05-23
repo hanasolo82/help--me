@@ -4,6 +4,7 @@ import stripeRoutes from './routes/stripe.routes.js'
 import { loadServerEnv } from './config/env.js'
 
 const { env, errors } = loadServerEnv()
+const processRef = globalThis.process
 
 if (errors.length > 0) {
   console.error('\n[server] No se pudo iniciar el servidor privado de Stripe.')
@@ -12,7 +13,7 @@ if (errors.length > 0) {
     console.error(`- ${error}`)
   })
   console.error('\n[server] Usa server/.env.example como referencia y vuelve a arrancar.\n')
-  process.exit(1)
+  processRef.exit(1)
 }
 
 const app = express()
@@ -25,11 +26,12 @@ app.use(
   }),
 )
 
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }))
+
 app.get('/health', (_req, res) => {
   res.status(200).json({
     ok: true,
-    service: 'private-stripe-server',
-    timestamp: new Date().toISOString(),
+    service: 'helpme-api',
   })
 })
 
@@ -41,7 +43,7 @@ app.use((_req, res) => {
   })
 })
 
-app.use((error, _req, res, _next) => {
+app.use((error, _req, res) => {
   console.error('[server] Unhandled error:', error)
   res.status(500).json({
     error: 'Internal server error.',
