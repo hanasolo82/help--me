@@ -22,6 +22,8 @@ import SettingsPage from "../../pages/Settings/SettingsPage";
 import Cookies from "../../pages/Legal/Cookies";
 import Privacy from "../../pages/Legal/Privacy";
 import Terms from "../../pages/Legal/Terms";
+import StripeReturn from "../../pages/Stripe/StripeReturn";
+import StripeRefresh from "../../pages/Stripe/StripeRefresh";
 import RequireAuth from "./RequireAuth";
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
@@ -52,6 +54,8 @@ export default function AppRouter() {
       <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
+      <Route path="/stripe/return" element={<RequireAuth><StripeReturn /></RequireAuth>} />
+      <Route path="/stripe/refresh" element={<RequireAuth><StripeRefresh /></RequireAuth>} />
     </Routes>
   );
 }

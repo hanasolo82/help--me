@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import styles from '../../pages/Home/Home.module.css'
 
 export default function HomeHeader({
@@ -15,11 +16,17 @@ export default function HomeHeader({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
+  const [menuPosition, setMenuPosition] = useState(null)
   const menuRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     function handleOutsideClick(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      const target = event.target
+      const isInsideMenu = menuRef.current?.contains(target)
+      const isInsideDropdown = dropdownRef.current?.contains(target)
+
+      if (!isInsideMenu && !isInsideDropdown) {
         setMenuOpen(false)
       }
     }
@@ -37,6 +44,40 @@ export default function HomeHeader({
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick)
       document.removeEventListener('keydown', handleEscape)
+    }
+  }, [menuOpen])
+
+  useLayoutEffect(() => {
+    if (!menuOpen || !menuRef.current) {
+      setMenuPosition(null)
+      return undefined
+    }
+
+    const updatePosition = () => {
+      const trigger = menuRef.current?.querySelector('[data-menu-trigger="true"]')
+      if (!trigger) return
+
+      const rect = trigger.getBoundingClientRect()
+      const width = 176
+      const viewportPadding = 12
+      const left = Math.max(viewportPadding, Math.min(rect.right - width, window.innerWidth - width - viewportPadding))
+      const top = rect.bottom + 10
+
+      setMenuPosition({
+        top,
+        left,
+        width,
+      })
+    }
+
+    updatePosition()
+
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
     }
   }, [menuOpen])
 
@@ -91,33 +132,47 @@ export default function HomeHeader({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               aria-label="Abrir menú de acciones"
+              data-menu-trigger="true"
             >
               ⋮
             </button>
-
-            {menuOpen ? (
-              <div className={styles.menuDropdown} role="menu" aria-label="Acciones del home">
-                {onOpenMyRequests ? (
-                  <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenMyRequests)}>
-                    Mis solicitudes
-                  </button>
-                ) : null}
-                <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenChats)}>
-                  Chats
-                </button>
-                <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenSettings)}>
-                  Ajustes
-                </button>
-                {onLogout ? (
-                  <button type="button" className={styles.menuItem} onClick={handleRequestLogout}>
-                    Salir
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
           </div>
         </div>
       </header>
+
+      {menuOpen && menuPosition
+        ? createPortal(
+            <div
+              ref={dropdownRef}
+              className={styles.menuDropdownPortal}
+              role="menu"
+              aria-label="Acciones del home"
+              style={{
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`,
+                width: `${menuPosition.width}px`,
+              }}
+            >
+              {onOpenMyRequests ? (
+                <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenMyRequests)}>
+                  Mis solicitudes
+                </button>
+              ) : null}
+              <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenChats)}>
+                Chats
+              </button>
+              <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenSettings)}>
+                Ajustes
+              </button>
+              {onLogout ? (
+                <button type="button" className={styles.menuItem} onClick={handleRequestLogout}>
+                  Salir
+                </button>
+              ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
 
       {confirmLogoutOpen ? (
         <div className={styles.logoutOverlay} role="presentation" onClick={() => setConfirmLogoutOpen(false)}>

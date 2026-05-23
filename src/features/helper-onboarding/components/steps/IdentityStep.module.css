@@ -19,6 +19,7 @@
 }
 
 .reviewCard,
+.stripeCard,
 .privacyCard {
   position: relative;
   z-index: 1;
@@ -39,6 +40,28 @@
 .reviewCard:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.stripeCard {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 4%),
+    color-mix(in srgb, var(--color-surface) 94%, white 6%)
+  );
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.stripeHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .reviewHeader {
@@ -66,6 +89,23 @@
   color: var(--color-text);
 }
 
+.stripeKicker {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.stripeTitle {
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-text);
+}
+
 .badge {
   flex: 0 0 auto;
   align-self: start;
@@ -79,6 +119,12 @@
 }
 
 .cardLead {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.stripeText {
   margin: 0;
   line-height: 1.6;
   color: var(--color-text-muted);
@@ -146,7 +192,25 @@
   line-height: 1.55;
 }
 
-.primaryCta {
+.stripeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.stripeBadge {
+  flex: 0 0 auto;
+  align-self: start;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 11%, var(--color-surface));
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stripePrimary {
   min-width: min(100%, 11rem);
   padding-inline: 1.2rem;
   padding-block: 0.9rem;
@@ -162,15 +226,30 @@
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-.primaryCta:hover {
+.stripePrimary:hover {
   transform: translateY(-1px);
   background: var(--color-primary-hover);
   box-shadow: var(--shadow-md);
 }
 
-.primaryCta:focus-visible {
+.stripePrimary:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--color-primary) 56%, white);
   outline-offset: 3px;
+}
+
+.stripePrimary:disabled {
+  opacity: 0.72;
+  cursor: progress;
+  transform: none;
+}
+
+.inlineError {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+  color: var(--color-text);
+  line-height: 1.5;
 }
 
 @media (min-width: 900px) {
@@ -180,15 +259,17 @@
 }
 
 @media (max-width: 640px) {
-  .reviewHeader {
+  .reviewHeader,
+  .stripeHeader {
     flex-direction: column;
   }
 
-  .badge {
+  .badge,
+  .stripeBadge {
     align-self: start;
   }
 
-  .primaryCta {
+  .stripePrimary {
     width: 100%;
   }
 }
