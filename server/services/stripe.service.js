@@ -8,6 +8,16 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
   apiVersion: '2024-06-20',
 })
 
+function createConnectNotEnabledError(originalError) {
+  const error = new Error(
+    'Stripe Connect no está activado en esta cuenta. Activa Connect en el Dashboard de Stripe antes de crear cuentas Express.',
+  )
+
+  error.statusCode = 403
+  error.cause = originalError
+  return error
+}
+
 async function getProfileByUserId(userId) {
   if (!supabaseAdmin) {
     throw new Error('Supabase admin client is not configured.')
@@ -63,19 +73,29 @@ export async function createOrGetConnectAccount(user, profile) {
     return currentProfile.stripe_account_id
   }
 
-  const account = await stripe.accounts.create({
-    type: 'express',
-    country: 'ES',
-    email: user.email || undefined,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers: { requested: true },
-    },
-    metadata: {
-      app_user_id: user.id,
-      profile_id: currentProfile.id,
-    },
-  })
+  let account
+
+  try {
+    account = await stripe.accounts.create({
+      type: 'express',
+      country: 'ES',
+      email: user.email || undefined,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      metadata: {
+        app_user_id: user.id,
+        profile_id: currentProfile.id,
+      },
+    })
+  } catch (error) {
+    if (error?.message?.includes("You've signed up for Connect") || error?.code === 'account_invalid') {
+      throw createConnectNotEnabledError(error)
+    }
+
+    throw error
+  }
 
   await updateProfileStripeData(currentProfile.id, {
     stripe_account_id: account.id,

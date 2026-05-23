@@ -22,14 +22,22 @@ export async function startStripeConnectOnboarding() {
     throw new Error('Necesitas iniciar sesión para continuar con Stripe.')
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/api/stripe/connect/account-link`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: '{}',
-  })
+  let response
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/stripe/connect/account-link`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    })
+  } catch {
+    throw new Error(
+      `No pudimos conectar con el servidor de Stripe en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
+    )
+  }
 
   const payload = await response.json().catch(() => ({}))
 

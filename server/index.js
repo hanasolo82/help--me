@@ -5,6 +5,7 @@ import { loadServerEnv } from './config/env.js'
 
 const { env, errors } = loadServerEnv()
 const processRef = globalThis.process
+const allowedOrigins = new Set([env.CLIENT_URL, env.APP_URL].filter(Boolean))
 
 if (errors.length > 0) {
   console.error('\n[server] No se pudo iniciar el servidor privado de Stripe.')
@@ -21,7 +22,23 @@ const app = express()
 app.disable('x-powered-by')
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true)
+      }
+
+      if (allowedOrigins.has(origin)) {
+        return callback(null, true)
+      }
+
+      const normalizedOrigin = origin.replace('127.0.0.1', 'localhost')
+
+      if (allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true)
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`))
+    },
     credentials: true,
   }),
 )
@@ -45,8 +62,11 @@ app.use((_req, res) => {
 
 app.use((error, _req, res) => {
   console.error('[server] Unhandled error:', error)
-  res.status(500).json({
-    error: 'Internal server error.',
+  const statusCode = Number.isInteger(error?.statusCode) ? error.statusCode : 500
+  const message = statusCode === 500 ? 'Internal server error.' : (error?.message || 'Request failed.')
+
+  res.status(statusCode).json({
+    error: message,
   })
 })
 
