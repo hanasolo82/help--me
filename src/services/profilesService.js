@@ -14,7 +14,6 @@ const ALLOWED_HELPER_STATUSES = new Set([
   'contact_pending',
   'identity_pending',
   'terms_pending',
-  'under_review',
   'active',
   'rejected',
   'suspended',
@@ -26,10 +25,6 @@ function normalizeTheme(theme) {
 
 function normalizeHelperStatus(value) {
   const nextValue = sanitizeText(value, 40) || DEFAULT_HELPER_STATUS
-  if (nextValue === 'active') {
-    return 'under_review'
-  }
-
   return ALLOWED_HELPER_STATUSES.has(nextValue) ? nextValue : DEFAULT_HELPER_STATUS
 }
 
@@ -164,6 +159,9 @@ function buildDefaultProfileValues(user, attempt = 0) {
     notify_nearby_tasks: true,
     notify_messages: true,
     notify_payments: true,
+    terms_accepted: false,
+    terms_accepted_at: null,
+    terms_version: null,
   }
 }
 
@@ -305,6 +303,9 @@ export function validateProfileInput(input) {
       notify_nearby_tasks: normalizeBoolean(input.notifyNearbyTasks, true),
       notify_messages: normalizeBoolean(input.notifyMessages, true),
       notify_payments: normalizeBoolean(input.notifyPayments, true),
+      terms_accepted: normalizeBoolean(input.termsAccepted, false),
+      terms_accepted_at: input.termsAcceptedAt ? new Date(input.termsAcceptedAt).toISOString() : null,
+      terms_version: sanitizeText(input.termsVersion, 80) || null,
       helper_enabled: normalizeBoolean(input.helperEnabled, DEFAULT_HELPER_ENABLED),
       helper_status: normalizeHelperStatus(input.helperStatus),
       availability_enabled: normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED),
@@ -428,6 +429,18 @@ function normalizeProfileUpdateInput(input) {
 
   if (Object.prototype.hasOwnProperty.call(input, 'notifyPayments')) {
     updates.notify_payments = normalizeBoolean(input.notifyPayments, true)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'termsAccepted')) {
+    updates.terms_accepted = normalizeBoolean(input.termsAccepted, false)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'termsAcceptedAt')) {
+    updates.terms_accepted_at = input.termsAcceptedAt ? new Date(input.termsAcceptedAt).toISOString() : null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'termsVersion')) {
+    updates.terms_version = sanitizeText(input.termsVersion, 80) || null
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'helperEnabled')) {

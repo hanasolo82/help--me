@@ -4,7 +4,6 @@ import { useHelperOnboardingProgress } from '../hooks/useHelperOnboardingProgres
 import {
   HELPER_STATUS,
   isHelperBlocked,
-  isHelperUnderReview,
 } from '../utils/helperPermissions'
 
 const STATUS_LABEL = {
@@ -13,7 +12,6 @@ const STATUS_LABEL = {
   [HELPER_STATUS.CONTACT_PENDING]: 'Contacto por añadir',
   [HELPER_STATUS.IDENTITY_PENDING]: 'Confianza pendiente',
   [HELPER_STATUS.TERMS_PENDING]: 'Condiciones pendientes',
-  [HELPER_STATUS.UNDER_REVIEW]: 'En revisión',
   [HELPER_STATUS.ACTIVE]: 'Listo para aparecer',
   [HELPER_STATUS.REJECTED]: 'Revisión necesaria',
   [HELPER_STATUS.SUSPENDED]: 'Visibilidad pausada',
@@ -30,8 +28,6 @@ const STATUS_COPY = {
     'Completar este paso ayuda a que tu perfil se vea más sólido y seguro.',
   [HELPER_STATUS.TERMS_PENDING]:
     'Solo falta confirmar las condiciones para poder seguir adelante con tranquilidad.',
-  [HELPER_STATUS.UNDER_REVIEW]:
-    'Ya has completado lo principal. Ahora estamos revisando tu perfil antes de mostrarlo en el mapa.',
   [HELPER_STATUS.REJECTED]:
     'Hemos pausado tu visibilidad por ahora. Puedes revisar la información y volver a intentarlo.',
   [HELPER_STATUS.SUSPENDED]:
@@ -70,7 +66,7 @@ export default function BlockedHelperHome({ profile, onContinueHelperOnboarding,
               <div>
                 <p className="eyebrow">Quiero ayudar</p>
                 <h2 className={styles.title}>
-                  {isHelperUnderReview(profile) ? 'Tu perfil está en revisión' : 'Tu visibilidad todavía no está activa'}
+                  Tu visibilidad todavía no está activa
                 </h2>
               </div>
 

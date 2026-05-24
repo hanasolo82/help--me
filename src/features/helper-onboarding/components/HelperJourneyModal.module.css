@@ -69,6 +69,51 @@
   margin-top: 0.35rem;
 }
 
+.recoveryCopy {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-size: 0.93rem;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.statusComplete {
+  border-color: rgba(14, 144, 86, 0.16);
+  background: rgba(236, 253, 245, 0.9);
+  color: #0f7a45;
+}
+
+.statusReview {
+  border-color: rgba(245, 158, 11, 0.18);
+  background: rgba(255, 248, 230, 0.9);
+  color: #a16207;
+}
+
+.statusPending {
+  border-color: rgba(41, 171, 255, 0.16);
+  background: rgba(239, 249, 255, 0.9);
+  color: var(--color-primary);
+}
+
 .bar {
   height: 0.8rem;
   border: 1px solid var(--color-border);

@@ -93,6 +93,40 @@ function sortRequesterTasks(tasks) {
   })
 }
 
+function sortHelperTasks(tasks) {
+  return [...tasks].sort((left, right) => {
+    const leftDistance = Number(left.distance_km)
+    const rightDistance = Number(right.distance_km)
+    const hasLeftDistance = Number.isFinite(leftDistance)
+    const hasRightDistance = Number.isFinite(rightDistance)
+
+    if (hasLeftDistance && hasRightDistance && leftDistance !== rightDistance) {
+      return leftDistance - rightDistance
+    }
+
+    if (hasLeftDistance !== hasRightDistance) {
+      return hasLeftDistance ? -1 : 1
+    }
+
+    const leftDate = new Date(left.published_at || left.created_at || 0).getTime()
+    const rightDate = new Date(right.published_at || right.created_at || 0).getTime()
+
+    if (leftDate !== rightDate) {
+      return rightDate - leftDate
+    }
+
+    return String(left.id || '').localeCompare(String(right.id || ''))
+  })
+}
+
+function hasMatchingCategory(task, category) {
+  if (!category || category === 'Todas') {
+    return true
+  }
+
+  return task.category === category
+}
+
 // Nota funcion:
 // Limpia y valida los datos del formulario antes de usarlos en una insercion.
 // Devuelve errores legibles y una version saneada de los valores.
@@ -252,7 +286,18 @@ export async function getOpenTasks({ category } = {}) {
   assertSupabaseReady()
 
   const user = await getCurrentUser()
-  const userId = user?.id
+  return getAvailableTasksForHelper(user, { category })
+}
+
+// Nota funcion:
+// Lista tareas abiertas para helpers activos.
+// Excluye las tareas del propio usuario y deja preparado el ranking por proximidad y futuro matching.
+// Nota Supabase - public.tasks:
+// Si quieres mostrar mas campos en las tarjetas/listados, anadelos primero a TASK_SELECT.
+export async function getAvailableTasksForHelper(profile, { category } = {}) {
+  assertSupabaseReady()
+
+  const helperId = profile?.id || null
 
   let query = supabase
     .from('tasks')
@@ -260,8 +305,8 @@ export async function getOpenTasks({ category } = {}) {
     .eq('status', 'open')
     .order('created_at', { ascending: false })
 
-  if (userId) {
-    query = query.neq('created_by', userId)
+  if (helperId) {
+    query = query.neq('created_by', helperId)
   }
 
   if (category && category !== 'Todas') {
@@ -275,7 +320,9 @@ export async function getOpenTasks({ category } = {}) {
   }
 
   const tasksWithProfiles = await attachTaskProfiles(data)
-  return keepTasksWithAvailableCreators(tasksWithProfiles)
+  const publicTasks = keepTasksWithAvailableCreators(tasksWithProfiles).filter((task) => hasMatchingCategory(task, category))
+
+  return sortHelperTasks(publicTasks)
 }
 
 // Nota funcion:
@@ -306,6 +353,72 @@ export async function getMyTasks(profileId = null, { role = 'requester' } = {}) 
   const tasksWithProfiles = await attachTaskProfiles(data)
 
   return role === 'requester' ? sortRequesterTasks(tasksWithProfiles) : tasksWithProfiles
+}
+
+// Nota funcion:
+// Lee los ids de favoritos de tareas del helper autenticado.
+// Solo sirve para el propio usuario y no expone tareas privadas.
+export async function getFavoriteTaskIds(viewerId = null) {
+  assertSupabaseReady()
+
+  const user = viewerId ? { id: viewerId } : await requireUser('Necesitas una sesion valida para ver favoritos.')
+
+  const { data, error } = await supabase
+    .from('task_favorites')
+    .select('task_id')
+    .eq('viewer_id', user.id)
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []).map((row) => row.task_id).filter(Boolean)
+}
+
+// Nota funcion:
+// Alterna el estado de favorito de una tarea para el helper autenticado.
+// Requiere que la tabla task_favorites exista con RLS por usuario.
+export async function toggleTaskFavorite(taskId) {
+  assertSupabaseReady()
+  const user = await requireUser('Necesitas una sesion valida para guardar favoritos.')
+
+  const { data: existing, error: existingError } = await supabase
+    .from('task_favorites')
+    .select('viewer_id, task_id')
+    .eq('viewer_id', user.id)
+    .eq('task_id', taskId)
+    .maybeSingle()
+
+  if (existingError) {
+    throw existingError
+  }
+
+  if (existing) {
+    const { error } = await supabase
+      .from('task_favorites')
+      .delete()
+      .eq('viewer_id', user.id)
+      .eq('task_id', taskId)
+
+    if (error) {
+      throw error
+    }
+
+    return { isFavorite: false }
+  }
+
+  const { error } = await supabase
+    .from('task_favorites')
+    .insert({
+      viewer_id: user.id,
+      task_id: taskId,
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return { isFavorite: true }
 }
 
 // Nota funcion:

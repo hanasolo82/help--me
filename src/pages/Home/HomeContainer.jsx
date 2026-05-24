@@ -62,6 +62,7 @@ export default function HomeContainer() {
     tasksError,
     refetchTasks,
   } = useHomeTasks({
+    profile,
     mode,
     category,
     radius,
@@ -147,24 +148,14 @@ export default function HomeContainer() {
 
   useEffect(() => {
     const routeMode = routeLocation.state?.mode
-    const routeFocusRequesterTaskId = routeLocation.state?.focusRequesterTaskId
     const storedMode = readHelperHomeIntent()
     const nextMode = routeMode || storedMode || (profile?.helper_status === 'active' ? 'help' : 'need')
 
     if (nextMode === 'need' || nextMode === 'help') {
       setMode(nextMode)
     }
-
-    if (routeFocusRequesterTaskId) {
-      setMode('need')
-      setPreferredView('map')
-      setMapViewEpoch((value) => value + 1)
-      setSelectedRequesterTaskId(routeFocusRequesterTaskId)
-      setFocusRequesterTaskId(routeFocusRequesterTaskId)
-    }
   }, [
     profile?.helper_status,
-    routeLocation.state?.focusRequesterTaskId,
     routeLocation.state?.mode,
     setMode,
   ])

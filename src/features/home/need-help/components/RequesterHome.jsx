@@ -16,7 +16,6 @@ export default function RequesterHome({
   locationError,
   onRequestLocation,
   requestsDrawerOpen = false,
-  onOpenRequestsDrawer,
   onCloseRequestsDrawer,
 }) {
   const navigate = useNavigate()
@@ -65,10 +64,6 @@ export default function RequesterHome({
     setDraftTaskTitle(heroQuery.trim())
     setHeroQuery('')
     setRequestTaskOpen(true)
-  }
-
-  function handleOpenRequestsDrawer() {
-    onOpenRequestsDrawer?.()
   }
 
   function handleCloseRequestsDrawer() {

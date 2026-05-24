@@ -1,0 +1,240 @@
+.shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.panel {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82)),
+    radial-gradient(circle at top right, rgba(41, 171, 255, 0.12), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.08), transparent 28%);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.header {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.kicker {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heading {
+  color: var(--color-text);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.copy {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 52rem;
+}
+
+.rules {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ruleCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: var(--shadow-sm);
+}
+
+.ruleNumber {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(41, 171, 255, 0.12);
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ruleContent {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.ruleTitle {
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.ruleText {
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.platformCard {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(41, 171, 255, 0.16);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(248, 253, 255, 0.95), rgba(239, 249, 255, 0.84)),
+    radial-gradient(circle at top left, rgba(41, 171, 255, 0.14), transparent 38%);
+  box-shadow: var(--shadow-sm);
+}
+
+.platformKicker {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.platformTitle {
+  color: var(--color-text);
+  font-size: 1.02rem;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.platformText,
+.platformTextSecondary {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.platformTextSecondary {
+  font-size: 0.96rem;
+}
+
+.checkboxCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(41, 171, 255, 0.2);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.checkboxCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(41, 171, 255, 0.28);
+  box-shadow: var(--shadow-md);
+}
+
+.checkboxCard:focus-within {
+  border-color: rgba(41, 171, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(41, 171, 255, 0.12), var(--shadow-sm);
+}
+
+.checkbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.2rem;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.checkboxCopy {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.checkboxTitle {
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.checkboxTitle a,
+.checkboxNote a {
+  color: var(--color-primary);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.checkboxNote {
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.42rem 0.78rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.footerNote {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.error {
+  color: #b42318;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(180, 35, 24, 0.18);
+  background: rgba(255, 245, 244, 0.92);
+}
+
+@media (max-width: 42rem) {
+  .panel {
+    padding: 1rem;
+  }
+
+  .ruleCard,
+  .checkboxCard {
+    padding: 0.9rem;
+  }
+}

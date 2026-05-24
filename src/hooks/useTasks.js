@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { distanceKm } from '../services/locationService'
-import { getMyTasks, getOpenTasks } from '../services/tasksService'
+import { getAvailableTasksForHelper, getMyTasks } from '../services/tasksService'
 
 function buildTaskDistance(task, location) {
   if (!location) {
@@ -31,19 +31,42 @@ function applyHelperFilters(tasks, { category, radius, location }) {
 
       return true
     })
+    .sort((left, right) => {
+      const leftDistance = Number(left.distance)
+      const rightDistance = Number(right.distance)
+      const hasLeftDistance = Number.isFinite(leftDistance)
+      const hasRightDistance = Number.isFinite(rightDistance)
+
+      if (hasLeftDistance && hasRightDistance && leftDistance !== rightDistance) {
+        return leftDistance - rightDistance
+      }
+
+      if (hasLeftDistance !== hasRightDistance) {
+        return hasLeftDistance ? -1 : 1
+      }
+
+      const leftDate = new Date(left.task.published_at || left.task.created_at || 0).getTime()
+      const rightDate = new Date(right.task.published_at || right.task.created_at || 0).getTime()
+
+      if (leftDate !== rightDate) {
+        return rightDate - leftDate
+      }
+
+      return String(left.task.id || '').localeCompare(String(right.task.id || ''))
+    })
 }
 
-export function useTasks({ mode, category, radius, location }) {
-  const queryKey = ['tasks', mode, category, radius, location?.lat ?? null, location?.lng ?? null]
+export function useTasks({ profile, mode, category, radius, location }) {
+  const queryKey = ['tasks', profile?.id ?? null, mode, category, radius, location?.lat ?? null, location?.lng ?? null]
 
   const query = useQuery({
     queryKey,
     queryFn: async () => {
       if (mode === 'need') {
-        return getMyTasks({ role: 'requester' })
+        return getMyTasks(profile?.id, { role: 'requester' })
       }
 
-      return getOpenTasks({ category })
+      return getAvailableTasksForHelper(profile, { category })
     },
     placeholderData: keepPreviousData,
   })
@@ -88,4 +111,3 @@ export function useTasks({ mode, category, radius, location }) {
     error: query.error?.message || '',
   }
 }
-

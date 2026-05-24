@@ -1,42 +1,76 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
+import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import styles from './StripePage.module.css'
 
 export default function StripeReturn() {
   const navigate = useNavigate()
-  const { profile, refreshProfile } = useAuth()
+  const { user, loading, profileLoading, refreshProfile } = useAuth()
   const [checkingState, setCheckingState] = useState('loading')
-  const [message, setMessage] = useState('Estamos comprobando el estado de tu cuenta.')
+  const [message, setMessage] = useState('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
+  const hasResolvedRef = useRef(false)
 
   useEffect(() => {
+    if (hasResolvedRef.current || loading || profileLoading) {
+      return
+    }
+
+    hasResolvedRef.current = true
+
+    if (!user) {
+      setHelperHomeIntent('help')
+      navigate('/login', {
+        replace: true,
+        state: { reason: 'stripe-return-no-session' },
+      })
+      return
+    }
+
     let cancelled = false
+    let redirectTimer = null
 
     async function runRefresh() {
+      setCheckingState('loading')
+      setMessage('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
+
       try {
-        await refreshProfile()
+        const nextProfile = await refreshProfile()
 
         if (cancelled) return
 
         setCheckingState('ready')
         setMessage(
-          profile?.stripe_onboarding_completed
-            ? 'Tu cuenta ya se está sincronizando y tu perfil está listo para seguir el proceso.'
-            : 'Hemos recibido tu información. Estamos comprobando el estado de tu cuenta.',
+          nextProfile?.stripe_onboarding_completed || nextProfile?.stripe_charges_enabled || nextProfile?.stripe_payouts_enabled
+            ? 'Tu perfil ya está sincronizándose. En un momento verás tu Home de ayudante.'
+            : 'Estamos actualizando tu perfil de ayudante. En un momento entrarás en Home modo help.',
         )
       } catch (error) {
         if (cancelled) return
+
         setCheckingState('error')
-        setMessage(error?.message || 'No pudimos comprobar el estado de tu cuenta ahora mismo.')
+        setMessage(error?.message || 'No pudimos verificar tu perfil ahora mismo, pero vamos a llevarte a Home de ayudante.')
       }
+
+      redirectTimer = window.setTimeout(() => {
+        if (cancelled) return
+        setHelperHomeIntent('help')
+        navigate('/home', {
+          replace: true,
+          state: { mode: 'help' },
+        })
+      }, 700)
     }
 
     runRefresh()
 
     return () => {
       cancelled = true
+      if (redirectTimer) {
+        window.clearTimeout(redirectTimer)
+      }
     }
-  }, [profile?.stripe_onboarding_completed, refreshProfile])
+  }, [loading, navigate, profileLoading, refreshProfile, user])
 
   return (
     <main className={styles.page}>
@@ -57,10 +91,20 @@ export default function StripeReturn() {
         </div>
 
         <div className={styles.actions}>
-          <button type="button" className="secondary-action" onClick={() => navigate('/onboarding')}>
-            Volver al onboarding
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={() => {
+              setHelperHomeIntent('help')
+              navigate('/login', {
+                replace: true,
+                state: { reason: 'stripe-return-manual' },
+              })
+            }}
+          >
+            Ir a login
           </button>
-          <button type="button" className="primary-action" onClick={() => navigate('/home')}>
+          <button type="button" className="primary-action" onClick={() => navigate('/home', { replace: true, state: { mode: 'help' } })}>
             Ir a Home
           </button>
         </div>

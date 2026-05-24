@@ -190,6 +190,12 @@
   gap: 0.5rem;
 }
 
+.helperActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .detailButton,
 .publishButton {
   width: min(100%, 50%);
@@ -268,6 +274,42 @@
   box-shadow: var(--shadow-md);
 }
 
+.helperSecondaryAction,
+.helperPrimaryAction,
+.helperDangerAction {
+  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0.58rem 0.78rem;
+  box-shadow: var(--shadow-sm);
+  transition: 0.16s ease;
+}
+
+.helperSecondaryAction {
+  background: var(--task-card-bg, #ffffff);
+  color: var(--task-card-text, var(--color-text));
+}
+
+.helperPrimaryAction {
+  border: 0;
+  background: var(--task-card-accent, var(--color-primary));
+  color: var(--task-card-bg, #ffffff);
+}
+
+.helperDangerAction {
+  background: rgba(239, 68, 68, 0.1);
+  color: rgb(185, 28, 28);
+}
+
+.helperSecondaryAction:hover,
+.helperPrimaryAction:hover,
+.helperDangerAction:hover {
+  transform: translate(-0.06rem, -0.06rem);
+  box-shadow: var(--shadow-md);
+}
+
 @media (max-width: 42rem) {
   .descriptionContainer {
     width: 100%;
@@ -280,6 +322,16 @@
   .detailButton {
     width: 100%;
     margin-right: 0;
+  }
+
+  .helperActions {
+    width: 100%;
+  }
+
+  .helperSecondaryAction,
+  .helperPrimaryAction,
+  .helperDangerAction {
+    width: 100%;
   }
 }
 

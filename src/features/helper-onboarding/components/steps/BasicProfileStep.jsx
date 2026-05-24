@@ -1,11 +1,26 @@
 import StepFrame from './StepFrame'
 import styles from './BasicProfileStep.module.css'
 
-export default function BasicProfileStep({ onNext, onBack, journeyDraft, setJourneyDraft }) {
+function getInitials(fullName = '') {
+  return String(fullName)
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] || '')
+    .join('')
+    .toUpperCase() || 'HM'
+}
+
+export default function BasicProfileStep({ onNext, onBack, journeyDraft, setJourneyDraft, profile, stepStatus = 'pending' }) {
   const firstName = journeyDraft?.firstName || ''
   const lastName = journeyDraft?.lastName || ''
   const about = journeyDraft?.about || ''
   const activityPlace = journeyDraft?.activityPlace || ''
+  const displayName = journeyDraft?.fullName || profile?.display_name || profile?.full_name || ''
+  const avatarUrl = journeyDraft?.avatarUrl || profile?.avatar_url || ''
+  const avatarInitials = getInitials(displayName)
+  const statusLabel =
+    stepStatus === 'complete' ? 'Completado' : stepStatus === 'review' ? 'Revisar' : 'Pendiente'
 
   function updateField(field, value) {
     setJourneyDraft((current) => ({
@@ -35,6 +50,22 @@ export default function BasicProfileStep({ onNext, onBack, journeyDraft, setJour
       }
     >
       <div className={styles.stack}>
+        <section className={styles.profilePreview} aria-label="Perfil recuperado">
+          <div className={styles.avatarWrap} aria-hidden="true">
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{avatarInitials}</span>}
+          </div>
+          <div className={styles.profilePreviewCopy}>
+            <div className={styles.profilePreviewHeader}>
+              <p className={styles.previewKicker}>Perfil recuperado</p>
+              <span className={styles.previewBadge}>{statusLabel}</span>
+            </div>
+            <strong>{displayName || 'Tu perfil público'}</strong>
+            <p className={styles.previewText}>
+              Ya hemos recuperado parte de tu información para que el proceso sea más rápido.
+            </p>
+          </div>
+        </section>
+
         <div className={styles.nameRow}>
           <label className="field">
             <span>Nombre</span>

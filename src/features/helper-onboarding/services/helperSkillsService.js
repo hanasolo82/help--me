@@ -34,6 +34,23 @@ export async function getActiveSkills() {
   return data ?? []
 }
 
+export async function getProfileSkills(profileId) {
+  if (!profileId) return []
+
+  const { data, error } = await supabase
+    .from('profile_skills')
+    .select('profile_id, skill_id, is_primary, experience_level, years_experience, skill:skills(id, name, icon, category, sort_order)')
+    .eq('profile_id', profileId)
+    .order('is_primary', { ascending: false })
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    throw error
+  }
+
+  return data ?? []
+}
+
 export async function replaceProfileSkills(profileId, selectedSkills = []) {
   if (!profileId) {
     throw new Error('No pudimos guardar las skills porque falta el profile.')

@@ -20,6 +20,7 @@ import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
 import SettingsPage from "../../pages/Settings/SettingsPage";
 import Cookies from "../../pages/Legal/Cookies";
+import CommunityGuidelines from "../../pages/Legal/CommunityGuidelines";
 import Privacy from "../../pages/Legal/Privacy";
 import Terms from "../../pages/Legal/Terms";
 import StripeReturn from "../../pages/Stripe/StripeReturn";
@@ -36,6 +37,7 @@ export default function AppRouter() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/legal/terms" element={<Terms />} />
+      <Route path="/legal/community-guidelines" element={<CommunityGuidelines />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cookies" element={<Cookies />} />
       <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>}>
@@ -54,7 +56,7 @@ export default function AppRouter() {
       <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
-      <Route path="/stripe/return" element={<RequireAuth><StripeReturn /></RequireAuth>} />
+      <Route path="/stripe/return" element={<StripeReturn />} />
       <Route path="/stripe/refresh" element={<RequireAuth><StripeRefresh /></RequireAuth>} />
     </Routes>
   );

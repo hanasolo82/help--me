@@ -19,8 +19,8 @@ export default function OnboardingVerificationStep() {
     onSuccess: async () => {
       if (draft.mode === 'help') {
         await updateCurrentProfile({
-          helperStatus: HELPER_STATUS.UNDER_REVIEW,
-          helperEnabled: false,
+          helperStatus: HELPER_STATUS.ACTIVE,
+          helperEnabled: true,
         })
       }
       await refreshProfile()
@@ -37,14 +37,14 @@ export default function OnboardingVerificationStep() {
 
   function handleSubmit(event) {
     event.preventDefault()
-    mutation.mutate({
-      email_verified: Boolean(user?.email_confirmed_at) || draft.verifiedEmail,
-      phone_verified: draft.verifiedPhone,
-      payment_verified: false,
-      identity_verified: draft.identityVerified,
-      background_checked: false,
-      helper_status: draft.mode === 'help' ? HELPER_STATUS.UNDER_REVIEW : HELPER_STATUS.NOT_STARTED,
-    })
+      mutation.mutate({
+        email_verified: Boolean(user?.email_confirmed_at) || draft.verifiedEmail,
+        phone_verified: draft.verifiedPhone,
+        payment_verified: false,
+        identity_verified: draft.identityVerified,
+        background_checked: false,
+        helper_status: draft.mode === 'help' ? HELPER_STATUS.ACTIVE : HELPER_STATUS.NOT_STARTED,
+      })
   }
 
   if (!profileId) {

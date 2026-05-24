@@ -1,0 +1,97 @@
+import HomeEmptyState from '../../components/HomeEmptyState'
+import TaskCard from '../../../../features/tasks/components/TaskCard/TaskCard'
+import styles from '../../need-help/components/NeedHelpMapLayout.module.css'
+
+function buildHelperActions({ task, isFavorite, onContact, onToggleFavorite, onLocateTask, canContact }) {
+  const canLocate = Number.isFinite(Number(task.lat)) && Number.isFinite(Number(task.lng))
+
+  return [
+    {
+      label: canContact ? 'Contactar' : 'Contacto bloqueado',
+      variant: canContact ? 'primary' : 'secondary',
+      disabled: !canContact,
+      onClick: () => onContact?.(task),
+      title: canContact ? 'Abrir o crear conversación' : 'Solo las tareas abiertas permiten contacto nuevo',
+    },
+    {
+      label: isFavorite ? 'Quitar favorito' : 'Favorito',
+      variant: isFavorite ? 'primary' : 'secondary',
+      onClick: () => onToggleFavorite?.(task),
+      title: isFavorite ? 'Eliminar de favoritos' : 'Guardar solicitud',
+    },
+    {
+      label: 'Ver en mapa',
+      variant: 'secondary',
+      disabled: !canLocate,
+      onClick: () => onLocateTask?.(task),
+      title: canLocate ? 'Centrar la tarea en el mapa' : 'Esta tarea no tiene coordenadas públicas',
+    },
+  ]
+}
+
+export default function TaskListPanel({
+  tasks = [],
+  visibleTasks = [],
+  selectedTaskId = null,
+  onSelectTask,
+  onOpenDetail,
+  onContact,
+  onToggleFavorite,
+  favoriteTaskIds = [],
+  currentUserId = null,
+  loading = false,
+  error = '',
+  locationLabel = 'Tu zona',
+  onExpandRadius,
+}) {
+  return (
+    <aside className={styles.panelShell}>
+      <div className={styles.panelMeta}>
+        <p className="muted">{locationLabel}</p>
+        <strong>{tasks.length} solicitudes abiertas</strong>
+        <span className="muted">{visibleTasks.length} visibles en esta pantalla del mapa</span>
+      </div>
+
+      {loading && <p className="muted">Buscando tareas cercanas...</p>}
+      {error && <p className="auth-message error">{error}</p>}
+
+      <div className={styles.listScroll}>
+        {!loading && !error && visibleTasks.length === 0 ? (
+          <HomeEmptyState
+            title="No hay solicitudes disponibles cerca de ti."
+            description="Prueba a ampliar el radio o revisar tus habilidades."
+            actionLabel={onExpandRadius ? 'Ampliar radio' : null}
+            onAction={onExpandRadius}
+            tone="warning"
+          />
+        ) : null}
+
+        {visibleTasks.map(({ task, distance }) => {
+          const isFavorite = favoriteTaskIds.includes(task.id)
+          const canContact = task.status === 'open' && task.created_by !== currentUserId
+
+          return (
+            <TaskCard
+              key={task.id}
+              task={task}
+              distanceKm={distance}
+              showDistance
+              expanded={selectedTaskId === task.id}
+              primaryActionLabel="Ver detalle"
+              primaryActionVariant="primary"
+              onPrimaryAction={() => onOpenDetail?.(task)}
+              helperActions={buildHelperActions({
+                task,
+                isFavorite,
+                onContact,
+                onToggleFavorite,
+                onLocateTask: onSelectTask,
+                canContact,
+              })}
+            />
+          )
+        })}
+      </div>
+    </aside>
+  )
+}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../../contexts/useAuth'
@@ -87,6 +87,17 @@ export default function SkillsStep({ onNext, onBack, journeyDraft, setJourneyDra
     () => skills.filter((skill) => selectedIdsSet.has(skill.id)),
     [selectedIdsSet, skills],
   )
+
+  useEffect(() => {
+    if (!Array.isArray(journeyDraft?.selectedSkillIds) || journeyDraft.selectedSkillIds.length === 0) {
+      return
+    }
+
+    setSelectedSkillIds((current) => {
+      if (current.length > 0) return current
+      return journeyDraft.selectedSkillIds.slice(0, MAX_SKILLS)
+    })
+  }, [journeyDraft?.selectedSkillIds])
 
   if (!profileId) {
     return <Navigate to="/onboarding" replace />

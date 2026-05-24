@@ -9,11 +9,12 @@ export const HELPER_STATUS = Object.freeze({
   CONTACT_PENDING: 'contact_pending',
   IDENTITY_PENDING: 'identity_pending',
   TERMS_PENDING: 'terms_pending',
-  UNDER_REVIEW: 'under_review',
   ACTIVE: 'active',
   REJECTED: 'rejected',
   SUSPENDED: 'suspended',
 })
+
+export const HELPER_TERMS_VERSION = 'helpme-helper-terms-v1'
 
 const ACTIVE_ACCOUNT_STATUS = 'active'
 const ACTIVE_HELPER_STATUS = HELPER_STATUS.ACTIVE
@@ -70,6 +71,34 @@ function hasHelperTrust(profile) {
   return verification.email || verification.identity || toBoolean(profile?.verified)
 }
 
+function hasHelperSkills(profile, draft = {}) {
+  if (Array.isArray(draft?.selectedSkillIds)) {
+    return draft.selectedSkillIds.length > 0
+  }
+
+  if (Array.isArray(profile?.skills)) {
+    return profile.skills.length > 0
+  }
+
+  return Boolean(profile?.skills_count || profile?.completed_tasks)
+}
+
+function hasHelperAvailability(profile, draft = {}) {
+  if (Array.isArray(draft?.selectedDays)) {
+    return draft.selectedDays.length > 0
+  }
+
+  return Boolean(profile?.availability_enabled !== false)
+}
+
+function hasAcceptedTerms(profile, draft = {}) {
+  return Boolean(draft?.termsAccepted || profile?.terms_accepted)
+}
+
+function hasAcceptedTermsVersion(profile, draft = {}) {
+  return Boolean(draft?.termsVersion || profile?.terms_version)
+}
+
 export function canStartHelperOnboarding(profile) {
   return Boolean(profile && profile.account_status === ACTIVE_ACCOUNT_STATUS && hasRequesterBasics(profile))
 }
@@ -110,8 +139,18 @@ export function needsHelperProfile(profile) {
   return profile?.helper_status !== ACTIVE_HELPER_STATUS
 }
 
-export function isHelperUnderReview(profile) {
-  return profile?.helper_status === HELPER_STATUS.UNDER_REVIEW
+export function canActivateHelper(profile, draft = {}) {
+  if (!profile) return false
+  if (profile.account_status !== ACTIVE_ACCOUNT_STATUS) return false
+  if (!hasRequesterBasics(profile)) return false
+  if (!hasLocation(profile)) return false
+  if (!hasHelperSkills(profile, draft)) return false
+  if (!hasHelperAvailability(profile, draft)) return false
+  if (!toBoolean(profile?.stripe_onboarding_completed)) return false
+  if (!hasAcceptedTerms(profile, draft)) return false
+  if (!hasAcceptedTermsVersion(profile, draft)) return false
+
+  return true
 }
 
 export function isHelperBlocked(profile) {

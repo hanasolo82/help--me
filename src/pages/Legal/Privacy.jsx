@@ -238,6 +238,18 @@ export default function Privacy() {
           cambios sustanciales.
         </p>
       </section>
+
+      <section>
+        <h2>11. Informacion visible en la plataforma</h2>
+        <ul>
+          <li>Tu telefono no se mostrara publicamente por defecto.</li>
+          <li>La ubicacion puede mostrarse de forma aproximada para facilitar la busqueda de ayuda cercana.</li>
+          <li>
+            Cuando actives funciones de Stripe, determinados datos de identidad y financieros los gestionara
+            Stripe conforme a sus propios procesos y politicas.
+          </li>
+        </ul>
+      </section>
     </LegalLayout>
   )
 }

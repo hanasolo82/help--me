@@ -1,10 +1,15 @@
 import { useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import CategoryFilter from '../../../../components/home/CategoryFilter'
-import RadiusFilter from '../../../../components/home/RadiusFilter'
-import TaskFeed from '../../../../components/home/TaskFeed'
+import { createOrGetDirectConversation } from '../../../../services/chatService'
+import {
+  getFavoriteTaskIds,
+  toggleTaskFavorite,
+} from '../../../../services/tasksService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
-import HomeEmptyState from '../../components/HomeEmptyState'
+import TaskFiltersBar from './TaskFiltersBar'
+import TaskListPanel from './TaskListPanel'
+import TaskPreviewModal from './TaskPreviewModal'
 import styles from '../../need-help/components/NeedHelpMapLayout.module.css'
 
 export default function OfferHelpMapLayout({
@@ -13,18 +18,11 @@ export default function OfferHelpMapLayout({
   userAvatarUrl,
   userInitial,
   radiusKm,
-  visibleTasks,
+  visibleTasks = [],
   isLoading,
   error,
   distancesById,
   currentUserId,
-  expandedTaskIds,
-  publishingTaskId,
-  onToggleTaskDetails,
-  onPublishTask,
-  onCancelTask,
-  onOpenTaskChat,
-  onEditTask,
   category,
   onCategoryChange,
   categories,
@@ -33,8 +31,23 @@ export default function OfferHelpMapLayout({
   radiusOptions,
 }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [mobileView, setMobileView] = useState('map')
-  const [mapBounds, setMapBounds] = useState(null)
+  const [selectedTaskId, setSelectedTaskId] = useState(null)
+
+  const favoriteTaskIdsQuery = useQuery({
+    queryKey: ['task-favorites', currentUserId],
+    queryFn: () => getFavoriteTaskIds(currentUserId),
+    enabled: Boolean(currentUserId),
+    staleTime: 30_000,
+  })
+
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: (task) => toggleTaskFavorite(task.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['task-favorites', currentUserId] })
+    },
+  })
 
   const taskMapLocation = useMemo(() => {
     if (location) {
@@ -56,42 +69,64 @@ export default function OfferHelpMapLayout({
     () => radiusOptions.find((option) => option > radius) || radiusOptions[radiusOptions.length - 1],
     [radius, radiusOptions],
   )
-  const viewportTasks = useMemo(() => {
-    if (!mapBounds) {
-      return visibleTasks || []
+  const viewportTasks = visibleTasks || []
+
+  const selectedTask = useMemo(
+    () => (visibleTasks || []).find(({ task }) => task.id === selectedTaskId)?.task || null,
+    [selectedTaskId, visibleTasks],
+  )
+
+  const selectedTaskDistance = selectedTask ? distancesById?.[selectedTask.id] ?? null : null
+  const favoriteTaskIds = favoriteTaskIdsQuery.data || []
+
+  function handleSelectTask(taskOrTaskId) {
+    const taskId = typeof taskOrTaskId === 'string' ? taskOrTaskId : taskOrTaskId?.id
+    if (!taskId) return
+
+    setSelectedTaskId(taskId)
+    setMobileView('map')
+  }
+
+  function handleLocateTask(task) {
+    handleSelectTask(task)
+    setMobileView('map')
+  }
+
+  async function handleContact(task) {
+    if (!task || task.status !== 'open' || task.created_by === currentUserId) {
+      return
     }
 
-    return (visibleTasks || []).filter(({ task }) => {
-      const lat = Number(task?.lat)
-      const lng = Number(task?.lng)
+    try {
+      const conversationId = await createOrGetDirectConversation(task.created_by)
+      navigate(`/chat/${conversationId}`)
+    } catch (error) {
+      console.error('[OfferHelpMapLayout] could not open contact chat', error)
+    }
+  }
 
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        return false
-      }
+  async function handleToggleFavorite(task) {
+    if (!task) return
 
-      return (
-        lat <= mapBounds.north &&
-        lat >= mapBounds.south &&
-        lng <= mapBounds.east &&
-        lng >= mapBounds.west
-      )
-    })
-  }, [mapBounds, visibleTasks])
+    try {
+      await toggleFavoriteMutation.mutateAsync(task)
+    } catch (error) {
+      console.error('[OfferHelpMapLayout] could not toggle favorite', error)
+    }
+  }
 
   return (
     <section className={styles.shell}>
-      <div className={styles.filtersBar}>
-        <div className={styles.filtersHeader}>
-          <p className="eyebrow">Ofrezco ayuda</p>
-          <h2>Tareas visibles en tu zona</h2>
-          <p className="muted">Explora trabajos cercanos, cambia filtros y elige una tarea para ayudar.</p>
-        </div>
-
-        <div className={styles.filtersBlock}>
-          <CategoryFilter category={category} onChange={onCategoryChange} options={categories} />
-          <RadiusFilter radius={radius} onChange={onRadiusChange} options={radiusOptions} />
-        </div>
-      </div>
+      <TaskFiltersBar
+        category={category}
+        onCategoryChange={onCategoryChange}
+        categories={categories}
+        radius={radius}
+        onRadiusChange={onRadiusChange}
+        radiusOptions={radiusOptions}
+        taskCount={taskCount}
+        visibleCount={viewportTasks.length}
+      />
 
       <div className={styles.mobileTabs} role="tablist" aria-label="Vista de tareas">
         <button
@@ -114,9 +149,9 @@ export default function OfferHelpMapLayout({
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
           <div className={styles.mapHeader}>
             <div>
-              <p className="eyebrow">Mapa</p>
+              <p className="eyebrow">Ofrezco ayuda</p>
               <h2>Tareas abiertas cerca de ti</h2>
-              <p className="muted">Selecciona una tarea para verla en detalle y contactar si encaja contigo.</p>
+              <p className="muted">Selecciona una tarea, revisa el detalle y contacta solo si sigue abierta.</p>
             </div>
           </div>
 
@@ -128,56 +163,43 @@ export default function OfferHelpMapLayout({
               distances={distancesById}
               userAvatarUrl={userAvatarUrl}
               userInitial={userInitial}
-              onTaskSelect={(taskId) => navigate(`/task/${taskId}`)}
-              onViewportChange={setMapBounds}
+              onTaskSelect={handleSelectTask}
             />
           </div>
 
-          {!taskCount && !isLoading && !error && (
-            <HomeEmptyState
-              title="No hay tareas visibles en esta zona"
-              description="Amplia el radio o ajusta los filtros para encontrar más oportunidades."
-              actionLabel="Ampliar radio"
-              onAction={() => onRadiusChange(nextRadiusOption)}
-              tone="neutral"
-            />
-          )}
         </section>
 
         <div className={mobileView === 'map' ? `${styles.panelPane} ${styles.hiddenOnMobile}` : styles.panelPane}>
-          <div className={styles.panelShell}>
-            <div className={styles.panelMeta}>
-              <p className="eyebrow">Listado</p>
-              <strong>{taskCount} tareas disponibles</strong>
-              <p className="muted">
-                {viewportTasks.length} tareas visibles en esta pantalla del mapa
-                {taskCount !== viewportTasks.length ? ` · ${taskCount} en total en el filtro` : ''}
-              </p>
-            </div>
-
-            <div className={styles.listScroll}>
-              <TaskFeed
-                title="Tareas disponibles"
-                subtitle="Escoge una tarea cercana para ayudar"
-                tasks={viewportTasks}
-                loading={isLoading}
-                error={error}
-                count={viewportTasks.length}
-                isHelperMode
-                currentUserId={currentUserId}
-                expandedTaskIds={expandedTaskIds}
-                publishingTaskId={publishingTaskId}
-                distancesById={distancesById}
-                onToggleTaskDetails={onToggleTaskDetails}
-                onPublishTask={onPublishTask}
-                onCancelTask={onCancelTask}
-                onOpenTaskChat={onOpenTaskChat}
-                onEditTask={onEditTask}
-              />
-            </div>
-          </div>
+          <TaskListPanel
+            tasks={visibleTasks}
+            visibleTasks={viewportTasks}
+            selectedTaskId={selectedTaskId}
+            onSelectTask={handleLocateTask}
+            onOpenDetail={(task) => navigate(`/task/${task.id}`)}
+            onContact={handleContact}
+            onToggleFavorite={handleToggleFavorite}
+            favoriteTaskIds={favoriteTaskIds}
+            currentUserId={currentUserId}
+            loading={isLoading}
+            error={error}
+            locationLabel={location?.label || profile?.neighborhood || profile?.city || 'Tu zona'}
+            onExpandRadius={() => onRadiusChange(nextRadiusOption)}
+          />
         </div>
       </div>
+
+      <TaskPreviewModal
+        open={Boolean(selectedTask)}
+        task={selectedTask}
+        distanceKm={selectedTaskDistance}
+        isFavorite={selectedTask ? favoriteTaskIds.includes(selectedTask.id) : false}
+        currentUserId={currentUserId}
+        onClose={() => setSelectedTaskId(null)}
+        onOpenDetail={(task) => navigate(`/task/${task.id}`)}
+        onContact={handleContact}
+        onToggleFavorite={handleToggleFavorite}
+        onLocateTask={handleLocateTask}
+      />
     </section>
   )
 }
