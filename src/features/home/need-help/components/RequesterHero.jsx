@@ -8,9 +8,6 @@ export default function RequesterHero({ value, onChange, onPublishRequest }) {
         <div className={styles.copy}>
           <p className="eyebrow">Necesito ayuda</p>
           <h2>¿Qué necesitas?</h2>
-          <p className="muted">
-            Encuentra personas disponibles cerca de ti o publica una solicitud para que puedan responderte.
-          </p>
         </div>
 
         {onPublishRequest ? (

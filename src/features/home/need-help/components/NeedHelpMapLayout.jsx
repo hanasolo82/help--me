@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Circle, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { Circle, MapContainer, useMap, useMapEvents } from 'react-leaflet'
 import { useAvailableHelpers } from '../hooks/useAvailableHelpers'
 import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
 import HelperMapMarker from './HelperMapMarker'
 import RequesterTaskMarker from './RequesterTaskMarker'
 import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
+import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import styles from './NeedHelpMapLayout.module.css'
 
 function RecenterMap({ center }) {
@@ -179,7 +180,6 @@ export default function NeedHelpMapLayout({
             <div>
               <p className="eyebrow">Necesito ayuda</p>
               <h2>Personas disponibles</h2>
-              <p className="muted">Explora personas disponibles, revisa su perfil y elige a quién contactar.</p>
             </div>
           </div>
 
@@ -187,10 +187,7 @@ export default function NeedHelpMapLayout({
             <MapContainer center={focusCenter} zoom={13} scrollWheelZoom className={styles.map}>
               <RecenterMap center={focusCenter} />
               <ViewportReporter onViewportChange={setMapBounds} />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+              <MapTileLayer />
 
               {hasLocation && Number.isFinite(Number(radiusKm)) && (
                 <Circle

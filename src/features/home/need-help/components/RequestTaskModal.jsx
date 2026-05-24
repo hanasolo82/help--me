@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
+import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
 import styles from './RequestTaskModal.module.css'
 
 const defaultCategories = allowedCategories
@@ -153,7 +154,7 @@ function RequestTaskModalInner({
             </label>
 
             <label className="field">
-              <span>Precio opcional</span>
+              <span>Precio</span>
               <input type="number" min={0} max={500} value={price} onChange={(event) => setPrice(event.target.value)} placeholder="0" />
             </label>
           </div>
@@ -200,9 +201,9 @@ function RequestTaskModalInner({
             <button type="button" className="secondary-action" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="primary-action">
+            <GlitchSoftButton type="submit" variant="primary">
               {isEditing ? 'Guardar cambios' : 'Publicar solicitud'}
-            </button>
+            </GlitchSoftButton>
           </div>
         </form>
       </section>

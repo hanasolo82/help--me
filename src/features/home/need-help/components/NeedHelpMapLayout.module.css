@@ -12,12 +12,12 @@
 .mobileTab,
 .mobileTabActive {
   flex: 1;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 0.85rem 1rem;
   font-weight: 700;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow-sm);
 }
@@ -54,9 +54,9 @@
 
 .mapShell {
   min-height: clamp(24rem, 58vw, 40rem);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--color-surface);
   backdrop-filter: blur(18px);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -71,9 +71,9 @@
   display: grid;
   gap: 0.5rem;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.66);
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
 }
 
@@ -85,9 +85,9 @@
   display: grid;
   gap: 1rem;
   padding: 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.66);
+  background: var(--color-surface);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-md);
 }
@@ -101,7 +101,7 @@
   display: grid;
   gap: 0.95rem;
   padding-bottom: 0.95rem;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .filtersHeader {
@@ -120,6 +120,7 @@
 }
 
 .filterField {
+  position: relative;
   display: grid;
   gap: 0.35rem;
 }
@@ -130,13 +131,27 @@
 
 .filterField select {
   width: 100%;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   color: var(--color-text);
-  padding: 0.85rem 1rem;
+  appearance: none;
+  padding: 0.85rem 2.75rem 0.85rem 1rem;
   font-weight: 700;
   box-shadow: var(--shadow-sm);
+}
+
+.filterField::after {
+  content: '';
+  position: absolute;
+  right: 0.95rem;
+  bottom: 0.9rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  pointer-events: none;
+  transform: rotate(45deg);
 }
 
 .filterToggleRow {
@@ -145,6 +160,39 @@
   gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
+  padding-right: 0.35rem;
+}
+
+.availabilityToggle,
+.availabilityToggleActive {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.6rem 0.95rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.availabilityToggle {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.availabilityToggleActive {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--color-primary) 50%, var(--color-border));
+}
+
+.availabilityToggle:hover,
+.availabilityToggleActive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .listScroll {
@@ -159,17 +207,21 @@
   display: grid;
   gap: 0.9rem;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.58));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface) 92%, var(--color-bg) 8%),
+    color-mix(in srgb, var(--color-surface) 84%, var(--color-bg))
+  );
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
 }
 
 .helperCardSelected {
-  border-color: rgba(41, 171, 255, 0.28);
-  box-shadow: 0 0 0 1px rgba(41, 171, 255, 0.2), var(--shadow-md);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent), var(--shadow-md);
 }
 
 .helperCardTop {
@@ -182,7 +234,7 @@
 .helperAvatar {
   width: 3.25rem;
   height: 3.25rem;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 1rem;
   overflow: hidden;
   background: var(--color-primary);
@@ -223,9 +275,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 700;
@@ -233,7 +285,7 @@
 }
 
 .helperVerified {
-  background: rgba(41, 171, 255, 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
 }
 
 .helperDescription {
@@ -256,9 +308,9 @@
   display: grid;
   gap: 0.35rem;
   padding: 1rem;
-  border: 1px dashed rgba(15, 23, 42, 0.16);
+  border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.45);
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg));
 }
 
 .helperMarker,
@@ -267,17 +319,17 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(15, 23, 42, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
 }
 
 .helperMarkerActive {
   width: 54px;
   height: 54px;
-  border-color: rgba(41, 171, 255, 0.45);
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
 }
 
 .helperMarkerAvatar,
@@ -293,7 +345,7 @@
 .helperMarkerFallback {
   display: grid;
   place-items: center;
-  background: rgba(41, 171, 255, 0.12);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
   color: var(--color-text);
   font-weight: 700;
 }
@@ -304,7 +356,7 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(15, 23, 42, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   overflow: hidden;
   background: var(--color-primary);
@@ -315,7 +367,7 @@
 .requesterTaskMarkerActive {
   width: 52px;
   height: 52px;
-  border-color: rgba(41, 171, 255, 0.45);
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
 }
 
 .requesterTaskMarkerStatus {

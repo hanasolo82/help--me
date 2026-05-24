@@ -36,8 +36,13 @@ export default function IdentityStep({ onNext, onBack, profile }) {
           <button type="button" className="secondary-action" onClick={onBack}>
             Atrás
           </button>
-          <button type="button" className="secondary-action" onClick={onNext}>
-            Continuar
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={stripeCompleted ? onNext : handleStartStripe}
+            disabled={loadingState === 'loading'}
+          >
+            {stripeCompleted ? 'Continuar' : 'Continuar con Stripe'}
           </button>
         </>
       }
@@ -48,7 +53,7 @@ export default function IdentityStep({ onNext, onBack, profile }) {
             <p className={styles.cardKicker}>Revisión previa del perfil</p>
             <h3 className={styles.cardTitle}>Tu perfil, listo para inspirar confianza</h3>
           </div>
-          <span className={styles.badge}>{stripeCompleted ? 'Completado' : '3 puntos clave'}</span>
+          <span className={styles.badge}>{stripeCompleted ? 'Stripe conectado correctamente' : '3 puntos clave'}</span>
         </div>
 
         <p className={styles.cardLead}>
@@ -92,7 +97,7 @@ export default function IdentityStep({ onNext, onBack, profile }) {
             <p className={styles.stripeKicker}>Verificación con Stripe</p>
             <h3 className={styles.stripeTitle}>Preparación segura para ayudar</h3>
           </div>
-          <span className={styles.stripeBadge}>Stripe Connect</span>
+          <span className={styles.stripeBadge}>{stripeCompleted ? 'Completado' : 'Stripe Connect'}</span>
         </div>
 
         <p className={styles.stripeText}>

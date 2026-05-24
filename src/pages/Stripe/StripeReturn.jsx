@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
+import { syncStripeConnectStatus } from '../../features/helper-onboarding/services/stripeConnectService'
+import { helperOnboardingKeys } from '../../features/helper-onboarding/utils/helperOnboardingKeys'
 import styles from './StripePage.module.css'
 
 export default function StripeReturn() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user, loading, profileLoading, refreshProfile } = useAuth()
   const [checkingState, setCheckingState] = useState('loading')
   const [message, setMessage] = useState('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
@@ -35,21 +39,29 @@ export default function StripeReturn() {
       setMessage('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
 
       try {
+        await syncStripeConnectStatus()
         const nextProfile = await refreshProfile()
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['profile'] }),
+          queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.verifications(nextProfile?.id || user?.id) }),
+          queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.skills(nextProfile?.id || user?.id) }),
+          queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.availability(nextProfile?.id || user?.id) }),
+          queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.phoneContact(nextProfile?.id || user?.id) }),
+        ])
 
         if (cancelled) return
 
         setCheckingState('ready')
         setMessage(
           nextProfile?.stripe_onboarding_completed || nextProfile?.stripe_charges_enabled || nextProfile?.stripe_payouts_enabled
-            ? 'Tu perfil ya está sincronizándose. En un momento verás tu Home de ayudante.'
-            : 'Estamos actualizando tu perfil de ayudante. En un momento entrarás en Home modo help.',
+            ? 'Tu perfil ya está sincronizándose. Volverás al paso final para terminar la activación.'
+            : 'Estamos actualizando tu perfil de ayudante. Volverás al paso final para terminar la activación.',
         )
       } catch (error) {
         if (cancelled) return
 
         setCheckingState('error')
-        setMessage(error?.message || 'No pudimos verificar tu perfil ahora mismo, pero vamos a llevarte a Home de ayudante.')
+        setMessage(error?.message || 'No pudimos verificar tu perfil ahora mismo, pero volverás al paso final de activación.')
       }
 
       redirectTimer = window.setTimeout(() => {
@@ -57,7 +69,7 @@ export default function StripeReturn() {
         setHelperHomeIntent('help')
         navigate('/home', {
           replace: true,
-          state: { mode: 'help' },
+          state: { mode: 'help', resumeHelperOnboarding: true, preferredStep: 'identity' },
         })
       }, 700)
     }
@@ -104,7 +116,16 @@ export default function StripeReturn() {
           >
             Ir a login
           </button>
-          <button type="button" className="primary-action" onClick={() => navigate('/home', { replace: true, state: { mode: 'help' } })}>
+          <button
+            type="button"
+            className="primary-action"
+            onClick={() =>
+              navigate('/home', {
+                replace: true,
+                state: { mode: 'help', resumeHelperOnboarding: true, preferredStep: 'identity' },
+              })
+            }
+          >
             Ir a Home
           </button>
         </div>

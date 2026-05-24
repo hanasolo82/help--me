@@ -12,11 +12,20 @@ export default function HomeView({
   avatarUrl,
   userInitial,
   onOpenChats,
+  onOpenFavorites,
   onOpenMyRequests,
   onOpenSettings,
+  onOpenNotifications,
+  onOpenPrivacy,
+  onOpenHelp,
   onOpenProfile,
   onOpenHelper,
+  onOpenNeedHelp,
   onLogout,
+  themePreference,
+  onThemeChange,
+  isHelperActive,
+  helperModeLabel,
   category,
   onCategoryChange,
   radius,
@@ -57,7 +66,7 @@ export default function HomeView({
 }) {
   return (
     <HomeLayout
-      wide={!isHelperMode}
+      wide
       header={
         <HomeHeader
           locationLabel={locationLabel}
@@ -65,11 +74,20 @@ export default function HomeView({
           avatarUrl={avatarUrl}
           userInitial={userInitial}
           onOpenHelper={onOpenHelper}
+          onOpenNeedHelp={onOpenNeedHelp}
           onOpenChats={onOpenChats}
+          onOpenFavorites={onOpenFavorites}
           onOpenMyRequests={onOpenMyRequests}
           onOpenSettings={onOpenSettings}
+          onOpenNotifications={onOpenNotifications}
+          onOpenPrivacy={onOpenPrivacy}
+          onOpenHelp={onOpenHelp}
           onOpenProfile={onOpenProfile}
           onLogout={onLogout}
+          themePreference={themePreference}
+          onThemeChange={onThemeChange}
+          isHelperActive={isHelperActive}
+          helperModeLabel={helperModeLabel}
         />
       }
     >

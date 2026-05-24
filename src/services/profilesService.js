@@ -395,6 +395,10 @@ function normalizeProfileUpdateInput(input) {
     updates.city = sanitizeText(input.city, 80) || null
   }
 
+  if (Object.prototype.hasOwnProperty.call(input, 'neighborhood')) {
+    updates.neighborhood = sanitizeText(input.neighborhood, 80) || null
+  }
+
   if (Object.prototype.hasOwnProperty.call(input, 'country')) {
     updates.country = sanitizeText(input.country, 80) || null
   }

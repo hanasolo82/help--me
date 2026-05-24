@@ -23,6 +23,7 @@ export default function SecuritySettings() {
 
   return (
     <SettingsCard
+      id="seguridad"
       eyebrow="Seguridad"
       title="Acceso y cuenta"
       description="Gestión de sesión y preparación para futuras opciones de seguridad."

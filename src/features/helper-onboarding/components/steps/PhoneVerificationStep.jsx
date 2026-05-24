@@ -10,6 +10,7 @@ import {
   skipPhoneContact,
   splitPhoneContactNumber,
 } from '../../services/helperPhoneContactService'
+import { helperOnboardingKeys } from '../../utils/helperOnboardingKeys'
 
 function updateJourneyDraft(setJourneyDraft, patch) {
   if (typeof setJourneyDraft !== 'function') return
@@ -45,7 +46,7 @@ export default function PhoneVerificationStep({ onNext, onBack, journeyDraft, se
   const [feedback, setFeedback] = useState('')
 
   const phoneContactQuery = useQuery({
-    queryKey: ['profile-phone-contact', profileId],
+    queryKey: helperOnboardingKeys.phoneContact(profileId),
     queryFn: () => getPhoneContact(profileId),
     enabled: Boolean(profileId),
     staleTime: 60_000,
@@ -111,7 +112,8 @@ export default function PhoneVerificationStep({ onNext, onBack, journeyDraft, se
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['profile'] }),
       queryClient.invalidateQueries({ queryKey: ['profile-verifications', profileId] }),
-      queryClient.invalidateQueries({ queryKey: ['profile-phone-contact', profileId] }),
+      queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.verifications(profileId) }),
+      queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.phoneContact(profileId) }),
       refreshProfile(),
     ])
   }

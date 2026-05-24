@@ -23,7 +23,7 @@ export default function ReviewsList({ reviews = [], isLoading = false, error = n
   if (reviews.length === 0) {
     return (
       <div className={styles.emptyState}>
-        <strong>Aún no hay reviews.</strong>
+        <strong>Aún no hay opiniones.</strong>
         <p className="muted">Cuando una tarea se complete, la reputación empezará a crecer aquí.</p>
       </div>
     )
@@ -37,4 +37,3 @@ export default function ReviewsList({ reviews = [], isLoading = false, error = n
     </div>
   )
 }
-

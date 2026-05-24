@@ -1,6 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import styles from '../../pages/Home/Home.module.css'
+import AnimatedDropdown from '../../shared/ui/AnimatedDropdown'
+import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
+import { THEME_DARK } from '../../shared/theme/themePreferences'
 
 export default function HomeHeader({
   locationLabel,
@@ -8,78 +10,23 @@ export default function HomeHeader({
   avatarUrl,
   userInitial,
   onOpenHelper,
+  onOpenNeedHelp,
   onOpenChats,
+  onOpenFavorites,
   onOpenMyRequests,
   onOpenSettings,
+  onOpenNotifications,
+  onOpenPrivacy,
+  onOpenHelp,
   onOpenProfile,
   onLogout,
+  themePreference,
+  onThemeChange,
+  isHelperActive = false,
+  helperModeLabel = 'Modo ayudante',
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
-  const [menuPosition, setMenuPosition] = useState(null)
-  const menuRef = useRef(null)
-  const dropdownRef = useRef(null)
-
-  useEffect(() => {
-    function handleOutsideClick(event) {
-      const target = event.target
-      const isInsideMenu = menuRef.current?.contains(target)
-      const isInsideDropdown = dropdownRef.current?.contains(target)
-
-      if (!isInsideMenu && !isInsideDropdown) {
-        setMenuOpen(false)
-      }
-    }
-
-    function handleEscape(event) {
-      if (event.key === 'Escape') {
-        setMenuOpen(false)
-        setConfirmLogoutOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleOutsideClick)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [menuOpen])
-
-  useLayoutEffect(() => {
-    if (!menuOpen || !menuRef.current) {
-      setMenuPosition(null)
-      return undefined
-    }
-
-    const updatePosition = () => {
-      const trigger = menuRef.current?.querySelector('[data-menu-trigger="true"]')
-      if (!trigger) return
-
-      const rect = trigger.getBoundingClientRect()
-      const width = 176
-      const viewportPadding = 12
-      const left = Math.max(viewportPadding, Math.min(rect.right - width, window.innerWidth - width - viewportPadding))
-      const top = rect.bottom + 10
-
-      setMenuPosition({
-        top,
-        left,
-        width,
-      })
-    }
-
-    updatePosition()
-
-    window.addEventListener('resize', updatePosition)
-    window.addEventListener('scroll', updatePosition, true)
-
-    return () => {
-      window.removeEventListener('resize', updatePosition)
-      window.removeEventListener('scroll', updatePosition, true)
-    }
-  }, [menuOpen])
 
   function handleAction(action) {
     setMenuOpen(false)
@@ -96,83 +43,120 @@ export default function HomeHeader({
     onLogout?.()
   }
 
+  const modeLabel = isHelperActive ? 'Necesito ayuda' : helperModeLabel
+  const modeAction = isHelperActive ? onOpenNeedHelp : onOpenHelper
+
+  const primaryItems = [
+    { label: 'Mi perfil', action: onOpenProfile },
+    { label: 'Mensajes', action: onOpenChats },
+    { label: 'Favoritos', action: onOpenFavorites },
+    { label: 'Mis solicitudes', action: onOpenMyRequests },
+    { label: modeLabel, action: modeAction },
+  ].filter((item) => Boolean(item.action))
+
+  const accountItems = [
+    { label: 'Ajustes', action: onOpenSettings },
+    { label: 'Notificaciones', action: onOpenNotifications },
+    { label: 'Privacidad', action: onOpenPrivacy },
+    { label: 'Ayuda', action: onOpenHelp },
+  ].filter((item) => Boolean(item.action))
+
+  const helperItems = isHelperActive
+    ? [
+        { label: 'Panel de ayudante', action: onOpenHelper },
+        { label: 'Solicitudes disponibles', action: onOpenNeedHelp },
+      ].filter((item) => Boolean(item.action))
+    : []
+
   return (
     <>
       <header className={styles.header}>
         <div>
-          <p className={styles.location}>
-            {locationLabel}
-          </p>
-
-          <h1 className={styles.logo}>
-            helpMe
-          </h1>
-
-          <p className="muted">
-            Hola, {displayName}
-          </p>
+          <p className={styles.location}>{locationLabel}</p>
+          <h1 className={styles.logo}>helpMe</h1>
+          <p className="muted">Hola, {displayName}</p>
         </div>
 
-      <div className={styles.headerActions}>
-        {onOpenHelper ? (
-          <button type="button" className={styles.helperLink} onClick={onOpenHelper}>
-            Ayudar
-          </button>
-        ) : null}
+        <div className={styles.headerActions}>
+          <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />
 
-        <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
-          {avatarUrl ? <img src={avatarUrl} alt={displayName} /> : userInitial}
-        </button>
-
-          <div className={styles.menuWrap} ref={menuRef}>
-            <button
-              type="button"
-              className={styles.menuButton}
-              onClick={() => setMenuOpen((current) => !current)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              aria-label="Abrir menú de acciones"
-              data-menu-trigger="true"
-            >
-              ⋮
+          {onOpenHelper ? (
+            <button type="button" className={styles.helperLink} onClick={modeAction}>
+              {modeLabel}
             </button>
-          </div>
+          ) : null}
+
+          <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
+            {avatarUrl ? <img src={avatarUrl} alt={displayName} /> : userInitial}
+          </button>
+
+          <AnimatedDropdown
+            isOpen={menuOpen}
+            onOpenChange={setMenuOpen}
+            align="end"
+            width={300}
+            portal
+            trigger={
+              <button type="button" className={styles.menuButton} aria-label="Abrir opciones">
+                <span className={styles.menuButtonBars} aria-hidden="true">
+                  <span className={styles.menuButtonBar} />
+                  <span className={styles.menuButtonBar} />
+                  <span className={styles.menuButtonBar} />
+                </span>
+              </button>
+            }
+          >
+            <AnimatedDropdown.Group title="Principal">
+              {primaryItems.map((item) => (
+                <AnimatedDropdown.Item
+                  key={item.label}
+                  onClick={() => handleAction(item.action)}
+                >
+                  {item.label}
+                </AnimatedDropdown.Item>
+              ))}
+            </AnimatedDropdown.Group>
+
+            <AnimatedDropdown.Divider />
+
+            <AnimatedDropdown.Group title="Cuenta">
+              {accountItems.map((item) => (
+                <AnimatedDropdown.Item
+                  key={item.label}
+                  onClick={() => handleAction(item.action)}
+                >
+                  {item.label}
+                </AnimatedDropdown.Item>
+              ))}
+            </AnimatedDropdown.Group>
+
+            {helperItems.length > 0 ? (
+              <>
+                <AnimatedDropdown.Divider />
+                <AnimatedDropdown.Group title="Ayudante activo">
+                  {helperItems.map((item) => (
+                    <AnimatedDropdown.Item
+                      key={item.label}
+                      onClick={() => handleAction(item.action)}
+                    >
+                      {item.label}
+                    </AnimatedDropdown.Item>
+                  ))}
+                </AnimatedDropdown.Group>
+              </>
+            ) : null}
+
+            {onLogout ? (
+              <>
+                <AnimatedDropdown.Divider />
+                <AnimatedDropdown.Item danger onClick={handleRequestLogout}>
+                  Cerrar sesión
+                </AnimatedDropdown.Item>
+              </>
+            ) : null}
+          </AnimatedDropdown>
         </div>
       </header>
-
-      {menuOpen && menuPosition
-        ? createPortal(
-            <div
-              ref={dropdownRef}
-              className={styles.menuDropdownPortal}
-              role="menu"
-              aria-label="Acciones del home"
-              style={{
-                top: `${menuPosition.top}px`,
-                left: `${menuPosition.left}px`,
-                width: `${menuPosition.width}px`,
-              }}
-            >
-              {onOpenMyRequests ? (
-                <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenMyRequests)}>
-                  Mis solicitudes
-                </button>
-              ) : null}
-              <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenChats)}>
-                Chats
-              </button>
-              <button type="button" className={styles.menuItem} onClick={() => handleAction(onOpenSettings)}>
-                Ajustes
-              </button>
-              {onLogout ? (
-                <button type="button" className={styles.menuItem} onClick={handleRequestLogout}>
-                  Salir
-                </button>
-              ) : null}
-            </div>,
-            document.body,
-          )
-        : null}
 
       {confirmLogoutOpen ? (
         <div className={styles.logoutOverlay} role="presentation" onClick={() => setConfirmLogoutOpen(false)}>
@@ -191,18 +175,10 @@ export default function HomeHeader({
             </p>
 
             <div className={styles.logoutActions}>
-              <button
-                type="button"
-                className="secondary-action"
-                onClick={() => setConfirmLogoutOpen(false)}
-              >
+              <button type="button" className="secondary-action" onClick={() => setConfirmLogoutOpen(false)}>
                 Cancelar
               </button>
-              <button
-                type="button"
-                className="danger-action"
-                onClick={handleConfirmLogout}
-              >
+              <button type="button" className="danger-action" onClick={handleConfirmLogout}>
                 Salir
               </button>
             </div>

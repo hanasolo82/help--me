@@ -44,6 +44,35 @@ function hasHelperIntent(profile) {
   return profile?.helper_status === ACTIVE_HELPER_STATUS || profile?.helper_enabled === true
 }
 
+function hasDraftText(value) {
+  return hasRequesterBasics({ display_name: value, full_name: value, username: value })
+}
+
+function getDraftFullName(draft = {}) {
+  return (
+    String(draft?.displayName || draft?.fullName || [draft?.firstName, draft?.lastName].filter(Boolean).join(' ')).trim()
+  )
+}
+
+function hasHelperBasics(profile, draft = {}) {
+  const displayName = profile?.display_name || profile?.full_name || profile?.username || getDraftFullName(draft)
+  const bio = profile?.bio || draft?.bio || draft?.about
+  return hasDraftText(displayName) && Boolean(String(bio ?? '').trim())
+}
+
+function hasHelperLocation(profile, draft = {}) {
+  const city = profile?.city || draft?.city || draft?.activityPlace || draft?.neighborhood
+  const neighborhood = profile?.neighborhood || draft?.neighborhood || draft?.activityPlace
+  const lat = profile?.lat ?? draft?.lat
+  const lng = profile?.lng ?? draft?.lng
+
+  return (
+    Boolean(String(city ?? neighborhood ?? '').trim()) &&
+    Number.isFinite(Number(lat)) &&
+    Number.isFinite(Number(lng))
+  )
+}
+
 function getVerificationSnapshot(profile) {
   const current = profile?.profile_verifications || profile?.verifications || null
 
@@ -88,7 +117,9 @@ function hasHelperAvailability(profile, draft = {}) {
     return draft.selectedDays.length > 0
   }
 
-  return Boolean(profile?.availability_enabled !== false)
+  const profileAvailability = profile?.profile_availability || profile?.availability
+
+  return Array.isArray(profileAvailability) && profileAvailability.length > 0
 }
 
 function hasAcceptedTerms(profile, draft = {}) {
@@ -142,8 +173,8 @@ export function needsHelperProfile(profile) {
 export function canActivateHelper(profile, draft = {}) {
   if (!profile) return false
   if (profile.account_status !== ACTIVE_ACCOUNT_STATUS) return false
-  if (!hasRequesterBasics(profile)) return false
-  if (!hasLocation(profile)) return false
+  if (!hasHelperBasics(profile, draft)) return false
+  if (!hasHelperLocation(profile, draft)) return false
   if (!hasHelperSkills(profile, draft)) return false
   if (!hasHelperAvailability(profile, draft)) return false
   if (!toBoolean(profile?.stripe_onboarding_completed)) return false
@@ -151,6 +182,36 @@ export function canActivateHelper(profile, draft = {}) {
   if (!hasAcceptedTermsVersion(profile, draft)) return false
 
   return true
+}
+
+export function getHelperActivationMissingRequirements(profile, draft = {}) {
+  const missing = []
+
+  if (!hasHelperBasics(profile, draft)) {
+    missing.push('Perfil básico')
+  }
+
+  if (!hasHelperLocation(profile, draft)) {
+    missing.push('Ubicación')
+  }
+
+  if (!hasHelperSkills(profile, draft)) {
+    missing.push('Habilidades')
+  }
+
+  if (!hasHelperAvailability(profile, draft)) {
+    missing.push('Disponibilidad')
+  }
+
+  if (!toBoolean(profile?.stripe_onboarding_completed)) {
+    missing.push('Stripe')
+  }
+
+  if (!hasAcceptedTerms(profile, draft) || !hasAcceptedTermsVersion(profile, draft)) {
+    missing.push('Normas')
+  }
+
+  return missing
 }
 
 export function isHelperBlocked(profile) {

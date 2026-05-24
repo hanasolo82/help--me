@@ -11,6 +11,13 @@ import { useChats } from '../../hooks/useChats'
 import { readHelperHomeIntent, setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import HelperJourneyModal from '../../features/helper-onboarding/components/HelperJourneyModal'
 import HomeView from './HomeView'
+import {
+  applyThemeToDocument,
+  resolveThemePreference,
+  setStoredThemePreference,
+  THEME_DARK,
+  THEME_LIGHT,
+} from '../../shared/theme/themePreferences'
 
 export default function HomeContainer() {
   const { profile, user } = useAuth()
@@ -25,7 +32,6 @@ export default function HomeContainer() {
     publishingTaskId,
     openChatsModal,
     closeChatsModal,
-    openSettingsModal,
     openTaskChat,
     closeTaskChat,
     setPublishingTaskId,
@@ -55,6 +61,12 @@ export default function HomeContainer() {
     locationLabel,
     userAvatarUrl,
   } = useHomeLocation(profile)
+  const [themePreference, setThemePreference] = useState(() =>
+    resolveThemePreference({
+      isPrivateRoute: true,
+      profileTheme: profile?.theme === THEME_DARK ? THEME_DARK : null,
+    }),
+  )
   const {
     visibleTasks,
     distancesById,
@@ -136,6 +148,26 @@ export default function HomeContainer() {
     navigate('/home', { replace: true, state: { mode: 'help' } })
   }, [navigate])
 
+  const handleOpenFavorites = useCallback(() => {
+    navigate('/profile', { state: { section: 'favorites' } })
+  }, [navigate])
+
+  const handleOpenSettings = useCallback(() => {
+    navigate('/settings')
+  }, [navigate])
+
+  const handleOpenNotifications = useCallback(() => {
+    navigate('/settings#notifications')
+  }, [navigate])
+
+  const handleOpenPrivacy = useCallback(() => {
+    navigate('/settings#privacidad')
+  }, [navigate])
+
+  const handleOpenHelp = useCallback(() => {
+    navigate('/legal/community-guidelines')
+  }, [navigate])
+
   const handleOpenMyRequests = useCallback(() => {
     setHelperHomeIntent('need')
     setMyRequestsDrawerOpen(true)
@@ -144,6 +176,23 @@ export default function HomeContainer() {
 
   const handleCloseMyRequests = useCallback(() => {
     setMyRequestsDrawerOpen(false)
+  }, [])
+
+  useEffect(() => {
+    const nextTheme = resolveThemePreference({
+      isPrivateRoute: true,
+      profileTheme: profile?.theme === THEME_DARK ? THEME_DARK : null,
+    })
+
+    setThemePreference(nextTheme)
+    applyThemeToDocument(nextTheme)
+  }, [profile?.theme])
+
+  const handleThemeChange = useCallback((nextChecked) => {
+    const nextTheme = nextChecked ? THEME_DARK : THEME_LIGHT
+    setThemePreference(nextTheme)
+    setStoredThemePreference(nextTheme)
+    applyThemeToDocument(nextTheme)
   }, [])
 
   useEffect(() => {
@@ -159,6 +208,13 @@ export default function HomeContainer() {
     routeLocation.state?.mode,
     setMode,
   ])
+
+  useEffect(() => {
+    if (!routeLocation.state?.resumeHelperOnboarding) return
+
+    setHelperJourneyOpen(true)
+    setHelperHomeIntent('help')
+  }, [routeLocation.state?.resumeHelperOnboarding])
 
   useEffect(() => {
     if (mode !== 'need' && mode !== 'help') return
@@ -177,10 +233,19 @@ export default function HomeContainer() {
         userInitial={userInitial}
         onOpenHelper={handleOpenHelperMode}
         onOpenChats={openChatsModal}
+        onOpenFavorites={handleOpenFavorites}
         onOpenMyRequests={isHelperMode ? undefined : handleOpenMyRequests}
-        onOpenSettings={openSettingsModal}
+        onOpenSettings={handleOpenSettings}
+        onOpenNotifications={handleOpenNotifications}
+        onOpenPrivacy={handleOpenPrivacy}
+        onOpenHelp={handleOpenHelp}
         onOpenProfile={() => navigate('/profile')}
+        onOpenNeedHelp={handleNeedHelpMode}
         onLogout={handleLogout}
+        themePreference={themePreference}
+        onThemeChange={handleThemeChange}
+        isHelperActive={Boolean(profile?.helper_status === 'active')}
+        helperModeLabel={isHelperMode ? 'Necesito ayuda' : 'Modo ayudante'}
         category={category}
         onCategoryChange={setCategory}
         radius={radius}
@@ -221,6 +286,7 @@ export default function HomeContainer() {
       />
       <HelperJourneyModal
         open={helperJourneyOpen}
+        preferredStepKey={routeLocation.state?.preferredStep || null}
         onClose={() => setHelperJourneyOpen(false)}
         onFinish={() => {
           setHelperJourneyOpen(false)

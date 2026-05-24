@@ -19,6 +19,7 @@ export default function MapSettings() {
 
   return (
     <SettingsCard
+      id="privacidad"
       eyebrow="Mapa"
       title="Visibilidad y alcance"
       description="Elige tu avatar del mapa entre las opciones disponibles y configura tu alcance."

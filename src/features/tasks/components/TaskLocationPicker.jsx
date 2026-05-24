@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import L from 'leaflet'
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import { reverseGeocodeLocation } from '../../../services/locationService'
+import MapTileLayer from '../../../shared/ui/map/MapTileLayer'
 import styles from './TaskLocationPicker.module.css'
 
 const DEFAULT_CENTER = [41.6523, -0.9019]
@@ -149,10 +150,7 @@ export default function TaskLocationPicker({ value, onChange, center, centerLabe
           <div className={styles.mapShell}>
             <MapContainer center={resolvedCenter} zoom={14} scrollWheelZoom className={styles.map}>
               <RecenterOnChange center={resolvedCenter} />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+              <MapTileLayer />
               <MapClickHandler onPick={setDraftPoint} />
               {draftPoint ? (
                 <Marker

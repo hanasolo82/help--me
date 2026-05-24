@@ -1,6 +1,7 @@
 import L from 'leaflet'
-import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { Circle, MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
+import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
@@ -100,10 +101,7 @@ export default function TaskMap({
       <MapContainer center={center} zoom={14} scrollWheelZoom className={styles.map}>
         <RecenterMap center={center} />
         <MapViewportReporter onViewportChange={onViewportChange} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapTileLayer />
 
         <Circle
           center={center}

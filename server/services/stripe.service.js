@@ -48,7 +48,9 @@ async function updateProfileStripeData(profileId, updates) {
       last_stripe_sync_at: new Date().toISOString(),
     })
     .eq('id', profileId)
-    .select('id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled')
+    .select(
+      'id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled, last_stripe_sync_at',
+    )
     .single()
 
   if (error) {
@@ -56,6 +58,32 @@ async function updateProfileStripeData(profileId, updates) {
   }
 
   return data
+}
+
+async function getProfileByStripeAccountId(accountId) {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not configured.')
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled')
+    .eq('stripe_account_id', accountId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+async function getAccountFromStripe(accountId) {
+  if (!accountId) {
+    return null
+  }
+
+  return stripe.accounts.retrieve(accountId)
 }
 
 export async function createOrGetConnectAccount(user, profile) {
@@ -109,12 +137,36 @@ export async function createOrGetConnectAccount(user, profile) {
 export async function createConnectAccountLink(accountId) {
   const accountLink = await stripe.accountLinks.create({
     account: accountId,
-    refresh_url: `${env.APP_URL}/stripe/refresh`,
-    return_url: `${env.APP_URL}/stripe/return`,
+    refresh_url: `${env.APP_URL}/stripe/refresh?flow=helper-onboarding`,
+    return_url: `${env.APP_URL}/stripe/return?flow=helper-onboarding`,
     type: 'account_onboarding',
   })
 
   return accountLink.url
+}
+
+export async function syncStripeAccountByAccountId(accountId) {
+  if (!accountId) {
+    return null
+  }
+
+  const account = await getAccountFromStripe(accountId)
+
+  if (!account?.id) {
+    return null
+  }
+
+  const profile = await getProfileByStripeAccountId(accountId)
+
+  if (!profile?.id) {
+    return null
+  }
+
+  return updateProfileStripeData(profile.id, {
+    stripe_onboarding_completed: Boolean(account.details_submitted),
+    stripe_charges_enabled: Boolean(account.charges_enabled),
+    stripe_payouts_enabled: Boolean(account.payouts_enabled),
+  })
 }
 
 export async function syncStripeAccountFromWebhook(account) {

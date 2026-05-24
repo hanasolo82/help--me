@@ -1,6 +1,7 @@
-import { Circle, MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { Circle, MapContainer, useMap } from 'react-leaflet'
 import HelperMarker from './HelperMarker'
 import { MAP_FILL, MAP_PRIMARY } from '../../../styles/mapColors'
+import MapTileLayer from '../../../shared/ui/map/MapTileLayer'
 import styles from '../../profile/styles/profileNetwork.module.css'
 
 const defaultCenter = [41.6523, -0.9019]
@@ -32,10 +33,7 @@ export default function HelpersMap({
     <div className={styles.mapShell}>
       <MapContainer center={resolvedCenter} zoom={14} scrollWheelZoom className={styles.map}>
         <RecenterMap center={resolvedCenter} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapTileLayer />
 
         <Circle
           center={resolvedCenter}

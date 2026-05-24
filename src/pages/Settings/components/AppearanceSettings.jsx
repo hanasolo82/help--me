@@ -7,6 +7,7 @@ export default function AppearanceSettings() {
 
   return (
     <SettingsCard
+      id="apariencia"
       eyebrow="Apariencia"
       title="Look & feel"
       description="Ajusta el tema visual que se aplica a toda tu sesion."

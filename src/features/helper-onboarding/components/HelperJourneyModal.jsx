@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
 import { clearHelperJourneyProgress, readHelperJourneyProgress, writeHelperJourneyProgress } from '../services/helperJourneyStorage'
-import { HELPER_STATUS, HELPER_TERMS_VERSION, canActivateHelper } from '../utils/helperPermissions'
+import {
+  HELPER_STATUS,
+  HELPER_TERMS_VERSION,
+  canActivateHelper,
+  getHelperActivationMissingRequirements,
+} from '../utils/helperPermissions'
+import { helperOnboardingKeys } from '../utils/helperOnboardingKeys'
 import { updateCurrentProfile } from '../../../services/profilesService'
 import { getProfileVerificationState } from '../../onboarding/api/onboardingApi'
 import { getProfileSkills } from '../services/helperSkillsService'
@@ -35,7 +41,80 @@ const STEPS = [
   { key: 'terms', Component: TermsStep },
 ]
 
-export default function HelperJourneyModal({ open, onClose, onFinish }) {
+function injectPreferredStep(flowSteps, preferredStepKey) {
+  if (!preferredStepKey) return flowSteps
+
+  const existingIndex = flowSteps.findIndex((step) => step.key === preferredStepKey)
+  if (existingIndex >= 0) return flowSteps
+
+  const preferredStep = STEPS.find((step) => step.key === preferredStepKey)
+  if (!preferredStep) return flowSteps
+
+  const preferredOrder = STEPS.findIndex((step) => step.key === preferredStepKey)
+  const before = flowSteps.filter((step) => STEPS.findIndex((entry) => entry.key === step.key) < preferredOrder)
+  const after = flowSteps.filter((step) => STEPS.findIndex((entry) => entry.key === step.key) > preferredOrder)
+
+  return [...before, preferredStep, ...after]
+}
+
+function hasValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== ''
+}
+
+function buildPendingProfileUpdates(profile, draft = {}) {
+  const nextUpdates = {}
+  const fullName =
+    String(
+      draft?.fullName ||
+        [draft?.firstName, draft?.lastName].filter(Boolean).join(' ') ||
+        profile?.display_name ||
+        profile?.full_name ||
+        '',
+    ).trim() || null
+  const bio = String(draft?.about || draft?.bio || '').trim() || null
+  const neighborhood = String(draft?.neighborhood || draft?.activityPlace || '').trim() || null
+
+  if (hasValue(fullName)) {
+    nextUpdates.displayName = fullName
+    nextUpdates.fullName = fullName
+  }
+
+  if (hasValue(bio)) {
+    nextUpdates.bio = bio
+  }
+
+  if (hasValue(draft?.avatarUrl)) {
+    nextUpdates.avatarUrl = draft.avatarUrl
+  }
+
+  if (hasValue(draft?.city)) {
+    nextUpdates.city = draft.city
+  }
+
+  if (hasValue(neighborhood)) {
+    nextUpdates.neighborhood = neighborhood
+  }
+
+  if (hasValue(draft?.country)) {
+    nextUpdates.country = draft.country
+  }
+
+  if (Number.isFinite(Number(draft?.lat))) {
+    nextUpdates.lat = Number(draft.lat)
+  }
+
+  if (Number.isFinite(Number(draft?.lng))) {
+    nextUpdates.lng = Number(draft.lng)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(draft, 'visibilityEnabled')) {
+    nextUpdates.showApproxLocation = Boolean(draft.visibilityEnabled)
+  }
+
+  return nextUpdates
+}
+
+export default function HelperJourneyModal({ open, onClose, onFinish, preferredStepKey = null }) {
   const { profile, refreshProfile } = useAuth()
   const [stepIndex, setStepIndex] = useState(0)
   const [journeyDraft, setJourneyDraft] = useState({})
@@ -46,28 +125,28 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
   const profileId = profile?.id
 
   const verificationQuery = useQuery({
-    queryKey: ['helper-onboarding', 'verifications', profileId],
+    queryKey: helperOnboardingKeys.verifications(profileId),
     queryFn: () => getProfileVerificationState(profileId),
     enabled: Boolean(open && profileId),
     staleTime: 60_000,
   })
 
   const skillsQuery = useQuery({
-    queryKey: ['helper-onboarding', 'skills', profileId],
+    queryKey: helperOnboardingKeys.skills(profileId),
     queryFn: () => getProfileSkills(profileId),
     enabled: Boolean(open && profileId),
     staleTime: 60_000,
   })
 
   const availabilityQuery = useQuery({
-    queryKey: ['helper-onboarding', 'availability', profileId],
+    queryKey: helperOnboardingKeys.availability(profileId),
     queryFn: () => getProfileAvailability(profileId),
     enabled: Boolean(open && profileId),
     staleTime: 60_000,
   })
 
   const phoneContactQuery = useQuery({
-    queryKey: ['helper-onboarding', 'phone-contact', profileId],
+    queryKey: helperOnboardingKeys.phoneContact(profileId),
     queryFn: () => getPhoneContact(profileId),
     enabled: Boolean(open && profileId),
     staleTime: 60_000,
@@ -96,21 +175,6 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
     () => buildHelperJourneyDraft(profile, verificationState),
     [profile, verificationState],
   )
-
-  useEffect(() => {
-    if (open) {
-      const savedProgress = readHelperJourneyProgress()
-      const savedIndex = Number(savedProgress?.stepIndex)
-      const savedDraft = savedProgress?.draft && typeof savedProgress.draft === 'object' ? savedProgress.draft : {}
-      const nextStepIndex = Number.isFinite(savedIndex) ? Math.max(savedIndex, 0) : 0
-
-      queueMicrotask(() => {
-        setStepIndex(nextStepIndex)
-        setJourneyDraft(mergeHelperJourneyDraft(savedDraft, helperDraftSeed))
-        setError('')
-      })
-    }
-  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -167,8 +231,31 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
 
   const flowSteps = useMemo(() => {
     const pendingSteps = actionableStepPlan.filter((step) => step.status !== 'complete')
-    return pendingSteps.length > 0 ? pendingSteps : actionableStepPlan.slice(-1)
-  }, [actionableStepPlan])
+    const baseFlow = pendingSteps.length > 0 ? pendingSteps : actionableStepPlan.slice(-1)
+    return injectPreferredStep(baseFlow, preferredStepKey)
+  }, [actionableStepPlan, preferredStepKey])
+
+  useEffect(() => {
+    if (!open) return
+
+    const savedProgress = readHelperJourneyProgress()
+    const savedIndex = Number(savedProgress?.stepIndex)
+    const savedDraft = savedProgress?.draft && typeof savedProgress.draft === 'object' ? savedProgress.draft : {}
+    const preferredIndex = preferredStepKey
+      ? flowSteps.findIndex((step) => step.key === preferredStepKey)
+      : -1
+    const nextStepIndex = preferredIndex >= 0
+      ? preferredIndex
+      : Number.isFinite(savedIndex)
+        ? Math.max(savedIndex, 0)
+        : 0
+
+    queueMicrotask(() => {
+      setStepIndex(nextStepIndex)
+      setJourneyDraft(mergeHelperJourneyDraft(savedDraft, helperDraftSeed))
+      setError('')
+    })
+  }, [flowSteps, helperDraftSeed, open, preferredStepKey])
 
   const currentStep = useMemo(() => flowSteps[stepIndex] || flowSteps[0] || STEPS[0], [flowSteps, stepIndex])
   const StepComponent = currentStep.Component
@@ -224,29 +311,41 @@ export default function HelperJourneyModal({ open, onClose, onFinish }) {
     setError('')
 
     try {
-      const canActivate = canActivateHelper(profile, journeyDraft)
       const now = new Date().toISOString()
-      const updates = {
+      const pendingUpdates = {
+        ...buildPendingProfileUpdates(profile, journeyDraft),
         termsAccepted: true,
         termsAcceptedAt: now,
         termsVersion: HELPER_TERMS_VERSION,
-        visibilityEnabled: Boolean(journeyDraft?.visibilityEnabled),
-        lat: journeyDraft?.lat ?? profile?.lat ?? null,
-        lng: journeyDraft?.lng ?? profile?.lng ?? null,
       }
 
-      if (canActivate) {
-        updates.helperStatus = HELPER_STATUS.ACTIVE
-        updates.helperEnabled = true
+      const savedProfile = await updateCurrentProfile(pendingUpdates)
+      const mergedProfile = {
+        ...profile,
+        ...savedProfile,
+        ...pendingUpdates,
+        terms_accepted: true,
+        terms_accepted_at: now,
+        terms_version: HELPER_TERMS_VERSION,
       }
-
-      await updateCurrentProfile(updates)
-      await refreshProfile()
+      const missingRequirements = getHelperActivationMissingRequirements(mergedProfile, journeyDraft)
+      const canActivate = canActivateHelper(mergedProfile, journeyDraft)
 
       if (!canActivate) {
-        setError('Completa los pasos pendientes antes de activar tu perfil.')
+        setError(
+          missingRequirements.length > 0
+            ? `No hemos podido activar tu perfil porque falta: ${missingRequirements.join(', ')}`
+            : 'Completa los pasos pendientes antes de activar tu perfil.',
+        )
+        await refreshProfile()
         return
       }
+
+      await updateCurrentProfile({
+        helperStatus: HELPER_STATUS.ACTIVE,
+        helperEnabled: true,
+      })
+      await refreshProfile()
 
       clearHelperJourneyProgress()
       onFinish?.()
