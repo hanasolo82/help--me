@@ -24,6 +24,10 @@
   opacity: 0.45;
 }
 
+:global(html[data-theme='dark']) .particlesLayer {
+  opacity: 0.1;
+}
+
 .shell > *:not(.particlesLayer) {
   position: relative;
   z-index: 1;

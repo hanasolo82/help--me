@@ -1,11 +1,19 @@
-import styles from '../SettingsPage.module.css'
-import SectionHeader from '../../../shared/ui/SectionHeader'
+import SettingsSection from './SettingsSection'
 
-export default function SettingsCard({ eyebrow, title, description, accent = false, children }) {
+export default function SettingsCard({ id, eyebrow, title, description, children }) {
   return (
-    <section className={accent ? `${styles.card} ${styles.cardAccent}` : styles.card}>
-      <SectionHeader eyebrow={eyebrow} title={title} lead={description} titleClassName={styles.cardTitle} />
+    <SettingsSection
+      id={id}
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      actionLabel="Editar"
+      onAction={() => {
+        const element = document.getElementById(id)
+        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }}
+    >
       {children}
-    </section>
+    </SettingsSection>
   )
 }

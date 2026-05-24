@@ -8,6 +8,14 @@ import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { ShineBorder } from '@/components/ui/shine-border'
 import Particles from '@/components/ui/particles'
+import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
+import {
+  applyThemeToDocument,
+  resolveThemePreference,
+  setStoredThemePreference,
+  THEME_DARK,
+  THEME_LIGHT,
+} from '../../shared/theme/themePreferences'
 
 const LANDING_JSONLD = {
   '@context': 'https://schema.org',
@@ -87,10 +95,12 @@ export default function Landing() {
   })
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
-  const [darkMode, setDarkMode] = useState(false)
   const [navMenuOpen, setNavMenuOpen] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
   const [failedImages, setFailedImages] = useState({})
+  const [themePreference, setThemePreference] = useState(() =>
+    resolveThemePreference({ isPrivateRoute: false }),
+  )
 
   const currentSlide = heroSlides[slideIndex]
 
@@ -100,6 +110,12 @@ export default function Landing() {
     }, 4000)
 
     return () => window.clearInterval(intervalId)
+  }, [])
+
+  useEffect(() => {
+    const nextTheme = resolveThemePreference({ isPrivateRoute: false })
+    setThemePreference(nextTheme)
+    applyThemeToDocument(nextTheme)
   }, [])
 
   async function startJourney(mode) {
@@ -138,8 +154,15 @@ export default function Landing() {
     navigate(destination, { replace: true })
   }
 
+  function handleThemeChange(nextChecked) {
+    const nextTheme = nextChecked ? THEME_DARK : THEME_LIGHT
+    setThemePreference(nextTheme)
+    setStoredThemePreference(nextTheme)
+    applyThemeToDocument(nextTheme)
+  }
+
   return (
-    <main className={darkMode ? `${styles.landing} ${styles.dark}` : styles.landing}>
+    <main className={themePreference === THEME_DARK ? `${styles.landing} ${styles.dark}` : styles.landing}>
       <Particles className={styles.particlesLayer} />
       <header className={styles.navbar}>
         <a className={styles.brand} href="#inicio" aria-label="helpMe inicio">
@@ -177,14 +200,7 @@ export default function Landing() {
         </nav>
 
         <div className={styles.navActions}>
-          <button
-            className={darkMode ? `${styles.themeSwitch} ${styles.themeSwitchOn}` : styles.themeSwitch}
-            onClick={() => setDarkMode((value) => !value)}
-            aria-label="Cambiar modo oscuro"
-            aria-pressed={darkMode}
-          >
-            <span></span>
-          </button>
+          <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={handleThemeChange} />
           <button className={styles.ghostButton} onClick={openLogin}>
             Entrar
           </button>

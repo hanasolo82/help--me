@@ -11,10 +11,10 @@ export default function ProfileSettings() {
 
   return (
     <SettingsCard
+      id="datos-personales"
       eyebrow="Perfil"
       title="Identidad pública"
       description="Define cómo te ven el resto de usuarios en HelpMe."
-      accent
     >
       <div className={styles.grid}>
         <label className={styles.field}>

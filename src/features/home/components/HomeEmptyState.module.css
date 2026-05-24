@@ -1,4 +1,4 @@
-﻿.card {
+.card {
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -9,7 +9,7 @@
   align-items: start;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.66);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
   padding: 1rem;
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
@@ -34,18 +34,17 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
-  background: rgba(41, 171, 255, 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
   color: var(--color-text);
   font-weight: 700;
 }
 
 .positive .icon {
-  background: rgba(41, 171, 255, 0.14);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
 }
 
 .warning .icon {
-  background: rgba(41, 171, 255, 0.08);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
 }
-

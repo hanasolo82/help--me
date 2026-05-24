@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import NeedHelpMapLayout from './NeedHelpMapLayout'
@@ -16,7 +16,6 @@ export default function RequesterHome({
   locationError,
   onRequestLocation,
   requestsDrawerOpen = false,
-  onOpenRequestsDrawer,
   onCloseRequestsDrawer,
 }) {
   const navigate = useNavigate()
@@ -50,11 +49,6 @@ export default function RequesterHome({
     },
   })
 
-  const helperCountLabel = useMemo(() => {
-    const place = location?.label || profile?.neighborhood || profile?.city || profile?.country || 'tu zona'
-    return `Explora personas disponibles cerca de ${place}`
-  }, [location?.label, profile?.city, profile?.country, profile?.neighborhood])
-
   function handlePreviewHelper(helper) {
     setSelectedHelper(helper)
   }
@@ -65,10 +59,6 @@ export default function RequesterHome({
     setDraftTaskTitle(heroQuery.trim())
     setHeroQuery('')
     setRequestTaskOpen(true)
-  }
-
-  function handleOpenRequestsDrawer() {
-    onOpenRequestsDrawer?.()
   }
 
   function handleCloseRequestsDrawer() {
@@ -151,8 +141,6 @@ export default function RequesterHome({
           </p>
         </section>
       ) : null}
-
-      <p className="muted">{helperCountLabel}</p>
 
         {!location && locationStatus !== 'loading' ? (
           <div className={styles.locationHint}>

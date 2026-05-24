@@ -6,6 +6,7 @@ import StepFrame from './StepFrame'
 import WeeklyAvailabilityDots from '../../../availability/components/WeeklyAvailabilityDots'
 import { getProfileAvailability, replaceProfileAvailability } from '../../services/helperAvailabilityService'
 import styles from './AvailabilityStep.module.css'
+import { helperOnboardingKeys } from '../../utils/helperOnboardingKeys'
 
 const WEEKDAYS = [1, 2, 3, 4, 5]
 const WEEKEND = [6, 0]
@@ -46,7 +47,7 @@ export default function AvailabilityStep({ onNext, onBack, journeyDraft, setJour
   const [feedback, setFeedback] = useState('')
 
   const availabilityQuery = useQuery({
-    queryKey: ['profile-availability', profileId],
+    queryKey: helperOnboardingKeys.availability(profileId),
     queryFn: () => getProfileAvailability(profileId),
     enabled: Boolean(profileId),
     staleTime: 60_000,
@@ -60,7 +61,7 @@ export default function AvailabilityStep({ onNext, onBack, journeyDraft, setJour
   const mutation = useMutation({
     mutationFn: (days) => replaceProfileAvailability(profileId, days),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['profile-availability', profileId] })
+      await queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.availability(profileId) })
     },
   })
 

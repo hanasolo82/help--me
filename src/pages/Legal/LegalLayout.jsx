@@ -3,6 +3,7 @@ import styles from './LegalLayout.module.css'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 
 const sections = [
+  { to: '/legal/community-guidelines', label: 'Normas' },
   { to: '/legal/terms', label: 'Terminos' },
   { to: '/legal/privacy', label: 'Privacidad' },
   { to: '/legal/cookies', label: 'Cookies' },

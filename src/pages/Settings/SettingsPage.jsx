@@ -5,6 +5,7 @@ import { sanitizeText } from '../../lib/security'
 import { signOut } from '../../services/authService'
 import { ensureCurrentProfile, updateCurrentProfile } from '../../services/profilesService'
 import { SettingsProvider } from './components/SettingsContext'
+import SettingsLayout from './components/SettingsLayout'
 import ProfileSettings from './components/ProfileSettings'
 import AppearanceSettings from './components/AppearanceSettings'
 import MapSettings from './components/MapSettings'
@@ -164,82 +165,86 @@ export default function SettingsPage() {
     onSignOut: handleSignOut,
   }
 
+  const sidebarItems = [
+    { id: 'datos-personales', label: 'Datos personales', meta: 'Perfil público' },
+    { id: 'apariencia', label: 'Apariencia', meta: 'Tema y sensación' },
+    { id: 'privacidad', label: 'Privacidad', meta: 'Visibilidad y alcance' },
+    { id: 'notificaciones', label: 'Notificaciones', meta: 'Avisos y mensajes' },
+    { id: 'seguridad', label: 'Inicio de sesión y seguridad', meta: 'Acceso y cuenta' },
+    { id: 'pagos', label: 'Pagos', meta: 'Próximamente', disabled: true },
+    { id: 'idioma-moneda', label: 'Idioma y moneda', meta: 'Próximamente', disabled: true },
+    { id: 'perfil-ayudante', label: 'Perfil de ayudante', meta: 'Próximamente', disabled: true },
+    { id: 'ayuda', label: 'Ayuda', meta: 'Próximamente', disabled: true },
+  ]
+
   return (
     <SettingsProvider value={settingsValue}>
-      <main
-        className={`${styles.page} ${isDarkTheme ? styles.dark : ''} with-nav`}
-      >
+      <main className={`${styles.page} ${isDarkTheme ? styles.dark : ''} with-nav`}>
         <header className={styles.hero}>
-          <button type="button" className="icon-button" onClick={() => navigate('/home')} aria-label="Volver a Home">
-            ←
-          </button>
           <div className={styles.heroCopy}>
             <p className="eyebrow">Configuración</p>
             <h1>Ajustes de tu cuenta</h1>
-            <p>
-              Personaliza tu perfil, la apariencia de la app, el mapa y tus notificaciones desde un solo panel.
-            </p>
+            <p>Una navegación simple para editar tu cuenta sin mezclarla con el perfil público.</p>
           </div>
         </header>
 
-        <div className={styles.floatingActions}>
-          <button type="button" className="secondary-action" onClick={() => navigate('/home')}>
-            Volver
-          </button>
-          <button type="submit" className="primary-action" form="settings-form" disabled={saveState === 'saving'}>
-            {saveState === 'saving' ? 'Guardando...' : 'Guardar cambios'}
-          </button>
-        </div>
+        <form id="settings-form" className={styles.form} onSubmit={handleSubmit}>
+          <SettingsLayout
+            items={sidebarItems}
+            onBack={() => navigate('/home')}
+            busy={saveState === 'saving'}
+          >
+            <section className={styles.progressCard} aria-label="Progreso del perfil">
+              <div>
+                <p className={styles.progressKicker}>Perfil completado</p>
+                <h2>Tu perfil está al {profileCompletion}%</h2>
+              </div>
+              <div className={styles.progressTrack} aria-hidden="true">
+                <span className={styles.progressFill} style={{ width: `${profileCompletion}%` }} />
+              </div>
+            </section>
 
-        <section className={styles.progressCard} aria-label="Progreso del perfil">
-          <div>
-            <p className={styles.progressKicker}>Perfil completado</p>
-            <h2>Tu perfil está al {profileCompletion}%</h2>
-          </div>
-          <div className={styles.progressTrack} aria-hidden="true">
-            <span className={styles.progressFill} style={{ width: `${profileCompletion}%` }} />
-          </div>
-        </section>
+            {bootStatus === 'loading' && (
+              <section className={styles.stateCard}>
+                <p className="eyebrow">Cargando</p>
+                <h2>Estamos preparando tus ajustes</h2>
+                <p className="muted">Leemos tu profile y, si falta, lo creamos automáticamente.</p>
+              </section>
+            )}
 
-        {bootStatus === 'loading' && (
-          <section className={styles.stateCard}>
-            <p className="eyebrow">Cargando</p>
-            <h2>Estamos preparando tus ajustes</h2>
-            <p className="muted">Leemos tu profile y, si falta, lo creamos automáticamente.</p>
-          </section>
-        )}
+            {bootStatus === 'error' && (
+              <section className={`${styles.stateCard} ${styles.stateCardError}`}>
+                <p className="eyebrow">Error</p>
+                <h2>No hemos podido cargar tu perfil</h2>
+                <p className="muted">{bootError}</p>
+                <div className={styles.stateActions}>
+                  <button className="secondary-action" type="button" onClick={() => setReloadKey((value) => value + 1)}>
+                    Reintentar
+                  </button>
+                  <button className="primary-action" type="button" onClick={() => navigate('/home')}>
+                    Volver a Home
+                  </button>
+                </div>
+              </section>
+            )}
 
-        {bootStatus === 'error' && (
-          <section className={`${styles.stateCard} ${styles.stateCardError}`}>
-            <p className="eyebrow">Error</p>
-            <h2>No hemos podido cargar tu perfil</h2>
-            <p className="muted">{bootError}</p>
-            <div className={styles.stateActions}>
-              <button className="secondary-action" type="button" onClick={() => setReloadKey((value) => value + 1)}>
-                Reintentar
-              </button>
-              <button className="primary-action" type="button" onClick={() => navigate('/home')}>
-                Volver a Home
-              </button>
-            </div>
-          </section>
-        )}
+            {feedback && (
+              <section className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}>
+                {feedback.text}
+              </section>
+            )}
 
-        {feedback && (
-          <section className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}>
-            {feedback.text}
-          </section>
-        )}
-
-        {bootStatus === 'ready' && (
-          <form id="settings-form" className={styles.form} onSubmit={handleSubmit}>
-            <ProfileSettings />
-            <AppearanceSettings />
-            <MapSettings />
-            <NotificationSettings />
-            <SecuritySettings />
-          </form>
-        )}
+            {bootStatus === 'ready' && (
+              <>
+                <ProfileSettings />
+                <AppearanceSettings />
+                <MapSettings />
+                <NotificationSettings />
+                <SecuritySettings />
+              </>
+            )}
+          </SettingsLayout>
+        </form>
       </main>
     </SettingsProvider>
   )

@@ -62,3 +62,21 @@ export async function saveProfileVerification(profileId, values) {
 
   return profileUpdates
 }
+
+export async function getProfileVerificationState(profileId) {
+  if (!profileId) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from('profile_verifications')
+    .select('profile_id, email_verified, phone_verified, payment_verified, identity_verified, background_checked, phone_status, updated_at')
+    .eq('profile_id', profileId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}

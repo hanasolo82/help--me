@@ -77,6 +77,11 @@ export default function Terms() {
       <section>
         <h2>7. Naturaleza de la relacion entre usuarios</h2>
         <p>
+          HelpMe actua como plataforma tecnologica de intermediacion entre personas que solicitan ayuda y usuarios
+          que ofrecen asistencia independiente. HelpMe no presta directamente los servicios publicados en la
+          plataforma ni interviene en la ejecucion material de los acuerdos alcanzados entre usuarios.
+        </p>
+        <p>
           Las tareas que se acuerdan a traves de helpMe se realizan a titulo personal entre vecinos. Cuando una
           tarea constituya una <strong>actividad economica</strong> en los terminos del art. 5 LIRPF o del art. 4
           LIVA, sera responsabilidad exclusiva del usuario que la realice declarar los ingresos obtenidos y cumplir

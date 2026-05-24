@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../../../contexts/useAuth'
 import StepFrame from './StepFrame'
 import styles from './SkillsStep.module.css'
 import { getActiveSkills, replaceProfileSkills } from '../../services/helperSkillsService'
+import { helperOnboardingKeys } from '../../utils/helperOnboardingKeys'
 
 const MAX_SKILLS = 6
 
@@ -30,6 +31,7 @@ function buildCategoryOptions(skills = []) {
 
 export default function SkillsStep({ onNext, onBack, journeyDraft, setJourneyDraft }) {
   const { profile } = useAuth()
+  const queryClient = useQueryClient()
   const profileId = profile?.id
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
@@ -46,6 +48,9 @@ export default function SkillsStep({ onNext, onBack, journeyDraft, setJourneyDra
 
   const mutation = useMutation({
     mutationFn: (skillIds) => replaceProfileSkills(profileId, skillIds),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: helperOnboardingKeys.skills(profileId) })
+    },
   })
 
   const skills = useMemo(() => skillsQuery.data ?? [], [skillsQuery.data])
@@ -87,6 +92,17 @@ export default function SkillsStep({ onNext, onBack, journeyDraft, setJourneyDra
     () => skills.filter((skill) => selectedIdsSet.has(skill.id)),
     [selectedIdsSet, skills],
   )
+
+  useEffect(() => {
+    if (!Array.isArray(journeyDraft?.selectedSkillIds) || journeyDraft.selectedSkillIds.length === 0) {
+      return
+    }
+
+    setSelectedSkillIds((current) => {
+      if (current.length > 0) return current
+      return journeyDraft.selectedSkillIds.slice(0, MAX_SKILLS)
+    })
+  }, [journeyDraft?.selectedSkillIds])
 
   if (!profileId) {
     return <Navigate to="/onboarding" replace />

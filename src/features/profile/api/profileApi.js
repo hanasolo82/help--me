@@ -178,7 +178,7 @@ export async function getProfileAvailability(profileId) {
 
   const { data, error } = await supabase
     .from('profile_availability')
-    .select('profile_id, day_of_week, start_time, end_time')
+    .select('profile_id, day_of_week, start_time, end_time, created_at, updated_at')
     .eq('profile_id', profileId)
     .order('day_of_week', { ascending: true })
     .order('start_time', { ascending: true })

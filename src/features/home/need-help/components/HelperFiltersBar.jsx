@@ -40,7 +40,8 @@ export default function HelperFiltersBar({
         <span>Disponibilidad</span>
         <button
           type="button"
-          className={onlyAvailable ? 'primary-action' : 'secondary-action'}
+          className={onlyAvailable ? styles.availabilityToggleActive : styles.availabilityToggle}
+          aria-pressed={onlyAvailable}
           onClick={() => onOnlyAvailableChange?.(!onlyAvailable)}
         >
           {onlyAvailable ? 'Solo disponibles' : 'Mostrar todos'}

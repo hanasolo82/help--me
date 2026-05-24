@@ -7,6 +7,7 @@ export default function NotificationSettings() {
 
   return (
     <SettingsCard
+      id="notificaciones"
       eyebrow="Notificaciones"
       title="Avisos importantes"
       description="Elige qué notificaciones quieres recibir."

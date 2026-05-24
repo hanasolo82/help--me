@@ -110,6 +110,7 @@ export default function TaskCard({
   secondaryActionVariant = 'link',
   secondaryActionDisabled = false,
   onSecondaryAction,
+  helperActions = [],
 }) {
   const priceEuros = Number(task.price ?? 0)
   const creator = task.creator_profile
@@ -250,6 +251,30 @@ export default function TaskCard({
           </button>
         )}
       </div>
+
+      {helperActions.length > 0 && (
+        <div className={styles.helperActions}>
+          {helperActions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              className={
+                action.variant === 'primary'
+                  ? styles.helperPrimaryAction
+                  : action.variant === 'danger'
+                    ? styles.helperDangerAction
+                    : styles.helperSecondaryAction
+              }
+              onClick={action.onClick}
+              disabled={action.disabled}
+              aria-label={action.ariaLabel || action.label}
+              title={action.title || action.label}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
     </article>
   )
 }

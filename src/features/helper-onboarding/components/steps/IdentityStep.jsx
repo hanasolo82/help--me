@@ -3,9 +3,10 @@ import StepFrame from './StepFrame'
 import styles from './IdentityStep.module.css'
 import { startStripeConnectOnboarding } from '../../services/stripeConnectService'
 
-export default function IdentityStep({ onNext, onBack }) {
+export default function IdentityStep({ onNext, onBack, profile }) {
   const [loadingState, setLoadingState] = useState('idle')
   const [error, setError] = useState('')
+  const stripeCompleted = Boolean(profile?.stripe_onboarding_completed)
 
   async function handleStartStripe() {
     setLoadingState('loading')
@@ -35,8 +36,13 @@ export default function IdentityStep({ onNext, onBack }) {
           <button type="button" className="secondary-action" onClick={onBack}>
             Atrás
           </button>
-          <button type="button" className="secondary-action" onClick={onNext}>
-            Continuar
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={stripeCompleted ? onNext : handleStartStripe}
+            disabled={loadingState === 'loading'}
+          >
+            {stripeCompleted ? 'Continuar' : 'Continuar con Stripe'}
           </button>
         </>
       }
@@ -47,7 +53,7 @@ export default function IdentityStep({ onNext, onBack }) {
             <p className={styles.cardKicker}>Revisión previa del perfil</p>
             <h3 className={styles.cardTitle}>Tu perfil, listo para inspirar confianza</h3>
           </div>
-          <span className={styles.badge}>3 puntos clave</span>
+          <span className={styles.badge}>{stripeCompleted ? 'Stripe conectado correctamente' : '3 puntos clave'}</span>
         </div>
 
         <p className={styles.cardLead}>
@@ -91,7 +97,7 @@ export default function IdentityStep({ onNext, onBack }) {
             <p className={styles.stripeKicker}>Verificación con Stripe</p>
             <h3 className={styles.stripeTitle}>Preparación segura para ayudar</h3>
           </div>
-          <span className={styles.stripeBadge}>Stripe Connect</span>
+          <span className={styles.stripeBadge}>{stripeCompleted ? 'Completado' : 'Stripe Connect'}</span>
         </div>
 
         <p className={styles.stripeText}>
@@ -103,10 +109,14 @@ export default function IdentityStep({ onNext, onBack }) {
           <button
             type="button"
             className={styles.stripePrimary}
-            onClick={handleStartStripe}
+            onClick={stripeCompleted ? onNext : handleStartStripe}
             disabled={loadingState === 'loading'}
           >
-            {loadingState === 'loading' ? 'Preparando verificación...' : 'Continuar con Stripe'}
+            {loadingState === 'loading'
+              ? 'Preparando verificación...'
+              : stripeCompleted
+                ? 'Continuar'
+                : 'Continuar con Stripe'}
           </button>
         </div>
 

@@ -4,6 +4,7 @@ import {
   constructStripeEvent,
   createConnectAccountLink,
   createOrGetConnectAccount,
+  syncStripeAccountByAccountId,
   syncStripeAccountFromWebhook,
 } from '../services/stripe.service.js'
 import { supabaseAdmin } from '../services/supabase.service.js'
@@ -78,6 +79,41 @@ router.post(
 
     return res.status(200).json({
       url,
+    })
+  }),
+)
+
+router.get(
+  '/connect/account-status',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id, stripe_account_id')
+      .eq('id', req.user.id)
+      .maybeSingle()
+
+    if (error) {
+      throw error
+    }
+
+    if (!profile?.stripe_account_id) {
+      return res.status(200).json({
+        connected: false,
+        stripe_onboarding_completed: false,
+        stripe_charges_enabled: false,
+        stripe_payouts_enabled: false,
+      })
+    }
+
+    const syncedProfile = await syncStripeAccountByAccountId(profile.stripe_account_id)
+
+    return res.status(200).json({
+      connected: Boolean(syncedProfile),
+      stripe_onboarding_completed: Boolean(syncedProfile?.stripe_onboarding_completed),
+      stripe_charges_enabled: Boolean(syncedProfile?.stripe_charges_enabled),
+      stripe_payouts_enabled: Boolean(syncedProfile?.stripe_payouts_enabled),
+      last_stripe_sync_at: syncedProfile?.last_stripe_sync_at || null,
     })
   }),
 )

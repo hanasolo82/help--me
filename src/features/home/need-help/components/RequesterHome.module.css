@@ -18,9 +18,9 @@
 .locationHint {
   display: grid;
   gap: 0.45rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.66);
+  background: var(--color-surface);
   padding: 0.95rem;
   box-shadow: var(--shadow-sm);
 }
@@ -28,9 +28,9 @@
 .publishNotice {
   display: grid;
   gap: 0.25rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: rgba(41, 171, 255, 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
   color: var(--color-text);
   padding: 0.95rem;
   box-shadow: var(--shadow-sm);
