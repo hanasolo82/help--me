@@ -30,8 +30,13 @@
 }
 
 .taskMarker {
+  position: relative;
   background: rgba(41, 171, 255, 0.12);
   color: var(--color-text);
+  overflow: visible;
+  box-shadow:
+    0 10px 22px rgba(41, 171, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .userMarker span,
@@ -40,6 +45,34 @@
   place-items: center;
   width: 100%;
   height: 100%;
+}
+
+.taskMarker::after {
+  content: '';
+  position: absolute;
+  inset: -0.28rem;
+  z-index: -1;
+  border: 1px solid rgba(41, 171, 255, 0.34);
+  border-radius: calc(var(--radius-md) + 0.28rem);
+  opacity: 0.55;
+  animation: taskMarkerPulse 2.4s ease-out infinite;
+}
+
+@keyframes taskMarkerPulse {
+  0% {
+    opacity: 0.52;
+    transform: scale(0.86);
+  }
+
+  62% {
+    opacity: 0;
+    transform: scale(1.32);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.32);
+  }
 }
 
 /* Variante con imagen: solo la foto, sin caja ni sombra ni fondo. */

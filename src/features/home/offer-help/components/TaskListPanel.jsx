@@ -43,6 +43,10 @@ export default function TaskListPanel({
   error = '',
   locationLabel = 'Tu zona',
   onExpandRadius,
+  emptyTitle = 'No hay solicitudes disponibles cerca de ti.',
+  emptyDescription = 'Prueba a ampliar el radio o revisar tus habilidades.',
+  emptyActionLabel = onExpandRadius ? 'Ampliar radio' : null,
+  emptyTone = 'warning',
 }) {
   return (
     <aside className={styles.panelShell}>
@@ -58,11 +62,11 @@ export default function TaskListPanel({
       <div className={styles.listScroll}>
         {!loading && !error && visibleTasks.length === 0 ? (
           <HomeEmptyState
-            title="No hay solicitudes disponibles cerca de ti."
-            description="Prueba a ampliar el radio o revisar tus habilidades."
-            actionLabel={onExpandRadius ? 'Ampliar radio' : null}
+            title={emptyTitle}
+            description={emptyDescription}
+            actionLabel={emptyActionLabel}
             onAction={onExpandRadius}
-            tone="warning"
+            tone={emptyTone}
           />
         ) : null}
 

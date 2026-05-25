@@ -15,6 +15,15 @@ const PARTICLES = [
   { top: '6%', left: '50%', size: 9, duration: 19, delay: -6, opacity: 0.16 },
 ]
 
+const PARTICLE_STYLES = PARTICLES.map((particle) => ({
+  '--particle-top': particle.top,
+  '--particle-left': particle.left,
+  '--particle-size': `${particle.size}px`,
+  '--particle-duration': `${particle.duration}s`,
+  '--particle-delay': `${particle.delay}s`,
+  '--particle-opacity': particle.opacity,
+}))
+
 export function Particles({ className = '' }) {
   const resolvedClassName = [styles.particles, className].filter(Boolean).join(' ')
 
@@ -24,14 +33,7 @@ export function Particles({ className = '' }) {
         <span
           key={`${particle.top}-${particle.left}-${index}`}
           className={styles.particle}
-          style={{
-            '--particle-top': particle.top,
-            '--particle-left': particle.left,
-            '--particle-size': `${particle.size}px`,
-            '--particle-duration': `${particle.duration}s`,
-            '--particle-delay': `${particle.delay}s`,
-            '--particle-opacity': particle.opacity,
-          }}
+          style={PARTICLE_STYLES[index]}
         />
       ))}
     </div>

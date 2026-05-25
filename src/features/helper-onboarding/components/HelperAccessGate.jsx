@@ -1,4 +1,4 @@
-import HelperHome from './HelperHome'
+import HelperHome from '../../helper-home/components/HelperHome'
 import BlockedHelperHome from './BlockedHelperHome'
 
 export default function HelperAccessGate({ profile, helperHomeProps, onStartHelperOnboarding, onNeedHelp }) {

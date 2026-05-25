@@ -245,7 +245,6 @@ export default function HomeContainer() {
         themePreference={themePreference}
         onThemeChange={handleThemeChange}
         isHelperActive={Boolean(profile?.helper_status === 'active')}
-        helperModeLabel={isHelperMode ? 'Necesito ayuda' : 'Modo ayudante'}
         category={category}
         onCategoryChange={setCategory}
         radius={radius}
