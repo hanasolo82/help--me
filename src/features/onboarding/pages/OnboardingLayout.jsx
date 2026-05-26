@@ -2,9 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
 import { getDetectedProvince, getProvinceForMunicipality } from '../utils/locationCatalog'
+import {
+  clearHelperOnboardingProgress,
+  getHelperOnboardingStorageKey,
+  readHelperOnboardingProgress,
+  writeHelperOnboardingProgress,
+} from '../../helper-onboarding/services/helperOnboardingProgress'
 import styles from '../styles/onboarding.module.css'
-
-const HELPER_ONBOARDING_PROGRESS_KEY = 'helpme-helper-onboarding-progress-v1'
 
 const STEPS = [
   { key: 'basics', path: '/onboarding', label: 'Perfil' },
@@ -19,41 +23,9 @@ function getStepIndex(pathname) {
   return index === -1 ? 0 : index
 }
 
-function readHelperOnboardingProgress(storageKey) {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  try {
-    const raw = window.localStorage.getItem(storageKey)
-    const parsed = raw ? JSON.parse(raw) : null
-
-    return parsed && typeof parsed === 'object' ? parsed : null
-  } catch {
-    return null
-  }
-}
-
-function writeHelperOnboardingProgress(storageKey, progress) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.setItem(storageKey, JSON.stringify(progress))
-}
-
-function clearHelperOnboardingProgress(storageKey) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.removeItem(storageKey)
-}
-
 function buildInitialDraft(user, profile, routeState, savedProgress) {
-  const defaultMode = routeState?.mode === 'help' ? 'help' : 'need'
   const savedDraft = savedProgress?.draft && typeof savedProgress.draft === 'object' ? savedProgress.draft : {}
-  const mode = routeState?.mode === 'help' ? 'help' : defaultMode
+  const mode = routeState?.mode === 'help' || savedDraft.mode === 'help' ? 'help' : 'need'
   const fullNameSource = profile?.display_name || profile?.full_name || user?.user_metadata?.full_name || savedDraft.fullName || ''
   const fullNameParts = fullNameSource.trim().replace(/\s+/g, ' ').split(' ')
   const municipality =
@@ -118,10 +90,10 @@ export default function OnboardingLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const storageKey = useMemo(
-    () => `${HELPER_ONBOARDING_PROGRESS_KEY}:${user?.id || 'anonymous'}`,
+    () => getHelperOnboardingStorageKey(user?.id),
     [user?.id],
   )
-  const savedProgress = useMemo(() => readHelperOnboardingProgress(storageKey), [storageKey])
+  const savedProgress = useMemo(() => readHelperOnboardingProgress(user?.id), [user?.id])
   const [draft, setDraft] = useState(() => buildInitialDraft(user, profile, location.state, savedProgress))
   const returnTo = location.state?.returnTo || savedProgress?.returnTo || '/home'
   const isHelperFlow = draft.mode === 'help'
@@ -164,12 +136,12 @@ export default function OnboardingLayout() {
         navigate(previousStep.path)
       },
       finish() {
-        clearHelperOnboardingProgress(storageKey)
+        clearHelperOnboardingProgress(user?.id)
         refreshProfile().finally(() => navigate(returnTo, { replace: true }))
       },
       refreshProfile,
     }),
-    [activeSteps, draft, navigate, refreshProfile, returnTo, storageKey, stepIndex],
+    [activeSteps, draft, navigate, refreshProfile, returnTo, stepIndex, user?.id],
   )
 
   if (loading) {

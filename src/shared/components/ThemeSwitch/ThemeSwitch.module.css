@@ -5,27 +5,32 @@
   align-items: center;
   width: 4rem;
   height: 2.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
   color: var(--color-text);
   cursor: pointer;
   padding: 0.2rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
   transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-spring-soft);
 }
 
 .switch:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.switch:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--shadow-xs);
 }
 
 .switchChecked {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-strong));
 }
 
 .icon {
@@ -54,10 +59,10 @@
   width: 1.85rem;
   height: 1.85rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 85%, white);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-primary);
-  box-shadow: 0 0.35rem 0.9rem rgba(23, 140, 255, 0.22);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-primary);
+  transition: transform 0.22s var(--ease-spring-soft);
 }
 
 .switchChecked .thumb {

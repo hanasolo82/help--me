@@ -9,45 +9,8 @@
   position: relative;
   isolation: isolate;
   min-height: 100vh;
-  background-color: var(--bg);
+  background-color: transparent;
   color: var(--text);
-}
-
-.particlesLayer {
-  opacity: 0.7;
-}
-
-:global(html[data-theme='dark']) .particlesLayer {
-  opacity: 0.14;
-}
-
-.landing > *:not(.particlesLayer) {
-  position: relative;
-  z-index: 1;
-}
-
-.landing::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url('../../assets/icons/fondo-garabatos-garabatos.png');
-  background-repeat: repeat;
-  background-size: 680px auto;
-  background-position: 0 0;
-  filter: blur(0.8px);
-  animation: doodle-drift 180s linear infinite;
-}
-
-.landing::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%);
 }
 
 .dark {
@@ -84,21 +47,6 @@
   padding: 1rem clamp(1rem, 2vw, 2rem);
   background: var(--surface);
   backdrop-filter: blur(18px);
-}
-
-.navbar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.03;
-  background-image: url('../../assets/icons/fondo-garabatos-garabatos.png');
-  background-repeat: repeat;
-  background-size: 680px auto;
-  background-position: 0 0;
-  filter: blur(0.8px);
-  animation: doodle-drift 180s linear infinite;
 }
 
 .brand {
@@ -696,13 +644,4 @@
   }
 }
 
-@keyframes doodle-drift {
-  from {
-    background-position: 0 0;
-  }
-
-  to {
-    background-position: 1040px 0;
-  }
-}
 

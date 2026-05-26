@@ -7,7 +7,6 @@ import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { ShineBorder } from '@/components/ui/shine-border'
-import Particles from '@/components/ui/particles'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import {
   applyThemeToDocument,
@@ -163,7 +162,6 @@ export default function Landing() {
 
   return (
     <main className={themePreference === THEME_DARK ? `${styles.landing} ${styles.dark}` : styles.landing}>
-      <Particles className={styles.particlesLayer} />
       <header className={styles.navbar}>
         <a className={styles.brand} href="#inicio" aria-label="helpMe inicio">
           helpMe

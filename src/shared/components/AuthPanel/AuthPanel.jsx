@@ -27,7 +27,6 @@ const VIEW_COPY = Object.freeze({
   },
   register: {
     title: 'Crea tu cuenta',
-   
     submit: 'Crear cuenta',
   },
   login: {
@@ -44,14 +43,17 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   const [mode, setMode] = useState(initialRemembered ? 'login' : initialMode)
   const [email, setEmail] = useState(initialRemembered || '')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [status, setStatus] = useState(STATUS.idle)
   const [message, setMessage] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')
   const [captchaKey, setCaptchaKey] = useState(0)
   const emailInputRef = useRef(null)
   const passwordInputRef = useRef(null)
+  const confirmPasswordInputRef = useRef(null)
   const navigate = useNavigate()
 
   const hasRemembered = Boolean(rememberedEmail)
@@ -67,6 +69,9 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   }, [])
 
   useEffect(() => {
+    setConfirmPasswordError('')
+    setConfirmPassword('')
+
     if (hasRemembered) {
       passwordInputRef.current?.focus()
     } else {
@@ -79,9 +84,11 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
     setRememberedEmail('')
     setEmail('')
     setPassword('')
+    setConfirmPassword('')
     setMode('login')
     setMessage('')
     setStatus(STATUS.idle)
+    setConfirmPasswordError('')
   }
 
   async function handleSubmit(event) {
@@ -103,8 +110,17 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
       return
     }
 
+    if (isRegister && password !== confirmPassword) {
+      setStatus(STATUS.error)
+      setMessage('')
+      setConfirmPasswordError('Las contraseñas no coinciden.')
+      confirmPasswordInputRef.current?.focus()
+      return
+    }
+
     setStatus(STATUS.loading)
     setMessage('')
+    setConfirmPasswordError('')
 
     try {
       const authAction = isRegister ? signUpWithEmail : signInWithEmail
@@ -164,11 +180,27 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
     setEmailError(check.isValid ? '' : check.error)
   }
 
+  function handlePasswordChange(event) {
+    setPassword(event.target.value)
+    if (confirmPasswordError) {
+      setConfirmPasswordError('')
+    }
+  }
+
+  function handleConfirmPasswordChange(event) {
+    setConfirmPassword(event.target.value)
+    if (confirmPasswordError) {
+      setConfirmPasswordError('')
+    }
+  }
+
   const strength = isRegister ? estimatePasswordStrength(password) : null
 
   return (
     <section className="auth-panel">
-      <h1 id={titleId}>{copy.title}</h1>
+      <h1 id={titleId} className="auth-panel-title">
+        {copy.title}
+      </h1>
 
       {!hasRemembered && (
         <>
@@ -259,7 +291,9 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
               required
               minLength={isRegister ? 12 : 8}
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={handlePasswordChange}
+              aria-invalid={Boolean(confirmPasswordError)}
+              aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
               placeholder={isRegister ? 'Minimo 12 caracteres' : 'Tu contraseña'}
             />
             <button
@@ -285,6 +319,31 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
             <span className="strength-label">{isRegister && strength && password ? strength.label : ' '}</span>
           </div>
         </label>
+
+        {isRegister && (
+          <label className="field">
+            <span>Repite la contraseña</span>
+            <div className="password-field">
+              <input
+                ref={confirmPasswordInputRef}
+                autoComplete="new-password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={12}
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                aria-invalid={Boolean(confirmPasswordError)}
+                aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
+                placeholder="Repite la contraseña"
+              />
+            </div>
+            {confirmPasswordError && (
+              <span id="confirm-password-error" className="field-error" role="alert">
+                {confirmPasswordError}
+              </span>
+            )}
+          </label>
+        )}
 
         <p className={isRegister ? 'auth-aux auth-aux-placeholder' : 'auth-aux'}>
           <Link to="/forgot-password" tabIndex={isRegister ? -1 : 0} aria-hidden={isRegister}>

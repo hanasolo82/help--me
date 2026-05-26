@@ -1,14 +1,17 @@
-﻿.message {
+.message {
   display: grid;
   gap: 0.35rem;
-  padding: 0.75rem 0.9rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  padding: 0.85rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  box-shadow: var(--shadow-xs);
 }
 
 .outgoing {
   margin-left: auto;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
 }
 
 .incoming {
@@ -30,12 +33,32 @@
 }
 
 .actionLink {
-  border: 0;
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
   background: transparent;
-  color: var(--accent);
+  color: var(--color-primary);
   cursor: pointer;
   font: inherit;
   font-weight: 900;
+  border-radius: var(--radius-pill);
+  padding: 0.2rem 0.55rem;
+  transition:
+    transform var(--motion-fast) var(--ease-spring-soft),
+    box-shadow var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+
+.actionLink:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+}
+
+.actionLink:focus-visible,
+.errorAction:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--shadow-xs);
 }
 
 .content {
@@ -45,27 +68,41 @@
 }
 
 .mutedContent {
-  color: var(--muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .meta {
-  color: var(--accent);
+  color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 900;
 }
 
 .badge {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.78rem;
   font-weight: 900;
 }
 
 .errorAction {
-  border: 0;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 18%, var(--color-border));
   background: transparent;
-  color: var(--text);
+  color: #b42318;
   cursor: pointer;
   font: inherit;
   font-weight: 900;
+  border-radius: var(--radius-pill);
+  padding: 0.2rem 0.55rem;
+  transition:
+    transform var(--motion-fast) var(--ease-spring-soft),
+    box-shadow var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+
+.errorAction:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-danger) 22%, var(--color-border));
+  box-shadow: var(--shadow-xs);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface-strong));
 }
 

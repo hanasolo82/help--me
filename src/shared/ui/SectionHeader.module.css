@@ -1,10 +1,10 @@
-﻿.header {
+.header {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .eyebrow {
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -16,11 +16,10 @@
 }
 
 .lead {
-  color: color-mix(in srgb, var(--text) 84%, transparent);
+  color: var(--color-text-muted);
   line-height: 1.5;
 }
 
 .compact {
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
-

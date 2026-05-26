@@ -17,21 +17,6 @@ export default function LocationAutocomplete({ draft, setDraft }) {
   const [open, setOpen] = useState(false)
   const requestIdRef = useRef(0)
 
-  const selectedLocation = draft.placeId
-    ? {
-        placeId: draft.placeId,
-        country: draft.country || '',
-        countryCode: draft.countryCode || '',
-        region: draft.region || '',
-        province: draft.province || '',
-        city: draft.city || draft.municipality || '',
-        municipality: draft.municipality || draft.city || '',
-        formattedAddress: draft.formattedAddress || draft.displayLocation || '',
-        lat: draft.lat,
-        lng: draft.lng,
-      }
-    : null
-
   useEffect(() => {
     setQuery(draft.formattedAddress || draft.displayLocation || draft.municipality || draft.city || '')
   }, [draft.city, draft.displayLocation, draft.formattedAddress, draft.municipality])
@@ -91,6 +76,7 @@ export default function LocationAutocomplete({ draft, setDraft }) {
     setStatus('idle')
     setError('')
     setManualMode(false)
+    setOpen(false)
 
     setDraft((current) => ({
       ...current,
@@ -106,30 +92,6 @@ export default function LocationAutocomplete({ draft, setDraft }) {
       lng: location.lng,
       placeId: location.placeId,
       neighborhood: location.municipality || location.city || current.neighborhood || '',
-    }))
-  }
-
-  function clearSelection() {
-    setQuery('')
-    setResults([])
-    setStatus('idle')
-    setError('')
-    setOpen(false)
-
-    setDraft((current) => ({
-      ...current,
-      country: '',
-      countryCode: '',
-      region: '',
-      province: '',
-      city: '',
-      municipality: '',
-      formattedAddress: '',
-      displayLocation: '',
-      lat: null,
-      lng: null,
-      placeId: '',
-      neighborhood: '',
     }))
   }
 
@@ -165,40 +127,16 @@ export default function LocationAutocomplete({ draft, setDraft }) {
 
   return (
     <div className={styles.root}>
-      {selectedLocation ? (
-        <div className={styles.selectedCard}>
-          <strong>Ubicación seleccionada</strong>
-          <p className={styles.selectedMeta}>{selectedLocation.formattedAddress}</p>
-          <p className={styles.selectedMeta}>
-            {selectedLocation.municipality || 'Municipio no indicado'} · {selectedLocation.region || selectedLocation.province || 'Región no indicada'}
-          </p>
-          <div className={styles.helperRow}>
-            <button type="button" className={styles.manualButton} onClick={() => setManualMode(true)}>
-              Cambiar ubicación
-            </button>
-            <button type="button" className={styles.clearButton} onClick={clearSelection}>
-              Borrar selección
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {!selectedLocation || manualMode ? (
-        <label className="field">
-          <span>Ciudad, municipio o zona</span>
-          <input
-            value={query}
-            onChange={handleChange}
-            onFocus={() => setOpen(true)}
-            onBlur={handleBlur}
-            placeholder="Escribe una ciudad, municipio o zona"
-          />
-        </label>
-      ) : (
-        <p className={styles.manualHint}>
-          Puedes cambiar o borrar la ubicación seleccionada cuando quieras.
-        </p>
-      )}
+      <label className="field">
+        <span>Ciudad, municipio o zona</span>
+        <input
+          value={query}
+          onChange={handleChange}
+          onFocus={() => setOpen(true)}
+          onBlur={handleBlur}
+          placeholder="Escribe una ciudad, municipio o zona"
+        />
+      </label>
 
       <div className={styles.statusRow}>
         {status === 'loading' ? <p className={styles.statusText}>Buscando ubicaciones...</p> : null}
@@ -209,24 +147,26 @@ export default function LocationAutocomplete({ draft, setDraft }) {
       </div>
 
       {showResults ? (
-        <div className={styles.results}>
-          {results.map((location) => (
-            <button
-              key={location.placeId}
-              type="button"
-              className={styles.resultButton}
-              onClick={() => applySelection(location)}
-            >
-              <span className={styles.resultKind}>{location.kind === 'province' ? 'Provincia' : 'Municipio'}</span>
-              <strong className={styles.resultLabel}>{location.formattedAddress}</strong>
-              <span className={styles.resultSub}>
-                {location.city || location.municipality || 'Sin municipio'} · {location.region || location.province || location.country || 'Sin región'}
-              </span>
-            </button>
-          ))}
+        <section className={styles.resultsFrame}>
+          <div className={styles.resultsFrameContent}>
+            {results.map((location) => (
+              <button
+                key={location.placeId}
+                type="button"
+                className={styles.resultButton}
+                onClick={() => applySelection(location)}
+              >
+                <span className={styles.resultKind}>{location.kind === 'province' ? 'Provincia' : 'Municipio'}</span>
+                <strong className={styles.resultLabel}>{location.formattedAddress}</strong>
+                <span className={styles.resultSub}>
+                  {location.city || location.municipality || 'Sin municipio'} · {location.region || location.province || location.country || 'Sin región'}
+                </span>
+              </button>
+            ))}
 
-          {noResults ? <p className={styles.statusText}>No encontramos resultados</p> : null}
-        </div>
+            {noResults ? <p className={styles.statusText}>No encontramos resultados</p> : null}
+          </div>
+        </section>
       ) : null}
 
       <div className={styles.helperRow}>
@@ -236,7 +176,7 @@ export default function LocationAutocomplete({ draft, setDraft }) {
             className={styles.manualButton}
             onClick={() => setManualMode(true)}
           >
-            Escribir manualmente
+            No encuetro mi ubicación
           </button>
         ) : (
           <p className={styles.manualHint}>
@@ -249,7 +189,7 @@ export default function LocationAutocomplete({ draft, setDraft }) {
             className={styles.manualButton}
             onClick={() => setManualMode(false)}
           >
-            Volver a sugerencias
+            Ubicaciones sugeridas
           </button>
         ) : null}
       </div>
