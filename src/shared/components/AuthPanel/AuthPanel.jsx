@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { estimatePasswordStrength, validateEmail } from '../../../lib/security'
 import { clearRememberedEmail, readRememberedEmail } from '../../../lib/consent'
 import Turnstile from '../Turnstile'
+import BrandLogo from '../../ui/BrandLogo/BrandLogo'
 import googleIcon from '../../../assets/icons/goggle.svg'
 import {
   resendSignupConfirmation,
@@ -30,7 +31,7 @@ const VIEW_COPY = Object.freeze({
     submit: 'Crear cuenta',
   },
   login: {
-    title: 'Entra en helpMe',
+    title: 'Entra en tu cuenta',
     submit: 'Entrar',
   },
 })
@@ -69,9 +70,6 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   }, [])
 
   useEffect(() => {
-    setConfirmPasswordError('')
-    setConfirmPassword('')
-
     if (hasRemembered) {
       passwordInputRef.current?.focus()
     } else {
@@ -198,6 +196,10 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
 
   return (
     <section className="auth-panel">
+      <div className="auth-panel-brand" aria-hidden="true">
+        <BrandLogo size="lg" variant="auto" />
+      </div>
+
       <h1 id={titleId} className="auth-panel-title">
         {copy.title}
       </h1>

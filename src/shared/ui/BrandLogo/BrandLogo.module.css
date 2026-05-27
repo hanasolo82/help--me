@@ -1,0 +1,32 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.sm {
+  width: 5rem;
+}
+
+.md {
+  width: 6.5rem;
+}
+
+.lg {
+  width: 8.5rem;
+}
+
+.xl {
+  width: 10.5rem;
+}
