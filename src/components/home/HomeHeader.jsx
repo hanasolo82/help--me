@@ -57,7 +57,7 @@ export default function HomeHeader({
   const accountItems = [
     { label: 'Ajustes', action: onOpenSettings },
     { label: 'Notificaciones', action: onOpenNotifications },
-    { label: 'Privacidad', action: onOpenPrivacy },
+    { label: 'Mapa y ubicación', action: onOpenPrivacy },
     { label: 'Ayuda', action: onOpenHelp },
   ].filter((item) => Boolean(item.action))
 

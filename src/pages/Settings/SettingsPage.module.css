@@ -2,7 +2,7 @@
   min-height: 100vh;
   width: min(100%, 78rem);
   margin: 0 auto;
-  padding: 1.5rem 1rem 6.75rem;
+  padding: 1.75rem 1rem 6.75rem;
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--settings-accent) 16%, transparent), transparent 38%),
     radial-gradient(circle at 8% 18%, color-mix(in srgb, var(--highlight) 16%, transparent), transparent 30%),
@@ -21,7 +21,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.95rem;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.45rem;
 }
 
 .floatingActions {
@@ -57,9 +57,13 @@
 .progressCard,
 .stateCard,
 .card {
-  border: 1px solid var(--color-border);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface) 98%, white 2%),
+    color-mix(in srgb, var(--color-surface) 94%, var(--bg))
+  );
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
 }
@@ -89,7 +93,7 @@
 .progressTrack {
   width: 100%;
   height: 0.95rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
   border-radius: 999rem;
   background: rgba(255, 255, 255, 0.72);
   overflow: hidden;
@@ -132,20 +136,23 @@
   gap: 0.25rem;
   margin-bottom: 1rem;
   padding: 0.95rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface) 96%, white);
   font-weight: 700;
   line-height: 1.45;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
 .bannerSuccess {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));
 }
 
 .bannerError {
-  border-color: rgba(220, 38, 38, 0.18);
-  background: rgba(255, 255, 255, 0.72);
+  border-color: color-mix(in srgb, rgb(220 38 38) 20%, var(--color-border));
+  background: color-mix(in srgb, rgb(220 38 38) 8%, var(--color-surface));
   color: var(--color-text);
 }
 
@@ -382,18 +389,23 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.85rem 0.95rem;
-  border: 1px solid var(--color-border);
+  padding: 0.78rem 0.86rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 98%, white);
   font-weight: 700;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .checkField input {
   width: 1rem;
   height: 1rem;
   accent-color: var(--color-primary);
+}
+
+.checkField:has(input:disabled) {
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--bg));
 }
 
 .securityGrid {
@@ -474,10 +486,11 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
   border-radius: var(--radius-xl);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 96%, white);
   box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
 }
 
 .shellGrid {
@@ -491,7 +504,11 @@
   padding: 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 94%, var(--bg)));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface) 98%, white 2%),
+    color-mix(in srgb, var(--color-surface) 94%, var(--bg))
+  );
   box-shadow: var(--shadow-sm);
 }
 
@@ -546,7 +563,10 @@
 }
 
 .sidebarItemDisabled {
-  opacity: 0.65;
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--bg));
 }
 
 .sidebarItemLabel {
@@ -567,12 +587,16 @@
 
 .sectionCard {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--color-border);
+  gap: 1.1rem;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border: 1px solid color-mix(in srgb, var(--color-border) 64%, transparent);
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface) 99%, white 1%),
+    color-mix(in srgb, var(--color-surface) 96%, var(--bg))
+  );
+  box-shadow: 0 18px 55px color-mix(in srgb, var(--text) 7%, transparent);
 }
 
 .sectionHeaderRow {
@@ -584,6 +608,311 @@
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 900;
+}
+
+.profileLayout {
+  display: grid;
+  gap: 1rem;
+}
+
+.profileForm {
+  display: grid;
+  gap: 1rem;
+}
+
+.publicPreview {
+  display: grid;
+  gap: 0.9rem;
+  align-self: start;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--settings-accent) 12%, transparent), transparent 36%),
+    color-mix(in srgb, var(--color-surface) 96%, white);
+  box-shadow: 0 16px 42px color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.publicPreviewTopline,
+.publicPreviewIdentity,
+.featureHero,
+.premiumRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.publicPreviewLabel,
+.panelKicker {
+  color: var(--color-primary);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.publicPreviewAvatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 3.35rem;
+  height: 3.35rem;
+  overflow: hidden;
+  border-radius: 999rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-primary);
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 58%, transparent);
+}
+
+.publicPreviewAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.publicPreviewIdentity {
+  justify-content: flex-start;
+}
+
+.publicPreviewIdentity p,
+.publicPreviewIdentity span {
+  line-height: 1.35;
+}
+
+.publicPreviewIdentity p {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+.publicPreviewIdentity span {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.verifiedBadge {
+  display: inline-grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999rem;
+  background: var(--color-primary);
+  color: #fff !important;
+  font-size: 0.72rem !important;
+  font-weight: 900;
+}
+
+.publicPreview blockquote {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-text) 88%, transparent);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.statusAvailable,
+.statusUnavailable,
+.readyBadge,
+.lockedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  border-radius: 999rem;
+  padding: 0.35rem 0.62rem;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.statusAvailable,
+.readyBadge {
+  background: color-mix(in srgb, #16a34a 12%, var(--color-surface));
+  color: color-mix(in srgb, #15803d 82%, var(--color-text));
+}
+
+.statusUnavailable,
+.lockedBadge {
+  background: color-mix(in srgb, var(--settings-accent) 10%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-primary) 76%, var(--color-text));
+}
+
+.statusAvailable::before,
+.statusUnavailable::before {
+  content: '';
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999rem;
+  background: currentColor;
+}
+
+.featureHero {
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--settings-accent) 12%, transparent), transparent 42%),
+    color-mix(in srgb, var(--color-surface) 95%, var(--bg));
+}
+
+.featureHero h3,
+.premiumPanel h3,
+.securityNote h3 {
+  margin-top: 0.45rem;
+  font-size: 1.02rem;
+  font-weight: 900;
+  line-height: 1.22;
+}
+
+.featureHero p,
+.premiumRow p,
+.premiumPanel p,
+.paymentTile p,
+.zonePreview p {
+  margin-top: 0.32rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.settingsStack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.premiumRow,
+.premiumPanel,
+.zonePreview,
+.paymentTile,
+.notificationGroup {
+  border: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface) 97%, white);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.premiumRow {
+  padding: 0.85rem 0.95rem;
+}
+
+.premiumRow strong {
+  display: block;
+  font-weight: 900;
+}
+
+.premiumPanel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem;
+}
+
+.disabledPill {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999rem;
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-primary) 78%, var(--color-text));
+  cursor: not-allowed;
+  font-weight: 900;
+  padding: 0.62rem 0.86rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.skillPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.skillPills span {
+  border-radius: 999rem;
+  background: color-mix(in srgb, var(--settings-accent) 10%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0.45rem 0.68rem;
+}
+
+.zonePreview {
+  display: grid;
+  gap: 1rem;
+  padding: 0.95rem;
+}
+
+.zonePreview strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1rem;
+}
+
+.durationGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.durationGrid button {
+  border: 0;
+  border-radius: 999rem;
+  background: color-mix(in srgb, var(--color-surface) 82%, var(--bg));
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  font-weight: 800;
+  padding: 0.62rem 0.5rem;
+}
+
+.notificationGroups {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.notificationGroup {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem;
+}
+
+.paymentGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.paymentTile {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem;
+}
+
+.paymentTile span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.paymentTile strong {
+  font-size: 1rem;
+}
+
+.dangerNote {
+  grid-column: 1 / -1;
+  border-color: color-mix(in srgb, rgb(220 38 38) 18%, var(--color-border));
+  background: color-mix(in srgb, rgb(220 38 38) 5%, var(--color-surface));
+}
+
+@media (min-width: 760px) {
+  .profileLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem);
+    align-items: start;
+  }
 }
 
 .sectionAction {
@@ -667,6 +996,23 @@
   .editableRow,
   .topBar {
     flex-direction: column;
+  }
+
+  .featureHero,
+  .premiumRow,
+  .premiumPanel,
+  .publicPreviewTopline {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .paymentGrid,
+  .durationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .disabledPill {
+    width: fit-content;
   }
 
   .sectionAction,

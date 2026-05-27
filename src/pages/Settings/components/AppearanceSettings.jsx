@@ -9,12 +9,22 @@ export default function AppearanceSettings() {
     <SettingsCard
       id="apariencia"
       eyebrow="Apariencia"
-      title="Look & feel"
-      description="Ajusta el tema visual que se aplica a toda tu sesion."
+      title="Apariencia"
+      description="Adapta HelpMe a tu entorno de trabajo."
     >
       <div className={styles.grid}>
+        <div className={`${styles.premiumRow} ${styles.spanTwo}`}>
+          <div>
+            <strong>Usar apariencia del sistema</strong>
+            <p>HelpMe seguirá automáticamente la configuración visual de tu dispositivo.</p>
+          </div>
+          <button type="button" className={styles.disabledPill} disabled>
+            Preparado
+          </button>
+        </div>
+
         <div className={`${styles.field} ${styles.segmentedField}`}>
-          <span>Tema</span>
+          <span>Selector manual</span>
           <div className={styles.segmentedControl} role="radiogroup" aria-label="Tema de la app">
             <button
               type="button"
@@ -22,7 +32,7 @@ export default function AppearanceSettings() {
               onClick={() => setField('theme', 'light')}
               aria-pressed={form.theme === 'light'}
             >
-              Light
+              Claro
             </button>
             <button
               type="button"
@@ -30,15 +40,15 @@ export default function AppearanceSettings() {
               onClick={() => setField('theme', 'dark')}
               aria-pressed={form.theme === 'dark'}
             >
-              Dark
+              Oscuro
             </button>
           </div>
         </div>
 
         <div className={`${styles.field} ${styles.spanTwo}`}>
-          <span>Color principal</span>
+          <span>Identidad visual</span>
           <p className={styles.helperText}>
-            El color principal de la app se mantiene fijo para evitar conflictos visuales en la interfaz.
+            El color principal se mantiene fijo para conservar una experiencia reconocible y calmada.
           </p>
         </div>
       </div>

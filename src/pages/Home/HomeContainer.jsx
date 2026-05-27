@@ -157,11 +157,11 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenNotifications = useCallback(() => {
-    navigate('/settings#notifications')
+    navigate('/settings#notificaciones')
   }, [navigate])
 
   const handleOpenPrivacy = useCallback(() => {
-    navigate('/settings#privacidad')
+    navigate('/settings#mapa-ubicacion')
   }, [navigate])
 
   const handleOpenHelp = useCallback(() => {

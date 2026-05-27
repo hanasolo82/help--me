@@ -19,15 +19,15 @@ export default function MapSettings() {
 
   return (
     <SettingsCard
-      id="privacidad"
+      id="mapa-ubicacion"
       eyebrow="Mapa"
-      title="Visibilidad y alcance"
-      description="Elige tu avatar del mapa entre las opciones disponibles y configura tu alcance."
+      title="Mapa y ubicación"
+      description="Define cómo se carga el mapa y cómo se muestra tu ubicación."
     >
       <div className={styles.grid}>
         <div className={styles.spanTwo}>
           <div className={styles.field}>
-            <span>Avatar del mapa</span>
+            <span>Tu avatar en el mapa</span>
             <div className={styles.mapAvatarGrid} role="radiogroup" aria-label="Avatar del mapa">
               {slots.map((slot) => {
                 const isSelected = !slot.placeholder && slot.id === selectedId
@@ -69,7 +69,7 @@ export default function MapSettings() {
         </div>
 
         <label className={styles.field}>
-          <span>Radio de búsqueda en km</span>
+          <span>Preferencia inicial de búsqueda</span>
           <input
             type="number"
             min="1"
@@ -78,19 +78,8 @@ export default function MapSettings() {
             value={form.searchRadiusKm}
             onChange={(event) => setField('searchRadiusKm', event.target.value)}
           />
+          <p className={styles.helperText}>Distancia actual en kilómetros. La opción sin límite se activará cuando esté lista.</p>
         </label>
-
-        <div className={styles.field}>
-          <span>Disponible para ayudar</span>
-          <button
-            type="button"
-            className={form.availabilityEnabled ? `${styles.switch} ${styles.switchOn}` : styles.switch}
-            onClick={() => setField('availabilityEnabled', !form.availabilityEnabled)}
-            aria-pressed={form.availabilityEnabled}
-          >
-            <span>{form.availabilityEnabled ? 'Sí' : 'No'}</span>
-          </button>
-        </div>
 
         <div className={styles.field}>
           <span>Mostrar ubicación aproximada</span>
@@ -101,6 +90,17 @@ export default function MapSettings() {
             aria-pressed={form.showApproxLocation}
           >
             <span>{form.showApproxLocation ? 'Sí' : 'No'}</span>
+          </button>
+          <p className={styles.helperText}>Mostraremos solo tu zona general, nunca una ubicación exacta.</p>
+        </div>
+
+        <div className={`${styles.premiumRow} ${styles.spanTwo}`}>
+          <div>
+            <strong>Actualizar ubicación automáticamente</strong>
+            <p>Permite que HelpMe mantenga tu ubicación al día cuando cambies de zona.</p>
+          </div>
+          <button type="button" className={styles.disabledPill} disabled>
+            Pendiente
           </button>
         </div>
       </div>
