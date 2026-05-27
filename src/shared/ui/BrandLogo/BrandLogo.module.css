@@ -1,32 +1,47 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   flex: 0 0 auto;
   max-width: 100%;
   line-height: 0;
 }
 
-.image {
+.logoLeft {
+  justify-content: flex-start;
+}
+
+.logoCenter {
+  justify-content: center;
+}
+
+.logo > .image {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: auto;
   object-fit: contain;
+}
+
+.imageLeft {
   object-position: left center;
 }
 
+.imageCenter {
+  object-position: center center;
+}
+
 .sm {
-  width: 5rem;
+  width: clamp(5.75rem, 10vw, 9rem);
 }
 
 .md {
-  width: 6.5rem;
+  width: clamp(7rem, 10vw, 8.5rem);
 }
 
 .lg {
-  width: 8.5rem;
+  width: clamp(9rem, 13vw, 11rem);
 }
 
 .xl {
-  width: 10.5rem;
+  width: clamp(120rem, 18vw, 14rem);
 }

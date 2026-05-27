@@ -258,7 +258,7 @@ export default function Landing() {
 
       <section id="inicio" className={styles.hero}>
         <div className={styles.heroCopy}>
-          <BrandLogo size="xl" variant="auto" className={styles.heroBrandLogo} />
+          <BrandLogo size="lg" variant="auto" className={styles.heroBrandLogo} />
           <p className={styles.kicker}>Ayuda cercana</p>
           <h1>La ayuda que necesitas, cerca de ti</h1>
           <p className={styles.heroLead}>
@@ -293,7 +293,7 @@ export default function Landing() {
             />
           ) : (
             <div className={styles.defaultImage} aria-label="Imagen por defecto de helpMe">
-              <BrandLogo size="lg" variant="auto" className={styles.fallbackLogo} />
+              <BrandLogo size="xl" variant="auto" align="center" className={styles.fallbackLogo} />
               <strong>{currentSlide.title}</strong>
               <span>{currentSlide.text}</span>
             </div>

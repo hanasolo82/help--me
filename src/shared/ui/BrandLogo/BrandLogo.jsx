@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import blackLogo from '../../../assets/icons/helpme_logo_black.png'
-import whiteLogo from '../../../assets/icons/helpme_logo_white.png'
+import whiteLogo from '../../../assets/icons/helme_logo_white.png'
 import styles from './BrandLogo.module.css'
 
 const SIZE_CLASSES = {
@@ -8,6 +8,16 @@ const SIZE_CLASSES = {
   md: styles.md,
   lg: styles.lg,
   xl: styles.xl,
+}
+
+const ALIGN_CLASSES = {
+  left: styles.logoLeft,
+  center: styles.logoCenter,
+}
+
+const IMAGE_ALIGN_CLASSES = {
+  left: styles.imageLeft,
+  center: styles.imageCenter,
 }
 
 function resolveVariant(variant) {
@@ -36,7 +46,7 @@ function subscribeToThemeChanges(callback) {
   return () => observer.disconnect()
 }
 
-export default function BrandLogo({ variant = 'auto', size = 'md', className = '' }) {
+export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left', className = '' }) {
   const resolvedVariant = useSyncExternalStore(
     subscribeToThemeChanges,
     () => resolveVariant(variant),
@@ -44,13 +54,21 @@ export default function BrandLogo({ variant = 'auto', size = 'md', className = '
   )
 
   const logoSrc = resolvedVariant === 'dark' ? whiteLogo : blackLogo
-  const rootClassName = [styles.logo, SIZE_CLASSES[size] ?? SIZE_CLASSES.md, className]
+  const rootClassName = [
+    styles.logo,
+    ALIGN_CLASSES[align] ?? ALIGN_CLASSES.left,
+    SIZE_CLASSES[size] ?? SIZE_CLASSES.md,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const imageClassName = [styles.image, IMAGE_ALIGN_CLASSES[align] ?? IMAGE_ALIGN_CLASSES.left]
     .filter(Boolean)
     .join(' ')
 
   return (
     <span className={rootClassName} data-variant={resolvedVariant}>
-      <img className={styles.image} src={logoSrc} alt="helpMe" decoding="async" />
+      <img className={imageClassName} src={logoSrc} alt="helpMe" decoding="async" />
     </span>
   )
 }
