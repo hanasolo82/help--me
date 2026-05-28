@@ -1,16 +1,13 @@
-import { MAP_AVATAR_OPTIONS, MAP_AVATAR_SLOTS } from '../../../assets/map-avatars'
+import { MAP_AVATAR_OPTIONS } from '../../../assets/map-avatars'
 import styles from '../SettingsPage.module.css'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
 
-// Rellena la cuadricula hasta MAP_AVATAR_SLOTS aunque aun no esten todas las imagenes.
 function buildSlotList() {
-  const slots = [...MAP_AVATAR_OPTIONS]
-  while (slots.length < MAP_AVATAR_SLOTS) {
-    slots.push({ id: `placeholder-${slots.length + 1}`, url: null, placeholder: true })
-  }
-  return slots
+  return MAP_AVATAR_OPTIONS.filter((slot) => Boolean(slot.url))
 }
+
+const RADIUS_OPTIONS = ['5', '10', '20', '50']
 
 export default function MapSettings() {
   const { form, setField } = useSettings()
@@ -34,7 +31,6 @@ export default function MapSettings() {
                 const className = [
                   styles.mapAvatarOption,
                   isSelected ? styles.mapAvatarOptionActive : '',
-                  slot.placeholder ? styles.mapAvatarOptionPlaceholder : '',
                 ]
                   .filter(Boolean)
                   .join(' ')
@@ -44,14 +40,11 @@ export default function MapSettings() {
                     key={slot.id}
                     type="button"
                     className={className}
-                    onClick={() => !slot.placeholder && setField('mapAvatarUrl', slot.id)}
+                    onClick={() => setField('mapAvatarUrl', slot.id)}
                     aria-pressed={isSelected}
-                    disabled={slot.placeholder}
-                    title={slot.placeholder ? 'Pendiente' : slot.label}
+                    title={slot.label}
                   >
-                    {slot.url
-                      ? <img src={slot.url} alt={`Avatar ${slot.label}`} />
-                      : <span aria-hidden="true">·</span>}
+                    <img src={slot.url} alt={`Avatar ${slot.label}`} />
                   </button>
                 )
               })}
@@ -68,18 +61,22 @@ export default function MapSettings() {
           </div>
         </div>
 
-        <label className={styles.field}>
+        <div className={styles.field}>
           <span>Preferencia inicial de búsqueda</span>
-          <input
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-            value={form.searchRadiusKm}
-            onChange={(event) => setField('searchRadiusKm', event.target.value)}
-          />
-          <p className={styles.helperText}>Distancia actual en kilómetros. La opción sin límite se activará cuando esté lista.</p>
-        </label>
+          <div className={styles.segmentedControlWide} role="radiogroup" aria-label="Preferencia inicial de búsqueda">
+            {RADIUS_OPTIONS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={form.searchRadiusKm === value ? styles.segmentedActive : styles.segmentedButton}
+                onClick={() => setField('searchRadiusKm', value)}
+                aria-pressed={form.searchRadiusKm === value}
+              >
+                {value} km
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className={styles.field}>
           <span>Mostrar ubicación aproximada</span>
@@ -94,15 +91,6 @@ export default function MapSettings() {
           <p className={styles.helperText}>Mostraremos solo tu zona general, nunca una ubicación exacta.</p>
         </div>
 
-        <div className={`${styles.premiumRow} ${styles.spanTwo}`}>
-          <div>
-            <strong>Actualizar ubicación automáticamente</strong>
-            <p>Permite que HelpMe mantenga tu ubicación al día cuando cambies de zona.</p>
-          </div>
-          <button type="button" className={styles.disabledPill} disabled>
-            Pendiente
-          </button>
-        </div>
       </div>
     </SettingsCard>
   )

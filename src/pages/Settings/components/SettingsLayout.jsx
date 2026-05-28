@@ -5,11 +5,8 @@ export default function SettingsLayout({ items = [], onBack, children, busy = fa
   return (
     <div className={styles.shell}>
       <div className={styles.topBar}>
-        <button type="button" className="secondary-action" onClick={onBack}>
+        <button type="button" className="secondary-action" onClick={onBack} disabled={busy}>
           Volver
-        </button>
-        <button type="submit" className="primary-action" form="settings-form" disabled={busy}>
-          {busy ? 'Guardando...' : 'Listo'}
         </button>
       </div>
 

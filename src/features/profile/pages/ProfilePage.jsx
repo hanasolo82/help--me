@@ -111,7 +111,7 @@ export default function ProfilePage() {
         activeSkillId={activeSkillId}
         onSkillChange={setActiveSkillId}
         isOwnProfile={isOwnProfile}
-        onEditProfile={() => navigate('/settings#datos-personales')}
+        onEditProfile={() => navigate('/settings#perfil')}
         onBack={() => navigate(-1)}
         onContact={handleContact}
         onInviteToTask={handleInviteToTask}

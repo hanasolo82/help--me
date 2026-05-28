@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { sanitizeText } from '../../lib/security'
-import { signOut } from '../../services/authService'
 import { ensureCurrentProfile, updateCurrentProfile } from '../../services/profilesService'
 import { SettingsProvider } from './components/SettingsContext'
 import SettingsLayout from './components/SettingsLayout'
 import ProfileSettings from './components/ProfileSettings'
-import HelperModeSettings from './components/HelperModeSettings'
 import ActivityZoneSettings from './components/ActivityZoneSettings'
 import PaymentsSettings from './components/PaymentsSettings'
 import AppearanceSettings from './components/AppearanceSettings'
@@ -25,6 +23,7 @@ const DEFAULT_FORM = {
   theme: 'light',
   searchRadiusKm: '10',
   showApproxLocation: true,
+  availabilityEnabled: true,
   notifyNearbyTasks: true,
   notifyMessages: true,
   notifyPayments: true,
@@ -40,10 +39,28 @@ function buildFormFromProfile(profile) {
     theme: profile?.theme === 'dark' ? 'dark' : 'light',
     searchRadiusKm: String(profile?.search_radius_km ?? 10),
     showApproxLocation: profile?.show_approx_location ?? true,
+    availabilityEnabled: profile?.availability_enabled ?? true,
     notifyNearbyTasks: profile?.notify_nearby_tasks ?? true,
     notifyMessages: profile?.notify_messages ?? true,
     notifyPayments: profile?.notify_payments ?? true,
   }
+}
+
+function buildFormSnapshotKey(form) {
+  return JSON.stringify({
+    displayName: sanitizeText(form?.displayName, 80),
+    username: sanitizeText(form?.username, 30).toLowerCase(),
+    bio: sanitizeText(form?.bio, 160),
+    theme: form?.theme === 'dark' ? 'dark' : 'light',
+    searchRadiusKm: String(form?.searchRadiusKm ?? ''),
+    showApproxLocation: Boolean(form?.showApproxLocation),
+    availabilityEnabled: Boolean(form?.availabilityEnabled),
+    notifyNearbyTasks: Boolean(form?.notifyNearbyTasks),
+    notifyMessages: Boolean(form?.notifyMessages),
+    notifyPayments: Boolean(form?.notifyPayments),
+    mapAvatarUrl: sanitizeText(form?.mapAvatarUrl, 500),
+    hasAvatarFile: Boolean(form?.avatarFile),
+  })
 }
 
 function useObjectUrl(file) {
@@ -58,29 +75,50 @@ function useObjectUrl(file) {
   return url
 }
 
-function calculateProfileCompletion(profile, form) {
-  const hasDisplayName = Boolean(sanitizeText(form.displayName || profile?.display_name || profile?.full_name, 80))
-  const hasBio = Boolean(sanitizeText(form.bio || profile?.bio, 160))
-  const hasAvatar = Boolean(form.avatarFile || profile?.avatar_url)
-
-  return Math.round(([hasDisplayName, hasBio, hasAvatar].filter(Boolean).length / 3) * 100)
-}
-
 export default function SettingsPage() {
   const { profile: authProfile, refreshProfile, user } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(authProfile)
   const [form, setForm] = useState(() => buildFormFromProfile(authProfile))
+  const [savedSnapshotKey, setSavedSnapshotKey] = useState(() => buildFormSnapshotKey(buildFormFromProfile(authProfile)))
   const [bootStatus, setBootStatus] = useState('loading')
   const [bootError, setBootError] = useState('')
   const [saveState, setSaveState] = useState('idle')
   const [feedback, setFeedback] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const navigateTimerRef = useRef(null)
+  const feedbackTimerRef = useRef(null)
 
   const avatarPreview = useObjectUrl(form.avatarFile)
-  const profileCompletion = calculateProfileCompletion(profile, form)
   const authProfileId = authProfile?.id || ''
   const isDarkTheme = form.theme === 'dark'
+  const currentSnapshotKey = buildFormSnapshotKey(form)
+  const isDirty = currentSnapshotKey !== savedSnapshotKey
+
+  function clearFeedbackTimer() {
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current)
+      feedbackTimerRef.current = null
+    }
+  }
+
+  function clearNavigateTimer() {
+    if (navigateTimerRef.current) {
+      window.clearTimeout(navigateTimerRef.current)
+      navigateTimerRef.current = null
+    }
+  }
+
+  function showFeedback(nextFeedback) {
+    clearFeedbackTimer()
+    setFeedback(nextFeedback)
+
+    const delay = nextFeedback.type === 'error' ? 4200 : 2200
+    feedbackTimerRef.current = window.setTimeout(() => {
+      setFeedback(null)
+      feedbackTimerRef.current = null
+    }, delay)
+  }
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -98,6 +136,7 @@ export default function SettingsPage() {
 
         setProfile(nextProfile)
         setForm(buildFormFromProfile(nextProfile))
+        setSavedSnapshotKey(buildFormSnapshotKey(buildFormFromProfile(nextProfile)))
         setBootStatus('ready')
       } catch (error) {
         if (cancelled) return
@@ -114,9 +153,26 @@ export default function SettingsPage() {
     }
   }, [authProfile, authProfileId, reloadKey, user?.id])
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        window.clearTimeout(feedbackTimerRef.current)
+      }
+
+      if (navigateTimerRef.current) {
+        window.clearTimeout(navigateTimerRef.current)
+      }
+    }
+  }, [])
+
+  async function saveChanges() {
+    if (saveState === 'saving') {
+      return false
+    }
+
     setSaveState('saving')
+    clearNavigateTimer()
+    clearFeedbackTimer()
     setFeedback(null)
 
     try {
@@ -127,6 +183,7 @@ export default function SettingsPage() {
         theme: form.theme,
         searchRadiusKm: form.searchRadiusKm,
         showApproxLocation: form.showApproxLocation,
+        availabilityEnabled: form.availabilityEnabled,
         notifyNearbyTasks: form.notifyNearbyTasks,
         notifyMessages: form.notifyMessages,
         notifyPayments: form.notifyPayments,
@@ -135,19 +192,42 @@ export default function SettingsPage() {
       })
 
       setProfile(nextProfile)
-      setForm(buildFormFromProfile(nextProfile))
-      await refreshProfile()
-      setSaveState('success')
-      setFeedback({ type: 'success', text: 'Tus ajustes se han guardado correctamente.' })
+      const nextForm = buildFormFromProfile(nextProfile)
+      setForm(nextForm)
+      setSavedSnapshotKey(buildFormSnapshotKey(nextForm))
+      refreshProfile().catch(() => {})
+      setSaveState('idle')
+      showFeedback({ type: 'success', text: 'Guardado' })
+      return true
     } catch (error) {
-      setSaveState('error')
-      setFeedback({ type: 'error', text: error?.message || 'No se pudieron guardar los cambios.' })
+      console.error(error)
+      setSaveState('idle')
+      showFeedback({ type: 'error', text: 'No se pudieron guardar los cambios' })
+      return false
     }
   }
 
-  async function handleSignOut() {
-    await signOut({ scope: 'global' })
-    window.location.replace('/')
+  async function handleBack() {
+    clearNavigateTimer()
+    clearFeedbackTimer()
+
+    if (saveState === 'saving') {
+      return
+    }
+
+    if (!isDirty) {
+      navigate('/home')
+      return
+    }
+
+    const saved = await saveChanges()
+    if (!saved) {
+      return
+    }
+
+    navigateTimerRef.current = window.setTimeout(() => {
+      navigate('/home')
+    }, 550)
   }
 
   const settingsValue = {
@@ -160,16 +240,11 @@ export default function SettingsPage() {
       }))
     },
     avatarPreview,
-    onSignOut: handleSignOut,
-    onStartHelperSetup() {
-      navigate('/home', { state: { mode: 'help', resumeHelperOnboarding: true } })
-    },
     user,
   }
 
   const sidebarItems = [
-    { id: 'datos-personales', label: 'Perfil público', meta: 'Identidad visible' },
-    { id: 'modo-ayudante', label: 'Modo ayudante', meta: 'Capa profesional' },
+    { id: 'perfil', label: 'Perfil', meta: 'Identidad visible' },
     { id: 'actividad-zona', label: 'Actividad y zona', meta: 'Zona temporal' },
     { id: 'mapa-ubicacion', label: 'Mapa y ubicación', meta: 'Mapa y privacidad' },
     { id: 'notificaciones', label: 'Notificaciones', meta: 'Avisos y mensajes' },
@@ -189,22 +264,12 @@ export default function SettingsPage() {
           </div>
         </header>
 
-        <form id="settings-form" className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={(event) => event.preventDefault()}>
           <SettingsLayout
             items={sidebarItems}
-            onBack={() => navigate('/home')}
+            onBack={handleBack}
             busy={saveState === 'saving'}
           >
-            <section className={styles.progressCard} aria-label="Progreso del perfil">
-              <div>
-                <p className={styles.progressKicker}>Perfil completado</p>
-                <h2>Tu perfil público está al {profileCompletion}%</h2>
-              </div>
-              <div className={styles.progressTrack} aria-hidden="true">
-                <span className={styles.progressFill} style={{ width: `${profileCompletion}%` }} />
-              </div>
-            </section>
-
             {bootStatus === 'loading' && (
               <section className={styles.stateCard}>
                 <p className="eyebrow">Cargando</p>
@@ -229,16 +294,19 @@ export default function SettingsPage() {
               </section>
             )}
 
-          {feedback && (
-            <section className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}>
-              {feedback.text}
-            </section>
-          )}
+            {feedback && (
+              <section
+                className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}
+                role={feedback.type === 'error' ? 'alert' : 'status'}
+                aria-live={feedback.type === 'error' ? 'assertive' : 'polite'}
+              >
+                {feedback.text}
+              </section>
+            )}
 
             {bootStatus === 'ready' && (
               <>
                 <ProfileSettings />
-                <HelperModeSettings />
                 <ActivityZoneSettings />
                 <MapSettings />
                 <NotificationSettings />
