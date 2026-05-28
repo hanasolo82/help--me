@@ -6,7 +6,6 @@ import { ensureCurrentProfile, updateCurrentProfile } from '../../services/profi
 import { SettingsProvider } from './components/SettingsContext'
 import SettingsLayout from './components/SettingsLayout'
 import ProfileSettings from './components/ProfileSettings'
-import ActivityZoneSettings from './components/ActivityZoneSettings'
 import PaymentsSettings from './components/PaymentsSettings'
 import AppearanceSettings from './components/AppearanceSettings'
 import MapSettings from './components/MapSettings'
@@ -19,9 +18,7 @@ const DEFAULT_FORM = {
   username: '',
   bio: '',
   avatarFile: null,
-  mapAvatarUrl: '',
   theme: 'light',
-  searchRadiusKm: '10',
   showApproxLocation: true,
   availabilityEnabled: true,
   notifyNearbyTasks: true,
@@ -35,9 +32,7 @@ function buildFormFromProfile(profile) {
     displayName: profile?.display_name || profile?.full_name || '',
     username: profile?.username || '',
     bio: profile?.bio || '',
-    mapAvatarUrl: profile?.map_avatar_url || '',
     theme: profile?.theme === 'dark' ? 'dark' : 'light',
-    searchRadiusKm: String(profile?.search_radius_km ?? 10),
     showApproxLocation: profile?.show_approx_location ?? true,
     availabilityEnabled: profile?.availability_enabled ?? true,
     notifyNearbyTasks: profile?.notify_nearby_tasks ?? true,
@@ -52,13 +47,11 @@ function buildFormSnapshotKey(form) {
     username: sanitizeText(form?.username, 30).toLowerCase(),
     bio: sanitizeText(form?.bio, 160),
     theme: form?.theme === 'dark' ? 'dark' : 'light',
-    searchRadiusKm: String(form?.searchRadiusKm ?? ''),
     showApproxLocation: Boolean(form?.showApproxLocation),
     availabilityEnabled: Boolean(form?.availabilityEnabled),
     notifyNearbyTasks: Boolean(form?.notifyNearbyTasks),
     notifyMessages: Boolean(form?.notifyMessages),
     notifyPayments: Boolean(form?.notifyPayments),
-    mapAvatarUrl: sanitizeText(form?.mapAvatarUrl, 500),
     hasAvatarFile: Boolean(form?.avatarFile),
   })
 }
@@ -181,14 +174,12 @@ export default function SettingsPage() {
         username: sanitizeText(form.username, 30).toLowerCase(),
         bio: sanitizeText(form.bio, 160),
         theme: form.theme,
-        searchRadiusKm: form.searchRadiusKm,
         showApproxLocation: form.showApproxLocation,
         availabilityEnabled: form.availabilityEnabled,
         notifyNearbyTasks: form.notifyNearbyTasks,
         notifyMessages: form.notifyMessages,
         notifyPayments: form.notifyPayments,
         avatarFile: form.avatarFile,
-        mapAvatarUrl: form.mapAvatarUrl || null,
       })
 
       setProfile(nextProfile)
@@ -245,8 +236,7 @@ export default function SettingsPage() {
 
   const sidebarItems = [
     { id: 'perfil', label: 'Perfil', meta: 'Identidad visible' },
-    { id: 'actividad-zona', label: 'Actividad y zona', meta: 'Zona temporal' },
-    { id: 'mapa-ubicacion', label: 'Mapa y ubicación', meta: 'Mapa y privacidad' },
+    { id: 'mapa-ubicacion', label: 'Mapa y ubicación', meta: 'Zona visible y privacidad' },
     { id: 'notificaciones', label: 'Notificaciones', meta: 'Avisos y mensajes' },
     { id: 'pagos', label: 'Pagos', meta: 'Cobros e ingresos' },
     { id: 'apariencia', label: 'Apariencia', meta: 'Tema visual' },
@@ -307,7 +297,6 @@ export default function SettingsPage() {
             {bootStatus === 'ready' && (
               <>
                 <ProfileSettings />
-                <ActivityZoneSettings />
                 <MapSettings />
                 <NotificationSettings />
                 <PaymentsSettings />
