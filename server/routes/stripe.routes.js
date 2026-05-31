@@ -1,12 +1,12 @@
 import express from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import {
-  constructStripeEvent,
   createConnectAccountLink,
   createOrGetConnectAccount,
   syncStripeAccountByAccountId,
-  syncStripeAccountFromWebhook,
+  constructStripeEvent,
 } from '../services/stripe.service.js'
+import { processStripeWebhookEvent } from '../services/financial.service.js'
 import { supabaseAdmin } from '../services/supabase.service.js'
 
 const router = express.Router()
@@ -136,9 +136,7 @@ router.post(
         console.info(`[stripe:webhook] ${event.type}`)
       }
 
-      if (event.type === 'account.updated') {
-        await syncStripeAccountFromWebhook(event.data.object)
-      }
+      await processStripeWebhookEvent(event)
 
       return res.status(200).json({
         received: true,

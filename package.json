@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "verify:financial-foundation": "node scripts/verify-financial-foundation.mjs",
     "server": "node server/index.js",
     "start": "concurrently \"pnpm run server\" \"pnpm run dev\""
   },
