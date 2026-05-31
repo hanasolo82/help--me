@@ -14,6 +14,7 @@ export default function HelperListPanel({
   selectedSkillId = 'all',
   onSkillChange,
   radiusKm = 10,
+  radiusEnabled = true,
   onRadiusChange,
   onlyAvailable = false,
   onOnlyAvailableChange,
@@ -31,6 +32,7 @@ export default function HelperListPanel({
         selectedSkillId={selectedSkillId}
         onSkillChange={onSkillChange}
         radiusKm={radiusKm}
+        radiusEnabled={radiusEnabled}
         onRadiusChange={onRadiusChange}
         onlyAvailable={onlyAvailable}
         onOnlyAvailableChange={onOnlyAvailableChange}
@@ -38,7 +40,7 @@ export default function HelperListPanel({
 
       <div className={styles.panelMeta}>
         <p className="muted">{locationLabel}</p>
-        <strong>{helpers.length} helpers cerca de ti</strong>
+        <strong>{helpers.length} helpers {radiusEnabled ? 'cerca de ti' : 'en el mapa'}</strong>
         <span className="muted">{visibleHelpers.length} visibles en esta pantalla del mapa</span>
       </div>
 

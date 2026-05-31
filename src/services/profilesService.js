@@ -154,8 +154,10 @@ function buildDefaultProfileValues(user, attempt = 0) {
     stripe_payouts_enabled: false,
     account_status: 'active',
     theme: DEFAULT_THEME,
+    search_radius_enabled: false,
     search_radius_km: DEFAULT_SEARCH_RADIUS_KM,
     show_approx_location: true,
+    visible_zone_name: null,
     notify_nearby_tasks: true,
     notify_messages: true,
     notify_payments: true,
@@ -298,27 +300,29 @@ export function validateProfileInput(input) {
       map_avatar_url: null,
       bio: sanitizeText(input.bio, 160) || null,
       theme: normalizeTheme(input.theme),
+      search_radius_enabled: normalizeBoolean(input.searchRadiusEnabled ?? input.search_radius_enabled, false),
       search_radius_km: normalizeInteger(input.searchRadiusKm, DEFAULT_SEARCH_RADIUS_KM, { min: 1, max: 100 }),
-      show_approx_location: normalizeBoolean(input.showApproxLocation, true),
+      show_approx_location: normalizeBoolean(input.showApproxLocation ?? input.show_approx_location, true),
+      visible_zone_name: sanitizeText(input.visibleZoneName ?? input.visible_zone_name, 80) || null,
       notify_nearby_tasks: normalizeBoolean(input.notifyNearbyTasks, true),
       notify_messages: normalizeBoolean(input.notifyMessages, true),
       notify_payments: normalizeBoolean(input.notifyPayments, true),
-      terms_accepted: normalizeBoolean(input.termsAccepted, false),
-      terms_accepted_at: input.termsAcceptedAt ? new Date(input.termsAcceptedAt).toISOString() : null,
-      terms_version: sanitizeText(input.termsVersion, 80) || null,
-      helper_enabled: normalizeBoolean(input.helperEnabled, DEFAULT_HELPER_ENABLED),
-      helper_status: normalizeHelperStatus(input.helperStatus),
+      terms_accepted: false,
+      terms_accepted_at: null,
+      terms_version: null,
+      helper_enabled: DEFAULT_HELPER_ENABLED,
+      helper_status: DEFAULT_HELPER_STATUS,
       availability_enabled: normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED),
       response_time_minutes: normalizeInteger(input.responseTimeMinutes, null, { min: 1, max: 1440 }),
       hourly_rate: normalizeDecimal(input.hourlyRate, null, { min: 0, max: 9999 }),
-      verified_email: normalizeBoolean(input.verifiedEmail, false),
-      verified_phone: normalizeBoolean(input.verifiedPhone, false),
-      verified_identity: normalizeBoolean(input.verifiedIdentity, false),
-      identity_verified: normalizeBoolean(input.identityVerified, false),
-      stripe_onboarding_completed: normalizeBoolean(input.stripeOnboardingCompleted, false),
-      stripe_account_id: sanitizeText(input.stripeAccountId, 120) || null,
-      stripe_charges_enabled: normalizeBoolean(input.stripeChargesEnabled, false),
-      stripe_payouts_enabled: normalizeBoolean(input.stripePayoutsEnabled, false),
+      verified_email: false,
+      verified_phone: false,
+      verified_identity: false,
+      identity_verified: false,
+      stripe_onboarding_completed: false,
+      stripe_account_id: null,
+      stripe_charges_enabled: false,
+      stripe_payouts_enabled: false,
       account_status: 'active',
     },
   }
@@ -369,6 +373,89 @@ export async function createProfile(input) {
 
 function normalizeProfileUpdateInput(input) {
   const updates = {}
+  const allowedInputFields = new Set([
+    'displayName',
+    'fullName',
+    'username',
+    'bio',
+    'city',
+    'neighborhood',
+    'country',
+    'lat',
+    'lng',
+    'allowExactLocationUpdate',
+    'theme',
+    'searchRadiusEnabled',
+    'search_radius_enabled',
+    'searchRadiusKm',
+    'showApproxLocation',
+    'show_approx_location',
+    'visibleZoneName',
+    'visible_zone_name',
+    'notifyNearbyTasks',
+    'notifyMessages',
+    'notifyPayments',
+    'termsAccepted',
+    'termsAcceptedAt',
+    'termsVersion',
+    'helperEnabled',
+    'helper_enabled',
+    'helperStatus',
+    'helper_status',
+    'allowHelperStatusUpdate',
+    'availabilityEnabled',
+    'visibilityEnabled',
+    'responseTimeMinutes',
+    'hourlyRate',
+    'avatarUrl',
+    'mapAvatarUrl',
+    'avatarFile',
+  ])
+  const unknownFields = Object.keys(input).filter((field) => !allowedInputFields.has(field))
+  const blockedFields = [
+    'id',
+    'email',
+    'phone_number',
+    'phoneNumber',
+    'role',
+    'account_status',
+    'accountStatus',
+    'verified',
+    'verifiedEmail',
+    'verifiedPhone',
+    'verifiedIdentity',
+    'identityVerified',
+    'verified_email',
+    'verified_phone',
+    'verified_identity',
+    'identity_verified',
+    'verification',
+    'verification_status',
+    'phoneVerified',
+    'phone_verified',
+    'backgroundChecked',
+    'background_checked',
+    'stripeOnboardingCompleted',
+    'stripeAccountId',
+    'stripeChargesEnabled',
+    'stripePayoutsEnabled',
+    'stripe_onboarding_completed',
+    'stripe_account_id',
+    'stripe_charges_enabled',
+    'stripe_payouts_enabled',
+    'created_at',
+    'createdAt',
+    'updated_at',
+    'updatedAt',
+  ].filter((field) => Object.prototype.hasOwnProperty.call(input, field))
+
+  if (blockedFields.length > 0) {
+    throw new Error(`Blocked profile update fields: ${blockedFields.join(', ')}`)
+  }
+
+  if (unknownFields.length > 0) {
+    throw new Error(`Unsupported profile update fields: ${unknownFields.join(', ')}`)
+  }
 
   if (Object.prototype.hasOwnProperty.call(input, 'displayName') || Object.prototype.hasOwnProperty.call(input, 'fullName')) {
     const displayName = buildDisplayName(input)
@@ -404,10 +491,16 @@ function normalizeProfileUpdateInput(input) {
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'lat')) {
+    if (input.allowExactLocationUpdate !== true) {
+      throw new Error('Blocked profile update fields: lat')
+    }
     updates.lat = normalizeDecimal(input.lat, null, { min: -90, max: 90 })
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'lng')) {
+    if (input.allowExactLocationUpdate !== true) {
+      throw new Error('Blocked profile update fields: lng')
+    }
     updates.lng = normalizeDecimal(input.lng, null, { min: -180, max: 180 })
   }
 
@@ -415,12 +508,20 @@ function normalizeProfileUpdateInput(input) {
     updates.theme = normalizeTheme(input.theme)
   }
 
+  if (Object.prototype.hasOwnProperty.call(input, 'searchRadiusEnabled') || Object.prototype.hasOwnProperty.call(input, 'search_radius_enabled')) {
+    updates.search_radius_enabled = normalizeBoolean(input.searchRadiusEnabled ?? input.search_radius_enabled, false)
+  }
+
   if (Object.prototype.hasOwnProperty.call(input, 'searchRadiusKm')) {
     updates.search_radius_km = normalizeInteger(input.searchRadiusKm, DEFAULT_SEARCH_RADIUS_KM, { min: 1, max: 100 })
   }
 
-  if (Object.prototype.hasOwnProperty.call(input, 'showApproxLocation')) {
-    updates.show_approx_location = normalizeBoolean(input.showApproxLocation, true)
+  if (Object.prototype.hasOwnProperty.call(input, 'showApproxLocation') || Object.prototype.hasOwnProperty.call(input, 'show_approx_location')) {
+    updates.show_approx_location = normalizeBoolean(input.showApproxLocation ?? input.show_approx_location, true)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'visibleZoneName') || Object.prototype.hasOwnProperty.call(input, 'visible_zone_name')) {
+    updates.visible_zone_name = sanitizeText(input.visibleZoneName ?? input.visible_zone_name, 80) || null
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'notifyNearbyTasks')) {
@@ -447,12 +548,18 @@ function normalizeProfileUpdateInput(input) {
     updates.terms_version = sanitizeText(input.termsVersion, 80) || null
   }
 
-  if (Object.prototype.hasOwnProperty.call(input, 'helperEnabled')) {
-    updates.helper_enabled = normalizeBoolean(input.helperEnabled, DEFAULT_HELPER_ENABLED)
+  if (Object.prototype.hasOwnProperty.call(input, 'helperEnabled') || Object.prototype.hasOwnProperty.call(input, 'helper_enabled')) {
+    if (input.allowHelperStatusUpdate !== true) {
+      throw new Error('Blocked profile update fields: helperEnabled')
+    }
+    updates.helper_enabled = normalizeBoolean(input.helperEnabled ?? input.helper_enabled, DEFAULT_HELPER_ENABLED)
   }
 
-  if (Object.prototype.hasOwnProperty.call(input, 'helperStatus')) {
-    updates.helper_status = normalizeHelperStatus(input.helperStatus)
+  if (Object.prototype.hasOwnProperty.call(input, 'helperStatus') || Object.prototype.hasOwnProperty.call(input, 'helper_status')) {
+    if (input.allowHelperStatusUpdate !== true) {
+      throw new Error('Blocked profile update fields: helperStatus')
+    }
+    updates.helper_status = normalizeHelperStatus(input.helperStatus ?? input.helper_status)
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'availabilityEnabled')) {
@@ -469,38 +576,6 @@ function normalizeProfileUpdateInput(input) {
 
   if (Object.prototype.hasOwnProperty.call(input, 'hourlyRate')) {
     updates.hourly_rate = normalizeDecimal(input.hourlyRate, null, { min: 0, max: 9999 })
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'verifiedEmail')) {
-    updates.verified_email = normalizeBoolean(input.verifiedEmail, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'verifiedPhone')) {
-    updates.verified_phone = normalizeBoolean(input.verifiedPhone, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'verifiedIdentity')) {
-    updates.verified_identity = normalizeBoolean(input.verifiedIdentity, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'identityVerified')) {
-    updates.identity_verified = normalizeBoolean(input.identityVerified, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'stripeOnboardingCompleted')) {
-    updates.stripe_onboarding_completed = normalizeBoolean(input.stripeOnboardingCompleted, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'stripeAccountId')) {
-    updates.stripe_account_id = sanitizeText(input.stripeAccountId, 120) || null
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'stripeChargesEnabled')) {
-    updates.stripe_charges_enabled = normalizeBoolean(input.stripeChargesEnabled, false)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'stripePayoutsEnabled')) {
-    updates.stripe_payouts_enabled = normalizeBoolean(input.stripePayoutsEnabled, false)
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'avatarUrl')) {

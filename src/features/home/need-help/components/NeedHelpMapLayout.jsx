@@ -68,6 +68,10 @@ function toMapCenter(location, profileCenter) {
   return [41.6523, -0.9019]
 }
 
+function hasMapPosition(entry) {
+  return Number.isFinite(Number(entry?.lat)) && Number.isFinite(Number(entry?.lng))
+}
+
 export default function NeedHelpMapLayout({
   profile,
   location,
@@ -88,6 +92,14 @@ export default function NeedHelpMapLayout({
   const [selectedSkillId, setSelectedSkillId] = useState('all')
   const [onlyAvailable, setOnlyAvailable] = useState(false)
   const [mapBounds, setMapBounds] = useState(null)
+  const searchRadiusEnabled = profile?.search_radius_enabled === true
+
+  useEffect(() => {
+    const nextRadiusKm = Number(profile?.search_radius_km ?? 10)
+    if (Number.isFinite(nextRadiusKm)) {
+      setRadiusKm(nextRadiusKm || 10)
+    }
+  }, [profile?.search_radius_km])
 
   const {
     center,
@@ -100,6 +112,8 @@ export default function NeedHelpMapLayout({
     profile,
     location,
     radiusKm,
+    radiusEnabled: searchRadiusEnabled,
+    mapBounds,
     selectedSkillId,
     onlyAvailable,
   })
@@ -119,7 +133,7 @@ export default function NeedHelpMapLayout({
         return [Number(focusedRequesterTask.lat), Number(focusedRequesterTask.lng)]
       }
 
-      if (selectedHelper) {
+      if (hasMapPosition(selectedHelper)) {
         return [selectedHelper.lat, selectedHelper.lng]
       }
 
@@ -132,7 +146,13 @@ export default function NeedHelpMapLayout({
       return helpers
     }
 
-    return helpers.filter((helper) => {
+    const helpersWithPositions = helpers.filter(hasMapPosition)
+
+    if (helpersWithPositions.length === 0) {
+      return helpers
+    }
+
+    return helpersWithPositions.filter((helper) => {
       const lat = Number(helper?.lat)
       const lng = Number(helper?.lng)
 
@@ -189,7 +209,7 @@ export default function NeedHelpMapLayout({
               <ViewportReporter onViewportChange={setMapBounds} />
               <MapTileLayer />
 
-              {hasLocation && Number.isFinite(Number(radiusKm)) && (
+              {searchRadiusEnabled && hasLocation && Number.isFinite(Number(radiusKm)) && (
                 <Circle
                   center={searchCenter}
                   radius={radiusKm * 1000}
@@ -197,7 +217,7 @@ export default function NeedHelpMapLayout({
                 />
               )}
 
-              {helpers.map((helper) => (
+              {helpers.filter(hasMapPosition).map((helper) => (
                 <HelperMapMarker
                   key={helper.id}
                   helper={helper}
@@ -246,6 +266,7 @@ export default function NeedHelpMapLayout({
             selectedSkillId={selectedSkillId}
             onSkillChange={setSelectedSkillId}
             radiusKm={radiusKm}
+            radiusEnabled={searchRadiusEnabled}
             onRadiusChange={setRadiusKm}
             onlyAvailable={onlyAvailable}
             onOnlyAvailableChange={setOnlyAvailable}

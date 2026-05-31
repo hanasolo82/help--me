@@ -4,7 +4,7 @@ import { supabaseAdmin } from './supabase.service.js'
 
 const { env } = loadServerEnv()
 
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-06-20',
 })
 

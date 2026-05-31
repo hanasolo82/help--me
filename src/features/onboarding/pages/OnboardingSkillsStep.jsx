@@ -38,7 +38,10 @@ export default function OnboardingSkillsStep() {
         selectedSkillRows: rows,
       }))
       if (draft.mode === 'help') {
-        await updateCurrentProfile({ helperStatus: HELPER_STATUS.CONTACT_PENDING })
+        await updateCurrentProfile({
+          helperStatus: HELPER_STATUS.CONTACT_PENDING,
+          allowHelperStatusUpdate: true,
+        })
       }
       await refreshProfile()
       navigate('/onboarding/location')

@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
 import { useUserLocation } from '../../../hooks/useUserLocation'
 import { getAvatarInitial } from '../../../utils/avatar'
+import { getLocationLabel } from '../../../features/profile/utils/profileFormatters'
 
 function getReadableLocationLabel(locationState, profile) {
-  return (
-    locationState.location?.label ||
-    profile?.neighborhood ||
-    profile?.city ||
-    profile?.formatted_address ||
-    profile?.country ||
-    'Tu zona'
-  )
+  const profileLabel = getLocationLabel(profile)
+
+  if (profile?.show_approx_location === false) {
+    return profileLabel
+  }
+
+  return profile?.visible_zone_name || locationState.location?.label || profileLabel
 }
 
 export function useHomeLocation(profile) {

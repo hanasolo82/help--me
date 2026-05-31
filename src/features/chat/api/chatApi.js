@@ -4,7 +4,7 @@ import { requireUser } from '../../../lib/authHelpers'
 
 const CONVERSATION_SELECT = 'id, created_by, created_at, updated_at, last_message_at'
 const PARTICIPANT_SELECT = 'id, conversation_id, user_id, created_at, last_read_at'
-const PROFILE_SELECT = 'id, username, display_name, full_name, avatar_url, rating, verified, account_status'
+const PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
 const MESSAGE_SELECT = '*'
 
 function isUuid(value) {
@@ -79,6 +79,16 @@ function normalizeConversationRow(conversation, participants, profilesById, late
     other_participant: otherParticipant,
     other_user: otherParticipant?.profile || null,
     latest_message: normalizeMessageRow(latestMessage),
+  }
+}
+
+function normalizePublicProfile(profile) {
+  if (!profile) return null
+
+  return {
+    ...profile,
+    display_name: profile.full_name,
+    verified: false,
   }
 }
 
@@ -181,7 +191,7 @@ export async function getConversationById(conversationId) {
   let profilesById = new Map()
   if (userIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select(PROFILE_SELECT)
       .in('id', userIds)
 
@@ -189,7 +199,7 @@ export async function getConversationById(conversationId) {
       throw profilesError
     }
 
-    profilesById = new Map((profiles || []).map((profile) => [profile.id, profile]))
+    profilesById = new Map((profiles || []).map((profile) => [profile.id, normalizePublicProfile(profile)]))
   }
 
   return normalizeConversationRow(
@@ -256,7 +266,7 @@ export async function getMyConversations() {
 
   if (participantUserIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select(PROFILE_SELECT)
       .in('id', participantUserIds)
 
@@ -264,7 +274,7 @@ export async function getMyConversations() {
       throw profilesError
     }
 
-    profilesById = new Map((profiles || []).map((profile) => [profile.id, profile]))
+    profilesById = new Map((profiles || []).map((profile) => [profile.id, normalizePublicProfile(profile)]))
   }
 
   const latestMessageByConversation = new Map()

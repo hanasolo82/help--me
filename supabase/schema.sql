@@ -104,10 +104,11 @@ alter table public.ratings enable row level security;
 
 -- profiles
 drop policy if exists "Profiles are visible to authenticated users" on public.profiles;
-create policy "Profiles are visible to authenticated users"
+drop policy if exists "Users can select their own profile" on public.profiles;
+create policy "Users can select their own profile"
 on public.profiles for select
 to authenticated
-using ((select auth.uid()) is not null);
+using ((select auth.uid()) = id);
 
 drop policy if exists "Users can insert their own profile" on public.profiles;
 create policy "Users can insert their own profile"

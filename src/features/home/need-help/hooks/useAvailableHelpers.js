@@ -50,20 +50,41 @@ export function useAvailableHelpers({
   profile,
   location,
   radiusKm = 10,
+  radiusEnabled = true,
+  mapBounds = null,
   selectedSkillId = 'all',
   onlyAvailable = false,
 } = {}) {
   const center = useMemo(() => resolveCenter(profile, location), [location, profile])
-  const canSearch = Boolean(center.hasValue)
+  const hasMapBounds = Boolean(
+    Number.isFinite(Number(mapBounds?.north)) &&
+      Number.isFinite(Number(mapBounds?.south)) &&
+      Number.isFinite(Number(mapBounds?.east)) &&
+      Number.isFinite(Number(mapBounds?.west)),
+  )
+  const canSearch = radiusEnabled ? Boolean(center.hasValue) : hasMapBounds
   const excludeProfileId = profile?.id || null
 
   const query = useQuery({
-    queryKey: ['available-helpers', excludeProfileId, center.lat, center.lng, radiusKm],
+    queryKey: [
+      'available-helpers',
+      excludeProfileId,
+      center.lat,
+      center.lng,
+      radiusEnabled,
+      radiusEnabled ? radiusKm : null,
+      radiusEnabled ? null : mapBounds?.north ?? null,
+      radiusEnabled ? null : mapBounds?.south ?? null,
+      radiusEnabled ? null : mapBounds?.east ?? null,
+      radiusEnabled ? null : mapBounds?.west ?? null,
+    ],
     queryFn: () =>
       getNearbyHelpers({
         lat: center.lat,
         lng: center.lng,
         radiusKm,
+        radiusEnabled,
+        bounds: mapBounds,
         excludeProfileId,
         limit: 16,
       }),
@@ -94,7 +115,7 @@ export function useAvailableHelpers({
 
   return {
     center,
-    hasLocation: canSearch,
+    hasLocation: Boolean(center.hasValue),
     helpers,
     skillFilters,
     isLoading: query.isLoading && !query.data,

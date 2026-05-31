@@ -29,14 +29,26 @@ const TASK_SELECT = `
   published_at,
   cancelled_at,
   modified_at,
+  completed_at,
+  updated_at,
   created_at
 `
 
 const AVAILABLE_PROFILE_STATUS = 'active'
-const CREATOR_PROFILE_SELECT = 'id, username, display_name, full_name, avatar_url, rating, verified, account_status'
+const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
 
 function isProfileAvailable(profile) {
   return profile?.account_status === AVAILABLE_PROFILE_STATUS
+}
+
+function normalizePublicProfile(profile) {
+  if (!profile) return null
+
+  return {
+    ...profile,
+    display_name: profile.full_name,
+    verified: false,
+  }
 }
 
 async function attachTaskProfiles(tasks) {
@@ -51,7 +63,7 @@ async function attachTaskProfiles(tasks) {
   }
 
   const { data: profiles, error } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select(CREATOR_PROFILE_SELECT)
     .in('id', profileIds)
 
@@ -59,7 +71,7 @@ async function attachTaskProfiles(tasks) {
     throw error
   }
 
-  const profilesById = new Map((profiles || []).map((profile) => [profile.id, profile]))
+  const profilesById = new Map((profiles || []).map((profile) => [profile.id, normalizePublicProfile(profile)]))
 
   return tasks.map((task) => ({
     ...task,
@@ -523,11 +535,18 @@ export async function acceptTask(taskId) {
 // Si anades completed_at, completed_by o datos de cierre, actualiza este update.
 export async function markTaskCompleted(taskId) {
   assertSupabaseReady()
+  const user = await requireUser('Necesitas iniciar sesion para cerrar una tarea.')
 
+  const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('tasks')
-    .update({ status: 'completed' })
+    .update({
+      status: 'completed',
+      completed_at: now,
+      updated_at: now,
+    })
     .eq('id', taskId)
+    .eq('created_by', user.id)
     .in('status', ['assigned', 'in_progress'])
     .select(TASK_SELECT)
     .maybeSingle()

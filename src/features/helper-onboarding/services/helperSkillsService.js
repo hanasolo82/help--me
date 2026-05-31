@@ -1,4 +1,15 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { requireUser } from '../../../lib/authHelpers'
+
+async function resolveOwnedProfileId(profileId = null) {
+  const user = await requireUser('Necesitas una sesion valida para gestionar tus habilidades.')
+
+  if (profileId && profileId !== user.id) {
+    throw new Error('Unauthorized profile access')
+  }
+
+  return user.id
+}
 
 function normalizeSelectedSkillIds(selectedSkills = []) {
   const ids = []
@@ -35,12 +46,12 @@ export async function getActiveSkills() {
 }
 
 export async function getProfileSkills(profileId) {
-  if (!profileId) return []
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const { data, error } = await supabase
     .from('profile_skills')
     .select('profile_id, skill_id, is_primary, experience_level, years_experience, skill:skills(id, name, icon, category, sort_order)')
-    .eq('profile_id', profileId)
+    .eq('profile_id', ownedProfileId)
     .order('is_primary', { ascending: false })
     .order('created_at', { ascending: true })
 
@@ -52,9 +63,7 @@ export async function getProfileSkills(profileId) {
 }
 
 export async function replaceProfileSkills(profileId, selectedSkills = []) {
-  if (!profileId) {
-    throw new Error('No pudimos guardar las skills porque falta el profile.')
-  }
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   // TODO: el requester filtrará helpers por skills compatibles cuando el matching de tareas esté listo.
   const skillIds = normalizeSelectedSkillIds(selectedSkills)
@@ -62,7 +71,7 @@ export async function replaceProfileSkills(profileId, selectedSkills = []) {
   const { error: deleteError } = await supabase
     .from('profile_skills')
     .delete()
-    .eq('profile_id', profileId)
+    .eq('profile_id', ownedProfileId)
 
   if (deleteError) {
     throw deleteError
@@ -73,7 +82,7 @@ export async function replaceProfileSkills(profileId, selectedSkills = []) {
   }
 
   const rows = skillIds.map((skillId, index) => ({
-    profile_id: profileId,
+    profile_id: ownedProfileId,
     skill_id: skillId,
     experience_level: 'beginner',
     years_experience: 0,

@@ -40,7 +40,10 @@ export default function OnboardingAvailabilityStep() {
     mutationFn: (payload) => replaceProfileAvailability(profileId, payload.slots, payload.availabilityEnabled),
     onSuccess: async () => {
       if (draft.mode === 'help') {
-        await updateCurrentProfile({ helperStatus: HELPER_STATUS.TERMS_PENDING })
+        await updateCurrentProfile({
+          helperStatus: HELPER_STATUS.TERMS_PENDING,
+          allowHelperStatusUpdate: true,
+        })
       }
       await refreshProfile()
       navigate('/onboarding/verification')

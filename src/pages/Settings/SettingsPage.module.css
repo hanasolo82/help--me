@@ -316,7 +316,7 @@
   font-size: 0.88rem;
   font-weight: 900;
   line-height: 1;
-  padding: 0 0.9rem;
+  padding: 0.6rem 0.6rem;
   text-decoration: none;
   transition:
     background-color 0.16s ease,
@@ -1177,7 +1177,6 @@
   gap: 1rem;
   width: 100%;
   padding: 0.95rem 0.35rem 0.95rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
 }
 
 .helperAvailabilityCopy {
@@ -1543,7 +1542,8 @@
   align-items: stretch;
 }
 
-.skillEditor input {
+.skillEditor input,
+.skillEditor select {
   width: 100%;
   height: var(--settings-control-height);
   min-height: var(--settings-control-height);
@@ -1552,6 +1552,40 @@
   background: var(--color-surface-strong);
   color: var(--color-text);
   padding: 0.65rem 0.85rem;
+}
+
+.daySelector {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.dayButton {
+  min-height: 2.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.dayButtonActive {
+  border-color: color-mix(in srgb, var(--settings-accent) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--settings-accent) 14%, var(--color-surface));
+  color: var(--color-text);
+}
+
+.dayButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (max-width: 560px) {
+  .daySelector {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .emptyHint {

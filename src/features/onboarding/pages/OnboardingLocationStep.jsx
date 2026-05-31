@@ -24,10 +24,14 @@ export default function OnboardingLocationStep() {
         lat: draft.lat,
         lng: draft.lng,
         showApproxLocation: true,
+        allowExactLocationUpdate: true,
       }),
     onSuccess: async () => {
       if (draft.mode === 'help') {
-        await updateCurrentProfile({ helperStatus: HELPER_STATUS.IDENTITY_PENDING })
+        await updateCurrentProfile({
+          helperStatus: HELPER_STATUS.IDENTITY_PENDING,
+          allowHelperStatusUpdate: true,
+        })
       }
       await refreshProfile()
       navigate('/onboarding/availability')

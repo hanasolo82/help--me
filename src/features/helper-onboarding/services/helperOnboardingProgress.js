@@ -38,3 +38,17 @@ export function clearHelperOnboardingProgress(userId) {
 
   window.localStorage.removeItem(getHelperOnboardingStorageKey(userId))
 }
+
+export function clearAllHelperOnboardingProgress() {
+  if (!canUseStorage()) {
+    return
+  }
+
+  const prefix = `${HELPER_ONBOARDING_PROGRESS_KEY}:`
+  for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+    const key = window.localStorage.key(index)
+    if (key?.startsWith(prefix)) {
+      window.localStorage.removeItem(key)
+    }
+  }
+}

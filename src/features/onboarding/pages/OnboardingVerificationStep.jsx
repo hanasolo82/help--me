@@ -21,6 +21,7 @@ export default function OnboardingVerificationStep() {
         await updateCurrentProfile({
           helperStatus: HELPER_STATUS.ACTIVE,
           helperEnabled: true,
+          allowHelperStatusUpdate: true,
         })
       }
       await refreshProfile()

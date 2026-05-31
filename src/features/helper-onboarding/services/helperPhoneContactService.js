@@ -1,6 +1,17 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { requireUser } from '../../../lib/authHelpers'
 
 const DEFAULT_PREFIX = '+34'
+
+async function resolveOwnedProfileId(profileId = null) {
+  const user = await requireUser('Necesitas una sesion valida para gestionar tu telefono.')
+
+  if (profileId && profileId !== user.id) {
+    throw new Error('Unauthorized profile access')
+  }
+
+  return user.id
+}
 
 function normalizePhoneDigits(value = '') {
   return String(value ?? '').replace(/[^\d+]/g, '')
@@ -59,17 +70,12 @@ function buildNormalizedPhoneNumber(phoneNumber) {
 }
 
 export async function getPhoneContact(profileId) {
-  if (!profileId) {
-    return {
-      phoneNumber: '',
-      phoneStatus: 'not_provided',
-    }
-  }
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const [{ data: profileData, error: profileError }, { data: verificationData, error: verificationError }] =
     await Promise.all([
-      supabase.from('profiles').select('phone_number').eq('id', profileId).maybeSingle(),
-      supabase.from('profile_verifications').select('phone_status').eq('profile_id', profileId).maybeSingle(),
+      supabase.from('profiles').select('phone_number').eq('id', ownedProfileId).maybeSingle(),
+      supabase.from('profile_verifications').select('phone_status').eq('profile_id', ownedProfileId).maybeSingle(),
     ])
 
   if (profileError) {
@@ -90,9 +96,7 @@ export async function getPhoneContact(profileId) {
 }
 
 export async function savePhoneContact(profileId, phoneNumber) {
-  if (!profileId) {
-    throw new Error('No pudimos guardar el teléfono porque falta el profile.')
-  }
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const normalizedPhoneNumber = buildNormalizedPhoneNumber(phoneNumber)
 
@@ -102,14 +106,14 @@ export async function savePhoneContact(profileId, phoneNumber) {
       phone_number: normalizedPhoneNumber,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', profileId)
+    .eq('id', ownedProfileId)
 
   if (profileError) {
     throw profileError
   }
 
   const { error: verificationError } = await supabase.from('profile_verifications').upsert({
-    profile_id: profileId,
+    profile_id: ownedProfileId,
     phone_status: 'provided',
     updated_at: new Date().toISOString(),
   })
@@ -125,9 +129,7 @@ export async function savePhoneContact(profileId, phoneNumber) {
 }
 
 export async function skipPhoneContact(profileId) {
-  if (!profileId) {
-    throw new Error('No pudimos omitir el teléfono porque falta el profile.')
-  }
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const { error: profileError } = await supabase
     .from('profiles')
@@ -135,14 +137,14 @@ export async function skipPhoneContact(profileId) {
       phone_number: null,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', profileId)
+    .eq('id', ownedProfileId)
 
   if (profileError) {
     throw profileError
   }
 
   const { error: verificationError } = await supabase.from('profile_verifications').upsert({
-    profile_id: profileId,
+    profile_id: ownedProfileId,
     phone_status: 'not_provided',
     updated_at: new Date().toISOString(),
   })

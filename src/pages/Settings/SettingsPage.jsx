@@ -19,7 +19,9 @@ const DEFAULT_FORM = {
   bio: '',
   avatarFile: null,
   theme: 'light',
+  searchRadiusEnabled: false,
   showApproxLocation: true,
+  visibleZoneName: '',
   availabilityEnabled: true,
   notifyNearbyTasks: true,
   notifyMessages: true,
@@ -33,7 +35,9 @@ function buildFormFromProfile(profile) {
     username: profile?.username || '',
     bio: profile?.bio || '',
     theme: profile?.theme === 'dark' ? 'dark' : 'light',
+    searchRadiusEnabled: Boolean(profile?.search_radius_enabled),
     showApproxLocation: profile?.show_approx_location ?? true,
+    visibleZoneName: profile?.visible_zone_name || '',
     availabilityEnabled: profile?.availability_enabled ?? true,
     notifyNearbyTasks: profile?.notify_nearby_tasks ?? true,
     notifyMessages: profile?.notify_messages ?? true,
@@ -47,7 +51,9 @@ function buildFormSnapshotKey(form) {
     username: sanitizeText(form?.username, 30).toLowerCase(),
     bio: sanitizeText(form?.bio, 160),
     theme: form?.theme === 'dark' ? 'dark' : 'light',
+    searchRadiusEnabled: Boolean(form?.searchRadiusEnabled),
     showApproxLocation: Boolean(form?.showApproxLocation),
+    visibleZoneName: sanitizeText(form?.visibleZoneName, 80),
     availabilityEnabled: Boolean(form?.availabilityEnabled),
     notifyNearbyTasks: Boolean(form?.notifyNearbyTasks),
     notifyMessages: Boolean(form?.notifyMessages),
@@ -174,7 +180,9 @@ export default function SettingsPage() {
         username: sanitizeText(form.username, 30).toLowerCase(),
         bio: sanitizeText(form.bio, 160),
         theme: form.theme,
-        showApproxLocation: form.showApproxLocation,
+        search_radius_enabled: Boolean(form.searchRadiusEnabled),
+        show_approx_location: Boolean(form.showApproxLocation),
+        visible_zone_name: sanitizeText(form.visibleZoneName, 80),
         availabilityEnabled: form.availabilityEnabled,
         notifyNearbyTasks: form.notifyNearbyTasks,
         notifyMessages: form.notifyMessages,
@@ -185,8 +193,16 @@ export default function SettingsPage() {
       setProfile(nextProfile)
       const nextForm = buildFormFromProfile(nextProfile)
       setForm(nextForm)
-      setSavedSnapshotKey(buildFormSnapshotKey(nextForm))
-      refreshProfile().catch(() => {})
+
+      const refreshedProfile = await refreshProfile()
+      if (!refreshedProfile) {
+        throw new Error('No se pudieron guardar los cambios')
+      }
+
+      const refreshedForm = buildFormFromProfile(refreshedProfile)
+      setProfile(refreshedProfile)
+      setForm(refreshedForm)
+      setSavedSnapshotKey(buildFormSnapshotKey(refreshedForm))
       setSaveState('idle')
       showFeedback({ type: 'success', text: 'Guardado' })
       return true

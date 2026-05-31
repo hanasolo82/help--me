@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { sanitizeText } from '../../../lib/security'
 import { getLocationLabel } from '../../../features/profile/utils/profileFormatters'
 import styles from '../SettingsPage.module.css'
@@ -6,16 +6,9 @@ import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
 
 export default function MapSettings() {
-  const { form, profile } = useSettings()
+  const { form, profile, setField } = useSettings()
   const [zoneEditing, setZoneEditing] = useState(false)
-  const [zoneDraft, setZoneDraft] = useState(() => getLocationLabel(profile))
-  const [radiusEnabled, setRadiusEnabled] = useState(() => Boolean(profile?.search_radius_km != null))
-
-  useEffect(() => {
-    if (!zoneEditing) {
-      setZoneDraft(getLocationLabel(profile))
-    }
-  }, [profile, zoneEditing])
+  const visibleZoneLabel = form.visibleZoneName || getLocationLabel(profile)
 
   return (
     <SettingsCard
@@ -28,7 +21,7 @@ export default function MapSettings() {
         <div className={styles.mapZoneRow}>
           <div className={styles.mapZoneCopy}>
             <span>Zona en la que apareces visible</span>
-            <strong>{zoneDraft || getLocationLabel(profile)}</strong>
+            <strong>{visibleZoneLabel}</strong>
           </div>
 
           <button
@@ -43,8 +36,8 @@ export default function MapSettings() {
         {zoneEditing ? (
           <input
             className={styles.mapZoneInput}
-            value={zoneDraft}
-            onChange={(event) => setZoneDraft(sanitizeText(event.target.value, 80))}
+            value={form.visibleZoneName}
+            onChange={(event) => setField('visibleZoneName', sanitizeText(event.target.value, 80))}
             placeholder="Madrid centro"
             aria-label="Zona visible"
           />
@@ -54,7 +47,7 @@ export default function MapSettings() {
           <div className={styles.mapToggleCopy}>
             <strong>Usar radio de búsqueda</strong>
             <p>
-              {radiusEnabled
+              {form.searchRadiusEnabled
                 ? 'Limita los resultados a una distancia cercana desde tu posición.'
                 : 'Se mostrarán resultados de toda el área visible del mapa.'}
             </p>
@@ -63,13 +56,13 @@ export default function MapSettings() {
           <button
             type="button"
             className={
-              radiusEnabled
+              form.searchRadiusEnabled
                 ? `${styles.settingsSwitch} ${styles.settingsSwitchOn} ${styles.settingsSwitchInline}`
                 : `${styles.settingsSwitch} ${styles.settingsSwitchInline}`
             }
-            onClick={() => setRadiusEnabled((current) => !current)}
+            onClick={() => setField('searchRadiusEnabled', !form.searchRadiusEnabled)}
             role="switch"
-            aria-checked={radiusEnabled}
+            aria-checked={form.searchRadiusEnabled}
             aria-label="Usar radio de búsqueda"
           >
             <span className={styles.settingsSwitchThumb} aria-hidden="true" />
