@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { getTaskById, markTaskCompleted } from '../../services/tasksService'
+import { releaseTaskPayment } from '../../services/paymentsService'
 import { getOrCreateChatByTaskId } from '../../services/chatService'
 
 // Pantalla de cierre: el creador confirma completada. No hay tabla ratings en este esquema.
@@ -43,6 +44,8 @@ export default function TaskComplete() {
         const updated = await markTaskCompleted(task.id)
         setTask(updated)
       }
+
+      await releaseTaskPayment(task.id)
 
       setStatus('done')
       navigate('/home', { replace: true })

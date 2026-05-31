@@ -25,7 +25,7 @@ export default function MyRequestsPanel({
 
   const openTasks = tasks.filter((task) => task.status === 'open')
   const inProgressTasks = tasks.filter((task) => ['assigned', 'in_progress'].includes(task.status))
-  const historyTasks = tasks.filter((task) => ['completed', 'cancelled'].includes(task.status))
+  const historyTasks = tasks.filter((task) => ['completed', 'closed', 'cancelled'].includes(task.status))
   const latestOpenTask = openTasks[0] || null
 
   return (

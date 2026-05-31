@@ -1,5 +1,4 @@
 import VerificationBadges from '../../../verification/components/VerificationBadges'
-import styles from '../../styles/profilePublicView.module.css'
 import ProfileContentSection from '../ProfileContentSection'
 
 export default function ProfileTrustPanel({ profile, verifications }) {

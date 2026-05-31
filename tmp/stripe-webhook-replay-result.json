@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "replayed_at": "2026-05-31T20:45:52.654Z",
+  "stripe_event_id": "evt_smoke_transfer_paid_5fdfc700-2a9",
+  "event_type": "transfer.paid",
+  "before_status": "processed",
+  "after_status": "processed",
+  "replay_result": {
+    "duplicate": true,
+    "processed": true,
+    "eventId": "7bf8d412-2026-4dbf-90b0-72fd9eda3a4c",
+    "eventType": "transfer.paid"
+  },
+  "duplicate": true
+}

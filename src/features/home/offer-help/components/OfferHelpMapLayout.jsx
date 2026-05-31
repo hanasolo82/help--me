@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { createOrGetDirectConversation } from '../../../../services/chatService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
@@ -29,7 +29,6 @@ export default function OfferHelpMapLayout({
   lead = 'Selecciona una solicitud, revisa el detalle y contacta solo si sigue abierta.',
 }) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [mobileView, setMobileView] = useState('map')
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [favoriteTaskIds, setFavoriteTaskIds] = useState([])

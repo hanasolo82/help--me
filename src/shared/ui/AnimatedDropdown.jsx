@@ -128,24 +128,41 @@ export function AnimatedDropdown({
         </div>
       </DropdownContext.Provider>
     ),
-    [align, children, className, closeOnSelect, menuId, onOpenChange, position, visible, width],
+    [children, closeOnSelect, dropdownClassName, menuId, onOpenChange, position, visible, width],
   )
 
   useEffect(() => {
     if (isOpen) {
-      setRendered(true)
-      const rafId = window.requestAnimationFrame(() => setVisible(true))
+      let cancelled = false
+      let rafId = null
 
-      return () => window.cancelAnimationFrame(rafId)
+      queueMicrotask(() => {
+        if (cancelled) return
+        setRendered(true)
+        rafId = window.requestAnimationFrame(() => setVisible(true))
+      })
+
+      return () => {
+        cancelled = true
+        if (rafId !== null) {
+          window.cancelAnimationFrame(rafId)
+        }
+      }
     }
 
-    setVisible(false)
-    closeTimerRef.current = window.setTimeout(() => {
-      setRendered(false)
-      setPosition(null)
-    }, CLOSE_ANIMATION_MS)
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setVisible(false)
+      closeTimerRef.current = window.setTimeout(() => {
+        setRendered(false)
+        setPosition(null)
+      }, CLOSE_ANIMATION_MS)
+    })
 
     return () => {
+      cancelled = true
       if (closeTimerRef.current) {
         window.clearTimeout(closeTimerRef.current)
       }

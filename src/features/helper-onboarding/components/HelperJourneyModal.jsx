@@ -181,7 +181,16 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
   useEffect(() => {
     if (!open) return
 
-    setJourneyDraft((current) => mergeHelperJourneyDraft(current, helperDraftSeed))
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setJourneyDraft((current) => mergeHelperJourneyDraft(current, helperDraftSeed))
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [helperDraftSeed, open])
 
   const handleClose = useCallback(() => {
@@ -271,7 +280,16 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
   useEffect(() => {
     if (!open) return
 
-    setStepIndex((current) => Math.min(current, Math.max(flowSteps.length - 1, 0)))
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setStepIndex((current) => Math.min(current, Math.max(flowSteps.length - 1, 0)))
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [flowSteps.length, open])
 
   useEffect(() => {

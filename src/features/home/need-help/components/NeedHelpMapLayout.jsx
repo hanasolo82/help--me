@@ -97,7 +97,16 @@ export default function NeedHelpMapLayout({
   useEffect(() => {
     const nextRadiusKm = Number(profile?.search_radius_km ?? 10)
     if (Number.isFinite(nextRadiusKm)) {
-      setRadiusKm(nextRadiusKm || 10)
+      let cancelled = false
+
+      queueMicrotask(() => {
+        if (cancelled) return
+        setRadiusKm(nextRadiusKm || 10)
+      })
+
+      return () => {
+        cancelled = true
+      }
     }
   }, [profile?.search_radius_km])
 

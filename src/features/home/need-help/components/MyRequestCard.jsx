@@ -5,6 +5,7 @@ const STATUS_COPY = {
   assigned: 'Asignada',
   in_progress: 'En curso',
   completed: 'Completada',
+  closed: 'Cerrada',
   cancelled: 'Cancelada',
   draft: 'Borrador',
 }
@@ -75,7 +76,7 @@ export default function MyRequestCard({
           </>
         )}
 
-        {task.status === 'completed' && (
+        {['completed', 'closed'].includes(task.status) && (
           <>
             <button type="button" className="secondary-action" onClick={() => onOpenSummary?.(task)}>
               Ver resumen

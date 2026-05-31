@@ -78,8 +78,16 @@ export default function AuthCallback() {
 
   useEffect(() => {
     if (!hasAuthCallbackPayload) {
-      setAuthTimeoutElapsed(true)
-      return undefined
+      let cancelled = false
+
+      queueMicrotask(() => {
+        if (cancelled) return
+        setAuthTimeoutElapsed(true)
+      })
+
+      return () => {
+        cancelled = true
+      }
     }
 
     const timeoutId = window.setTimeout(() => {

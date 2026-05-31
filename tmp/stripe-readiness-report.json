@@ -1,0 +1,1548 @@
+{
+  "generated_at": "2026-05-31T20:55:06.612Z",
+  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+  "inspect_run": {
+    "ok": true,
+    "status": 0,
+    "signal": null
+  },
+  "reconcile_run": {
+    "ok": true,
+    "status": 0,
+    "signal": null
+  },
+  "smoke": {
+    "ok": true,
+    "happy_path_ok": true,
+    "release_ok": true,
+    "resilience_ok": true
+  },
+  "inspect": {
+    "ok": true,
+    "inspected_at": "2026-05-31T20:55:04.074Z",
+    "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+    "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+    "transfer_id": "9fb2278c-01a1-43ba-9849-02d1aaa14af7",
+    "summary": {
+      "payment": {
+        "id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+        "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+        "payer_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+        "receiver_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "amount": 12.34,
+        "platform_fee": 0,
+        "status": "released",
+        "stripe_payment_intent_id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+        "created_at": "2026-05-31T20:54:10.675378+00:00",
+        "updated_at": "2026-05-31T20:54:39.874+00:00",
+        "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+        "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "currency": "eur",
+        "amount_cents": 1234,
+        "platform_fee_cents": 0,
+        "helper_amount_cents": 1234,
+        "stripe_checkout_session_id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli",
+        "stripe_checkout_session_status": "unpaid",
+        "stripe_charge_id": "ch_3TdGNDJQ5UFpze3C1SlfZkaX",
+        "stripe_balance_transaction_id": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+        "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+        "idempotency_key": "checkout:task:ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+        "metadata": {
+          "release": {
+            "requested_at": "2026-05-31T20:54:28.975Z",
+            "requested_by": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+          },
+          "checkout": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "requested_at": "2026-05-31T20:54:10.522Z"
+          },
+          "reconciliation": {
+            "reason": "Transfer event arrived out of order or after a later local transfer state.",
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "source_transaction": null
+          }
+        },
+        "reconciliation_status": "needs_review",
+        "last_reconciled_at": "2026-05-31T20:54:39.874+00:00",
+        "reconciliation_error": "Transfer event arrived out of order or after a later local transfer state.",
+        "captured_at": "2026-05-31T20:54:23.857+00:00",
+        "held_at": "2026-05-31T20:54:23.857+00:00",
+        "released_at": "2026-05-31T20:54:34.232+00:00",
+        "refunded_at": null,
+        "disputed_at": null,
+        "voided_at": null,
+        "stripe_transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ"
+      },
+      "task": {
+        "id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+        "title": "Stripe smoke task",
+        "description": "Temporary task used to validate the real Stripe happy path.",
+        "price": 12.34,
+        "category": "Recados",
+        "lat": 40.4168,
+        "lng": -3.7038,
+        "status": "closed",
+        "created_by": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+        "accepted_by": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "created_at": "2026-05-31T20:54:10.320457+00:00",
+        "published_at": "2026-05-31T20:54:10.166+00:00",
+        "cancelled_at": null,
+        "modified_at": "2026-05-31T20:54:24.218+00:00",
+        "updated_at": "2026-05-31T20:54:35.108992+00:00",
+        "image_url": null,
+        "completed_at": "2026-05-31T20:54:26.214+00:00"
+      },
+      "transfer": {
+        "id": "9fb2278c-01a1-43ba-9849-02d1aaa14af7",
+        "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+        "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+        "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "connect_account_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "stripe_transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+        "stripe_balance_transaction_id": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+        "amount_cents": 1234,
+        "currency": "eur",
+        "status": "paid",
+        "failure_code": null,
+        "reversed_at": null,
+        "metadata": {
+          "event_id": "evt_smoke_transfer_paid_8485f821-a85",
+          "event_type": "transfer.paid"
+        },
+        "created_at": "2026-05-31T20:54:29.201824+00:00",
+        "updated_at": "2026-05-31T20:54:33.763+00:00",
+        "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+        "idempotency_key": "transfer:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:tr_1TdGNNJQ5UFpze3CvNMj7ApJ:evt_smoke_transfer_paid_8485f821-a85"
+      },
+      "ledger_entries": [
+        {
+          "id": "d4b73d55-978e-46b1-aa40-66825b6ea5ae",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "checkout_completed",
+          "direction": "credit",
+          "account_code": "payments.checkout_completed",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "checkout.session",
+          "stripe_object_id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli",
+          "source_event_id": "e66bb20f-1e47-48a7-8c61-343f820db503",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:checkout_completed:evt_smoke_checkout_2ed42b97-827:cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "event_type": "checkout.session.completed",
+            "stripe_event_id": "evt_smoke_checkout_2ed42b97-827"
+          },
+          "created_at": "2026-05-31T20:54:22.316951+00:00"
+        },
+        {
+          "id": "930d06b6-873c-4f62-b3b2-9489638fa6f4",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "charge_captured",
+          "direction": "credit",
+          "account_code": "payments.charge_captured",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "payment_intent",
+          "stripe_object_id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+          "source_event_id": "07c48aed-4edb-476b-ace3-8816fd688b82",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:charge_captured:evt_smoke_pi_8275ee18-e1c:pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "event_type": "payment_intent.succeeded",
+            "stripe_event_id": "evt_smoke_pi_8275ee18-e1c"
+          },
+          "created_at": "2026-05-31T20:54:25.030054+00:00"
+        },
+        {
+          "id": "0630d788-bd1b-45fe-ab6d-8bb180f3389c",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "funds_held",
+          "direction": "credit",
+          "account_code": "payments.funds_held",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "payment_intent",
+          "stripe_object_id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+          "source_event_id": "07c48aed-4edb-476b-ace3-8816fd688b82",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:funds_held:evt_smoke_pi_8275ee18-e1c:pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "event_type": "payment_intent.succeeded",
+            "stripe_event_id": "evt_smoke_pi_8275ee18-e1c"
+          },
+          "created_at": "2026-05-31T20:54:25.315781+00:00"
+        },
+        {
+          "id": "2623a901-2f59-44fb-944f-052191037e1b",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "release_authorized",
+          "direction": "debit",
+          "account_code": "payments.release_authorized",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "transfer",
+          "stripe_object_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "source_event_id": null,
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:release:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:release_authorized:draft",
+          "created_by_system": "backend",
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "event_type": "release_authorized",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "transfer_id": null
+          },
+          "created_at": "2026-05-31T20:54:29.02732+00:00"
+        },
+        {
+          "id": "713c2112-fb19-4f71-b405-505f9e7ba34e",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "transfer_created",
+          "direction": "debit",
+          "account_code": "connect.transfer_created",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "transfer.created",
+          "stripe_object_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+          "source_event_id": "b4b65fec-c688-4fb9-92e2-1868a5337e51",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:transfer_created:evt_smoke_transfer_created_4c3e4a66-24d:tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "status": "pending",
+            "event_type": "transfer.created",
+            "stripe_event_id": "evt_smoke_transfer_created_4c3e4a66-24d"
+          },
+          "created_at": "2026-05-31T20:54:31.821845+00:00"
+        },
+        {
+          "id": "b945bb50-dd8c-4249-b3b9-1095bb9f4d35",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "transfer_paid",
+          "direction": "debit",
+          "account_code": "connect.transfer_paid",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "transfer.paid",
+          "stripe_object_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+          "source_event_id": "e154ae7b-510b-4bcc-b017-59eae93f48f9",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:transfer_paid:evt_smoke_transfer_paid_8485f821-a85:tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "status": "paid",
+            "event_type": "transfer.paid",
+            "stripe_event_id": "evt_smoke_transfer_paid_8485f821-a85"
+          },
+          "created_at": "2026-05-31T20:54:34.292556+00:00"
+        },
+        {
+          "id": "fd8a0605-59f6-4977-9ea2-c6b47fedf729",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "entry_type": "reconciliation_mismatch",
+          "direction": "debit",
+          "account_code": "reconciliation.mismatch",
+          "amount_cents": 1234,
+          "platform_fee_cents": 0,
+          "helper_amount_cents": 1234,
+          "currency": "eur",
+          "stripe_object_type": "payment",
+          "stripe_object_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "source_event_id": "5d8343bf-cf70-4641-a40f-ba8325179cf4",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "idempotency_key": "ledger:6a1af7d4-dcb5-4d0e-bd06-602f287683a5:reconciliation_mismatch:evt_smoke_transfer_out_of_order_85287273-ab8:6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "created_by_system": "stripe-webhook",
+          "metadata": {
+            "reason": "Transfer event arrived out of order or after a later local transfer state.",
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "source_transaction": null
+          },
+          "created_at": "2026-05-31T20:54:40.515699+00:00"
+        }
+      ],
+      "audit_events": [
+        {
+          "id": "4cfa586b-b9f0-4c55-9d9a-a045633c5a08",
+          "event_type": "checkout_session_created",
+          "severity": "info",
+          "actor_type": "backend",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "currency": "eur",
+            "amount_cents": 1234,
+            "checkout_session_id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": null,
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "stripe_checkout_session_id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli"
+          },
+          "created_at": "2026-05-31T20:54:19.020626+00:00"
+        },
+        {
+          "id": "924c41ae-3d37-46cf-a08f-35f9c5dfc029",
+          "event_type": "checkout_session_completed",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "amount_cents": 1234,
+            "payment_intent_id": null,
+            "checkout_session_id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_checkout_2ed42b97-827",
+          "metadata": {
+            "event_type": "checkout.session.completed",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:22.883955+00:00"
+        },
+        {
+          "id": "c2abafbd-e50d-4896-b4cb-a7fd00b6ae9d",
+          "event_type": "payment_intent_succeeded",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "charge_id": "ch_3TdGNDJQ5UFpze3C1SlfZkaX",
+            "amount_cents": 1234,
+            "payment_intent_id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+            "balance_transaction_id": "txn_3TdGNDJQ5UFpze3C1S5jIF2N"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_pi_8275ee18-e1c",
+          "metadata": {
+            "event_type": "payment_intent.succeeded",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:25.483443+00:00"
+        },
+        {
+          "id": "f5d531ca-85da-478a-997c-f2df3b243415",
+          "event_type": "payment_release_requested",
+          "severity": "info",
+          "actor_type": "requester",
+          "actor_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "task_status": "completed",
+            "payment_status": "held"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": null,
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:28.935268+00:00"
+        },
+        {
+          "id": "5eeadb3b-a4f6-4b0f-9d12-2536f6fbe856",
+          "event_type": "payment_release_authorized",
+          "severity": "info",
+          "actor_type": "requester",
+          "actor_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "transfer_id": "9fb2278c-01a1-43ba-9849-02d1aaa14af7",
+            "payment_status": "release_pending",
+            "transfer_status": "draft"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": null,
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+            "validation_audit_id": "f5d531ca-85da-478a-997c-f2df3b243415",
+            "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+          },
+          "created_at": "2026-05-31T20:54:29.362716+00:00"
+        },
+        {
+          "id": "f1bf6a08-650a-4538-af7f-71e9ea93812c",
+          "event_type": "transfer_created",
+          "severity": "info",
+          "actor_type": "requester",
+          "actor_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "payment_status": "release_pending",
+            "transfer_status": "pending"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": null,
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+            "stripe_transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+          },
+          "created_at": "2026-05-31T20:54:30.760351+00:00"
+        },
+        {
+          "id": "1ea7e4a2-4646-4a51-9725-4f6b25f6d932",
+          "event_type": "transfer_created",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "status": "pending",
+            "task_closed": false,
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "amount_cents": 1234,
+            "payment_status": "transferring"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_transfer_created_4c3e4a66-24d",
+          "metadata": {
+            "event_type": "transfer.created",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:32.437815+00:00"
+        },
+        {
+          "id": "8211ec6e-ecdd-4147-9662-3041948bbf87",
+          "event_type": "transfer_paid",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "status": "paid",
+            "task_closed": true,
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "amount_cents": 1234,
+            "payment_status": "released"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_transfer_paid_8485f821-a85",
+          "metadata": {
+            "event_type": "transfer.paid",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:35.860879+00:00"
+        },
+        {
+          "id": "73c4b4ce-1657-4419-98f4-089bd0188552",
+          "event_type": "release_blocked",
+          "severity": "warning",
+          "actor_type": "requester",
+          "actor_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "reason": "La transferencia ya existe o ya fue procesada.",
+            "transfer_status": "paid"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": null,
+          "metadata": {
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "transfer_id": "9fb2278c-01a1-43ba-9849-02d1aaa14af7"
+          },
+          "created_at": "2026-05-31T20:54:37.501423+00:00"
+        },
+        {
+          "id": "91a6bd7c-b1db-468a-ae15-3e1303c62356",
+          "event_type": "transfer_created",
+          "severity": "warning",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": {
+            "status": "pending",
+            "task_closed": false,
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "amount_cents": 1234,
+            "payment_status": "released"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_transfer_out_of_order_85287273-ab8",
+          "metadata": {
+            "event_type": "transfer.created",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5"
+          },
+          "created_at": "2026-05-31T20:54:39.343847+00:00"
+        },
+        {
+          "id": "a6c67b43-f004-49dd-900a-d77c2ec74db2",
+          "event_type": "reconciliation_mismatch",
+          "severity": "warning",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "payment",
+          "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "before_state": null,
+          "after_state": null,
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_transfer_out_of_order_85287273-ab8",
+          "metadata": {
+            "reason": "Transfer event arrived out of order or after a later local transfer state.",
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+            "source_transaction": null
+          },
+          "created_at": "2026-05-31T20:54:39.928319+00:00"
+        },
+        {
+          "id": "47c82d80-1ea0-4e23-bdf5-d2769d8ed329",
+          "event_type": "task_moved_to_in_progress",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "task",
+          "entity_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+          "before_state": {
+            "status": "assigned",
+            "accepted_by": "b1d4a458-3101-4a42-b88f-7fa4c8d42976"
+          },
+          "after_state": {
+            "status": "in_progress",
+            "accepted_by": "b1d4a458-3101-4a42-b88f-7fa4c8d42976"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_pi_8275ee18-e1c",
+          "metadata": {
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "payment_intent_id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H"
+          },
+          "created_at": "2026-05-31T20:54:24.738748+00:00"
+        },
+        {
+          "id": "1bd70b1e-e1f3-494a-850e-53a4eaebf869",
+          "event_type": "task_closed_after_transfer_paid",
+          "severity": "info",
+          "actor_type": "stripe",
+          "actor_profile_id": null,
+          "entity_type": "task",
+          "entity_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+          "before_state": {
+            "status": "completed"
+          },
+          "after_state": {
+            "status": "closed"
+          },
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "stripe_event_id": "evt_smoke_transfer_paid_8485f821-a85",
+          "metadata": {
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "transfer_id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ"
+          },
+          "created_at": "2026-05-31T20:54:35.4915+00:00"
+        }
+      ],
+      "webhook_events": [
+        {
+          "id": "e66bb20f-1e47-48a7-8c61-343f820db503",
+          "stripe_event_id": "evt_smoke_checkout_2ed42b97-827",
+          "type": "checkout.session.completed",
+          "livemode": false,
+          "stripe_account_id": null,
+          "payload": {
+            "id": "evt_smoke_checkout_2ed42b97-827",
+            "data": {
+              "object": {
+                "id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli",
+                "url": "https://checkout.stripe.com/c/pay/cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRZDxrR09UMFBDdX9gNkZEdG1TRHZxcGRzUENTU39LQVBualxPYj1VVjNLUEhodGN3fFVGaFd0Tm5wMmxCVnVpb082Y2xDUGRAYkFPUzx2SUBtS218V041NUAzUHBcd0FSJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+                "mode": "payment",
+                "locale": null,
+                "object": "checkout.session",
+                "status": "open",
+                "consent": null,
+                "created": 1780260851,
+                "invoice": null,
+                "ui_mode": "hosted",
+                "currency": "eur",
+                "customer": null,
+                "livemode": false,
+                "metadata": {
+                  "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                  "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                  "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                  "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                },
+                "discounts": [],
+                "cancel_url": "http://localhost:5173/task/ac135cf2-ce49-4556-88a2-0cc419cd9e6e?checkout=cancelled",
+                "expires_at": 1780347251,
+                "custom_text": {
+                  "submit": null,
+                  "after_submit": null,
+                  "shipping_address": null,
+                  "terms_of_service_acceptance": null
+                },
+                "permissions": null,
+                "submit_type": null,
+                "success_url": "http://localhost:5173/stripe/return?flow=payment&task_id=ac135cf2-ce49-4556-88a2-0cc419cd9e6e&payment_id=6a1af7d4-dcb5-4d0e-bd06-602f287683a5&session_id=%7BCHECKOUT_SESSION_ID%7D",
+                "amount_total": 1234,
+                "payment_link": null,
+                "setup_intent": null,
+                "subscription": null,
+                "automatic_tax": {
+                  "status": null,
+                  "enabled": false,
+                  "provider": null,
+                  "liability": null
+                },
+                "client_secret": null,
+                "custom_fields": [],
+                "shipping_cost": null,
+                "total_details": {
+                  "amount_tax": 0,
+                  "amount_discount": 0,
+                  "amount_shipping": 0
+                },
+                "customer_email": "stripe-smoke-requester-1780260849176-2f97bc62@example.com",
+                "origin_context": null,
+                "payment_intent": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+                "payment_status": "unpaid",
+                "recovered_from": null,
+                "wallet_options": null,
+                "amount_subtotal": 1234,
+                "adaptive_pricing": {
+                  "enabled": true
+                },
+                "after_expiration": null,
+                "customer_account": null,
+                "customer_details": {
+                  "name": null,
+                  "email": "stripe-smoke-requester-1780260849176-2f97bc62@example.com",
+                  "phone": null,
+                  "address": null,
+                  "tax_ids": null,
+                  "tax_exempt": "none",
+                  "business_name": null,
+                  "individual_name": null
+                },
+                "invoice_creation": {
+                  "enabled": false,
+                  "invoice_data": {
+                    "footer": null,
+                    "issuer": null,
+                    "metadata": {},
+                    "description": null,
+                    "custom_fields": null,
+                    "account_tax_ids": null,
+                    "rendering_options": null
+                  }
+                },
+                "managed_payments": {
+                  "enabled": false
+                },
+                "shipping_details": null,
+                "shipping_options": [],
+                "branding_settings": {
+                  "icon": null,
+                  "logo": null,
+                  "font_family": "default",
+                  "border_style": "rounded",
+                  "button_color": "#0074d4",
+                  "display_name": "Entorno de prueba de helpMe",
+                  "background_color": "#ffffff"
+                },
+                "customer_creation": "if_required",
+                "consent_collection": null,
+                "client_reference_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                "currency_conversion": null,
+                "payment_method_types": [
+                  "card",
+                  "bancontact",
+                  "eps",
+                  "klarna",
+                  "link",
+                  "mb_way",
+                  "amazon_pay",
+                  "satispay"
+                ],
+                "allow_promotion_codes": null,
+                "collected_information": {
+                  "business_name": null,
+                  "individual_name": null,
+                  "shipping_details": null
+                },
+                "integration_identifier": null,
+                "payment_method_options": {
+                  "card": {
+                    "request_three_d_secure": "automatic"
+                  }
+                },
+                "phone_number_collection": {
+                  "enabled": false
+                },
+                "payment_method_collection": "if_required",
+                "billing_address_collection": null,
+                "shipping_address_collection": null,
+                "saved_payment_method_options": null,
+                "payment_method_configuration_details": {
+                  "id": "pmc_1Ta9nnJQ5UFpze3CY63HfW8c",
+                  "parent": null
+                }
+              }
+            },
+            "type": "checkout.session.completed",
+            "account": null,
+            "livemode": false
+          },
+          "payload_hash": "0d8cc444336e9c058b10b7915fc0422f8cac5f4f4c85eb476ee0896d536b8df0",
+          "processing_status": "processed",
+          "processing_attempts": 1,
+          "error_message": null,
+          "received_at": "2026-05-31T20:54:20.598+00:00",
+          "processed_at": "2026-05-31T20:54:22.827+00:00",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b"
+        },
+        {
+          "id": "07c48aed-4edb-476b-ace3-8816fd688b82",
+          "stripe_event_id": "evt_smoke_pi_8275ee18-e1c",
+          "type": "payment_intent.succeeded",
+          "livemode": false,
+          "stripe_account_id": null,
+          "payload": {
+            "id": "evt_smoke_pi_8275ee18-e1c",
+            "data": {
+              "object": {
+                "id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+                "amount": 1234,
+                "object": "payment_intent",
+                "review": null,
+                "source": null,
+                "status": "succeeded",
+                "created": 1780260859,
+                "invoice": null,
+                "currency": "eur",
+                "customer": null,
+                "livemode": false,
+                "metadata": {
+                  "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                  "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                  "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                  "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                },
+                "shipping": null,
+                "processing": null,
+                "application": null,
+                "canceled_at": null,
+                "description": null,
+                "next_action": null,
+                "on_behalf_of": null,
+                "client_secret": "pi_3TdGNDJQ5UFpze3C1ktjbm3H_secret_yrF6yDPrushcRC9dNKOlZN135",
+                "latest_charge": {
+                  "id": "ch_3TdGNDJQ5UFpze3C1SlfZkaX",
+                  "paid": true,
+                  "order": null,
+                  "amount": 1234,
+                  "object": "charge",
+                  "review": null,
+                  "source": null,
+                  "status": "succeeded",
+                  "created": 1780260860,
+                  "dispute": null,
+                  "invoice": null,
+                  "outcome": {
+                    "type": "authorized",
+                    "reason": null,
+                    "risk_level": "normal",
+                    "risk_score": 12,
+                    "advice_code": null,
+                    "network_status": "approved_by_network",
+                    "seller_message": "Payment complete.",
+                    "network_advice_code": null,
+                    "network_decline_code": null
+                  },
+                  "captured": true,
+                  "currency": "eur",
+                  "customer": null,
+                  "disputed": false,
+                  "livemode": false,
+                  "metadata": {
+                    "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                    "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                    "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                    "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                    "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                  },
+                  "refunded": false,
+                  "shipping": null,
+                  "application": null,
+                  "description": null,
+                  "destination": null,
+                  "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xVGE5bkJKUTVVRnB6ZTNDKPy_8tAGMgbIMni3UMQ6LBZSn9hfZfBMOKFtgOGO0xbXFVnpTAZ93DOwmjZ4LEj6rx39r30o_BJPnLJv",
+                  "failure_code": null,
+                  "on_behalf_of": null,
+                  "fraud_details": {},
+                  "radar_options": {},
+                  "receipt_email": null,
+                  "transfer_data": null,
+                  "payment_intent": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+                  "payment_method": "pm_1TdGNDJQ5UFpze3CaKOXS140",
+                  "receipt_number": null,
+                  "transfer_group": null,
+                  "amount_captured": 1234,
+                  "amount_refunded": 0,
+                  "application_fee": null,
+                  "billing_details": {
+                    "name": null,
+                    "email": null,
+                    "phone": null,
+                    "tax_id": null,
+                    "address": {
+                      "city": null,
+                      "line1": null,
+                      "line2": null,
+                      "state": null,
+                      "country": null,
+                      "postal_code": null
+                    }
+                  },
+                  "failure_message": null,
+                  "source_transfer": null,
+                  "balance_transaction": null,
+                  "statement_descriptor": null,
+                  "application_fee_amount": null,
+                  "payment_method_details": {
+                    "card": {
+                      "brand": "visa",
+                      "last4": "4242",
+                      "checks": {
+                        "cvc_check": "pass",
+                        "address_line1_check": null,
+                        "address_postal_code_check": null
+                      },
+                      "wallet": null,
+                      "country": "US",
+                      "funding": "credit",
+                      "mandate": null,
+                      "network": "visa",
+                      "exp_year": 2027,
+                      "exp_month": 5,
+                      "fingerprint": "71rEURq3w7skHy77",
+                      "overcapture": {
+                        "status": "unavailable",
+                        "maximum_amount_capturable": 1234
+                      },
+                      "installments": null,
+                      "multicapture": {
+                        "status": "unavailable"
+                      },
+                      "network_token": {
+                        "used": false
+                      },
+                      "three_d_secure": null,
+                      "regulated_status": "unregulated",
+                      "amount_authorized": 1234,
+                      "ds_transaction_id": null,
+                      "authorization_code": "866767",
+                      "transaction_link_id": null,
+                      "extended_authorization": {
+                        "status": "disabled"
+                      },
+                      "network_transaction_id": "554911469858211",
+                      "incremental_authorization": {
+                        "status": "unavailable"
+                      }
+                    },
+                    "type": "card"
+                  },
+                  "failure_balance_transaction": null,
+                  "statement_descriptor_suffix": null,
+                  "calculated_statement_descriptor": "Stripe"
+                },
+                "receipt_email": null,
+                "transfer_data": null,
+                "amount_details": {
+                  "tip": {}
+                },
+                "capture_method": "automatic_async",
+                "payment_method": "pm_1TdGNDJQ5UFpze3CaKOXS140",
+                "transfer_group": null,
+                "amount_received": 1234,
+                "customer_account": null,
+                "managed_payments": {
+                  "enabled": false
+                },
+                "amount_capturable": 0,
+                "last_payment_error": null,
+                "setup_future_usage": null,
+                "cancellation_reason": null,
+                "confirmation_method": "automatic",
+                "payment_method_types": [
+                  "card",
+                  "link",
+                  "mb_way",
+                  "satispay"
+                ],
+                "statement_descriptor": null,
+                "application_fee_amount": null,
+                "payment_method_options": {
+                  "card": {
+                    "network": null,
+                    "installments": null,
+                    "mandate_options": null,
+                    "request_three_d_secure": "automatic"
+                  },
+                  "link": {
+                    "persistent_token": null
+                  },
+                  "mb_way": {},
+                  "satispay": {}
+                },
+                "automatic_payment_methods": {
+                  "enabled": true,
+                  "allow_redirects": "never"
+                },
+                "statement_descriptor_suffix": null,
+                "shared_payment_granted_token": null,
+                "excluded_payment_method_types": null,
+                "payment_method_configuration_details": {
+                  "id": "pmc_1Ta9nnJQ5UFpze3CY63HfW8c",
+                  "parent": null
+                }
+              }
+            },
+            "type": "payment_intent.succeeded",
+            "account": null,
+            "livemode": false
+          },
+          "payload_hash": "3d4c8b29e5eaff47998d51a66626ca9f740064b11fffc38308c27ef78894aa01",
+          "processing_status": "processed",
+          "processing_attempts": 1,
+          "error_message": null,
+          "received_at": "2026-05-31T20:54:22.908+00:00",
+          "processed_at": "2026-05-31T20:54:25.423+00:00",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b"
+        },
+        {
+          "id": "b4b65fec-c688-4fb9-92e2-1868a5337e51",
+          "stripe_event_id": "evt_smoke_transfer_created_4c3e4a66-24d",
+          "type": "transfer.created",
+          "livemode": false,
+          "stripe_account_id": null,
+          "payload": {
+            "id": "evt_smoke_transfer_created_4c3e4a66-24d",
+            "data": {
+              "object": {
+                "id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+                "amount": 1234,
+                "object": "transfer",
+                "created": 1780260869,
+                "currency": "eur",
+                "livemode": false,
+                "metadata": {
+                  "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                  "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                  "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                  "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                },
+                "reversed": false,
+                "reversals": {
+                  "url": "/v1/transfers/tr_1TdGNNJQ5UFpze3CvNMj7ApJ/reversals",
+                  "data": [],
+                  "object": "list",
+                  "has_more": false,
+                  "total_count": 0
+                },
+                "description": "HelpMe release for payment 6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                "destination": "acct_1TbOnSQsF7FooNYl",
+                "source_type": "card",
+                "transfer_group": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                "amount_reversed": 0,
+                "source_transaction": null,
+                "balance_transaction": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+                "destination_payment": "py_1TdGNNQsF7FooNYlm5nRVlwV"
+              }
+            },
+            "type": "transfer.created",
+            "account": null,
+            "livemode": false
+          },
+          "payload_hash": "78b859f345eeb852f3fd7b516646809c7dcc53701f3ed837edf62303b9bfe325",
+          "processing_status": "processed",
+          "processing_attempts": 1,
+          "error_message": null,
+          "received_at": "2026-05-31T20:54:30.893+00:00",
+          "processed_at": "2026-05-31T20:54:32.377+00:00",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b"
+        },
+        {
+          "id": "e154ae7b-510b-4bcc-b017-59eae93f48f9",
+          "stripe_event_id": "evt_smoke_transfer_paid_8485f821-a85",
+          "type": "transfer.paid",
+          "livemode": false,
+          "stripe_account_id": null,
+          "payload": {
+            "id": "evt_smoke_transfer_paid_8485f821-a85",
+            "data": {
+              "object": {
+                "id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+                "amount": 1234,
+                "object": "transfer",
+                "created": 1780260869,
+                "currency": "eur",
+                "livemode": false,
+                "metadata": {
+                  "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                  "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                  "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                  "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                },
+                "reversed": false,
+                "reversals": {
+                  "url": "/v1/transfers/tr_1TdGNNJQ5UFpze3CvNMj7ApJ/reversals",
+                  "data": [],
+                  "object": "list",
+                  "has_more": false,
+                  "total_count": 0
+                },
+                "description": "HelpMe release for payment 6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                "destination": "acct_1TbOnSQsF7FooNYl",
+                "source_type": "card",
+                "transfer_group": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                "amount_reversed": 0,
+                "source_transaction": null,
+                "balance_transaction": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+                "destination_payment": "py_1TdGNNQsF7FooNYlm5nRVlwV"
+              }
+            },
+            "type": "transfer.paid",
+            "account": null,
+            "livemode": false
+          },
+          "payload_hash": "bce4c976289e9bed34d21900a7dd3e266c448f92873e74213fc87d8ae3dd4f93",
+          "processing_status": "processed",
+          "processing_attempts": 1,
+          "error_message": null,
+          "received_at": "2026-05-31T20:54:32.82+00:00",
+          "processed_at": "2026-05-31T20:54:35.806+00:00",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b"
+        },
+        {
+          "id": "5d8343bf-cf70-4641-a40f-ba8325179cf4",
+          "stripe_event_id": "evt_smoke_transfer_out_of_order_85287273-ab8",
+          "type": "transfer.created",
+          "livemode": false,
+          "stripe_account_id": null,
+          "payload": {
+            "id": "evt_smoke_transfer_out_of_order_85287273-ab8",
+            "data": {
+              "object": {
+                "id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+                "amount": 1234,
+                "object": "transfer",
+                "created": 1780260869,
+                "currency": "eur",
+                "livemode": false,
+                "metadata": {
+                  "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                  "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                  "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+                  "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+                  "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635"
+                },
+                "reversed": false,
+                "reversals": {
+                  "url": "/v1/transfers/tr_1TdGNNJQ5UFpze3CvNMj7ApJ/reversals",
+                  "data": [],
+                  "object": "list",
+                  "has_more": false,
+                  "total_count": 0
+                },
+                "description": "HelpMe release for payment 6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+                "destination": "acct_1TbOnSQsF7FooNYl",
+                "source_type": "card",
+                "transfer_group": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+                "amount_reversed": 0,
+                "source_transaction": null,
+                "balance_transaction": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+                "destination_payment": "py_1TdGNNQsF7FooNYlm5nRVlwV"
+              }
+            },
+            "type": "transfer.created",
+            "account": null,
+            "livemode": false
+          },
+          "payload_hash": "1d07dd2fc13f89c47b102586c69aa1f3ce18c96b5143ecf581671f539ebad830",
+          "processing_status": "processed",
+          "processing_attempts": 1,
+          "error_message": null,
+          "received_at": "2026-05-31T20:54:37.615+00:00",
+          "processed_at": "2026-05-31T20:54:40.465+00:00",
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b"
+        }
+      ],
+      "connect_account": {
+        "profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+        "stripe_account_id": "acct_1TbOnSQsF7FooNYl",
+        "country": "ES",
+        "default_currency": "eur",
+        "charges_enabled": true,
+        "payouts_enabled": true,
+        "details_submitted": true,
+        "disabled_reason": null,
+        "capabilities": {},
+        "requirements": {},
+        "future_requirements": {},
+        "last_stripe_sync_at": "2026-05-26T17:39:46.461+00:00",
+        "created_at": "2026-05-26T15:39:45.145236+00:00",
+        "updated_at": "2026-05-28T19:51:26.434+00:00"
+      },
+      "totals": {
+        "ledger_entries": 7,
+        "audit_events": 13,
+        "webhook_events": 5
+      },
+      "stripe_payment_intent": {
+        "id": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+        "object": "payment_intent",
+        "amount": 1234,
+        "amount_capturable": 0,
+        "amount_details": {
+          "tip": {}
+        },
+        "amount_received": 1234,
+        "application": null,
+        "application_fee_amount": null,
+        "automatic_payment_methods": {
+          "allow_redirects": "never",
+          "enabled": true
+        },
+        "canceled_at": null,
+        "cancellation_reason": null,
+        "capture_method": "automatic_async",
+        "client_secret": "pi_3TdGNDJQ5UFpze3C1ktjbm3H_secret_yrF6yDPrushcRC9dNKOlZN135",
+        "confirmation_method": "automatic",
+        "created": 1780260859,
+        "currency": "eur",
+        "customer": null,
+        "customer_account": null,
+        "description": null,
+        "excluded_payment_method_types": null,
+        "invoice": null,
+        "last_payment_error": null,
+        "latest_charge": {
+          "id": "ch_3TdGNDJQ5UFpze3C1SlfZkaX",
+          "object": "charge",
+          "amount": 1234,
+          "amount_captured": 1234,
+          "amount_refunded": 0,
+          "application": null,
+          "application_fee": null,
+          "application_fee_amount": null,
+          "balance_transaction": "txn_3TdGNDJQ5UFpze3C1S5jIF2N",
+          "billing_details": {
+            "address": {
+              "city": null,
+              "country": null,
+              "line1": null,
+              "line2": null,
+              "postal_code": null,
+              "state": null
+            },
+            "email": null,
+            "name": null,
+            "phone": null,
+            "tax_id": null
+          },
+          "calculated_statement_descriptor": "Stripe",
+          "captured": true,
+          "created": 1780260860,
+          "currency": "eur",
+          "customer": null,
+          "description": null,
+          "destination": null,
+          "dispute": null,
+          "disputed": false,
+          "failure_balance_transaction": null,
+          "failure_code": null,
+          "failure_message": null,
+          "fraud_details": {},
+          "invoice": null,
+          "livemode": false,
+          "metadata": {
+            "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+            "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+            "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+            "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+            "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e"
+          },
+          "on_behalf_of": null,
+          "order": null,
+          "outcome": {
+            "advice_code": null,
+            "network_advice_code": null,
+            "network_decline_code": null,
+            "network_status": "approved_by_network",
+            "reason": null,
+            "risk_level": "normal",
+            "risk_score": 12,
+            "seller_message": "Payment complete.",
+            "type": "authorized"
+          },
+          "paid": true,
+          "payment_intent": "pi_3TdGNDJQ5UFpze3C1ktjbm3H",
+          "payment_method": "pm_1TdGNDJQ5UFpze3CaKOXS140",
+          "payment_method_details": {
+            "card": {
+              "amount_authorized": 1234,
+              "authorization_code": "866767",
+              "brand": "visa",
+              "checks": {
+                "address_line1_check": null,
+                "address_postal_code_check": null,
+                "cvc_check": "pass"
+              },
+              "country": "US",
+              "ds_transaction_id": null,
+              "exp_month": 5,
+              "exp_year": 2027,
+              "extended_authorization": {
+                "status": "disabled"
+              },
+              "fingerprint": "71rEURq3w7skHy77",
+              "funding": "credit",
+              "incremental_authorization": {
+                "status": "unavailable"
+              },
+              "installments": null,
+              "last4": "4242",
+              "mandate": null,
+              "multicapture": {
+                "status": "unavailable"
+              },
+              "network": "visa",
+              "network_token": {
+                "used": false
+              },
+              "network_transaction_id": "554911469858211",
+              "overcapture": {
+                "maximum_amount_capturable": 1234,
+                "status": "unavailable"
+              },
+              "regulated_status": "unregulated",
+              "three_d_secure": null,
+              "transaction_link_id": null,
+              "wallet": null
+            },
+            "type": "card"
+          },
+          "radar_options": {},
+          "receipt_email": null,
+          "receipt_number": null,
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xVGE5bkJKUTVVRnB6ZTNDKKfA8tAGMgYrCEDZPY46LBb07Ljxh9iKRE2LbMSwR2EQfQ41UWAC8MugKWPVD7HyV8oq52lnZrmjt1c8",
+          "refunded": false,
+          "review": null,
+          "shipping": null,
+          "source": null,
+          "source_transfer": null,
+          "statement_descriptor": null,
+          "statement_descriptor_suffix": null,
+          "status": "succeeded",
+          "transfer_data": null,
+          "transfer_group": null
+        },
+        "livemode": false,
+        "managed_payments": {
+          "enabled": false
+        },
+        "metadata": {
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e"
+        },
+        "next_action": null,
+        "on_behalf_of": null,
+        "payment_method": "pm_1TdGNDJQ5UFpze3CaKOXS140",
+        "payment_method_configuration_details": {
+          "id": "pmc_1Ta9nnJQ5UFpze3CY63HfW8c",
+          "parent": null
+        },
+        "payment_method_options": {
+          "card": {
+            "installments": null,
+            "mandate_options": null,
+            "network": null,
+            "request_three_d_secure": "automatic"
+          },
+          "link": {
+            "persistent_token": null
+          },
+          "mb_way": {},
+          "satispay": {}
+        },
+        "payment_method_types": [
+          "card",
+          "link",
+          "mb_way",
+          "satispay"
+        ],
+        "processing": null,
+        "receipt_email": null,
+        "review": null,
+        "setup_future_usage": null,
+        "shared_payment_granted_token": null,
+        "shipping": null,
+        "source": null,
+        "statement_descriptor": null,
+        "statement_descriptor_suffix": null,
+        "status": "succeeded",
+        "transfer_data": null,
+        "transfer_group": null
+      },
+      "stripe_checkout_session": {
+        "id": "cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli",
+        "object": "checkout.session",
+        "adaptive_pricing": {
+          "enabled": true
+        },
+        "after_expiration": null,
+        "allow_promotion_codes": null,
+        "amount_subtotal": 1234,
+        "amount_total": 1234,
+        "automatic_tax": {
+          "enabled": false,
+          "liability": null,
+          "provider": null,
+          "status": null
+        },
+        "billing_address_collection": null,
+        "branding_settings": {
+          "background_color": "#ffffff",
+          "border_style": "rounded",
+          "button_color": "#0074d4",
+          "display_name": "Entorno de prueba de helpMe",
+          "font_family": "default",
+          "icon": null,
+          "logo": null
+        },
+        "cancel_url": "http://localhost:5173/task/ac135cf2-ce49-4556-88a2-0cc419cd9e6e?checkout=cancelled",
+        "client_reference_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+        "client_secret": null,
+        "collected_information": {
+          "business_name": null,
+          "individual_name": null,
+          "shipping_details": null
+        },
+        "consent": null,
+        "consent_collection": null,
+        "created": 1780260851,
+        "currency": "eur",
+        "currency_conversion": null,
+        "custom_fields": [],
+        "custom_text": {
+          "after_submit": null,
+          "shipping_address": null,
+          "submit": null,
+          "terms_of_service_acceptance": null
+        },
+        "customer": null,
+        "customer_account": null,
+        "customer_creation": "if_required",
+        "customer_details": {
+          "address": null,
+          "business_name": null,
+          "email": "stripe-smoke-requester-1780260849176-2f97bc62@example.com",
+          "individual_name": null,
+          "name": null,
+          "phone": null,
+          "tax_exempt": "none",
+          "tax_ids": null
+        },
+        "customer_email": "stripe-smoke-requester-1780260849176-2f97bc62@example.com",
+        "discounts": [],
+        "expires_at": 1780347251,
+        "integration_identifier": null,
+        "invoice": null,
+        "invoice_creation": {
+          "enabled": false,
+          "invoice_data": {
+            "account_tax_ids": null,
+            "custom_fields": null,
+            "description": null,
+            "footer": null,
+            "issuer": null,
+            "metadata": {},
+            "rendering_options": null
+          }
+        },
+        "livemode": false,
+        "locale": null,
+        "managed_payments": {
+          "enabled": false
+        },
+        "metadata": {
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e"
+        },
+        "mode": "payment",
+        "origin_context": null,
+        "payment_intent": null,
+        "payment_link": null,
+        "payment_method_collection": "if_required",
+        "payment_method_configuration_details": {
+          "id": "pmc_1Ta9nnJQ5UFpze3CY63HfW8c",
+          "parent": null
+        },
+        "payment_method_options": {
+          "card": {
+            "request_three_d_secure": "automatic"
+          }
+        },
+        "payment_method_types": [
+          "card",
+          "bancontact",
+          "eps",
+          "klarna",
+          "link",
+          "mb_way",
+          "amazon_pay",
+          "satispay"
+        ],
+        "payment_status": "unpaid",
+        "permissions": null,
+        "phone_number_collection": {
+          "enabled": false
+        },
+        "recovered_from": null,
+        "saved_payment_method_options": null,
+        "setup_intent": null,
+        "shipping_address_collection": null,
+        "shipping_cost": null,
+        "shipping_details": null,
+        "shipping_options": [],
+        "status": "open",
+        "submit_type": null,
+        "subscription": null,
+        "success_url": "http://localhost:5173/stripe/return?flow=payment&task_id=ac135cf2-ce49-4556-88a2-0cc419cd9e6e&payment_id=6a1af7d4-dcb5-4d0e-bd06-602f287683a5&session_id=%7BCHECKOUT_SESSION_ID%7D",
+        "total_details": {
+          "amount_discount": 0,
+          "amount_shipping": 0,
+          "amount_tax": 0
+        },
+        "ui_mode": "hosted",
+        "url": "https://checkout.stripe.com/c/pay/cs_test_a1tU8rqTnXps3DWFCFUZlyq4FM5zOHB3THUQQ5bMiIjUqqd0tI13eUmHli#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRZDxrR09UMFBDdX9gNkZEdG1TRHZxcGRzUENTU39LQVBualxPYj1VVjNLUEhodGN3fFVGaFd0Tm5wMmxCVnVpb082Y2xDUGRAYkFPUzx2SUBtS218V041NUAzUHBcd0FSJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+        "wallet_options": null
+      },
+      "stripe_transfer": {
+        "id": "tr_1TdGNNJQ5UFpze3CvNMj7ApJ",
+        "object": "transfer",
+        "amount": 1234,
+        "amount_reversed": 0,
+        "balance_transaction": "txn_1TdGNNJQ5UFpze3CWwp88PhZ",
+        "created": 1780260869,
+        "currency": "eur",
+        "description": "HelpMe release for payment 6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+        "destination": "acct_1TbOnSQsF7FooNYl",
+        "destination_payment": "py_1TdGNNQsF7FooNYlm5nRVlwV",
+        "livemode": false,
+        "metadata": {
+          "correlation_id": "614c50dd-5c74-426e-9439-15bb7ac9e14b",
+          "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+          "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+          "requester_profile_id": "d257a679-4c5f-4f7d-a8f5-e38f80d36635",
+          "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e"
+        },
+        "reversals": {
+          "object": "list",
+          "data": [],
+          "has_more": false,
+          "total_count": 0,
+          "url": "/v1/transfers/tr_1TdGNNJQ5UFpze3CvNMj7ApJ/reversals"
+        },
+        "reversed": false,
+        "source_transaction": null,
+        "source_type": "card",
+        "transfer_group": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e"
+      }
+    }
+  },
+  "reconciliation": {
+    "status": "needs_review",
+    "critical_findings": [],
+    "warnings": [
+      {
+        "level": "warning",
+        "code": "local_reconciliation_marker",
+        "message": "Stripe and Supabase look aligned, but the local row is not marked reconciled.",
+        "details": {
+          "local": "needs_review"
+        }
+      }
+    ]
+  },
+  "ready_for_beta_closed": true,
+  "decision": "ready",
+  "blockers": [],
+  "notes": [
+    "2 expected resilience mismatch case(s) were recorded in the smoke artifact.",
+    "1 reconciliation warning(s) were observed. They are acceptable only if they match intentional resilience tests.",
+    "Latest payment status: released."
+  ]
+}

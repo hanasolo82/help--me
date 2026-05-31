@@ -18,31 +18,63 @@ export default function LocationAutocomplete({ draft, setDraft }) {
   const requestIdRef = useRef(0)
 
   useEffect(() => {
-    setQuery(draft.formattedAddress || draft.displayLocation || draft.municipality || draft.city || '')
+    let cancelled = false
+    const nextQuery = draft.formattedAddress || draft.displayLocation || draft.municipality || draft.city || ''
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setQuery(nextQuery)
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [draft.city, draft.displayLocation, draft.formattedAddress, draft.municipality])
 
   useEffect(() => {
     if (manualMode) {
-      setStatus('idle')
-      setError('')
-      setResults([])
-      return undefined
+      let cancelled = false
+
+      queueMicrotask(() => {
+        if (cancelled) return
+        setStatus('idle')
+        setError('')
+        setResults([])
+      })
+
+      return () => {
+        cancelled = true
+      }
     }
 
     const search = normalizeQuery(query)
     if (search.length < 3) {
-      setStatus('idle')
-      setError('')
-      setResults([])
-      return undefined
+      let cancelled = false
+
+      queueMicrotask(() => {
+        if (cancelled) return
+        setStatus('idle')
+        setError('')
+        setResults([])
+      })
+
+      return () => {
+        cancelled = true
+      }
     }
 
     const currentRequestId = requestIdRef.current + 1
     requestIdRef.current = currentRequestId
     const controller = new AbortController()
 
-    setStatus('loading')
-    setError('')
+    queueMicrotask(() => {
+      if (requestIdRef.current !== currentRequestId) {
+        return
+      }
+
+      setStatus('loading')
+      setError('')
+    })
 
     const timer = window.setTimeout(async () => {
       try {

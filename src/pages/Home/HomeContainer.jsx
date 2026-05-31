@@ -184,8 +184,17 @@ export default function HomeContainer() {
       profileTheme: profile?.theme === THEME_DARK ? THEME_DARK : null,
     })
 
-    setThemePreference(nextTheme)
-    applyThemeToDocument(nextTheme)
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setThemePreference(nextTheme)
+      applyThemeToDocument(nextTheme)
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [profile?.theme])
 
   const handleThemeChange = useCallback((nextChecked) => {
@@ -212,8 +221,17 @@ export default function HomeContainer() {
   useEffect(() => {
     if (!routeLocation.state?.resumeHelperOnboarding) return
 
-    setHelperJourneyOpen(true)
-    setHelperHomeIntent('help')
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setHelperJourneyOpen(true)
+      setHelperHomeIntent('help')
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [routeLocation.state?.resumeHelperOnboarding])
 
   useEffect(() => {

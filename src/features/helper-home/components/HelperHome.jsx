@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createOrGetDirectConversation } from '../../../services/chatService'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
@@ -10,7 +10,6 @@ import {
   formatHourlyRate,
   formatResponseTime,
   getHelperStatusCopy,
-  getHelperStatusLabel,
   getLocationLabel,
   getProfileName,
 } from '../../profile/utils/profileFormatters'
@@ -107,12 +106,12 @@ function getAcceptanceRate(tasks = []) {
   const total = tasks.length
   if (!total) return 0
 
-  const completed = tasks.filter((task) => task.status === 'completed').length
+  const completed = tasks.filter((task) => ['completed', 'closed'].includes(task.status)).length
   return Math.round((completed / total) * 100)
 }
 
 function getAverageCompletion(tasks = []) {
-  const completed = tasks.filter((task) => task.status === 'completed')
+  const completed = tasks.filter((task) => ['completed', 'closed'].includes(task.status))
   if (completed.length === 0) return '0/mes'
 
   const timestamps = completed
@@ -323,7 +322,7 @@ function buildOpportunityEntries(entries = [], currentUserId, profile, radiusKm,
   return buildMockOpportunityEntries(center)
 }
 
-function buildActivityFeed({ upcomingTasks, activityTasks, chats, selectedOpportunity, profile, skillTokens, center }) {
+function buildActivityFeed({ upcomingTasks, activityTasks, chats, selectedOpportunity }) {
   const feed = []
 
   if (upcomingTasks.length > 0) {
@@ -365,8 +364,8 @@ function buildActivityFeed({ upcomingTasks, activityTasks, chats, selectedOpport
     })
   }
 
-  if (activityTasks.some((task) => task.status === 'completed')) {
-    const completedTask = activityTasks.find((task) => task.status === 'completed')
+  if (activityTasks.some((task) => ['completed', 'closed'].includes(task.status))) {
+    const completedTask = activityTasks.find((task) => ['completed', 'closed'].includes(task.status))
     feed.push({
       id: `completed-${completedTask.id}`,
       title: 'Ayuda completada',
@@ -554,7 +553,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
 
   const profileName = getProfileName(profile)
   const profileLocation = getLocationLabel(profile)
-  const helperStatusLabel = getHelperStatusLabel(profile)
   const helperStatusCopy = getHelperStatusCopy(profile)
   const center = buildCenter(helperHomeProps.location, profile)
   const radiusKm = Number.isFinite(Number(helperHomeProps.radiusKm))
@@ -591,18 +589,15 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     [opportunityEntries],
   )
 
-  useEffect(() => {
-    if (opportunityEntries.length === 0) {
-      setSelectedTaskId(null)
-      return
-    }
+  const resolvedSelectedTaskId =
+    opportunityEntries.length === 0
+      ? null
+      : opportunityEntries.some((entry) => entry.task.id === selectedTaskId)
+        ? selectedTaskId
+        : opportunityEntries[0].task.id
 
-    if (!selectedTaskId || !opportunityEntries.some((entry) => entry.task.id === selectedTaskId)) {
-      setSelectedTaskId(opportunityEntries[0].task.id)
-    }
-  }, [opportunityEntries, selectedTaskId])
-
-  const selectedOpportunity = opportunityEntries.find((entry) => entry.task.id === selectedTaskId) || opportunityEntries[0] || null
+  const selectedOpportunity =
+    opportunityEntries.find((entry) => entry.task.id === resolvedSelectedTaskId) || opportunityEntries[0] || null
   const selectedTask = selectedOpportunity?.task || null
   const selectedDistance = selectedOpportunity?.distance ?? null
   const selectedCompatibilityScore = selectedOpportunity?.compatibilityScore ?? 0
@@ -628,11 +623,8 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         activityTasks,
         chats: recentChats,
         selectedOpportunity,
-        profile,
-        skillTokens,
-        center,
       }),
-    [activityTasks, center, profile, recentChats, selectedOpportunity, skillTokens, upcomingTasks],
+    [activityTasks, recentChats, selectedOpportunity, upcomingTasks],
   )
 
   const performanceCards = useMemo(
@@ -799,7 +791,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                 <OpportunityRow
                   key={entry.task.id}
                   item={entry}
-                  selected={selectedTask?.id === entry.task.id}
+                  selected={resolvedSelectedTaskId === entry.task.id}
                   onSelect={setSelectedTaskId}
                 />
               ))}
