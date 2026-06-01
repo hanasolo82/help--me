@@ -16,10 +16,11 @@ export function getProfileHandle(profile) {
 
 export function getLocationLabel(profile) {
   if (!profile) return 'Zona aproximada'
+  if (profile.show_approx_location === false) return 'Zona oculta'
+  if (profile.visible_zone_name) return profile.visible_zone_name
 
   const parts = [profile.city, profile.country].filter(Boolean)
   if (parts.length > 0) return parts.join(' · ')
-  if (profile.show_approx_location === false) return 'Zona oculta'
 
   return profile.neighborhood || 'Zona aproximada'
 }

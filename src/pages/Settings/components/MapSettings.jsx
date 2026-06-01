@@ -1,106 +1,110 @@
-import { MAP_AVATAR_OPTIONS, MAP_AVATAR_SLOTS } from '../../../assets/map-avatars'
+import { useState } from 'react'
+import { sanitizeText } from '../../../lib/security'
+import { getLocationLabel } from '../../../features/profile/utils/profileFormatters'
 import styles from '../SettingsPage.module.css'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
 
-// Rellena la cuadricula hasta MAP_AVATAR_SLOTS aunque aun no esten todas las imagenes.
-function buildSlotList() {
-  const slots = [...MAP_AVATAR_OPTIONS]
-  while (slots.length < MAP_AVATAR_SLOTS) {
-    slots.push({ id: `placeholder-${slots.length + 1}`, url: null, placeholder: true })
-  }
-  return slots
-}
-
 export default function MapSettings() {
-  const { form, setField } = useSettings()
-  const slots = buildSlotList()
-  const selectedId = form.mapAvatarUrl || ''
+  const { form, profile, setField } = useSettings()
+  const [zoneEditing, setZoneEditing] = useState(false)
+  const visibleZoneLabel = form.visibleZoneName || getLocationLabel(profile)
 
   return (
     <SettingsCard
-      id="privacidad"
+      id="mapa-ubicacion"
       eyebrow="Mapa"
-      title="Visibilidad y alcance"
-      description="Elige tu avatar del mapa entre las opciones disponibles y configura tu alcance."
+      title="Mapa y ubicación"
+      description="Define tu zona visible y cómo se muestra tu ubicación."
     >
-      <div className={styles.grid}>
-        <div className={styles.spanTwo}>
-          <div className={styles.field}>
-            <span>Avatar del mapa</span>
-            <div className={styles.mapAvatarGrid} role="radiogroup" aria-label="Avatar del mapa">
-              {slots.map((slot) => {
-                const isSelected = !slot.placeholder && slot.id === selectedId
-                const className = [
-                  styles.mapAvatarOption,
-                  isSelected ? styles.mapAvatarOptionActive : '',
-                  slot.placeholder ? styles.mapAvatarOptionPlaceholder : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')
-
-                return (
-                  <button
-                    key={slot.id}
-                    type="button"
-                    className={className}
-                    onClick={() => !slot.placeholder && setField('mapAvatarUrl', slot.id)}
-                    aria-pressed={isSelected}
-                    disabled={slot.placeholder}
-                    title={slot.placeholder ? 'Pendiente' : slot.label}
-                  >
-                    {slot.url
-                      ? <img src={slot.url} alt={`Avatar ${slot.label}`} />
-                      : <span aria-hidden="true">·</span>}
-                  </button>
-                )
-              })}
-            </div>
-            {selectedId && (
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setField('mapAvatarUrl', '')}
-              >
-                Quitar avatar del mapa
-              </button>
-            )}
+      <div className={styles.mapSettingsStack}>
+        <div className={styles.mapZoneRow}>
+          <div className={styles.mapZoneCopy}>
+            <span>Zona en la que apareces visible</span>
+            <strong>{visibleZoneLabel}</strong>
           </div>
-        </div>
 
-        <label className={styles.field}>
-          <span>Radio de búsqueda en km</span>
-          <input
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-            value={form.searchRadiusKm}
-            onChange={(event) => setField('searchRadiusKm', event.target.value)}
-          />
-        </label>
-
-        <div className={styles.field}>
-          <span>Disponible para ayudar</span>
           <button
             type="button"
-            className={form.availabilityEnabled ? `${styles.switch} ${styles.switchOn}` : styles.switch}
-            onClick={() => setField('availabilityEnabled', !form.availabilityEnabled)}
-            aria-pressed={form.availabilityEnabled}
+            className={`${styles.settingsCompactAction} ${styles.settingsCompactActionWide}`}
+            onClick={() => setZoneEditing((current) => !current)}
           >
-            <span>{form.availabilityEnabled ? 'Sí' : 'No'}</span>
+            Cambiar zona
           </button>
         </div>
 
-        <div className={styles.field}>
-          <span>Mostrar ubicación aproximada</span>
+        {zoneEditing ? (
+          <input
+            className={styles.mapZoneInput}
+            value={form.visibleZoneName}
+            onChange={(event) => setField('visibleZoneName', sanitizeText(event.target.value, 80))}
+            placeholder="Madrid centro"
+            aria-label="Zona visible"
+          />
+        ) : null}
+
+        <label className={styles.mapZoneRow}>
+          <div className={styles.mapZoneCopy}>
+            <span>Radio de búsqueda</span>
+            <strong>{Number(form.searchRadiusKm || 10)} km</strong>
+          </div>
+          <input
+            className={styles.mapZoneInput}
+            type="number"
+            min={1}
+            max={100}
+            step={1}
+            value={form.searchRadiusKm}
+            onChange={(event) => setField('searchRadiusKm', event.target.value)}
+            aria-label="Radio de búsqueda en kilómetros"
+          />
+        </label>
+
+        <div className={styles.mapSwitchRow}>
+          <div className={styles.mapToggleCopy}>
+            <strong>Usar radio de búsqueda</strong>
+            <p>
+              {form.searchRadiusEnabled
+                ? 'Limita los resultados a una distancia cercana desde tu posición.'
+                : 'Se mostrarán resultados de toda el área visible del mapa.'}
+            </p>
+          </div>
+
           <button
             type="button"
-            className={form.showApproxLocation ? `${styles.switch} ${styles.switchOn}` : styles.switch}
-            onClick={() => setField('showApproxLocation', !form.showApproxLocation)}
-            aria-pressed={form.showApproxLocation}
+            className={
+              form.searchRadiusEnabled
+                ? `${styles.settingsSwitch} ${styles.settingsSwitchOn} ${styles.settingsSwitchInline}`
+                : `${styles.settingsSwitch} ${styles.settingsSwitchInline}`
+            }
+            onClick={() => setField('searchRadiusEnabled', !form.searchRadiusEnabled)}
+            role="switch"
+            aria-checked={form.searchRadiusEnabled}
+            aria-label="Usar radio de búsqueda"
           >
-            <span>{form.showApproxLocation ? 'Sí' : 'No'}</span>
+            <span className={styles.settingsSwitchThumb} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className={styles.mapSwitchRow}>
+          <div className={styles.mapToggleCopy}>
+            <strong>Mostrar ubicación aproximada</strong>
+            <p>Mostraremos solo tu zona general, no tu punto exacto.</p>
+          </div>
+
+          <button
+            type="button"
+            className={
+              form.showApproxLocation
+                ? `${styles.settingsSwitch} ${styles.settingsSwitchOn} ${styles.settingsSwitchInline}`
+                : `${styles.settingsSwitch} ${styles.settingsSwitchInline}`
+            }
+            onClick={() => setField('showApproxLocation', !form.showApproxLocation)}
+            role="switch"
+            aria-checked={form.showApproxLocation}
+            aria-label="Mostrar ubicación aproximada"
+          >
+            <span className={styles.settingsSwitchThumb} aria-hidden="true" />
           </button>
         </div>
       </div>

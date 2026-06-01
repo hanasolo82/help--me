@@ -23,9 +23,9 @@ export default function SettingsSidebar({ items = [] }) {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarIntro}>
-        <p className={styles.sidebarKicker}>Cuenta</p>
+        <p className={styles.sidebarKicker}>HelpMe</p>
         <h2 className={styles.sidebarTitle}>Ajustes</h2>
-        <p className={styles.sidebarLead}>Una navegación simple para editar la cuenta sin perder contexto.</p>
+        <p className={styles.sidebarLead}>Tu perfil, tu actividad y tu seguridad en una vista clara.</p>
       </div>
 
       <nav className={styles.sidebarNav} aria-label="Secciones de ajustes">
@@ -38,15 +38,6 @@ export default function SettingsSidebar({ items = [] }) {
           ]
             .filter(Boolean)
             .join(' ')
-
-          if (item.disabled) {
-            return (
-              <span key={item.id} className={className}>
-                <span className={styles.sidebarItemLabel}>{item.label}</span>
-                <span className={styles.sidebarItemMeta}>{item.meta || 'Próximamente'}</span>
-              </span>
-            )
-          }
 
           return (
             <a key={item.id} className={className} href={`#${item.id}`} aria-current={isActive ? 'page' : undefined}>

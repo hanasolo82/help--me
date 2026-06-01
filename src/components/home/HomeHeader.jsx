@@ -22,8 +22,8 @@ export default function HomeHeader({
   onLogout,
   themePreference,
   onThemeChange,
+  isHelperMode = false,
   isHelperActive = false,
-  helperModeLabel = 'Modo ayudante',
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
@@ -43,8 +43,8 @@ export default function HomeHeader({
     onLogout?.()
   }
 
-  const modeLabel = isHelperActive ? 'Necesito ayuda' : helperModeLabel
-  const modeAction = isHelperActive ? onOpenNeedHelp : onOpenHelper
+  const modeLabel = isHelperMode ? 'Necesito ayuda' : 'Ayudar'
+  const modeAction = isHelperMode ? onOpenNeedHelp : onOpenHelper
 
   const primaryItems = [
     { label: 'Mi perfil', action: onOpenProfile },
@@ -57,14 +57,14 @@ export default function HomeHeader({
   const accountItems = [
     { label: 'Ajustes', action: onOpenSettings },
     { label: 'Notificaciones', action: onOpenNotifications },
-    { label: 'Privacidad', action: onOpenPrivacy },
+    { label: 'Mapa y ubicación', action: onOpenPrivacy },
     { label: 'Ayuda', action: onOpenHelp },
   ].filter((item) => Boolean(item.action))
 
   const helperItems = isHelperActive
     ? [
         { label: 'Panel de ayudante', action: onOpenHelper },
-        { label: 'Solicitudes disponibles', action: onOpenNeedHelp },
+        { label: 'Solicitudes disponibles', action: onOpenHelper },
       ].filter((item) => Boolean(item.action))
     : []
 

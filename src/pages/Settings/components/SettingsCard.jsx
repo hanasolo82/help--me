@@ -1,17 +1,14 @@
 import SettingsSection from './SettingsSection'
 
-export default function SettingsCard({ id, eyebrow, title, description, children }) {
+export default function SettingsCard({ id, eyebrow, title, description, children, actionLabel, onAction }) {
   return (
     <SettingsSection
       id={id}
       eyebrow={eyebrow}
       title={title}
       description={description}
-      actionLabel="Editar"
-      onAction={() => {
-        const element = document.getElementById(id)
-        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }}
+      actionLabel={actionLabel}
+      onAction={onAction}
     >
       {children}
     </SettingsSection>

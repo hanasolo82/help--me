@@ -1,11 +1,31 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { requireUser } from '../../../lib/authHelpers'
 import { createProfile, updateCurrentProfile } from '../../../services/profilesService'
 import { replaceProfileSkills as replaceHelperProfileSkills } from '../../helper-onboarding/services/helperSkillsService'
 import { replaceProfileAvailability as replaceHelperProfileAvailability } from '../../helper-onboarding/services/helperAvailabilityService'
 
 export async function saveOnboardingBasics(input, profile) {
   if (profile) {
-    return updateCurrentProfile(input)
+    const updates = {
+      displayName: input.displayName ?? input.fullName,
+      fullName: input.fullName ?? input.displayName,
+      bio: input.bio,
+      city: input.city,
+      neighborhood: input.neighborhood,
+      country: input.country,
+      lat: input.lat,
+      lng: input.lng,
+      searchRadiusKm: input.searchRadiusKm,
+      responseTimeMinutes: input.responseTimeMinutes,
+      hourlyRate: input.hourlyRate,
+      allowExactLocationUpdate: true,
+    }
+
+    if (input.username) {
+      updates.username = input.username
+    }
+
+    return updateCurrentProfile(updates)
   }
 
   return createProfile(input)
@@ -20,9 +40,13 @@ export async function replaceProfileAvailability(profileId, selectedDays = []) {
 }
 
 export async function saveProfileVerification(profileId, values) {
-  if (!profileId) {
-    throw new Error('No pudimos guardar la verificacion porque falta el profile.')
+  const user = await requireUser('Necesitas una sesion valida para guardar la verificacion.')
+
+  if (profileId && profileId !== user.id) {
+    throw new Error('Unauthorized profile access')
   }
+
+  const ownedProfileId = user.id
 
   const profileUpdates = {
     verified_email: Boolean(values.verified_email),
@@ -38,7 +62,7 @@ export async function saveProfileVerification(profileId, values) {
   const { error: profileError } = await supabase
     .from('profiles')
     .update(profileUpdates)
-    .eq('id', profileId)
+    .eq('id', ownedProfileId)
 
   if (profileError) {
     throw profileError
@@ -47,7 +71,7 @@ export async function saveProfileVerification(profileId, values) {
   const { error } = await supabase
     .from('profile_verifications')
     .upsert({
-      profile_id: profileId,
+      profile_id: ownedProfileId,
       email_verified: Boolean(values.email_verified),
       phone_verified: Boolean(values.phone_verified),
       payment_verified: Boolean(values.payment_verified),
@@ -64,14 +88,18 @@ export async function saveProfileVerification(profileId, values) {
 }
 
 export async function getProfileVerificationState(profileId) {
-  if (!profileId) {
-    return null
+  const user = await requireUser('Necesitas una sesion valida para leer la verificacion.')
+
+  if (profileId && profileId !== user.id) {
+    throw new Error('Unauthorized profile access')
   }
+
+  const ownedProfileId = user.id
 
   const { data, error } = await supabase
     .from('profile_verifications')
     .select('profile_id, email_verified, phone_verified, payment_verified, identity_verified, background_checked, phone_status, updated_at')
-    .eq('profile_id', profileId)
+    .eq('profile_id', ownedProfileId)
     .maybeSingle()
 
   if (error) {

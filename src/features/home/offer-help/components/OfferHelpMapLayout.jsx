@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { createOrGetDirectConversation } from '../../../../services/chatService'
-import {
-  getFavoriteTaskIds,
-  toggleTaskFavorite,
-} from '../../../../services/tasksService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
 import TaskFiltersBar from './TaskFiltersBar'
 import TaskListPanel from './TaskListPanel'
@@ -28,24 +24,21 @@ export default function OfferHelpMapLayout({
   categories,
   radius,
   onRadiusChange,
-  radiusOptions,
+  radiusOptions = [],
+  title = 'Solicitudes abiertas cerca de ti',
+  lead = 'Selecciona una solicitud, revisa el detalle y contacta solo si sigue abierta.',
 }) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [mobileView, setMobileView] = useState('map')
   const [selectedTaskId, setSelectedTaskId] = useState(null)
-
-  const favoriteTaskIdsQuery = useQuery({
-    queryKey: ['task-favorites', currentUserId],
-    queryFn: () => getFavoriteTaskIds(currentUserId),
-    enabled: Boolean(currentUserId),
-    staleTime: 30_000,
-  })
+  const [favoriteTaskIds, setFavoriteTaskIds] = useState([])
 
   const toggleFavoriteMutation = useMutation({
-    mutationFn: (task) => toggleTaskFavorite(task.id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['task-favorites', currentUserId] })
+    mutationFn: async (task) => task,
+    onSuccess: async (task) => {
+      setFavoriteTaskIds((current) =>
+        current.includes(task.id) ? current.filter((id) => id !== task.id) : [...current, task.id],
+      )
     },
   })
 
@@ -66,7 +59,7 @@ export default function OfferHelpMapLayout({
 
   const taskCount = visibleTasks?.length || 0
   const nextRadiusOption = useMemo(
-    () => radiusOptions.find((option) => option > radius) || radiusOptions[radiusOptions.length - 1],
+    () => radiusOptions.find((option) => option > radius) || radiusOptions[radiusOptions.length - 1] || radius,
     [radius, radiusOptions],
   )
   const viewportTasks = visibleTasks || []
@@ -77,8 +70,6 @@ export default function OfferHelpMapLayout({
   )
 
   const selectedTaskDistance = selectedTask ? distancesById?.[selectedTask.id] ?? null : null
-  const favoriteTaskIds = favoriteTaskIdsQuery.data || []
-
   function handleSelectTask(taskOrTaskId) {
     const taskId = typeof taskOrTaskId === 'string' ? taskOrTaskId : taskOrTaskId?.id
     if (!taskId) return
@@ -126,21 +117,16 @@ export default function OfferHelpMapLayout({
         radiusOptions={radiusOptions}
         taskCount={taskCount}
         visibleCount={viewportTasks.length}
+        eyebrow="Disponible para ayudar"
+        title={title}
+        lead={lead}
       />
 
       <div className={styles.mobileTabs} role="tablist" aria-label="Vista de tareas">
-        <button
-          type="button"
-          className={mobileView === 'map' ? styles.mobileTabActive : styles.mobileTab}
-          onClick={() => setMobileView('map')}
-        >
+        <button type="button" className={mobileView === 'map' ? styles.mobileTabActive : styles.mobileTab} onClick={() => setMobileView('map')}>
           Mapa
         </button>
-        <button
-          type="button"
-          className={mobileView === 'list' ? styles.mobileTabActive : styles.mobileTab}
-          onClick={() => setMobileView('list')}
-        >
+        <button type="button" className={mobileView === 'list' ? styles.mobileTabActive : styles.mobileTab} onClick={() => setMobileView('list')}>
           Lista
         </button>
       </div>
@@ -149,7 +135,7 @@ export default function OfferHelpMapLayout({
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
           <div className={styles.mapHeader}>
             <div>
-              <p className="eyebrow">Ofrezco ayuda</p>
+              <p className="eyebrow">Solicitudes abiertas</p>
               <h2>Tareas abiertas cerca de ti</h2>
               <p className="muted">Selecciona una tarea, revisa el detalle y contacta solo si sigue abierta.</p>
             </div>

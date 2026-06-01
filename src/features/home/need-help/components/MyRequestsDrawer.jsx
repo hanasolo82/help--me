@@ -5,7 +5,7 @@ import styles from './MyRequestsDrawer.module.css'
 const SECTIONS = [
   { key: 'open', title: 'Activas', statuses: ['open'] },
   { key: 'in-progress', title: 'En curso', statuses: ['assigned', 'in_progress'] },
-  { key: 'history', title: 'Historial', statuses: ['completed', 'cancelled'] },
+  { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },
 ]
 
 function groupTasks(tasks = [], statuses) {

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AuthContext } from './AuthContextBase'
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient'
 import { getCurrentUser, onAuthStateChange } from '../services/authService'
 import { getProfileByUserId } from '../services/profilesService'
+import { clearClientSessionState } from '../services/sessionCleanup'
 
 // Eventos donde tiene sentido recargar el profile. TOKEN_REFRESHED ocurre cada hora
 // y no cambia datos del usuario, por lo que se ignora para evitar fetches inutiles.
@@ -21,26 +22,47 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(false)
+  const activeProfileRequestRef = useRef(0)
+  const activeUserIdRef = useRef(null)
+
+  const clearProfileState = useCallback(() => {
+    activeProfileRequestRef.current += 1
+    setProfile(null)
+    setProfileLoading(false)
+  }, [])
 
   const loadProfile = useCallback(async (nextUser) => {
-    if (!nextUser) {
-      setProfile(null)
+    const requestedUserId = nextUser?.id ?? null
+    const requestId = activeProfileRequestRef.current + 1
+    activeProfileRequestRef.current = requestId
+
+    if (!requestedUserId) {
+      clearProfileState()
       return null
     }
 
+    setProfile((current) => (current?.id === requestedUserId ? current : null))
     setProfileLoading(true)
 
     try {
-      const nextProfile = await getProfileByUserId(nextUser.id)
+      const nextProfile = await getProfileByUserId(requestedUserId)
+      if (activeProfileRequestRef.current !== requestId || activeUserIdRef.current !== requestedUserId) {
+        return null
+      }
+
       setProfile(nextProfile)
       return nextProfile
     } catch {
-      setProfile(null)
+      if (activeProfileRequestRef.current === requestId) {
+        setProfile(null)
+      }
       return null
     } finally {
-      setProfileLoading(false)
+      if (activeProfileRequestRef.current === requestId) {
+        setProfileLoading(false)
+      }
     }
-  }, [])
+  }, [clearProfileState])
 
   const refreshProfile = useCallback(async () => {
     return loadProfile(user)
@@ -66,13 +88,16 @@ export function AuthProvider({ children }) {
       if (!isMounted) return
 
       if (validatedUser) {
+        activeUserIdRef.current = validatedUser.id
         setSession(sessionResult.data.session)
         setUser(validatedUser)
         await loadProfile(validatedUser)
       } else {
+        activeUserIdRef.current = null
         setSession(null)
         setUser(null)
-        setProfile(null)
+        clearProfileState()
+        clearClientSessionState()
       }
 
       if (isMounted) {
@@ -90,11 +115,23 @@ export function AuthProvider({ children }) {
       // INITIAL_SESSION llegara y reconciliara cuando bootstrap haya terminado.
       if (!didBootstrap && event !== 'INITIAL_SESSION') return
 
+      const nextUser = nextSession?.user ?? null
+      const nextUserId = nextUser?.id ?? null
+      const previousUserId = activeUserIdRef.current
+      const changedUser = Boolean(previousUserId && nextUserId && previousUserId !== nextUserId)
+      const endedSession = event === 'SIGNED_OUT' || (!nextUserId && Boolean(previousUserId))
+
+      if (changedUser || endedSession) {
+        clearProfileState()
+        clearClientSessionState()
+      }
+
+      activeUserIdRef.current = nextUserId
       setSession(nextSession)
-      setUser(nextSession?.user ?? null)
+      setUser(nextUser)
 
       if (PROFILE_RELEVANT_EVENTS.has(event)) {
-        await loadProfile(nextSession?.user ?? null)
+        await loadProfile(nextUser)
       }
 
       if (isMounted) setLoading(false)
@@ -104,7 +141,7 @@ export function AuthProvider({ children }) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [loadProfile])
+  }, [clearProfileState, loadProfile])
 
   const value = useMemo(() => ({
     isConfigured: isSupabaseConfigured,

@@ -11,5 +11,5 @@ export const useTaskFiltersStore = create((set) => ({
   setMode: (mode) => set({ mode: mode === 'need' ? 'need' : 'help' }),
   setCategory: (category) => set({ category }),
   setRadius: (radius) => set({ radius: Number(radius) || 10 }),
+  reset: () => set(initialState),
 }))
-

@@ -1,5 +1,4 @@
 import {
-  Children,
   cloneElement,
   createContext,
   isValidElement,
@@ -16,21 +15,6 @@ import styles from './AnimatedDropdown.module.css'
 
 const CLOSE_ANIMATION_MS = 170
 const DropdownContext = createContext(null)
-
-function useMergedRef(...refs) {
-  return (node) => {
-    refs.forEach((ref) => {
-      if (!ref) return
-
-      if (typeof ref === 'function') {
-        ref(node)
-        return
-      }
-
-      ref.current = node
-    })
-  }
-}
 
 function getResolvedWidth(width) {
   if (typeof width === 'number') {
@@ -144,24 +128,41 @@ export function AnimatedDropdown({
         </div>
       </DropdownContext.Provider>
     ),
-    [align, children, className, closeOnSelect, menuId, onOpenChange, position, visible, width],
+    [children, closeOnSelect, dropdownClassName, menuId, onOpenChange, position, visible, width],
   )
 
   useEffect(() => {
     if (isOpen) {
-      setRendered(true)
-      const rafId = window.requestAnimationFrame(() => setVisible(true))
+      let cancelled = false
+      let rafId = null
 
-      return () => window.cancelAnimationFrame(rafId)
+      queueMicrotask(() => {
+        if (cancelled) return
+        setRendered(true)
+        rafId = window.requestAnimationFrame(() => setVisible(true))
+      })
+
+      return () => {
+        cancelled = true
+        if (rafId !== null) {
+          window.cancelAnimationFrame(rafId)
+        }
+      }
     }
 
-    setVisible(false)
-    closeTimerRef.current = window.setTimeout(() => {
-      setRendered(false)
-      setPosition(null)
-    }, CLOSE_ANIMATION_MS)
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setVisible(false)
+      closeTimerRef.current = window.setTimeout(() => {
+        setRendered(false)
+        setPosition(null)
+      }, CLOSE_ANIMATION_MS)
+    })
 
     return () => {
+      cancelled = true
       if (closeTimerRef.current) {
         window.clearTimeout(closeTimerRef.current)
       }
@@ -231,7 +232,6 @@ export function AnimatedDropdown({
 
   const triggerNode = isValidElement(trigger)
     ? cloneElement(trigger, {
-        ref: useMergedRef(trigger.ref, triggerRef),
         'aria-haspopup': 'menu',
         'aria-expanded': isOpen,
         'aria-controls': menuId,
@@ -253,14 +253,26 @@ export function AnimatedDropdown({
     : trigger
 
   if (!rendered) {
-    return triggerNode
+    return isValidElement(trigger) ? (
+      <span ref={triggerRef} className={styles.triggerShell}>
+        {triggerNode}
+      </span>
+    ) : (
+      triggerNode
+    )
   }
 
   const dropdownNode = portal ? createPortal(content, document.body) : content
 
   return (
     <>
-      {triggerNode}
+      {isValidElement(trigger) ? (
+        <span ref={triggerRef} className={styles.triggerShell}>
+          {triggerNode}
+        </span>
+      ) : (
+        triggerNode
+      )}
       {dropdownNode}
     </>
   )

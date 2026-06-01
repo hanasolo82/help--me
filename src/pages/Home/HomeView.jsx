@@ -86,6 +86,7 @@ export default function HomeView({
           onLogout={onLogout}
           themePreference={themePreference}
           onThemeChange={onThemeChange}
+          isHelperMode={isHelperMode}
           isHelperActive={isHelperActive}
           helperModeLabel={helperModeLabel}
         />
@@ -120,6 +121,16 @@ export default function HomeView({
             radius,
             onRadiusChange,
             radiusOptions,
+            chats,
+            onOpenChats,
+            onOpenFavorites,
+            onOpenSettings,
+            onOpenNotifications,
+            onOpenPrivacy,
+            onOpenHelp,
+            onNeedHelp,
+            onStartHelperOnboarding,
+            onOpenMyRequests,
           }}
         />
       ) : (

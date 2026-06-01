@@ -1,9 +1,21 @@
-﻿.card {
+.card {
   display: grid;
-  gap: 0.35rem;
-  padding: 1rem;
-  border: 0.125rem solid var(--shadow);
-  border-radius: 0.25rem;
-  background: var(--surface);
+  gap: 0.45rem;
+  padding: 1.15rem 1rem;
+  border: 1px dashed color-mix(in srgb, var(--color-border) 84%, white);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface-strong) 92%, white);
+  box-shadow: var(--shadow-xs);
+  text-align: center;
+}
+
+.card h3 {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.card p {
+  color: var(--color-text-muted);
+  line-height: 1.5;
 }
 

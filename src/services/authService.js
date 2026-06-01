@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, validateEmail, validatePassword } from '../lib/security'
 import { clearRememberedEmail, rememberEmail } from '../lib/consent'
+import { clearClientSessionState } from './sessionCleanup'
 
 // URLs publicas para callbacks de Supabase. Solo deben coincidir con la allow-list
 // configurada en Supabase Auth > URL Configuration para evitar open redirect.
@@ -208,6 +209,7 @@ export async function signOut({ scope = 'local' } = {}) {
   // Al cerrar sesion conscientemente, olvidamos el email recordado para evitar mezclar cuentas
   // en dispositivos compartidos.
   clearRememberedEmail()
+  clearClientSessionState()
 }
 
 function normalizeAuthError(error, { context } = {}) {

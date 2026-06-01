@@ -95,6 +95,7 @@ export default function TaskMap({
 }) {
   const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
   const userIcon = buildUserIcon({ avatarUrl: userAvatarUrl, initial: userInitial })
+  const safeRadiusKm = Number.isFinite(Number(radiusKm)) ? Math.max(0, Number(radiusKm)) : 10
 
   return (
     <div className={styles.mapShell}>
@@ -105,7 +106,7 @@ export default function TaskMap({
 
         <Circle
           center={center}
-          radius={radiusKm * 1000}
+          radius={safeRadiusKm * 1000}
           pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
         />
 

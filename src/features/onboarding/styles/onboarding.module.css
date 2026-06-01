@@ -107,6 +107,10 @@
   gap: 0.75rem;
 }
 
+:global(.field) textarea.bioTextarea {
+  resize: none;
+}
+
 .radioGrid,
 .slotGrid {
   display: grid;

@@ -5,23 +5,23 @@
   justify-content: center;
   overflow: hidden;
   gap: 0.5rem;
-  min-height: 3rem;
-  padding: 0.8rem 1.15rem;
+  min-height: 3.25rem;
+  padding: 0.86rem 1.2rem;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform 160ms ease,
-    box-shadow 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease,
-    opacity 180ms ease;
+    transform var(--motion-normal) var(--ease-spring-soft),
+    box-shadow var(--motion-normal) var(--ease-out),
+    background-color var(--motion-normal) var(--ease-out),
+    border-color var(--motion-normal) var(--ease-out),
+    color var(--motion-normal) var(--ease-out),
+    opacity var(--motion-normal) var(--ease-out);
   outline: none;
   isolation: isolate;
 }
@@ -73,9 +73,7 @@
 }
 
 .button:focus-visible {
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-primary) 16%, transparent),
-    var(--shadow-sm);
+  box-shadow: var(--shadow-focus), var(--shadow-sm);
 }
 
 .button:disabled {
@@ -93,29 +91,29 @@
 .primary {
   background: linear-gradient(135deg, var(--primary-500), color-mix(in srgb, var(--color-primary) 72%, var(--color-accent)));
   color: #ffffff;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 18%, transparent);
+  box-shadow: var(--shadow-primary);
 }
 
 .primary:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--primary-400), color-mix(in srgb, var(--color-primary) 70%, var(--color-accent)));
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 .secondary {
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
   color: var(--color-text);
-  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
-  box-shadow: var(--shadow-sm);
+  border-color: color-mix(in srgb, var(--color-border) 82%, white);
+  box-shadow: var(--shadow-xs);
 }
 
 .secondary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
   border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
 }
 
 .accent {
   background: linear-gradient(135deg, var(--primary-400), color-mix(in srgb, var(--accent-400) 70%, var(--color-primary)));
-  color: #0f172a;
+  color: var(--color-text);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--color-accent) 16%, transparent);
 }
 

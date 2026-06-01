@@ -1,69 +1,32 @@
 import { supabase } from '../../../lib/supabaseClient'
 import { requireUser } from '../../../lib/authHelpers'
-import { canAppearOnMap } from '../../helper-onboarding/utils/helperPermissions'
 
 function toNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function haversineDistanceKm(lat1, lng1, lat2, lng2) {
-  const toRadians = (value) => (value * Math.PI) / 180
-  const earthRadiusKm = 6371
-  const deltaLat = toRadians(lat2 - lat1)
-  const deltaLng = toRadians(lng2 - lng1)
-  const a =
-    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-      Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2)
-
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
 export async function getProfileById(profileId) {
   if (!profileId) return null
 
   const { data, error } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select(`
       id,
       username,
       full_name,
-      display_name,
       avatar_url,
-      map_avatar_url,
       bio,
       neighborhood,
       city,
       country,
-      lat,
-      lng,
       rating,
       completed_tasks,
       reviews_count,
-      response_time_minutes,
-      helper_enabled,
       helper_status,
       availability_enabled,
-      hourly_rate,
-      verified,
-      verified_email,
-      verified_phone,
-      verified_identity,
-      identity_verified,
-      stripe_onboarding_completed,
-      stripe_account_id,
-      stripe_charges_enabled,
-      stripe_payouts_enabled,
       account_status,
-      theme,
-      search_radius_km,
-      show_approx_location,
-      notify_nearby_tasks,
-      notify_messages,
-      notify_payments,
-      created_at,
-      updated_at
+      location_label
     `)
     .eq('id', profileId)
     .maybeSingle()
@@ -72,7 +35,7 @@ export async function getProfileById(profileId) {
     throw error
   }
 
-  return data
+  return data ? { ...data, display_name: data.full_name } : data
 }
 
 export async function getSkillsCatalog() {
@@ -127,14 +90,6 @@ export async function getProfileReviews(profileId) {
       trust_rating,
       comment,
       created_at,
-      reviewer:profiles!reviews_reviewer_id_fkey (
-        id,
-        username,
-        full_name,
-        avatar_url,
-        rating,
-        verified
-      ),
       task:tasks!reviews_task_id_fkey (
         id,
         title,
@@ -150,9 +105,34 @@ export async function getProfileReviews(profileId) {
     throw error
   }
 
+  const reviewerIds = [...new Set((data ?? []).map((row) => row.reviewer_id).filter(Boolean))]
+  let reviewersById = new Map()
+
+  if (reviewerIds.length > 0) {
+    const { data: reviewers, error: reviewersError } = await supabase
+      .from('public_profiles')
+      .select('id, username, full_name, avatar_url, rating, account_status')
+      .in('id', reviewerIds)
+
+    if (reviewersError) {
+      throw reviewersError
+    }
+
+    reviewersById = new Map(
+      (reviewers ?? []).map((reviewer) => [
+        reviewer.id,
+        {
+          ...reviewer,
+          display_name: reviewer.full_name,
+          verified: false,
+        },
+      ]),
+    )
+  }
+
   return (data ?? []).map((row) => ({
     ...row,
-    reviewer: Array.isArray(row.reviewer) ? row.reviewer[0] : row.reviewer,
+    reviewer: reviewersById.get(row.reviewer_id) || null,
     task: Array.isArray(row.task) ? row.task[0] : row.task,
   }))
 }
@@ -194,98 +174,57 @@ export async function getNearbyHelpers({
   lat,
   lng,
   radiusKm = 10,
+  radiusEnabled = true,
+  bounds = null,
   limit = 12,
   excludeProfileId = null,
   category = null,
 }) {
   const centerLat = toNumber(lat)
   const centerLng = toNumber(lng)
+  const north = toNumber(bounds?.north)
+  const south = toNumber(bounds?.south)
+  const east = toNumber(bounds?.east)
+  const west = toNumber(bounds?.west)
+  const safeRadiusKm = Number.isFinite(Number(radiusKm)) && Number(radiusKm) > 0 ? Number(radiusKm) : 10
+  const shouldUseRadius = radiusEnabled !== false
 
   if (centerLat === null || centerLng === null) {
     return []
   }
 
-  const latDelta = radiusKm / 111
-  const lngDelta = radiusKm / (111 * Math.cos((centerLat * Math.PI) / 180) || 1)
-
-  let query = supabase
-    .from('profiles')
-    .select('id, username, full_name, display_name, avatar_url, map_avatar_url, bio, rating, completed_tasks, reviews_count, verified, verified_email, verified_phone, verified_identity, identity_verified, helper_enabled, helper_status, availability_enabled, hourly_rate, response_time_minutes, lat, lng, city, country, neighborhood, account_status')
-    .eq('account_status', 'active')
-    .not('lat', 'is', null)
-    .not('lng', 'is', null)
-    .gte('lat', centerLat - latDelta)
-    .lte('lat', centerLat + latDelta)
-    .gte('lng', centerLng - lngDelta)
-    .lte('lng', centerLng + lngDelta)
-    .order('rating', { ascending: false })
-    .limit(Math.max(limit * 2, limit))
-
-  if (excludeProfileId) {
-    query = query.neq('id', excludeProfileId)
-  }
-
-  const { data, error } = await query
+  const { data, error } = await supabase.rpc('get_public_helpers_for_map', {
+    p_center_lat: centerLat,
+    p_center_lng: centerLng,
+    p_radius_km: safeRadiusKm,
+    p_radius_enabled: shouldUseRadius,
+    p_north: north,
+    p_south: south,
+    p_east: east,
+    p_west: west,
+    p_limit: Math.max(limit * (shouldUseRadius ? 2 : 4), limit),
+    p_exclude_profile_id: excludeProfileId,
+  })
 
   if (error) {
     throw error
   }
 
-  const helpersWithDistance = (data ?? [])
-    .map((helper) => {
-      const helperLat = toNumber(helper.lat)
-      const helperLng = toNumber(helper.lng)
+  const publicHelpers = (data ?? []).map((helper) => ({
+    ...helper,
+    lat: toNumber(helper.lat),
+    lng: toNumber(helper.lng),
+    distance_km: toNumber(helper.distance_km),
+    display_name: helper.full_name,
+    username: helper.username || null,
+    account_status: 'active',
+  }))
 
-      if (helperLat === null || helperLng === null) return null
-
-      return {
-        ...helper,
-        distance_km: haversineDistanceKm(centerLat, centerLng, helperLat, helperLng),
-      }
-    })
-    .filter(Boolean)
-    .filter((helper) => helper.distance_km <= radiusKm)
-    .sort((a, b) => a.distance_km - b.distance_km)
-    .slice(0, limit * 2)
-
-  if (helpersWithDistance.length === 0) {
+  if (publicHelpers.length === 0) {
     return []
   }
 
-  const helperIds = helpersWithDistance.map((helper) => helper.id)
-
-  const { data: verificationRows, error: verificationError } = await supabase
-    .from('profile_verifications')
-    .select('profile_id, email_verified, phone_verified, payment_verified, identity_verified, background_checked')
-    .in('profile_id', helperIds)
-
-  if (verificationError) {
-    throw verificationError
-  }
-
-  const verificationByProfileId = new Map(
-    (verificationRows ?? []).map((row) => [
-      row.profile_id,
-      {
-        email_verified: row.email_verified,
-        phone_verified: row.phone_verified,
-        payment_verified: row.payment_verified,
-        identity_verified: row.identity_verified,
-        background_checked: row.background_checked,
-      },
-    ]),
-  )
-
-  let helpers = helpersWithDistance
-    .map((helper) => ({
-      ...helper,
-      profile_verifications: verificationByProfileId.get(helper.id) || null,
-    }))
-    .filter(canAppearOnMap)
-
-  if (helpers.length === 0) {
-    return []
-  }
+  const helperIds = publicHelpers.map((helper) => helper.id)
 
   const { data: skillRows, error: skillError } = await supabase
     .from('profile_skills')
@@ -310,7 +249,7 @@ export async function getNearbyHelpers({
     skillRowsByProfileId.set(row.profile_id, current)
   }
 
-  helpers = helpers
+  const helpers = publicHelpers
     .map((helper) => ({
       ...helper,
       skills: (skillRowsByProfileId.get(helper.id) ?? []).map((entry) => entry.skill).filter(Boolean).slice(0, 3),

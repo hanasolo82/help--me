@@ -73,13 +73,9 @@ export default function OnboardingBasicsStep() {
   return (
 <OnboardingFrame
   title="Crea tu perfil"
-  lead="Configura tu perfil básico para entrar en la comunidad, encontrar ayuda cerca de ti y publicar tu primera solicitud."
+  lead="La ayuda empieza aquí"
   onBack={() => navigate(-1)}
-  footer={
-    <p className={styles.smallNote}>
-      Más adelante podrás activar el modo ayudante y completar las verificaciones necesarias para aparecer en el mapa.
-    </p>
-  }
+  
 >
   <form className={styles.stepBody} onSubmit={handleSubmit}>
     <div className={styles.split}>
@@ -109,6 +105,7 @@ export default function OnboardingBasicsStep() {
     <label className="field">
       <span>Preséntate brevemente</span>
       <textarea
+        className={styles.bioTextarea}
         value={draft.bio}
         onChange={(event) =>
           updateField('bio', event.target.value, 160)
@@ -121,7 +118,7 @@ export default function OnboardingBasicsStep() {
 
     <div className={styles.actions}>
       <p className="muted">
-        Solo te llevará un minuto. Podrás completar el resto de tu perfil más adelante.
+        Podrás completar tu perfil más adelante.
       </p>
 
       {submitError ? (

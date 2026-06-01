@@ -1,5 +1,5 @@
 .shineBorder {
-  --shine-radius: var(--radius-lg);
+  --shine-radius: var(--radius-xl);
   position: relative;
   isolation: isolate;
   display: block;
@@ -10,7 +10,7 @@
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 45%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02));
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .shineBorder::before {
@@ -56,9 +56,9 @@
   gap: 0.45rem;
   width: 100%;
   min-height: 100%;
-  padding: 1.2rem;
+  padding: 1.15rem;
   border-radius: calc(var(--shine-radius) - 1px);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
   backdrop-filter: blur(18px);
 }
 

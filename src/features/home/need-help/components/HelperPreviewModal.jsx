@@ -35,7 +35,6 @@ export default function HelperPreviewModal({
   onViewProfile,
   onContact,
   onSendProposal,
-  onAddFavorite,
 }) {
   const skills = useMemo(() => buildSkillList(helper), [helper])
 
@@ -90,16 +89,7 @@ export default function HelperPreviewModal({
             Contactar
           </button>
           <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)}>
-            Enviar propuesta
-          </button>
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={() => onAddFavorite?.(helper)}
-            disabled={!onAddFavorite}
-            title={!onAddFavorite ? 'TODO: conectar con profile_favorites' : ''}
-          >
-            Añadir a favoritos
+            Publicar solicitud
           </button>
         </div>
       </section>

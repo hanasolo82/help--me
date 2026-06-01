@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { acceptTask } from '../../services/tasksService'
+import { startTaskCheckout } from '../../services/paymentsService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
@@ -30,6 +31,14 @@ export default function TaskDetail() {
         queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
       ])
       navigate(`/chat/${conversation.id}`, { replace: true })
+    },
+  })
+
+  const checkoutMutation = useMutation({
+    mutationFn: () => startTaskCheckout(id),
+    onSuccess: async ({ checkout_url }) => {
+      await queryClient.invalidateQueries({ queryKey: ['task', id] })
+      window.location.href = checkout_url
     },
   })
 
@@ -78,10 +87,12 @@ export default function TaskDetail() {
   const isOwner = user?.id === task?.created_by
   const isHelper = user?.id === task?.accepted_by
   const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
+  const canStartCheckout = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
+  const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
   const canOpenChat =
     Boolean(task) &&
     ((task.status === 'open' && !isOwner) ||
-      (['assigned', 'in_progress', 'completed'].includes(task.status) && (isOwner || isHelper)))
+      (['assigned', 'in_progress', 'completed', 'closed'].includes(task.status) && (isOwner || isHelper)))
 
   async function handleAccept() {
     acceptMutation.mutate()
@@ -177,6 +188,10 @@ export default function TaskDetail() {
         <p className="auth-message error">{error || acceptMutation.error?.message || 'Ha ocurrido un error.'}</p>
       )}
 
+      {checkoutMutation.error && (
+        <p className="auth-message error">{checkoutMutation.error?.message || 'No hemos podido preparar el pago.'}</p>
+      )}
+
       <div className="two-actions">
         {canOpenChat && (
           <button
@@ -200,6 +215,27 @@ export default function TaskDetail() {
             {acceptMutation.isPending ? 'Aceptando...' : 'Aceptar tarea'}
           </button>
         )}
+
+        {canStartCheckout && (
+          <button
+            type="button"
+            className="primary-action sticky-action"
+            onClick={() => checkoutMutation.mutate()}
+            disabled={checkoutMutation.isPending}
+          >
+            {checkoutMutation.isPending ? 'Preparando pago...' : 'Pagar tarea'}
+          </button>
+        )}
+
+        {canCloseTask && (
+          <button
+            type="button"
+            className="secondary-action sticky-action"
+            onClick={() => navigate(`/complete/${id}`)}
+          >
+            Confirmar finalización
+          </button>
+        )}
       </div>
 
       {isOwner && task.status === 'open' && (
@@ -212,6 +248,10 @@ export default function TaskDetail() {
 
       {isOwner && task.status === 'cancelled' && (
         <p className="muted">Esta tarea se ha cancelado y ya no aparece en la lista principal.</p>
+      )}
+
+      {isOwner && task.status === 'closed' && (
+        <p className="muted">La ayuda ya se cerró y los fondos quedaron liberados.</p>
       )}
 
       <TaskChatModal

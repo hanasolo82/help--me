@@ -8,6 +8,7 @@ export default function HelperFiltersBar({
   selectedSkillId = 'all',
   onSkillChange,
   radiusKm = 10,
+  radiusEnabled = true,
   onRadiusChange,
   onlyAvailable = false,
   onOnlyAvailableChange,
@@ -27,13 +28,17 @@ export default function HelperFiltersBar({
 
       <label className={styles.filterField}>
         <span>Radio de búsqueda</span>
-        <select value={radiusKm} onChange={(event) => onRadiusChange?.(Number(event.target.value))}>
-          {radiusOptions.map((option) => (
-            <option key={option} value={option}>
-              {option} km
-            </option>
-          ))}
-        </select>
+        {radiusEnabled ? (
+          <select value={radiusKm} onChange={(event) => onRadiusChange?.(Number(event.target.value))}>
+            {radiusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option} km
+              </option>
+            ))}
+          </select>
+        ) : (
+          <strong>Sin límite</strong>
+        )}
       </label>
 
       <div className={styles.filterToggleRow}>

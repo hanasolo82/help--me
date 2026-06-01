@@ -1,12 +1,15 @@
 import express from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import {
-  constructStripeEvent,
   createConnectAccountLink,
   createOrGetConnectAccount,
   syncStripeAccountByAccountId,
-  syncStripeAccountFromWebhook,
+  constructStripeEvent,
 } from '../services/stripe.service.js'
+import {
+  ensureStripeWebhookSignatureHeader,
+  processStripeWebhookEvent,
+} from '../services/financial.service.js'
 import { supabaseAdmin } from '../services/supabase.service.js'
 
 const router = express.Router()
@@ -124,30 +127,33 @@ router.post(
   asyncHandler(async (req, res) => {
     const signature = req.headers['stripe-signature']
 
-    if (!signature) {
-      return res.status(400).json({
-        error: 'Missing Stripe signature header.',
-      })
-    }
-
     try {
+      ensureStripeWebhookSignatureHeader(signature)
       const event = constructStripeEvent(req.body, signature)
       if (isDevelopment) {
         console.info(`[stripe:webhook] ${event.type}`)
       }
 
-      if (event.type === 'account.updated') {
-        await syncStripeAccountFromWebhook(event.data.object)
-      }
+      await processStripeWebhookEvent(event)
 
       return res.status(200).json({
         received: true,
       })
     } catch (error) {
-      console.error('[stripe:webhook] Invalid event', error?.message || error)
-      return res.status(400).json({
-        error: 'Invalid Stripe webhook signature.',
-      })
+      if (error?.statusCode === 400 && error?.message === 'Missing Stripe signature header.') {
+        return res.status(400).json({
+          error: error.message,
+        })
+      }
+
+      if (error?.type === 'StripeSignatureVerificationError' || /signature/i.test(String(error?.message || ''))) {
+        console.error('[stripe:webhook] Invalid signature', error?.message || error)
+        return res.status(400).json({
+          error: 'Invalid Stripe webhook signature.',
+        })
+      }
+
+      throw error
     }
   }),
 )

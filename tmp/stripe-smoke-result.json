@@ -1,0 +1,138 @@
+{
+  "ready": true,
+  "steps": {
+    "checkout": {
+      "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_a1upHaCCPqTAGFmxkdMm3YQr1Njba9DCrdUgnBQuxfZvOtCw3VxGPb61Ni#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRZDxrR09UMFBDdX9gNkZEdG1TRHZxcGRzUENTU39LQVBualxPYj1VVjNLUEhodGN3fFVGaFd0Tm5wMmxCVnVpb082Y2xDUGRAYkFPUzx2SUBtS218V041NUAzUHBcd0FSJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
+      "payment_id": "c2559ae8-8710-45cb-81c2-1afb66ef321e"
+    },
+    "balance_top_up": {
+      "charge_id": "pi_3TdNpzJQ5UFpze3C2ETnisFU",
+      "amount": 5000,
+      "currency": "eur"
+    },
+    "balance_available": {
+      "available_amount_cents": 22296,
+      "currency": "eur"
+    },
+    "release": {
+      "payment_id": "c2559ae8-8710-45cb-81c2-1afb66ef321e",
+      "task_id": "865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+      "transfer_id": "eddeeb73-adc5-4305-abd7-1613d78267cb",
+      "stripe_transfer_id": "tr_1TdNq1JQ5UFpze3CJdogT9Az",
+      "transfer_status": "pending",
+      "payment_status": "transferring",
+      "duplicate": false
+    },
+    "happy_path": {
+      "payment_status": "released",
+      "task_status": "closed",
+      "transfer_status": "paid"
+    },
+    "resilience": {
+      "duplicate_release": true,
+      "duplicate_webhook": true,
+      "out_of_order": true,
+      "orphan_event": true
+    }
+  },
+  "mismatches": [
+    {
+      "label": "orphan_transfer_paid",
+      "event_id": "evt_smoke_orphan_2bee7698-da2",
+      "expected": true,
+      "recorded": true
+    },
+    {
+      "label": "out_of_order_transfer_created_after_paid",
+      "event_id": "evt_smoke_transfer_out_of_order_209cb39b-824",
+      "expected": true,
+      "recorded": true
+    }
+  ],
+  "events": [
+    {
+      "type": "checkout.session.completed",
+      "event_id": "evt_smoke_checkout_62aad850-549"
+    },
+    {
+      "type": "payment_intent.succeeded",
+      "event_id": "evt_smoke_pi_006366e3-14a"
+    },
+    {
+      "type": "transfer.created",
+      "event_id": "evt_smoke_transfer_created_0a53e5fe-696"
+    },
+    {
+      "type": "transfer.paid",
+      "event_id": "evt_smoke_transfer_paid_9fb78589-a2a"
+    }
+  ],
+  "context": {
+    "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+    "helper_stripe_account_id": "acct_1TbOnSQsF7FooNYl",
+    "task_id": "865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+    "payment_id": "c2559ae8-8710-45cb-81c2-1afb66ef321e",
+    "checkout_session_id": "cs_test_a1upHaCCPqTAGFmxkdMm3YQr1Njba9DCrdUgnBQuxfZvOtCw3VxGPb61Ni",
+    "payment_intent_id": "pi_3TdNpuJQ5UFpze3C0g7Rb7bA",
+    "transfer_id": "tr_1TdNq1JQ5UFpze3CJdogT9Az",
+    "payment": {
+      "id": "c2559ae8-8710-45cb-81c2-1afb66ef321e",
+      "task_id": "865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+      "payer_id": "606f51ba-1397-49b3-8199-86f9f8964cf9",
+      "receiver_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+      "amount": 12.34,
+      "platform_fee": 0,
+      "status": "released",
+      "stripe_payment_intent_id": "pi_3TdNpuJQ5UFpze3C0g7Rb7bA",
+      "created_at": "2026-06-01T04:52:18.297365+00:00",
+      "updated_at": "2026-06-01T04:52:43.115+00:00",
+      "requester_profile_id": "606f51ba-1397-49b3-8199-86f9f8964cf9",
+      "helper_profile_id": "b1d4a458-3101-4a42-b88f-7fa4c8d42976",
+      "currency": "eur",
+      "amount_cents": 1234,
+      "platform_fee_cents": 0,
+      "helper_amount_cents": 1234,
+      "stripe_checkout_session_id": "cs_test_a1upHaCCPqTAGFmxkdMm3YQr1Njba9DCrdUgnBQuxfZvOtCw3VxGPb61Ni",
+      "stripe_checkout_session_status": "unpaid",
+      "stripe_charge_id": "ch_3TdNpuJQ5UFpze3C0W15YyXs",
+      "stripe_balance_transaction_id": "txn_1TdNq1JQ5UFpze3CWdJpReUH",
+      "correlation_id": "c1babaac-2b82-499d-8d65-e46a74e49f65",
+      "idempotency_key": "checkout:task:865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+      "metadata": {
+        "release": {
+          "requested_at": "2026-06-01T04:52:32.718Z",
+          "requested_by": "606f51ba-1397-49b3-8199-86f9f8964cf9"
+        },
+        "checkout": {
+          "task_id": "865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+          "requested_at": "2026-06-01T04:52:17.884Z"
+        },
+        "reconciliation": {
+          "reason": "Transfer event arrived out of order or after a later local transfer state.",
+          "transfer_id": "tr_1TdNq1JQ5UFpze3CJdogT9Az",
+          "source_transaction": null
+        }
+      },
+      "reconciliation_status": "needs_review",
+      "last_reconciled_at": "2026-06-01T04:52:43.115+00:00",
+      "reconciliation_error": "Transfer event arrived out of order or after a later local transfer state.",
+      "captured_at": "2026-06-01T04:52:29.445+00:00",
+      "held_at": "2026-06-01T04:52:29.445+00:00",
+      "released_at": "2026-06-01T04:52:38.67+00:00",
+      "refunded_at": null,
+      "disputed_at": null,
+      "voided_at": null,
+      "stripe_transfer_id": "tr_1TdNq1JQ5UFpze3CJdogT9Az"
+    },
+    "audit_counts": {
+      "payment_event_audits": 2,
+      "total_ledger_entries": 7
+    },
+    "webhook_status": {
+      "checkout": "processed",
+      "payment_intent": "processed",
+      "transfer_created": "processed",
+      "transfer_paid": "processed"
+    }
+  }
+}

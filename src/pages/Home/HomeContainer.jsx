@@ -157,11 +157,11 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenNotifications = useCallback(() => {
-    navigate('/settings#notifications')
+    navigate('/settings#notificaciones')
   }, [navigate])
 
   const handleOpenPrivacy = useCallback(() => {
-    navigate('/settings#privacidad')
+    navigate('/settings#mapa-ubicacion')
   }, [navigate])
 
   const handleOpenHelp = useCallback(() => {
@@ -184,8 +184,17 @@ export default function HomeContainer() {
       profileTheme: profile?.theme === THEME_DARK ? THEME_DARK : null,
     })
 
-    setThemePreference(nextTheme)
-    applyThemeToDocument(nextTheme)
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setThemePreference(nextTheme)
+      applyThemeToDocument(nextTheme)
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [profile?.theme])
 
   const handleThemeChange = useCallback((nextChecked) => {
@@ -212,8 +221,17 @@ export default function HomeContainer() {
   useEffect(() => {
     if (!routeLocation.state?.resumeHelperOnboarding) return
 
-    setHelperJourneyOpen(true)
-    setHelperHomeIntent('help')
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setHelperJourneyOpen(true)
+      setHelperHomeIntent('help')
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [routeLocation.state?.resumeHelperOnboarding])
 
   useEffect(() => {
@@ -245,7 +263,6 @@ export default function HomeContainer() {
         themePreference={themePreference}
         onThemeChange={handleThemeChange}
         isHelperActive={Boolean(profile?.helper_status === 'active')}
-        helperModeLabel={isHelperMode ? 'Necesito ayuda' : 'Modo ayudante'}
         category={category}
         onCategoryChange={setCategory}
         radius={radius}

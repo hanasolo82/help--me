@@ -4,9 +4,11 @@ import { supabaseAdmin } from './supabase.service.js'
 
 const { env } = loadServerEnv()
 
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-06-20',
 })
+
+export { stripe }
 
 function createConnectNotEnabledError(originalError) {
   const error = new Error(
@@ -36,22 +38,16 @@ async function getProfileByUserId(userId) {
   return data
 }
 
-async function updateProfileStripeData(profileId, updates) {
+async function getConnectAccountByProfileId(profileId) {
   if (!supabaseAdmin) {
     throw new Error('Supabase admin client is not configured.')
   }
 
   const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .update({
-      ...updates,
-      last_stripe_sync_at: new Date().toISOString(),
-    })
-    .eq('id', profileId)
-    .select(
-      'id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled, last_stripe_sync_at',
-    )
-    .single()
+    .from('connect_accounts')
+    .select('*')
+    .eq('profile_id', profileId)
+    .maybeSingle()
 
   if (error) {
     throw error
@@ -60,7 +56,25 @@ async function updateProfileStripeData(profileId, updates) {
   return data
 }
 
-async function getProfileByStripeAccountId(accountId) {
+async function getConnectAccountByStripeAccountId(accountId) {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not configured.')
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('connect_accounts')
+    .select('*')
+    .eq('stripe_account_id', accountId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+async function getLegacyProfileByStripeAccountId(accountId) {
   if (!supabaseAdmin) {
     throw new Error('Supabase admin client is not configured.')
   }
@@ -70,6 +84,40 @@ async function getProfileByStripeAccountId(accountId) {
     .select('id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled')
     .eq('stripe_account_id', accountId)
     .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+async function upsertConnectAccount(profileId, account) {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not configured.')
+  }
+
+  const payload = {
+    profile_id: profileId,
+    stripe_account_id: account.id,
+    country: account.country || 'ES',
+    default_currency: account.default_currency || 'eur',
+    charges_enabled: Boolean(account.charges_enabled),
+    payouts_enabled: Boolean(account.payouts_enabled),
+    details_submitted: Boolean(account.details_submitted),
+    disabled_reason: account.requirements?.disabled_reason || account.disabled_reason || null,
+    capabilities: account.capabilities || {},
+    requirements: account.requirements || {},
+    future_requirements: account.future_requirements || {},
+    last_stripe_sync_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('connect_accounts')
+    .upsert(payload, { onConflict: 'profile_id' })
+    .select('*')
+    .single()
 
   if (error) {
     throw error
@@ -97,8 +145,19 @@ export async function createOrGetConnectAccount(user, profile) {
     throw new Error('Profile not found.')
   }
 
+  const existingConnectAccount = await getConnectAccountByProfileId(currentProfile.id)
+
+  if (existingConnectAccount?.stripe_account_id) {
+    return existingConnectAccount.stripe_account_id
+  }
+
   if (currentProfile.stripe_account_id) {
-    return currentProfile.stripe_account_id
+    const legacyAccount = await getAccountFromStripe(currentProfile.stripe_account_id)
+
+    if (legacyAccount?.id) {
+      await upsertConnectAccount(currentProfile.id, legacyAccount)
+      return legacyAccount.id
+    }
   }
 
   let account
@@ -125,9 +184,7 @@ export async function createOrGetConnectAccount(user, profile) {
     throw error
   }
 
-  await updateProfileStripeData(currentProfile.id, {
-    stripe_account_id: account.id,
-  })
+  await upsertConnectAccount(currentProfile.id, account)
 
   return account.id
 }
@@ -156,17 +213,16 @@ export async function syncStripeAccountByAccountId(accountId) {
     return null
   }
 
-  const profile = await getProfileByStripeAccountId(accountId)
+  const connectAccount = await getConnectAccountByStripeAccountId(accountId)
+  const legacyProfile = connectAccount ? null : await getLegacyProfileByStripeAccountId(accountId)
+  const profileId = connectAccount?.profile_id || legacyProfile?.id
 
-  if (!profile?.id) {
+  if (!profileId) {
     return null
   }
 
-  return updateProfileStripeData(profile.id, {
-    stripe_onboarding_completed: Boolean(account.details_submitted),
-    stripe_charges_enabled: Boolean(account.charges_enabled),
-    stripe_payouts_enabled: Boolean(account.payouts_enabled),
-  })
+  await upsertConnectAccount(profileId, account)
+  return getLegacyProfileByStripeAccountId(accountId)
 }
 
 export async function syncStripeAccountFromWebhook(account) {
@@ -178,27 +234,24 @@ export async function syncStripeAccountFromWebhook(account) {
     throw new Error('Supabase admin client is not configured.')
   }
 
-  const updates = {
-    stripe_onboarding_completed: Boolean(account.details_submitted),
-    stripe_charges_enabled: Boolean(account.charges_enabled),
-    stripe_payouts_enabled: Boolean(account.payouts_enabled),
-    last_stripe_sync_at: new Date().toISOString(),
+  const connectAccount = await getConnectAccountByStripeAccountId(account.id)
+  const legacyProfile = connectAccount ? null : await getLegacyProfileByStripeAccountId(account.id)
+  const profileId = connectAccount?.profile_id || legacyProfile?.id || account.metadata?.profile_id
+
+  if (!profileId) {
+    return null
   }
 
-  const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .update(updates)
-    .eq('stripe_account_id', account.id)
-    .select('id, stripe_account_id, stripe_onboarding_completed, stripe_charges_enabled, stripe_payouts_enabled')
-    .maybeSingle()
-
-  if (error) {
-    throw error
-  }
-
-  return data
+  await upsertConnectAccount(profileId, account)
+  return getLegacyProfileByStripeAccountId(account.id)
 }
 
 export function constructStripeEvent(rawBody, signature) {
   return stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET)
+}
+
+export {
+  getConnectAccountByProfileId,
+  getConnectAccountByStripeAccountId,
+  getProfileByUserId,
 }

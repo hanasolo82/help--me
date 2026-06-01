@@ -29,7 +29,7 @@ function getFriendlyError(error) {
   return 'No pudimos obtener tu ubicación. Inténtalo otra vez cuando quieras.'
 }
 
-export default function LocationStep({ onNext, onBack, journeyDraft, setJourneyDraft }) {
+export default function LocationStep({ onNext, onBack, setJourneyDraft }) {
   const [permissionState, setPermissionState] = useState('prompt')
   const [switchEnabled, setSwitchEnabled] = useState(false)
   const [checkingPermission, setCheckingPermission] = useState(true)
@@ -44,7 +44,6 @@ export default function LocationStep({ onNext, onBack, journeyDraft, setJourneyD
     if (!switchEnabled) return 'idle'
     return 'success'
   }, [checkingPermission, permissionState, requestingLocation, switchEnabled])
-  const draft = journeyDraft || {}
 
   useEffect(() => {
     let cancelled = false

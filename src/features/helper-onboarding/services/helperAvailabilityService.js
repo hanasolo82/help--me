@@ -1,4 +1,15 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { requireUser } from '../../../lib/authHelpers'
+
+async function resolveOwnedProfileId(profileId = null) {
+  const user = await requireUser('Necesitas una sesion valida para gestionar tu disponibilidad.')
+
+  if (profileId && profileId !== user.id) {
+    throw new Error('Unauthorized profile access')
+  }
+
+  return user.id
+}
 
 function normalizeSelectedDays(selectedDays = []) {
   const uniqueDays = []
@@ -14,12 +25,12 @@ function normalizeSelectedDays(selectedDays = []) {
 }
 
 export async function getProfileAvailability(profileId) {
-  if (!profileId) return []
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const { data, error } = await supabase
     .from('profile_availability')
     .select('day_of_week')
-    .eq('profile_id', profileId)
+    .eq('profile_id', ownedProfileId)
 
   if (error) {
     throw error
@@ -34,9 +45,7 @@ export async function getProfileAvailability(profileId) {
 }
 
 export async function replaceProfileAvailability(profileId, selectedDays = []) {
-  if (!profileId) {
-    throw new Error('No pudimos guardar la disponibilidad porque falta el profile.')
-  }
+  const ownedProfileId = await resolveOwnedProfileId(profileId)
 
   const normalizedDays = normalizeSelectedDays(selectedDays)
   const availabilityEnabled = normalizedDays.length > 0
@@ -44,7 +53,7 @@ export async function replaceProfileAvailability(profileId, selectedDays = []) {
   const { error: profileError } = await supabase
     .from('profiles')
     .update({ availability_enabled: availabilityEnabled, updated_at: new Date().toISOString() })
-    .eq('id', profileId)
+    .eq('id', ownedProfileId)
 
   if (profileError) {
     throw profileError
@@ -53,7 +62,7 @@ export async function replaceProfileAvailability(profileId, selectedDays = []) {
   const { error: deleteError } = await supabase
     .from('profile_availability')
     .delete()
-    .eq('profile_id', profileId)
+    .eq('profile_id', ownedProfileId)
 
   if (deleteError) {
     throw deleteError
@@ -64,7 +73,7 @@ export async function replaceProfileAvailability(profileId, selectedDays = []) {
   }
 
   const rows = normalizedDays.map((day_of_week) => ({
-    profile_id: profileId,
+    profile_id: ownedProfileId,
     day_of_week,
     start_time: '00:00',
     end_time: '23:59',

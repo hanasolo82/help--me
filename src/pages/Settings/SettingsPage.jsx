@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { sanitizeText } from '../../lib/security'
-import { signOut } from '../../services/authService'
 import { ensureCurrentProfile, updateCurrentProfile } from '../../services/profilesService'
 import { SettingsProvider } from './components/SettingsContext'
 import SettingsLayout from './components/SettingsLayout'
 import ProfileSettings from './components/ProfileSettings'
+import PaymentsSettings from './components/PaymentsSettings'
 import AppearanceSettings from './components/AppearanceSettings'
 import MapSettings from './components/MapSettings'
 import NotificationSettings from './components/NotificationSettings'
@@ -18,10 +18,11 @@ const DEFAULT_FORM = {
   username: '',
   bio: '',
   avatarFile: null,
-  mapAvatarUrl: '',
   theme: 'light',
-  searchRadiusKm: '10',
+  searchRadiusEnabled: false,
+  searchRadiusKm: 10,
   showApproxLocation: true,
+  visibleZoneName: '',
   availabilityEnabled: true,
   notifyNearbyTasks: true,
   notifyMessages: true,
@@ -34,15 +35,34 @@ function buildFormFromProfile(profile) {
     displayName: profile?.display_name || profile?.full_name || '',
     username: profile?.username || '',
     bio: profile?.bio || '',
-    mapAvatarUrl: profile?.map_avatar_url || '',
     theme: profile?.theme === 'dark' ? 'dark' : 'light',
-    searchRadiusKm: String(profile?.search_radius_km ?? 10),
+    searchRadiusEnabled: Boolean(profile?.search_radius_enabled),
+    searchRadiusKm: Number(profile?.search_radius_km ?? 10) || 10,
     showApproxLocation: profile?.show_approx_location ?? true,
+    visibleZoneName: profile?.visible_zone_name || '',
     availabilityEnabled: profile?.availability_enabled ?? true,
     notifyNearbyTasks: profile?.notify_nearby_tasks ?? true,
     notifyMessages: profile?.notify_messages ?? true,
     notifyPayments: profile?.notify_payments ?? true,
   }
+}
+
+function buildFormSnapshotKey(form) {
+  return JSON.stringify({
+    displayName: sanitizeText(form?.displayName, 80),
+    username: sanitizeText(form?.username, 30).toLowerCase(),
+    bio: sanitizeText(form?.bio, 160),
+    theme: form?.theme === 'dark' ? 'dark' : 'light',
+    searchRadiusEnabled: Boolean(form?.searchRadiusEnabled),
+    searchRadiusKm: Number(form?.searchRadiusKm ?? 10) || 10,
+    showApproxLocation: Boolean(form?.showApproxLocation),
+    visibleZoneName: sanitizeText(form?.visibleZoneName, 80),
+    availabilityEnabled: Boolean(form?.availabilityEnabled),
+    notifyNearbyTasks: Boolean(form?.notifyNearbyTasks),
+    notifyMessages: Boolean(form?.notifyMessages),
+    notifyPayments: Boolean(form?.notifyPayments),
+    hasAvatarFile: Boolean(form?.avatarFile),
+  })
 }
 
 function useObjectUrl(file) {
@@ -57,31 +77,50 @@ function useObjectUrl(file) {
   return url
 }
 
-function calculateProfileCompletion(profile, form) {
-  const hasDisplayName = Boolean(sanitizeText(form.displayName || profile?.display_name || profile?.full_name, 80))
-  const hasUsername = Boolean(sanitizeText(form.username || profile?.username, 30))
-  const hasBio = Boolean(sanitizeText(form.bio || profile?.bio, 160))
-  const hasAvatar = Boolean(form.avatarFile || profile?.avatar_url)
-  const hasMapAvatar = Boolean(form.mapAvatarUrl || profile?.map_avatar_url)
-
-  return [hasDisplayName, hasUsername, hasBio, hasAvatar, hasMapAvatar].filter(Boolean).length * 20
-}
-
 export default function SettingsPage() {
   const { profile: authProfile, refreshProfile, user } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(authProfile)
   const [form, setForm] = useState(() => buildFormFromProfile(authProfile))
+  const [savedSnapshotKey, setSavedSnapshotKey] = useState(() => buildFormSnapshotKey(buildFormFromProfile(authProfile)))
   const [bootStatus, setBootStatus] = useState('loading')
   const [bootError, setBootError] = useState('')
   const [saveState, setSaveState] = useState('idle')
   const [feedback, setFeedback] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const navigateTimerRef = useRef(null)
+  const feedbackTimerRef = useRef(null)
 
   const avatarPreview = useObjectUrl(form.avatarFile)
-  const profileCompletion = calculateProfileCompletion(profile, form)
   const authProfileId = authProfile?.id || ''
   const isDarkTheme = form.theme === 'dark'
+  const currentSnapshotKey = buildFormSnapshotKey(form)
+  const isDirty = currentSnapshotKey !== savedSnapshotKey
+
+  function clearFeedbackTimer() {
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current)
+      feedbackTimerRef.current = null
+    }
+  }
+
+  function clearNavigateTimer() {
+    if (navigateTimerRef.current) {
+      window.clearTimeout(navigateTimerRef.current)
+      navigateTimerRef.current = null
+    }
+  }
+
+  function showFeedback(nextFeedback) {
+    clearFeedbackTimer()
+    setFeedback(nextFeedback)
+
+    const delay = nextFeedback.type === 'error' ? 4200 : 2200
+    feedbackTimerRef.current = window.setTimeout(() => {
+      setFeedback(null)
+      feedbackTimerRef.current = null
+    }, delay)
+  }
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -99,6 +138,7 @@ export default function SettingsPage() {
 
         setProfile(nextProfile)
         setForm(buildFormFromProfile(nextProfile))
+        setSavedSnapshotKey(buildFormSnapshotKey(buildFormFromProfile(nextProfile)))
         setBootStatus('ready')
       } catch (error) {
         if (cancelled) return
@@ -115,9 +155,26 @@ export default function SettingsPage() {
     }
   }, [authProfile, authProfileId, reloadKey, user?.id])
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        window.clearTimeout(feedbackTimerRef.current)
+      }
+
+      if (navigateTimerRef.current) {
+        window.clearTimeout(navigateTimerRef.current)
+      }
+    }
+  }, [])
+
+  async function saveChanges() {
+    if (saveState === 'saving') {
+      return false
+    }
+
     setSaveState('saving')
+    clearNavigateTimer()
+    clearFeedbackTimer()
     setFeedback(null)
 
     try {
@@ -126,30 +183,62 @@ export default function SettingsPage() {
         username: sanitizeText(form.username, 30).toLowerCase(),
         bio: sanitizeText(form.bio, 160),
         theme: form.theme,
-        searchRadiusKm: form.searchRadiusKm,
-        showApproxLocation: form.showApproxLocation,
+        search_radius_enabled: Boolean(form.searchRadiusEnabled),
+        searchRadiusKm: Number(form.searchRadiusKm ?? 10) || 10,
+        show_approx_location: Boolean(form.showApproxLocation),
+        visible_zone_name: sanitizeText(form.visibleZoneName, 80),
         availabilityEnabled: form.availabilityEnabled,
         notifyNearbyTasks: form.notifyNearbyTasks,
         notifyMessages: form.notifyMessages,
         notifyPayments: form.notifyPayments,
         avatarFile: form.avatarFile,
-        mapAvatarUrl: form.mapAvatarUrl || null,
       })
 
       setProfile(nextProfile)
-      setForm(buildFormFromProfile(nextProfile))
-      await refreshProfile()
-      setSaveState('success')
-      setFeedback({ type: 'success', text: 'Tus ajustes se han guardado correctamente.' })
+      const nextForm = buildFormFromProfile(nextProfile)
+      setForm(nextForm)
+
+      const refreshedProfile = await refreshProfile()
+      if (!refreshedProfile) {
+        throw new Error('No se pudieron guardar los cambios')
+      }
+
+      const refreshedForm = buildFormFromProfile(refreshedProfile)
+      setProfile(refreshedProfile)
+      setForm(refreshedForm)
+      setSavedSnapshotKey(buildFormSnapshotKey(refreshedForm))
+      setSaveState('idle')
+      showFeedback({ type: 'success', text: 'Guardado' })
+      return true
     } catch (error) {
-      setSaveState('error')
-      setFeedback({ type: 'error', text: error?.message || 'No se pudieron guardar los cambios.' })
+      console.error(error)
+      setSaveState('idle')
+      showFeedback({ type: 'error', text: 'No se pudieron guardar los cambios' })
+      return false
     }
   }
 
-  async function handleSignOut() {
-    await signOut({ scope: 'global' })
-    window.location.replace('/')
+  async function handleBack() {
+    clearNavigateTimer()
+    clearFeedbackTimer()
+
+    if (saveState === 'saving') {
+      return
+    }
+
+    if (!isDirty) {
+      navigate('/home')
+      return
+    }
+
+    const saved = await saveChanges()
+    if (!saved) {
+      return
+    }
+
+    navigateTimerRef.current = window.setTimeout(() => {
+      navigate('/home')
+    }, 550)
   }
 
   const settingsValue = {
@@ -162,19 +251,16 @@ export default function SettingsPage() {
       }))
     },
     avatarPreview,
-    onSignOut: handleSignOut,
+    user,
   }
 
   const sidebarItems = [
-    { id: 'datos-personales', label: 'Datos personales', meta: 'Perfil público' },
-    { id: 'apariencia', label: 'Apariencia', meta: 'Tema y sensación' },
-    { id: 'privacidad', label: 'Privacidad', meta: 'Visibilidad y alcance' },
+    { id: 'perfil', label: 'Perfil', meta: 'Identidad visible' },
+    { id: 'mapa-ubicacion', label: 'Mapa y ubicación', meta: 'Zona visible y privacidad' },
     { id: 'notificaciones', label: 'Notificaciones', meta: 'Avisos y mensajes' },
-    { id: 'seguridad', label: 'Inicio de sesión y seguridad', meta: 'Acceso y cuenta' },
-    { id: 'pagos', label: 'Pagos', meta: 'Próximamente', disabled: true },
-    { id: 'idioma-moneda', label: 'Idioma y moneda', meta: 'Próximamente', disabled: true },
-    { id: 'perfil-ayudante', label: 'Perfil de ayudante', meta: 'Próximamente', disabled: true },
-    { id: 'ayuda', label: 'Ayuda', meta: 'Próximamente', disabled: true },
+    { id: 'pagos', label: 'Pagos', meta: 'Cobros e ingresos' },
+    { id: 'apariencia', label: 'Apariencia', meta: 'Tema visual' },
+    { id: 'seguridad', label: 'Seguridad', meta: 'Acceso y sesión' },
   ]
 
   return (
@@ -183,32 +269,22 @@ export default function SettingsPage() {
         <header className={styles.hero}>
           <div className={styles.heroCopy}>
             <p className="eyebrow">Configuración</p>
-            <h1>Ajustes de tu cuenta</h1>
-            <p>Una navegación simple para editar tu cuenta sin mezclarla con el perfil público.</p>
+            <h1>Ajustes</h1>
+            <p>Gestiona cómo te presentas, cómo usas HelpMe y qué queda preparado para crecer contigo.</p>
           </div>
         </header>
 
-        <form id="settings-form" className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={(event) => event.preventDefault()}>
           <SettingsLayout
             items={sidebarItems}
-            onBack={() => navigate('/home')}
+            onBack={handleBack}
             busy={saveState === 'saving'}
           >
-            <section className={styles.progressCard} aria-label="Progreso del perfil">
-              <div>
-                <p className={styles.progressKicker}>Perfil completado</p>
-                <h2>Tu perfil está al {profileCompletion}%</h2>
-              </div>
-              <div className={styles.progressTrack} aria-hidden="true">
-                <span className={styles.progressFill} style={{ width: `${profileCompletion}%` }} />
-              </div>
-            </section>
-
             {bootStatus === 'loading' && (
               <section className={styles.stateCard}>
                 <p className="eyebrow">Cargando</p>
                 <h2>Estamos preparando tus ajustes</h2>
-                <p className="muted">Leemos tu profile y, si falta, lo creamos automáticamente.</p>
+                <p className="muted">Cargamos tu experiencia para que puedas revisarla con calma.</p>
               </section>
             )}
 
@@ -229,7 +305,11 @@ export default function SettingsPage() {
             )}
 
             {feedback && (
-              <section className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}>
+              <section
+                className={feedback.type === 'error' ? styles.bannerError : styles.bannerSuccess}
+                role={feedback.type === 'error' ? 'alert' : 'status'}
+                aria-live={feedback.type === 'error' ? 'assertive' : 'polite'}
+              >
                 {feedback.text}
               </section>
             )}
@@ -237,9 +317,10 @@ export default function SettingsPage() {
             {bootStatus === 'ready' && (
               <>
                 <ProfileSettings />
-                <AppearanceSettings />
                 <MapSettings />
                 <NotificationSettings />
+                <PaymentsSettings />
+                <AppearanceSettings />
                 <SecuritySettings />
               </>
             )}

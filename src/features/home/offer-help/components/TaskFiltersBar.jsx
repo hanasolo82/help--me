@@ -11,13 +11,14 @@ export default function TaskFiltersBar({
   radiusOptions = [],
   taskCount = 0,
   visibleCount = 0,
+  eyebrow = 'Ofrezco ayuda',
   title = 'Tareas visibles en tu zona',
   lead = 'Explora tareas cercanas, cambia filtros y elige una oportunidad para ayudar.',
 }) {
   return (
     <div className={styles.filtersBar}>
       <div className={styles.filtersHeader}>
-        <p className="eyebrow">Ofrezco ayuda</p>
+        <p className="eyebrow">{eyebrow}</p>
         <h2>{title}</h2>
         <p className="muted">{lead}</p>
       </div>

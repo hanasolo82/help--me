@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
@@ -9,11 +9,16 @@ import styles from './StripePage.module.css'
 
 export default function StripeReturn() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { user, loading, profileLoading, refreshProfile } = useAuth()
   const [checkingState, setCheckingState] = useState('loading')
   const [message, setMessage] = useState('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
   const hasResolvedRef = useRef(false)
+  const searchParams = new URLSearchParams(location.search)
+  const flow = searchParams.get('flow') || 'helper-onboarding'
+  const taskId = searchParams.get('task_id') || ''
+  const paymentId = searchParams.get('payment_id') || ''
 
   useEffect(() => {
     if (hasResolvedRef.current || loading || profileLoading) {
@@ -21,6 +26,53 @@ export default function StripeReturn() {
     }
 
     hasResolvedRef.current = true
+
+    if (flow === 'payment') {
+      let cancelled = false
+      let redirectTimer = null
+
+      async function runPaymentReturn() {
+        setCheckingState('loading')
+        setMessage('Hemos confirmado el pago. Estamos actualizando el estado de la tarea.')
+
+        try {
+          await Promise.all([
+            taskId ? queryClient.invalidateQueries({ queryKey: ['task', taskId] }) : Promise.resolve(),
+            queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+          ])
+
+          if (cancelled) return
+
+          setCheckingState('ready')
+          setMessage('Tu pago quedó preparado correctamente. Volveremos al detalle de la tarea.')
+        } catch (error) {
+          if (cancelled) return
+
+          setCheckingState('error')
+          setMessage(error?.message || 'No pudimos refrescar la tarea ahora mismo.')
+        }
+
+        redirectTimer = window.setTimeout(() => {
+          if (cancelled) return
+          navigate(taskId ? `/task/${taskId}` : '/home', {
+            replace: true,
+            state: {
+              paymentCheckout: true,
+              paymentId: paymentId || null,
+            },
+          })
+        }, 700)
+      }
+
+      runPaymentReturn()
+
+      return () => {
+        cancelled = true
+        if (redirectTimer) {
+          window.clearTimeout(redirectTimer)
+        }
+      }
+    }
 
     if (!user) {
       setHelperHomeIntent('help')
@@ -82,23 +134,31 @@ export default function StripeReturn() {
         window.clearTimeout(redirectTimer)
       }
     }
-  }, [loading, navigate, profileLoading, refreshProfile, user])
+  }, [flow, loading, navigate, paymentId, profileLoading, queryClient, refreshProfile, taskId, user])
 
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <p className={styles.eyebrow}>Stripe Connect</p>
-        <h1 className={styles.title}>Hemos recibido tu información</h1>
+          <p className={styles.eyebrow}>{flow === 'payment' ? 'Pago' : 'Stripe Connect'}</p>
+        <h1 className={styles.title}>
+          {flow === 'payment' ? 'Hemos recibido tu pago' : 'Hemos recibido tu información'}
+        </h1>
         <p className={styles.lead}>{message}</p>
 
         <div className={`${styles.statusCard} ${checkingState === 'error' ? styles.errorCard : ''}`}>
           <strong>Estado actual</strong>
           <p>
             {checkingState === 'loading'
-              ? 'Sincronizando tu perfil...'
+              ? flow === 'payment'
+                ? 'Confirmando el pago...'
+                : 'Sincronizando tu perfil...'
               : checkingState === 'error'
-                ? 'No hemos podido verificar el estado todavía.'
-                : 'La app está lista para continuar con el onboarding.'}
+                ? flow === 'payment'
+                  ? 'No hemos podido verificar el pago todavía.'
+                  : 'No hemos podido verificar el estado todavía.'
+                : flow === 'payment'
+                  ? 'El pago ya quedó registrado.'
+                  : 'La app está lista para continuar con el onboarding.'}
           </p>
         </div>
 

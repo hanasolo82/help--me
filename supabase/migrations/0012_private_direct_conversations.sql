@@ -323,7 +323,7 @@ begin
 end;
 $$;
 
-create or replace function public.mark_conversation_as_read(conversation_id uuid)
+create or replace function public.mark_conversation_as_read(p_conversation_id uuid)
 returns void
 language plpgsql
 security definer
@@ -336,21 +336,21 @@ begin
     raise exception 'Authentication required';
   end if;
 
-  if not public.is_conversation_participant(conversation_id) then
+  if not public.is_conversation_participant(p_conversation_id) then
     raise exception 'Conversation not accessible';
   end if;
 
   update public.conversation_participants
   set last_read_at = now()
-  where conversation_participants.conversation_id = mark_conversation_as_read.conversation_id
+  where conversation_participants.conversation_id = p_conversation_id
     and conversation_participants.user_id = me;
 end;
 $$;
 
 create or replace function public.send_message(
-  conversation_id uuid,
-  body text,
-  client_temp_id text default null
+  p_conversation_id uuid,
+  p_body text,
+  p_client_temp_id text default null
 )
 returns public.messages
 language plpgsql
@@ -365,15 +365,15 @@ begin
     raise exception 'Authentication required';
   end if;
 
-  if not public.is_conversation_participant(conversation_id) then
+  if not public.is_conversation_participant(p_conversation_id) then
     raise exception 'Conversation not accessible';
   end if;
 
-  if body is null or char_length(trim(body)) = 0 then
+  if p_body is null or char_length(trim(p_body)) = 0 then
     raise exception 'Body cannot be empty';
   end if;
 
-  if char_length(body) > 2000 then
+  if char_length(p_body) > 2000 then
     raise exception 'Body exceeds the maximum length';
   end if;
 
@@ -385,18 +385,18 @@ begin
     client_temp_id
   )
   values (
-    send_message.conversation_id,
+    p_conversation_id,
     me,
-    body,
+    p_body,
     'text',
-    client_temp_id
+    p_client_temp_id
   )
   returning * into inserted_message;
 
   update public.conversations
   set last_message_at = inserted_message.created_at,
       updated_at = now()
-  where id = conversation_id;
+  where conversations.id = p_conversation_id;
 
   return inserted_message;
 end;

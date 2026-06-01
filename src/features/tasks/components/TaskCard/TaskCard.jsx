@@ -11,6 +11,7 @@ const statusLabels = {
   assigned: 'Asignada',
   in_progress: 'En curso',
   completed: 'Completada',
+  closed: 'Cerrada',
   cancelled: 'Cancelada',
 }
 
