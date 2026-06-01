@@ -212,6 +212,9 @@ export async function getNearbyHelpers({
 
   const publicHelpers = (data ?? []).map((helper) => ({
     ...helper,
+    lat: toNumber(helper.lat),
+    lng: toNumber(helper.lng),
+    distance_km: toNumber(helper.distance_km),
     display_name: helper.full_name,
     username: helper.username || null,
     account_status: 'active',

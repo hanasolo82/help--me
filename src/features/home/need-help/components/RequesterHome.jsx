@@ -7,6 +7,7 @@ import RequestTaskModal from './RequestTaskModal'
 import RequesterHero from './RequesterHero'
 import MyRequestsDrawer from './MyRequestsDrawer'
 import { cancelTask, getMyTasks } from '../../../../services/tasksService'
+import { createOrGetDirectConversation } from '../../../../services/chatService'
 import styles from './RequesterHome.module.css'
 
 export default function RequesterHome({
@@ -29,6 +30,7 @@ export default function RequesterHome({
   const [focusRequesterTaskId, setFocusRequesterTaskId] = useState(null)
   const [mapViewEpoch, setMapViewEpoch] = useState(0)
   const [publishNotice, setPublishNotice] = useState('')
+  const [contactError, setContactError] = useState('')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
   const myTasksQuery = useQuery({
     queryKey: ['my-tasks', profile?.id],
@@ -51,6 +53,19 @@ export default function RequesterHome({
 
   function handlePreviewHelper(helper) {
     setSelectedHelper(helper)
+  }
+
+  async function handleContactHelper(helper) {
+    if (!helper?.id) return
+
+    setContactError('')
+
+    try {
+      const conversationId = await createOrGetDirectConversation(helper.id)
+      navigate(`/chat/${conversationId}`)
+    } catch (error) {
+      setContactError(error?.message || 'No hemos podido abrir la conversación. Inténtalo de nuevo.')
+    }
   }
 
   function handleOpenTaskModal() {
@@ -142,6 +157,12 @@ export default function RequesterHome({
         </section>
       ) : null}
 
+      {contactError ? (
+        <p className="auth-message error" role="alert">
+          {contactError}
+        </p>
+      ) : null}
+
         {!location && locationStatus !== 'loading' ? (
           <div className={styles.locationHint}>
             <strong>Activa tu ubicación para ver personas cercanas.</strong>
@@ -170,6 +191,7 @@ export default function RequesterHome({
         selectedRequesterTaskId={selectedRequesterTaskId}
         onSelectRequesterTask={handleFocusTask}
         focusRequesterTaskId={focusRequesterTaskId}
+        onContact={handleContactHelper}
       />
 
       <MyRequestsDrawer
@@ -190,13 +212,9 @@ export default function RequesterHome({
         helper={selectedHelper}
         onClose={() => setSelectedHelper(null)}
         onViewProfile={(helper) => navigate(`/profile/${helper.id}`)}
-        onContact={() => navigate('/chats')}
-        onSendProposal={(helper) => {
-          setRequestTaskOpen(true)
-          setSelectedHelper(helper)
-        }}
-        onAddFavorite={() => {
-          // TODO: conectar con profile_favorites cuando exista la capa backend.
+        onContact={handleContactHelper}
+        onSendProposal={() => {
+          handleOpenTaskModal()
         }}
       />
 
@@ -204,7 +222,6 @@ export default function RequesterHome({
         open={requestTaskOpen}
         task={editingTask}
         initialTitle={draftTaskTitle}
-        selectedHelper={selectedHelper}
         location={location}
         locationStatus={locationStatus}
         onRequestLocation={onRequestLocation}

@@ -48,9 +48,12 @@ returns table (
   id uuid,
   full_name text,
   avatar_url text,
+  lat double precision,
+  lng double precision,
   helper_status text,
   availability_enabled boolean,
   location_label text,
+  distance_km double precision,
   rating numeric,
   completed_tasks integer
 )
@@ -64,6 +67,8 @@ as $$
       p.id,
       coalesce(p.display_name, p.full_name, p.username) as full_name,
       p.avatar_url,
+      p.lat,
+      p.lng,
       p.helper_status,
       p.availability_enabled,
       case
@@ -127,9 +132,12 @@ as $$
     candidates.id,
     candidates.full_name,
     candidates.avatar_url,
+    candidates.lat,
+    candidates.lng,
     candidates.helper_status,
     candidates.availability_enabled,
     candidates.location_label,
+    candidates.distance_km,
     candidates.rating,
     candidates.completed_tasks
   from candidates

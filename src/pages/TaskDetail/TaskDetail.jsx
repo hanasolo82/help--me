@@ -88,6 +88,7 @@ export default function TaskDetail() {
   const isHelper = user?.id === task?.accepted_by
   const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
   const canStartCheckout = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
+  const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
   const canOpenChat =
     Boolean(task) &&
     ((task.status === 'open' && !isOwner) ||
@@ -223,6 +224,16 @@ export default function TaskDetail() {
             disabled={checkoutMutation.isPending}
           >
             {checkoutMutation.isPending ? 'Preparando pago...' : 'Pagar tarea'}
+          </button>
+        )}
+
+        {canCloseTask && (
+          <button
+            type="button"
+            className="secondary-action sticky-action"
+            onClick={() => navigate(`/complete/${id}`)}
+          >
+            Confirmar finalización
           </button>
         )}
       </div>

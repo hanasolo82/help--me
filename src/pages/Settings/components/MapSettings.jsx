@@ -43,6 +43,23 @@ export default function MapSettings() {
           />
         ) : null}
 
+        <label className={styles.mapZoneRow}>
+          <div className={styles.mapZoneCopy}>
+            <span>Radio de búsqueda</span>
+            <strong>{Number(form.searchRadiusKm || 10)} km</strong>
+          </div>
+          <input
+            className={styles.mapZoneInput}
+            type="number"
+            min={1}
+            max={100}
+            step={1}
+            value={form.searchRadiusKm}
+            onChange={(event) => setField('searchRadiusKm', event.target.value)}
+            aria-label="Radio de búsqueda en kilómetros"
+          />
+        </label>
+
         <div className={styles.mapSwitchRow}>
           <div className={styles.mapToggleCopy}>
             <strong>Usar radio de búsqueda</strong>

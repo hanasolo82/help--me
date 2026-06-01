@@ -1,6 +1,6 @@
 # HelpMe beta readiness report
 
-- Generated at: 2026-05-31T20:55:19.5821270Z
+- Generated at: 2026-06-01T04:52:21.639Z
 - Scope: Closed beta stabilization
 - Final decision: **listo para beta cerrada**
 

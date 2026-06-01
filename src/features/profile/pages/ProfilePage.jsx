@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
+import { createOrGetDirectConversation } from '../../../services/chatService'
 import { useFavoriteProfile } from '../hooks/useFavoriteProfile'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
@@ -12,6 +13,7 @@ export default function ProfilePage() {
   const { user, profile: authProfile } = useAuth()
   const profileId = params.id || user?.id || authProfile?.id || null
   const [activeSkillId, setActiveSkillId] = useState('all')
+  const [contactError, setContactError] = useState('')
 
   const {
     profile,
@@ -52,8 +54,17 @@ export default function ProfilePage() {
     navigate('/create', { state: { helperId: profile?.id } })
   }
 
-  function handleContact() {
-    navigate('/chats')
+  async function handleContact() {
+    if (!profile?.id) return
+
+    setContactError('')
+
+    try {
+      const conversationId = await createOrGetDirectConversation(profile.id)
+      navigate(`/chat/${conversationId}`)
+    } catch (error) {
+      setContactError(error?.message || 'No hemos podido abrir la conversación. Inténtalo de nuevo.')
+    }
   }
 
   if (isLoading && !profile) {
@@ -100,6 +111,11 @@ export default function ProfilePage() {
 
   return (
     <main className="app-screen with-nav">
+      {contactError ? (
+        <p className="auth-message error" role="alert">
+          {contactError}
+        </p>
+      ) : null}
       <ProfilePublicView
         profile={profile}
         reviews={reviews}

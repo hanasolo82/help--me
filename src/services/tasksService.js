@@ -3,6 +3,8 @@ import { assertSupabaseReady, sanitizeText } from '../lib/security'
 import { requireUser } from '../lib/authHelpers'
 import { getCurrentUser } from './authService'
 import { createOrGetDirectConversation } from '../features/chat/api/chatApi'
+import { canAcceptTask } from '../features/helper-onboarding/utils/helperPermissions'
+import { getProfileByUserId } from './profilesService'
 
 // Nota: categorias permitidas por el frontend para crear y filtrar tareas.
 // Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
@@ -485,6 +487,12 @@ export async function getTaskById(taskId, { viewer } = {}) {
 export async function acceptTask(taskId) {
   const user = await requireUser('Necesitas iniciar sesion para aceptar una tarea.')
   const helperId = user.id
+  const helperProfile = await getProfileByUserId(helperId)
+
+  if (!canAcceptTask(helperProfile)) {
+    throw new Error('Completa y activa tu perfil de helper antes de aceptar tareas.')
+  }
+
   const candidateTask = await getTaskById(taskId, { viewer: user })
 
   if (
@@ -529,7 +537,7 @@ export async function acceptTask(taskId) {
 }
 
 // Nota funcion:
-// Marca una tarea como completada cuando esta assigned o in_progress.
+// Marca una tarea como completada cuando ya esta en marcha o ya fue completada por el sistema.
 // La UI deberia ofrecer esta accion solo al creador; Supabase/RLS debe reforzar esa regla.
 // Nota Supabase - public.tasks:
 // Si anades completed_at, completed_by o datos de cierre, actualiza este update.
@@ -547,7 +555,7 @@ export async function markTaskCompleted(taskId) {
     })
     .eq('id', taskId)
     .eq('created_by', user.id)
-    .in('status', ['assigned', 'in_progress'])
+    .in('status', ['in_progress', 'completed'])
     .select(TASK_SELECT)
     .maybeSingle()
 

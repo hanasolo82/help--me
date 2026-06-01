@@ -29,7 +29,6 @@ function RequestTaskModalInner({
   onClose,
   task,
   initialTitle,
-  selectedHelper,
   location,
   locationStatus,
   onRequestLocation,
@@ -41,9 +40,7 @@ function RequestTaskModalInner({
   const [title, setTitle] = useState(task?.title || initialTitle || '')
   const [description, setDescription] = useState(task?.description || '')
   const [category, setCategory] = useState(task?.category || defaultCategories[0])
-  const [zone, setZone] = useState(task?.zone || location?.label || profile?.displayLocation || profile?.neighborhood || profile?.city || '')
   const [price, setPrice] = useState(String(task?.price ?? ''))
-  const [visibility, setVisibility] = useState(isEditing ? 'public' : selectedHelper ? 'private' : 'public')
   const [error, setError] = useState('')
 
   const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
@@ -114,15 +111,6 @@ function RequestTaskModalInner({
           </button>
         </div>
 
-        {selectedHelper ? (
-          <div className={styles.helperHint}>
-            <strong>Propuesta privada para {selectedHelper.display_name || selectedHelper.full_name || selectedHelper.username || 'esta persona'}</strong>
-            <p className="muted">
-              Este modo queda preparado para una propuesta directa. La lógica fina de asignación se activará más adelante.
-            </p>
-          </div>
-        ) : null}
-
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className="field">
             <span>Título</span>
@@ -159,30 +147,6 @@ function RequestTaskModalInner({
             </label>
           </div>
 
-          <label className="field">
-            <span>Zona</span>
-            <input value={zone} onChange={(event) => setZone(event.target.value)} placeholder="Tu barrio, ciudad o zona" />
-          </label>
-
-          <div className={styles.visibility}>
-            <button
-              type="button"
-              className={visibility === 'public' ? 'chip selected' : 'chip'}
-              onClick={() => setVisibility('public')}
-            >
-              Pública
-            </button>
-            <button
-              type="button"
-              className={visibility === 'private' ? 'chip selected' : 'chip'}
-              onClick={() => setVisibility('private')}
-              disabled={!selectedHelper}
-              title={!selectedHelper ? 'Selecciona una persona primero para usar esta opción' : ''}
-            >
-              Propuesta privada
-            </button>
-          </div>
-
           {error ? <p className="auth-message error">{error}</p> : null}
 
           {!resolvedLocation && locationStatus !== 'loading' ? (
@@ -217,7 +181,6 @@ export default function RequestTaskModal(props) {
   const resetKey = [
     props.task?.id || 'new',
     props.initialTitle || '',
-    props.selectedHelper?.id || 'public',
     props.location?.label || '',
     props.locationStatus || '',
     props.open ? 'open' : 'closed',

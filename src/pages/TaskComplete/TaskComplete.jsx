@@ -40,6 +40,10 @@ export default function TaskComplete() {
     setError('')
 
     try {
+      if (!['in_progress', 'completed'].includes(task.status)) {
+        throw new Error('La tarea aún no puede cerrarse. Espera a que esté en curso o completada.')
+      }
+
       if (task.status !== 'completed') {
         const updated = await markTaskCompleted(task.id)
         setTask(updated)
@@ -48,7 +52,7 @@ export default function TaskComplete() {
       await releaseTaskPayment(task.id)
 
       setStatus('done')
-      navigate('/home', { replace: true })
+      navigate(`/task/${task.id}`, { replace: true })
     } catch (err) {
       setStatus('error')
       setError(err.message || 'No se pudo cerrar la tarea.')
@@ -58,7 +62,9 @@ export default function TaskComplete() {
   function handleReject() {
     getOrCreateChatByTaskId(taskId)
       .then((chat) => navigate(`/chat/${chat.id}`))
-      .catch(() => navigate('/chats'))
+      .catch((err) => {
+        setError(err?.message || 'No se pudo abrir el chat.')
+      })
   }
 
   if (!task && !error) {
@@ -88,6 +94,27 @@ export default function TaskComplete() {
           <button className="primary-action" onClick={handleReject}>
             Volver al chat
           </button>
+        </section>
+      </main>
+    )
+  }
+
+  if (!['in_progress', 'completed'].includes(task.status)) {
+    return (
+      <main className="app-screen center-screen">
+        <section className="completion-panel">
+          <h1>La tarea aún no se puede cerrar</h1>
+          <p className="muted">
+            El cierre solo está disponible cuando la tarea ya está en curso o ha sido completada por el helper.
+          </p>
+          <div className="two-actions">
+            <button className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
+              Volver al detalle
+            </button>
+            <button className="primary-action" onClick={handleReject}>
+              Volver al chat
+            </button>
+          </div>
         </section>
       </main>
     )

@@ -124,9 +124,9 @@ p {
 .profile-card,
 .stats-grid article {
   /* shared panels: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
   border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-lg);
 }
@@ -139,8 +139,14 @@ p {
 }
 
 .auth-panel {
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   box-shadow: var(--shadow-lg);
+}
+
+html[data-theme='light'] .auth-panel {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
 }
 
 .auth-panel {
@@ -198,9 +204,9 @@ p {
   overflow: hidden;
   margin: 0;
   padding: 0.3rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 90%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 92%, transparent);
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-sm);
 }
@@ -268,9 +274,9 @@ p {
 .field select {
   /* form inputs: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   color: var(--color-text);
   min-height: 3.5rem;
   padding: 0.9rem 1rem;
@@ -314,7 +320,7 @@ p {
 .task-chat-composer input::placeholder,
 .chat-composer input::placeholder,
 .message-edit-form textarea::placeholder {
-  color: color-mix(in srgb, var(--color-text-muted) 65%, white);
+  color: color-mix(in srgb, var(--color-text-muted) 80%, transparent);
 }
 
 .field:has(textarea),
@@ -443,9 +449,9 @@ p {
   width: 100%;
   max-width: 22.5rem;
   min-height: 3.5rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   color: var(--color-text);
   cursor: pointer;
   font-weight: 900;
@@ -493,14 +499,14 @@ p {
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--color-border) 70%, white),
+    color-mix(in srgb, var(--color-border) 70%, transparent),
     transparent
   );
 }
 
 .auth-message {
   /* feedback banner: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
   color: var(--color-text);
@@ -529,9 +535,9 @@ p {
 .password-field input {
   /* auth password input: shared/components/AuthPanel/AuthPanel.jsx */
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   color: var(--color-text);
   padding: 0.86rem 5.5rem 0.86rem 0.9rem;
   box-shadow:
@@ -545,9 +551,9 @@ p {
   top: 50%;
   right: 8px;
   transform: translateY(-50%);
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   color: var(--color-text);
   cursor: pointer;
   font-size: 12px;
@@ -594,9 +600,9 @@ p {
 .strength-bar {
   /* password strength progress bar: shared/components/AuthPanel/AuthPanel.jsx */
   height: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 92%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, transparent);
 }
 
 .strength-bar.strength-0 { background: linear-gradient(to right, var(--color-danger) 0%, var(--color-danger) 20%, var(--color-surface-strong) 20%); }
@@ -1423,9 +1429,9 @@ p {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
   margin-bottom: 1rem;
   box-shadow: var(--shadow-xs);
 }

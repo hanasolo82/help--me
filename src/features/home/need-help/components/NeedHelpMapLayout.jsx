@@ -81,6 +81,7 @@ export default function NeedHelpMapLayout({
   preferredMobileView,
   onPreviewHelper,
   onPublishRequest,
+  onContact,
   requesterTasks = [],
   selectedRequesterTaskId = null,
   onSelectRequesterTask,
@@ -270,7 +271,7 @@ export default function NeedHelpMapLayout({
             selectedHelperId={selectedHelperId}
             onSelectHelper={handleSelectHelper}
             onOpenProfile={(helper) => navigate(`/profile/${helper.id}`)}
-            onContact={() => navigate('/chats')}
+            onContact={onContact}
             skillFilters={skillFilters}
             selectedSkillId={selectedSkillId}
             onSkillChange={setSelectedSkillId}

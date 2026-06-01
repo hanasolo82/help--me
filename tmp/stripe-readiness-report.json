@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-31T20:55:06.612Z",
+  "generated_at": "2026-06-01T04:52:21.639Z",
   "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
   "inspect_run": {
     "ok": true,
@@ -19,7 +19,7 @@
   },
   "inspect": {
     "ok": true,
-    "inspected_at": "2026-05-31T20:55:04.074Z",
+    "inspected_at": "2026-06-01T04:52:19.430Z",
     "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
     "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
     "transfer_id": "9fb2278c-01a1-43ba-9849-02d1aaa14af7",
@@ -1291,7 +1291,7 @@
           "radar_options": {},
           "receipt_email": null,
           "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xVGE5bkJKUTVVRnB6ZTNDKKfA8tAGMgYrCEDZPY46LBb07Ljxh9iKRE2LbMSwR2EQfQ41UWAC8MugKWPVD7HyV8oq52lnZrmjt1c8",
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xVGE5bkJKUTVVRnB6ZTNDKIOg9NAGMgZL6XmGyQg6LBaTJQTO_Vc759AuAw5EPMu5JQkNnYpP_hJywQMT4CAOhmXb3Qgn3RQBse_P",
           "refunded": false,
           "review": null,
           "shipping": null,
