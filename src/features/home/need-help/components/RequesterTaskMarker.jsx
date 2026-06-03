@@ -25,7 +25,14 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
       position={[task.lat, task.lng]}
       icon={buildRequestMarkerIcon({ selected, status: task.status })}
       eventHandlers={{
-        click: () => onSelect?.(task),
+        click: (e) => {
+          try {
+            e?.target?.closePopup?.()
+          } catch {
+            // noop
+          }
+          onSelect?.(task)
+        },
       }}
     >
       <Popup>

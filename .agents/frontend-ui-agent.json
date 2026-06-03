@@ -1,0 +1,19 @@
+{
+  "name": "frontend-ui-agent",
+  "role": "Senior Frontend UI Engineer & Design Systems Specialist",
+  "stack": ["react", "vite", "css-modules"],
+  "tokens": {
+    "colors": ["--color-bg","--color-surface","--color-surface-strong","--color-text","--color-text-muted","--color-primary","--color-primary-hover","--color-border","--color-success","--color-warning","--color-danger"],
+    "radius": ["--radius-sm","--radius-md","--radius-lg","--radius-xl","--radius-2xl","--radius-pill"],
+    "shadows": ["--shadow-xs","--shadow-sm","--shadow-md","--shadow-lg","--shadow-xl","--shadow-focus","--shadow-primary"],
+    "motion": ["--motion-fast","--motion-normal","--motion-slow"]
+  },
+  "forbidden": ["tailwind","shadcn","new-ui-libraries","css-in-js","inline-styles"],
+  "hard_constraints": ["supabase schema","sql","rls","stripe backend","payment logic","auth token logic","server files","business services","route behavior"],
+  "stop_protocol": {
+    "max_files_change": 12,
+    "heavy_jsx_rewrite": true,
+    "styling_tightly_coupled": true
+  },
+  "output_format": ["ui_summary","files_changed","design_decisions","accessibility_notes","risks","validation"]
+}

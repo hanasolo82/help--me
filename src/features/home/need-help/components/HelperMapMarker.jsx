@@ -1,11 +1,7 @@
 import L from 'leaflet'
 import { Marker, Popup } from 'react-leaflet'
 import styles from './NeedHelpMapLayout.module.css'
-
-function toFiniteNumber(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
+import { toFiniteNumber } from '../../../../shared/utils/mapHelpers'
 
 function buildMarkerIcon({ selected = false, avatarUrl, initial }) {
   const className = selected ? `${styles.helperMarker} ${styles.helperMarkerActive}` : styles.helperMarker
@@ -39,7 +35,14 @@ export default function HelperMapMarker({ helper, selected = false, onSelect }) 
       position={[lat, lng]}
       icon={buildMarkerIcon({ selected, avatarUrl, initial })}
       eventHandlers={{
-        click: () => onSelect?.(helper),
+        click: (e) => {
+          try {
+            e?.target?.closePopup?.()
+          } catch {
+            // noop
+          }
+          onSelect?.(helper)
+        },
       }}
     >
       <Popup>

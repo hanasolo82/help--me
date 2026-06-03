@@ -112,6 +112,16 @@ Use for:
 - build warnings
 - Stripe production webhook config
 
+### agent-worklog
+
+Use for:
+
+- recording completed work
+- validation history
+- cleanup batches
+- remaining risks
+- next safe steps
+
 ## Routing Rules
 
 If the task touches Stripe backend, select backend-stripe-agent.
@@ -126,6 +136,8 @@ If the task touches onboarding, user journey, UX copy, permissions, or product s
 
 If the task touches Vercel, deployment, env vars, domains, redirects, builds, or production webhooks, select deployment-agent.
 
+If the task touches worklog, agent-worklog, project records, cleanup notes, or progress tracking, select agent-worklog.
+
 ## Hard Rules
 
 - Do not refactor multiple layers unless explicitly requested.
@@ -139,6 +151,7 @@ If the task touches Vercel, deployment, env vars, domains, redirects, builds, or
 - Use existing services and architecture when possible.
 - Avoid creating duplicate sources of truth.
 - Always report risks.
+- Keep `.agent-worklog/` append-only unless explicitly asked to reorganize history.
 
 ## Standard Workflow
 
@@ -150,7 +163,8 @@ For every task:
 4. Propose minimal safe changes.
 5. Apply scoped edits only.
 6. Validate with build/lint/tests when possible.
-7. Report what changed and what remains risky.
+7. Record meaningful completed work in `.agent-worklog/refactor-cleanup.md`.
+8. Report what changed and what remains risky.
 
 ## Output Format
 

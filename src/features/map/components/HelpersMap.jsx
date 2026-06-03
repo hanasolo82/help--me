@@ -3,6 +3,7 @@ import { Circle, MapContainer, useMap } from 'react-leaflet'
 import HelperMarker from './HelperMarker'
 import { MAP_FILL, MAP_PRIMARY } from '../../../styles/mapColors'
 import MapTileLayer from '../../../shared/ui/map/MapTileLayer'
+import { toFiniteNumber } from '../../../shared/utils/mapHelpers'
 import styles from '../../profile/styles/profileNetwork.module.css'
 
 const defaultCenter = [41.6523, -0.9019]
@@ -22,10 +23,7 @@ function RecenterMap({ center }) {
   return null
 }
 
-function toFiniteNumber(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
+
 
 function buildCenter(center) {
   const lat = toFiniteNumber(center?.lat)

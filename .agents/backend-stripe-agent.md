@@ -1,9 +1,3 @@
-
----
-
-## 5. `.agents/backend-stripe-agent.md`
-
-```md
 # backend-stripe-agent
 
 ## Role

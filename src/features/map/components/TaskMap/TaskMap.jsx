@@ -3,29 +3,12 @@ import { useEffect } from 'react'
 import { Circle, MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
+import { toFiniteNumber, buildUserIcon } from '../../../../shared/utils/mapHelpers'
 import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
 const defaultCenter = [41.6523, -0.9019]
 
-function buildUserIcon({ avatarUrl, initial }) {
-  // Cuando hay imagen, el marcador es solo la foto: sin caja, sin borde, sin sombra.
-  if (avatarUrl) {
-    return L.divIcon({
-      className: styles.userMarkerImage,
-      html: `<img src="${avatarUrl}" alt="" />`,
-      iconSize: [42, 42],
-      iconAnchor: [21, 21],
-    })
-  }
-
-  return L.divIcon({
-    className: styles.userMarker,
-    html: `<span>${initial || 'Tu'}</span>`,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21],
-  })
-}
 
 function createTaskIcon(priceEuros) {
   return L.divIcon({
@@ -51,10 +34,7 @@ function RecenterMap({ center }) {
   return null
 }
 
-function toFiniteNumber(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
+
 
 function formatTaskDate(value) {
   if (!value) return 'Fecha no indicada'
@@ -133,7 +113,14 @@ export default function TaskMap({
   const userLat = toFiniteNumber(userLocation?.latitude)
   const userLng = toFiniteNumber(userLocation?.longitude)
   const center = userLat !== null && userLng !== null ? [userLat, userLng] : defaultCenter
-  const userIcon = buildUserIcon({ avatarUrl: userAvatarUrl, initial: userInitial })
+  const userIcon = buildUserIcon({
+    avatarUrl: userAvatarUrl,
+    initial: userInitial,
+    classNames: {
+      image: styles.userMarkerImage,
+      fallback: styles.userMarker,
+    },
+  })
   const safeRadiusKm = Number.isFinite(Number(radiusKm)) ? Math.max(0, Number(radiusKm)) : 10
   const safeTasks = tasks
     .map((task) => ({
@@ -175,7 +162,14 @@ export default function TaskMap({
               position={[task.lat, task.lng]}
               icon={createTaskIcon(priceEuros)}
               eventHandlers={{
-                click: () => onTaskSelect(task.id),
+                click: (e) => {
+                  try {
+                    e?.target?.closePopup?.()
+                  } catch {
+                    // noop
+                  }
+                  onTaskSelect(task.id)
+                },
               }}
             >
               <Popup>
