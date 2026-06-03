@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Circle, MapContainer, useMap } from 'react-leaflet'
 import HelperMarker from './HelperMarker'
 import { MAP_FILL, MAP_PRIMARY } from '../../../styles/mapColors'
@@ -8,16 +9,33 @@ const defaultCenter = [41.6523, -0.9019]
 
 function RecenterMap({ center }) {
   const map = useMap()
-  map.setView(center, map.getZoom(), { animate: true })
+
+  useEffect(() => {
+    if (!Array.isArray(center) || center.length < 2) return
+
+    const [lat, lng] = center
+    if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return
+
+    map.setView([Number(lat), Number(lng)], map.getZoom(), { animate: true })
+  }, [center, map])
+
   return null
 }
 
+function toFiniteNumber(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function buildCenter(center) {
-  if (!center || !Number.isFinite(center.lat) || !Number.isFinite(center.lng)) {
+  const lat = toFiniteNumber(center?.lat)
+  const lng = toFiniteNumber(center?.lng)
+
+  if (lat === null || lng === null) {
     return defaultCenter
   }
 
-  return [center.lat, center.lng]
+  return [lat, lng]
 }
 
 export default function HelpersMap({
@@ -28,6 +46,13 @@ export default function HelpersMap({
   userLabel = 'Tu zona',
 }) {
   const resolvedCenter = buildCenter(center)
+  const safeHelpers = helpers
+    .map((helper) => ({
+      ...helper,
+      lat: toFiniteNumber(helper?.lat),
+      lng: toFiniteNumber(helper?.lng),
+    }))
+    .filter((helper) => helper.lat !== null && helper.lng !== null)
 
   return (
     <div className={styles.mapShell}>
@@ -41,7 +66,7 @@ export default function HelpersMap({
           pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
         />
 
-        {helpers.map((helper) => (
+        {safeHelpers.map((helper) => (
           <HelperMarker key={helper.id} helper={helper} onSelect={onHelperSelect} />
         ))}
       </MapContainer>

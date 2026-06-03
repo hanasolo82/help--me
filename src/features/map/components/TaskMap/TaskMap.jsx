@@ -1,4 +1,5 @@
 import L from 'leaflet'
+import { useEffect } from 'react'
 import { Circle, MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
@@ -37,8 +38,22 @@ function createTaskIcon(priceEuros) {
 
 function RecenterMap({ center }) {
   const map = useMap()
-  map.setView(center, map.getZoom(), { animate: true })
+
+  useEffect(() => {
+    if (!Array.isArray(center) || center.length < 2) return
+
+    const [lat, lng] = center
+    if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return
+
+    map.setView([Number(lat), Number(lng)], map.getZoom(), { animate: true })
+  }, [center, map])
+
   return null
+}
+
+function toFiniteNumber(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function MapViewportReporter({ onViewportChange }) {
@@ -93,9 +108,18 @@ export default function TaskMap({
   userInitial,
   onViewportChange,
 }) {
-  const center = userLocation ? [userLocation.latitude, userLocation.longitude] : defaultCenter
+  const userLat = toFiniteNumber(userLocation?.latitude)
+  const userLng = toFiniteNumber(userLocation?.longitude)
+  const center = userLat !== null && userLng !== null ? [userLat, userLng] : defaultCenter
   const userIcon = buildUserIcon({ avatarUrl: userAvatarUrl, initial: userInitial })
   const safeRadiusKm = Number.isFinite(Number(radiusKm)) ? Math.max(0, Number(radiusKm)) : 10
+  const safeTasks = tasks
+    .map((task) => ({
+      ...task,
+      lat: toFiniteNumber(task?.lat),
+      lng: toFiniteNumber(task?.lng),
+    }))
+    .filter((task) => task.lat !== null && task.lng !== null)
 
   return (
     <div className={styles.mapShell}>
@@ -118,7 +142,7 @@ export default function TaskMap({
           </Popup>
         </Marker>
 
-        {tasks.map((task) => {
+        {safeTasks.map((task) => {
           const priceEuros = Number(task.price ?? 0)
           const distance = distances?.[task.id]
           return (

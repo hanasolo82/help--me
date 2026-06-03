@@ -3,6 +3,11 @@ import { Marker, Popup } from 'react-leaflet'
 import styles from '../../profile/styles/profileNetwork.module.css'
 import { getAvatarInitial } from '../../../utils/avatar'
 
+function toFiniteNumber(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function buildHelperIcon(helper, compact = false) {
   const className = compact ? styles.helperMarkerCompact : styles.helperMarker
   const avatarUrl = helper?.map_avatar_url || helper?.avatar_url
@@ -22,9 +27,16 @@ function buildHelperIcon(helper, compact = false) {
 export default function HelperMarker({ helper, onSelect }) {
   if (!helper) return null
 
+  const lat = toFiniteNumber(helper.lat)
+  const lng = toFiniteNumber(helper.lng)
+
+  if (lat === null || lng === null) {
+    return null
+  }
+
   return (
     <Marker
-      position={[helper.lat, helper.lng]}
+      position={[lat, lng]}
       icon={buildHelperIcon(helper)}
       eventHandlers={{
         click: () => onSelect?.(helper),

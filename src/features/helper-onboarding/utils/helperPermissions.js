@@ -73,33 +73,6 @@ function hasHelperLocation(profile, draft = {}) {
   )
 }
 
-function getVerificationSnapshot(profile) {
-  const current = profile?.profile_verifications || profile?.verifications || null
-
-  if (current) {
-    return {
-      email: toBoolean(current.email_verified),
-      phone: toBoolean(current.phone_verified),
-      identity: toBoolean(current.identity_verified),
-      background: toBoolean(current.background_checked),
-      source: 'profile_verifications',
-    }
-  }
-
-  return {
-    email: toBoolean(profile?.verified_email),
-    phone: toBoolean(profile?.verified_phone),
-    identity: toBoolean(profile?.verified_identity) || toBoolean(profile?.identity_verified),
-    background: false,
-    source: 'legacy',
-  }
-}
-
-function hasHelperTrust(profile) {
-  const verification = getVerificationSnapshot(profile)
-  return verification.email || verification.identity || toBoolean(profile?.verified)
-}
-
 function hasHelperSkills(profile, draft = {}) {
   if (Array.isArray(draft?.selectedSkillIds)) {
     return draft.selectedSkillIds.length > 0
@@ -157,7 +130,6 @@ export function canAppearOnMap(profile) {
   if (profile.account_status !== ACTIVE_ACCOUNT_STATUS) return false
   if (profile.availability_enabled === false) return false
   if (!hasLocation(profile)) return false
-  if (!hasHelperTrust(profile)) return false
 
   return true
 }
