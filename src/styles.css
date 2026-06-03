@@ -880,6 +880,14 @@ html[data-theme='light'] .auth-panel {
   background: transparent;
 }
 
+.task-chat-composer-stacked {
+  /* contextual task chat composer wrapper when using the shared textarea composer */
+  display: block;
+  padding: 0.85rem 1rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  background: transparent;
+}
+
 .task-chat-composer input {
   /* contextual task chat input: components/home/TaskChatModal.jsx */
   border: 1px solid color-mix(in srgb, var(--color-border) 78%, white);

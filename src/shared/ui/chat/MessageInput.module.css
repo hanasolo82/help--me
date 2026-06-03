@@ -5,6 +5,10 @@
   padding: 0.85rem 0 0;
 }
 
+.dense {
+  padding: 0;
+}
+
 .textarea {
   flex: 1;
   min-height: 3.5rem;

@@ -9,7 +9,7 @@ function buildRequestMarkerIcon({ selected = false, status = 'open' }) {
 
   return L.divIcon({
     className,
-    html: `<span class="${styles.requesterTaskMarkerStatus}">${status === 'open' ? '●' : status}</span>`,
+    html: `<span class="${styles.requesterTaskMarkerStatus}">${status === 'open' ? 'Tu' : status}</span>`,
     iconSize: selected ? [52, 52] : [42, 42],
     iconAnchor: selected ? [26, 26] : [21, 21],
   })
@@ -17,6 +17,8 @@ function buildRequestMarkerIcon({ selected = false, status = 'open' }) {
 
 export default function RequesterTaskMarker({ task, selected = false, onSelect }) {
   if (!task) return null
+
+  const publishedAt = task.published_at || task.created_at
 
   return (
     <Marker
@@ -27,11 +29,13 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
       }}
     >
       <Popup>
-        <strong>{task.title}</strong>
+        <strong>Tu solicitud</strong>
         <br />
-        {task.category}
+        {task.title}
         <br />
-        {task.status}
+        {task.category} · {task.status}
+        <br />
+        {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
       </Popup>
     </Marker>
   )

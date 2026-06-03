@@ -63,6 +63,14 @@ export default function OfferHelpMapLayout({
     [radius, radiusOptions],
   )
   const viewportTasks = visibleTasks || []
+  const markerLegend = useMemo(
+    () => [
+      { label: 'Tu ubicación', tone: 'me' },
+      { label: 'Solicitudes abiertas', tone: 'openTask' },
+      { label: 'Radio de búsqueda', tone: 'radius' },
+    ],
+    [],
+  )
 
   const selectedTask = useMemo(
     () => (visibleTasks || []).find(({ task }) => task.id === selectedTaskId)?.task || null,
@@ -139,6 +147,23 @@ export default function OfferHelpMapLayout({
               <h2>Tareas abiertas cerca de ti</h2>
               <p className="muted">Selecciona una tarea, revisa el detalle y contacta solo si sigue abierta.</p>
             </div>
+          </div>
+
+          <div className={styles.mapLegend} aria-label="Leyenda del mapa">
+            {markerLegend.map((item) => (
+              <span key={item.label} className={styles.legendItem}>
+                <span
+                  className={
+                    item.tone === 'me'
+                      ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
+                      : item.tone === 'radius'
+                        ? `${styles.legendSwatch} ${styles.legendSwatchRadius}`
+                          : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
+                  }
+                />
+                {item.label}
+              </span>
+            ))}
           </div>
 
           <div className={styles.mapShell}>

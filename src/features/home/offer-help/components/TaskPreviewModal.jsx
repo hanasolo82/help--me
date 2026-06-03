@@ -9,6 +9,19 @@ function formatDistance(distanceKm) {
   return `${Number(distanceKm).toFixed(1)} km`
 }
 
+function formatPublishedAt(value) {
+  if (!value) return 'Fecha no indicada'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Fecha no indicada'
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
+
 export default function TaskPreviewModal({
   open,
   task,
@@ -27,6 +40,7 @@ export default function TaskPreviewModal({
   const creatorName = creator.display_name || creator.full_name || creator.username || 'Vecino'
   const creatorInitial = getAvatarInitial(creatorName)
   const canContact = task.status === 'open' && task.created_by !== currentUserId
+  const publishedAt = task.published_at || task.created_at
 
   return (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
@@ -50,6 +64,7 @@ export default function TaskPreviewModal({
         <div className={styles.meta}>
           <span>{task.category}</span>
           <span>{task.status}</span>
+          <span>{formatPublishedAt(publishedAt)}</span>
           <span>{formatDistance(distanceKm)}</span>
           <span>{Number(task.price ?? 0)} EUR</span>
         </div>

@@ -179,6 +179,16 @@ export default function NeedHelpMapLayout({
     })
   }, [helpers, mapBounds])
 
+  const markerLegend = useMemo(
+    () => [
+      { label: 'Tu ubicación', tone: 'me' },
+      { label: 'Helpers disponibles', tone: 'helper' },
+      { label: 'Mis solicitudes', tone: 'task' },
+      { label: 'Radio de búsqueda', tone: 'radius' },
+    ],
+    [],
+  )
+
   function handleSelectHelper(helper) {
     selectHelper(helper)
     setMobileView('map')
@@ -211,6 +221,27 @@ export default function NeedHelpMapLayout({
               <p className="eyebrow">Necesito ayuda</p>
               <h2>Personas disponibles</h2>
             </div>
+          </div>
+
+          <div className={styles.mapLegend} aria-label="Leyenda del mapa">
+            {markerLegend.map((item) => (
+              <span key={item.label} className={styles.legendItem}>
+                <span
+                  className={
+                    item.tone === 'me'
+                      ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
+                      : item.tone === 'helper'
+                        ? `${styles.legendSwatch} ${styles.legendSwatchHelper}`
+                      : item.tone === 'task'
+                        ? `${styles.legendSwatch} ${styles.legendSwatchTask}`
+                        : item.tone === 'radius'
+                          ? `${styles.legendSwatch} ${styles.legendSwatchRadius}`
+                          : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
+                  }
+                />
+                {item.label}
+              </span>
+            ))}
           </div>
 
           <div className={styles.mapShell}>

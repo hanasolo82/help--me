@@ -9,6 +9,7 @@ export default function MessageInput({
   placeholder = 'Escribe un mensaje',
   maxLength = 2000,
   disabled = false,
+  dense = false,
 }) {
   const textareaRef = useRef(null)
 
@@ -20,7 +21,7 @@ export default function MessageInput({
 
   return (
     <form
-      className={styles.composer}
+      className={`${styles.composer} ${dense ? styles.dense : ''}`.trim()}
       onSubmit={(event) => {
         event.preventDefault()
         onSubmit?.()

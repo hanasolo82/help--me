@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/useAuth'
 import MessageList from '../../shared/ui/chat/MessageList'
+import MessageInput from '../../features/chat/components/MessageInput'
 import { getMessages, getOrCreateChatByTaskId } from '../../services/chatService'
 import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
 
@@ -111,9 +112,7 @@ export default function TaskChatModal({ open, task, onClose }) {
 
   const counterpartName = getCounterpartName(task, user?.id)
 
-  async function handleSendTaskChatMessage(event) {
-    event.preventDefault()
-
+  async function handleSendTaskChatMessage() {
     const messageText = draftMessage.trim()
 
     if (!chat || !messageText || sending) {
@@ -185,22 +184,17 @@ export default function TaskChatModal({ open, task, onClose }) {
               <div ref={taskChatMessagesEndRef} />
             </section>
 
-            <form className="task-chat-composer" onSubmit={handleSendTaskChatMessage}>
-              <input
+            <div className="task-chat-composer-stacked">
+              <MessageInput
+                dense
                 value={draftMessage}
-                onChange={(event) => setDraftMessage(event.target.value)}
+                onChange={setDraftMessage}
+                onSubmit={handleSendTaskChatMessage}
+                sending={sending}
                 placeholder="Escribe un mensaje"
                 maxLength={1200}
-                disabled={sending}
               />
-              <button
-                type="submit"
-                className="primary-action"
-                disabled={sending || !draftMessage.trim()}
-              >
-                Enviar
-              </button>
-            </form>
+            </div>
           </>
         )}
       </section>

@@ -45,6 +45,10 @@ export default function HelperMapMarker({ helper, selected = false, onSelect }) 
       <Popup>
         <strong>{helper.display_name || helper.full_name || helper.username || 'Vecino'}</strong>
         <br />
+        {helper.location_label || helper.city || helper.neighborhood || 'Zona cercana'}
+        <br />
+        {helper.availability_enabled === false ? 'No disponible' : 'Disponible'}
+        <br />
         {Number.isFinite(Number(helper.distance_km)) ? `${Number(helper.distance_km).toFixed(1)} km` : 'Cerca de ti'}
         <br />
         {helper.skills?.slice(0, 3).map((skill) => skill.name).join(' · ') || 'Ayuda general'}

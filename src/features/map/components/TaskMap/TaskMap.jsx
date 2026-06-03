@@ -56,6 +56,28 @@ function toFiniteNumber(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function formatTaskDate(value) {
+  if (!value) return 'Fecha no indicada'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Fecha no indicada'
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
+
+function formatCreatorName(task) {
+  return (
+    task?.creator_profile?.display_name ||
+    task?.creator_profile?.full_name ||
+    task?.creator_profile?.username ||
+    'Vecino'
+  )
+}
+
 function MapViewportReporter({ onViewportChange }) {
   useMapEvents({
     moveend(event) {
@@ -145,6 +167,8 @@ export default function TaskMap({
         {safeTasks.map((task) => {
           const priceEuros = Number(task.price ?? 0)
           const distance = distances?.[task.id]
+          const publishedAt = task.published_at || task.created_at
+          const creatorName = formatCreatorName(task)
           return (
             <Marker
               key={task.id}
@@ -156,9 +180,18 @@ export default function TaskMap({
             >
               <Popup>
                 <strong>{task.title}</strong>
-                {Number.isFinite(distance) ? <><br />{distance} km</> : null}
                 <br />
-                {priceEuros} EUR · {task.category}
+                {task.category} · {priceEuros} EUR
+                <br />
+                Publicada {formatTaskDate(publishedAt)}
+                <br />
+                Creador: {creatorName}
+                {Number.isFinite(distance) ? (
+                  <>
+                    <br />
+                    {distance} km
+                  </>
+                ) : null}
               </Popup>
             </Marker>
           )
