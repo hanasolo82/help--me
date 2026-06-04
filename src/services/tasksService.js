@@ -36,11 +36,11 @@ const TASK_SELECT = `
   created_at
 `
 
-const AVAILABLE_PROFILE_STATUS = 'active'
+const BLOCKED_PROFILE_STATUS = 'suspended'
 const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
 
 function isProfileAvailable(profile) {
-  return profile?.account_status === AVAILABLE_PROFILE_STATUS
+  return profile?.account_status !== BLOCKED_PROFILE_STATUS
 }
 
 function normalizePublicProfile(profile) {

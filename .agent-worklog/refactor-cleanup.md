@@ -107,6 +107,8 @@
 
 | 2026-06-03 | Lote 6 (modal helper y chat contactar) | `src/features/home/need-help/components/HelperPreviewModal.jsx`, `src/features/home/need-help/components/HelperPreviewModal.module.css`, `src/features/home/need-help/components/RequesterHome.jsx`, `src/features/chat/api/chatApi.js`, `src/shared/ui/layouts/ChatLayout.jsx`, `src/shared/ui/layouts/ChatLayout.module.css`, `src/shared/ui/chat/MessageInput.module.css`, `src/styles.css` | Pulido visual del modal al seleccionar helper, mejora del layout/composer de chat, estado `Abriendo chat...` al contactar y endurecimiento de persistencia: la creación exige la RPC `create_or_get_direct_conversation` y el envío intenta la RPC `send_message` antes del insert directo compatible. | Medio | `pnpm run lint`, `pnpm run build` — correctos. Requiere prueba manual contra Supabase remoto para confirmar RPC/migraciones aplicadas. | Completado (cambios locales, no commiteados)
 
+| 2026-06-04 | Lote 7 (visibilidad tareas helper) | `src/pages/Home/hooks/useHomeLocation.js`, `src/services/tasksService.js` | Añadido fallback de ubicación del perfil (`profile.lat/lng`) cuando no hay geolocalización del navegador y relajado el filtro de creador para ocultar solo perfiles suspendidos, no solicitudes abiertas con perfil público incompleto/no cargado como `active`. | Medio | `pnpm run lint`, `pnpm run build` — correctos. Requiere prueba manual creando/publicando una tarea requester y entrando como helper con radio ampliado. | Completado (cambios locales, no commiteados)
+
 ## Validaciones ejecutadas
 
 | Fecha | Comando | Resultado | Notas |
