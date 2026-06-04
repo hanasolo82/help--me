@@ -2,8 +2,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const ROOT = path.resolve(new URL('.', import.meta.url).pathname, '..');
-
 async function readJsonIfExists(p) {
   try {
     const raw = await fs.readFile(p, 'utf8');
@@ -37,7 +35,12 @@ function parseEnv(content) {
 }
 
 async function walk(dir, list = []) {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return list;
+  }
   for (const e of entries) {
     const res = path.join(dir, e.name);
     if (e.isDirectory()) {
@@ -50,15 +53,28 @@ async function walk(dir, list = []) {
   return list;
 }
 
-async function searchForStrings(root, patterns) {
-  const files = await walk(root);
+async function searchForStrings(pathsToSearch, patterns) {
+  const files = [];
+  for (const target of pathsToSearch) {
+    try {
+      const stat = await fs.stat(target);
+      if (stat.isDirectory()) {
+        files.push(...await walk(target));
+      } else {
+        files.push(target);
+      }
+    } catch {
+      // Missing optional frontend surfaces are fine.
+    }
+  }
+
   const hits = [];
   for (const f of files) {
     if (!f.match(/\.(js|ts|jsx|tsx|json|env|md)$/i)) continue;
     try {
       const txt = await fs.readFile(f, 'utf8');
       for (const p of patterns) {
-        if (txt.includes(p)) hits.push({ file: path.relative(ROOT, f), pattern: p });
+        if (txt.includes(p)) hits.push({ file: path.relative(process.cwd(), f), pattern: p });
       }
     } catch {
       // Ignore unreadable files during repository scans.
@@ -72,7 +88,7 @@ async function main() {
   console.log('Deployment summary');
 
   // Gather env files
-  const envFiles = ['.env', '.env.local', '.env.development', '.env.preview', '.env.production'];
+  const envFiles = ['.env', '.env.local', '.env.development', '.env.preview', '.env.production', 'server/.env', 'server/.env.local'];
   const envs = {};
   for (const ef of envFiles) {
     const p = path.join(repoRoot, ef);
@@ -88,19 +104,26 @@ async function main() {
   const frontendAllowed = ['VITE_API_URL','VITE_SUPABASE_URL','VITE_SUPABASE_ANON_KEY','VITE_STRIPE_PUBLISHABLE_KEY','VITE_APP_URL'];
   const forbidden = ['STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET','SUPABASE_SERVICE_ROLE_KEY'];
 
-  const foundForbiddenInEnv = [];
+  const localServerEnvKeys = [];
+  const foundForbiddenInFrontendEnv = [];
   for (const [fname, map] of Object.entries(envs)) {
     for (const k of Object.keys(map)) {
       if (frontendAllowed.includes(k)) continue;
       if (forbidden.includes(k)) {
-        foundForbiddenInEnv.push({ file: fname, key: k });
+        if (fname.startsWith('server/')) {
+          localServerEnvKeys.push({ file: fname, key: k });
+        } else {
+          foundForbiddenInFrontendEnv.push({ file: fname, key: k });
+        }
       }
     }
   }
 
-  // Search repo for accidental secret usage in frontend source
+  // Search only frontend-exposed surfaces for accidental server secret usage.
   const patterns = [...forbidden, 'process.env.STRIPE', 'process.env.SUPABASE_SERVICE_ROLE_KEY'];
-  const hits = await searchForStrings(repoRoot, patterns);
+  const frontendSurfaces = ['src', 'public', 'index.html', 'vite.config.js', 'vite.config.ts']
+    .map((rel) => path.join(repoRoot, rel));
+  const frontendHits = await searchForStrings(frontendSurfaces, patterns);
 
   // Check for API/server presence
   const hasApiDir = await fs.stat(path.join(repoRoot, 'api')).then(() => true).catch(() => false);
@@ -155,7 +178,7 @@ async function main() {
   console.log(`- Output dir guess: ${outputDirGuess}`);
 
   console.log('\n### Files touched');
-  console.log('- Added: deployment-agent/index.js, deployment-agent/package.json, deployment-agent/README.md');
+  console.log('- Added: .agents/tools/deployment-agent/index.js, .agents/tools/deployment-agent/package.json, .agents/tools/deployment-agent/README.md');
 
   console.log('\n### Dashboard actions');
   console.log('- Review vercel.json and ensure builds/rewrites for API routes');
@@ -168,28 +191,32 @@ async function main() {
   console.log('- Backend: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY (server-only)');
 
   console.log('\n### Safe to deploy');
-  const safe = (foundForbiddenInEnv.length === 0 && hits.length === 0 && (stripeLiveKeys.length === 0));
+  const safe = (foundForbiddenInFrontendEnv.length === 0 && frontendHits.length === 0 && (stripeLiveKeys.length === 0));
   console.log(safe ? 'YES' : 'NO');
 
   console.log('\n### Manual verification checklist');
-  console.log('- Ensure no forbidden secrets are present in frontend env files or committed files');
+  console.log('- Ensure server secrets are only in ignored local env files or backend platform env vars');
   console.log('- Verify Vercel env vars: preview uses test keys, production uses live keys');
   console.log('- Verify Supabase callback URLs include local, preview, and production');
   console.log('- Verify Stripe webhook signing secret configured in server env for production');
-  if (foundForbiddenInEnv.length) {
-    console.log('\n### Issues found: Forbidden secrets in env files');
-    for (const it of foundForbiddenInEnv) console.log(`- ${it.key} in ${it.file}`);
+  if (foundForbiddenInFrontendEnv.length) {
+    console.log('\n### Issues found: Server-only secrets in root frontend env files');
+    for (const it of foundForbiddenInFrontendEnv) console.log(`- ${it.key} in ${it.file}`);
   }
-  if (hits.length) {
-    console.log('\n### Issues found: Forbidden strings in source');
-    for (const h of hits.slice(0, 20)) console.log(`- ${h.pattern} found in ${h.file}`);
+  if (frontendHits.length) {
+    console.log('\n### Issues found: Server-only env names in frontend-exposed source');
+    for (const h of frontendHits.slice(0, 20)) console.log(`- ${h.pattern} found in ${h.file}`);
+  }
+  if (localServerEnvKeys.length) {
+    console.log('\n### Local backend env vars detected');
+    for (const it of localServerEnvKeys) console.log(`- ${it.key} in ${it.file} (expected if ignored and server-only)`);
   }
   if (stripeLiveKeys.length) {
     console.log('\n### Warning: Live Stripe keys found in env files (ensure these are only in production envs)');
     for (const k of stripeLiveKeys) console.log(`- ${k.key} in ${k.file}`);
   }
 
-  console.log('\nDone. For next steps run `node deployment-agent/index.js` from the deployment-agent folder or `npm start`.');
+  console.log('\nDone. For next steps run `node .agents/tools/deployment-agent/index.js` from the repo root or `npm start` from the deployment agent folder.');
 }
 
 main().catch(err => {

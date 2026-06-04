@@ -91,7 +91,7 @@ function auditTargets(text) {
   if (hasAnyKeyword(t, ['supabase', 'rls', 'migration', 'schema'])) targets.push('migrations/', 'db/schema.sql', 'policies/');
   if (hasAnyKeyword(t, ['auth', 'jwt'])) targets.push('server/middleware/auth.js', 'src/lib/auth/');
   if (hasAnyKeyword(t, ['ui', 'component', 'css', 'layout'])) targets.push('src/components/', 'src/pages/');
-  if (hasAnyKeyword(t, ['vercel', 'deploy', 'env', 'webhook', 'domain'])) targets.push('vercel.json', 'deployment-agent/', '.env.example', 'server/');
+  if (hasAnyKeyword(t, ['vercel', 'deploy', 'env', 'webhook', 'domain'])) targets.push('vercel.json', '.agents/tools/deployment-agent/', '.env.example', 'server/');
   if (hasAnyKeyword(t, ['worklog', 'agent-worklog', 'registro'])) targets.push('.agent-worklog/refactor-cleanup.md');
   if (targets.length === 0) targets.push('src/', 'server/');
   return targets;

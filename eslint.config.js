@@ -19,7 +19,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['.agents/**/*.js', 'deployment-agent/**/*.js'],
+    files: ['.agents/**/*.js'],
     languageOptions: {
       globals: globals.node,
     },

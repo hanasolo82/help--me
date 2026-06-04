@@ -38,7 +38,7 @@
 
 ## Estructura relevante (raíz)
 
-- directorios: `src/`, `server/`, `scripts/`, `docs/`, `deployment-agent/`, `.agents/`, `public/`, `supabase/`.
+- directorios: `src/`, `server/`, `scripts/`, `docs/`, `.agents/`, `public/`, `supabase/`.
 
 ## Archivos sobredimensionados (top 20 por LOC)
 
@@ -99,9 +99,13 @@
 
 | 2026-06-03 | Lote 2 follow-up (marcadores de mapa) | `src/features/map/components/TaskMap/TaskMap.jsx`, `src/features/home/need-help/components/HelperMapMarker.jsx`, `src/features/home/need-help/components/NeedHelpMapLayout.jsx`, `src/features/home/need-help/components/RequesterHome.jsx`, `src/features/map/components/HelperMarker.jsx` | Corregido `buildUserIcon` para recibir clases CSS Modules desde `TaskMap.module.css` y eliminados `console.log` temporales en handlers de selección de marcadores/helpers. | Bajo | `pnpm exec eslint src` y `pnpm run build` — ambos correctos. Build mantiene warning existente de chunk grande. | Completado (cambios locales, no commiteados)
 
-| 2026-06-03 | Lote 3 (limpieza agentes/tooling) | `eslint.config.js`, `.agents/helpme-architect/dispatcher.js`, `.agents/helpme-architect/audit.js`, `.agents/helpme-architect/agent.manifest.json`, `deployment-agent/index.js` | Convertidos scripts del arquitecto a ESM, añadidos globals Node para herramientas internas en ESLint, limpiados errores de lint en `deployment-agent`, registrado `agent-worklog` como ruta explícita y corregido el matcher para evitar falsos positivos como `ui` dentro de `utilizando`. | Bajo→Medio | `pnpm run lint`, `pnpm run build`, `node .agents/helpme-architect/dispatcher.js "...agent-worklog..."`, `node .agents/helpme-architect/dispatcher.js "deployment env webhook"` — correctos. | Completado (cambios locales, no commiteados)
+| 2026-06-03 | Lote 3 (limpieza agentes/tooling) | `eslint.config.js`, `.agents/helpme-architect/dispatcher.js`, `.agents/helpme-architect/audit.js`, `.agents/helpme-architect/agent.manifest.json`, `.agents/tools/deployment-agent/index.js` | Convertidos scripts del arquitecto a ESM, añadidos globals Node para herramientas internas en ESLint, limpiados errores de lint en `deployment-agent`, registrado `agent-worklog` como ruta explícita y corregido el matcher para evitar falsos positivos como `ui` dentro de `utilizando`. | Bajo→Medio | `pnpm run lint`, `pnpm run build`, `node .agents/helpme-architect/dispatcher.js "...agent-worklog..."`, `node .agents/helpme-architect/dispatcher.js "deployment env webhook"` — correctos. | Completado (cambios locales, no commiteados)
 
 | 2026-06-03 | Lote 4 (alinear instrucciones de agentes) | `.agents/helpme-architect.md`, `.agents/helpme-architect/classifier.md`, `.agents/helpme-architect/README.md`, `.agents/README.md` | Sincronizadas las instrucciones humanas con el manifest/dispatcher: añadido `agent-worklog`, documentado el dispatcher ESM, actualizada la clasificación por palabra completa y convertido `.agents/README.md` en índice general de agentes. | Bajo | `pnpm run lint`, `pnpm run build`, `node .agents/helpme-architect/dispatcher.js "registrar avance en agent-worklog"`, `node .agents/helpme-architect/dispatcher.js "ui layout requester map"` — correctos. | Completado (cambios locales, no commiteados)
+
+| 2026-06-03 | Lote 5 (auditor deployment/env) | `.agents/tools/deployment-agent/index.js` | Ajustado el auditor para distinguir variables publicables/permitidas, secrets server-side en env local ignorado y exposición real en superficies frontend. Las menciones documentales en agentes/docs ya no bloquean `Safe to deploy`. | Bajo | `git check-ignore`, `git ls-files`, `node .agents/tools/deployment-agent/index.js`, `pnpm run lint`, `pnpm run build` — correctos. | Completado (cambios locales, no commiteados)
+
+| 2026-06-03 | Lote 6 (modal helper y chat contactar) | `src/features/home/need-help/components/HelperPreviewModal.jsx`, `src/features/home/need-help/components/HelperPreviewModal.module.css`, `src/features/home/need-help/components/RequesterHome.jsx`, `src/features/chat/api/chatApi.js`, `src/shared/ui/layouts/ChatLayout.jsx`, `src/shared/ui/layouts/ChatLayout.module.css`, `src/shared/ui/chat/MessageInput.module.css`, `src/styles.css` | Pulido visual del modal al seleccionar helper, mejora del layout/composer de chat, estado `Abriendo chat...` al contactar y endurecimiento de persistencia: la creación exige la RPC `create_or_get_direct_conversation` y el envío intenta la RPC `send_message` antes del insert directo compatible. | Medio | `pnpm run lint`, `pnpm run build` — correctos. Requiere prueba manual contra Supabase remoto para confirmar RPC/migraciones aplicadas. | Completado (cambios locales, no commiteados)
 
 ## Validaciones ejecutadas
 
@@ -113,7 +117,8 @@
 | 2026-06-03 | `pnpm run build` | correcto | Build correcto; persiste warning de bundle/chunk grande.
 | 2026-06-03 | `pnpm run lint` | correcto | Validación global tras limpiar scripts de agentes/tooling.
 | 2026-06-03 | `node .agents/helpme-architect/dispatcher.js "...agent-worklog..."` | correcto | Selecciona solo `agent-worklog` y apunta a `.agent-worklog/refactor-cleanup.md`.
-| 2026-06-03 | `node .agents/helpme-architect/dispatcher.js "deployment env webhook"` | correcto | Selecciona `deployment-agent` y apunta a `vercel.json`, `deployment-agent/`, `.env.example`, `server/`.
+| 2026-06-03 | `node .agents/helpme-architect/dispatcher.js "deployment env webhook"` | correcto | Selecciona `deployment-agent` y apunta a `vercel.json`, `.agents/tools/deployment-agent/`, `.env.example`, `server/`.
+| 2026-06-03 | Recolocación de agentes | correcto | `deployment-agent/` movido a `.agents/tools/deployment-agent/` para mantener herramientas de agentes bajo `.agents/`.
 | 2026-06-03 | `node .agents/helpme-architect/dispatcher.js "registrar avance en agent-worklog"` | correcto | Verifica la ruta documentada para worklog tras alinear instrucciones.
 | 2026-06-03 | `node .agents/helpme-architect/dispatcher.js "ui layout requester map"` | correcto | Verifica que la ruta UI sigue funcionando tras el matcher por palabra completa.
 

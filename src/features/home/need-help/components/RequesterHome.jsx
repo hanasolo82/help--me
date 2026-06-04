@@ -31,6 +31,7 @@ export default function RequesterHome({
   const [mapViewEpoch, setMapViewEpoch] = useState(0)
   const [publishNotice, setPublishNotice] = useState('')
   const [contactError, setContactError] = useState('')
+  const [contactingHelperId, setContactingHelperId] = useState(null)
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
   const myTasksQuery = useQuery({
     queryKey: ['my-tasks', profile?.id],
@@ -56,15 +57,18 @@ export default function RequesterHome({
   }
 
   async function handleContactHelper(helper) {
-    if (!helper?.id) return
+    if (!helper?.id || contactingHelperId) return
 
     setContactError('')
+    setContactingHelperId(helper.id)
 
     try {
       const conversationId = await createOrGetDirectConversation(helper.id)
       navigate(`/chat/${conversationId}`)
     } catch (error) {
       setContactError(error?.message || 'No hemos podido abrir la conversación. Inténtalo de nuevo.')
+    } finally {
+      setContactingHelperId(null)
     }
   }
 
@@ -213,6 +217,7 @@ export default function RequesterHome({
         onClose={() => setSelectedHelper(null)}
         onViewProfile={(helper) => navigate(`/profile/${helper.id}`)}
         onContact={handleContactHelper}
+        contactPending={selectedHelper?.id === contactingHelperId}
         onSendProposal={() => {
           handleOpenTaskModal()
         }}

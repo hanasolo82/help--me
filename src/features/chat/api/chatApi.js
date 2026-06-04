@@ -109,54 +109,60 @@ export async function createOrGetDirectConversation(otherUserId) {
     throw rpcResult.error
   }
 
-  const user = await requireUser('Necesitas iniciar sesion para abrir un chat privado.')
+  throw new Error('No se pudo abrir el chat porque falta la función create_or_get_direct_conversation en Supabase. Aplica las migraciones de chat antes de contactar helpers.')
+}
 
-  const { data: existingParticipants, error: participantsError } = await supabase
-    .from('conversation_participants')
-    .select('conversation_id, user_id')
-    .in('user_id', [user.id, otherUserId])
+async function sendMessageWithRpc(conversationId, body, clientTempId = null) {
+  const { data, error } = await supabase.rpc('send_message', {
+    p_conversation_id: conversationId,
+    p_body: body,
+    p_client_temp_id: clientTempId,
+  })
 
-  if (participantsError) {
-    throw participantsError
+  if (error) {
+    if (isMissingRpcError(error) || String(error?.message || '').toLowerCase().includes('send_message')) {
+      return null
+    }
+
+    throw error
   }
 
-  const conversationsById = new Map()
-  for (const row of existingParticipants || []) {
-    const current = conversationsById.get(row.conversation_id) || new Set()
-    current.add(row.user_id)
-    conversationsById.set(row.conversation_id, current)
-  }
+  return normalizeMessageRow(data)
+}
 
-  const existingConversationId = [...conversationsById.entries()].find(([, users]) => users.has(user.id) && users.has(otherUserId) && users.size === 2)?.[0]
+async function sendMessageWithDirectInsert(conversationId, body, clientTempId = null) {
+  const user = await requireUser('Necesitas iniciar sesion para enviar mensajes.')
 
-  if (existingConversationId) {
-    return existingConversationId
-  }
-
-  const { data: createdConversation, error: createConversationError } = await supabase
-    .from('conversations')
-    .insert({ created_by: user.id })
-    .select('id')
+  const { data: insertedMessage, error: insertError } = await supabase
+    .from('messages')
+    .insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      body,
+      message_type: 'text',
+      client_temp_id: clientTempId,
+    })
+    .select(MESSAGE_SELECT)
     .single()
 
-  if (createConversationError) {
-    throw createConversationError
+  if (insertError) {
+    throw insertError
   }
 
-  const conversationId = createdConversation.id
+  const { error: metadataError } = await supabase
+    .from('conversations')
+    .update({
+      last_message_at: insertedMessage.created_at,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', conversationId)
 
-  const { error: participantsInsertError } = await supabase
-    .from('conversation_participants')
-    .insert([
-      { conversation_id: conversationId, user_id: user.id },
-      { conversation_id: conversationId, user_id: otherUserId },
-    ])
-
-  if (participantsInsertError) {
-    throw participantsInsertError
+  if (metadataError) {
+    // No bloqueamos el envío si falla el refresco de metadata.
+    console.warn('[chatApi.sendMessage] could not update conversation metadata', metadataError)
   }
 
-  return conversationId
+  return normalizeMessageRow(insertedMessage)
 }
 
 export async function getConversationById(conversationId) {
@@ -355,38 +361,8 @@ export async function sendMessage(conversationId, body, clientTempId = null) {
     throw new Error('El mensaje no puede estar vacio.')
   }
 
-  const user = await requireUser('Necesitas iniciar sesion para enviar mensajes.')
-
-  const { data: insertedMessage, error: insertError } = await supabase
-    .from('messages')
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      body: cleanBody,
-      message_type: 'text',
-      client_temp_id: clientTempId,
-    })
-    .select(MESSAGE_SELECT)
-    .single()
-
-  if (insertError) {
-    throw insertError
-  }
-
-  const { error: metadataError } = await supabase
-    .from('conversations')
-    .update({
-      last_message_at: insertedMessage.created_at,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', conversationId)
-
-  if (metadataError) {
-    // No bloqueamos el envío si falla el refresco de metadata.
-    console.warn('[chatApi.sendMessage] could not update conversation metadata', metadataError)
-  }
-
-  const message = normalizeMessageRow(insertedMessage)
+  const message = await sendMessageWithRpc(conversationId, cleanBody, clientTempId)
+    || await sendMessageWithDirectInsert(conversationId, cleanBody, clientTempId)
 
   if (!message) {
     throw new Error('No se pudo crear el mensaje.')

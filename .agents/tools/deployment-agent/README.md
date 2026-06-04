@@ -6,7 +6,7 @@ This small CLI audits the repo for deployment readiness with a focus on Vercel, 
 Quick start
 
 1. Install Node 18+.
-2. From the `deployment-agent` folder run:
+2. From the `.agents/tools/deployment-agent` folder run:
 
 ```bash
 node index.js

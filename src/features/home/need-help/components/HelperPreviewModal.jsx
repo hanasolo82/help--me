@@ -34,6 +34,7 @@ export default function HelperPreviewModal({
   onClose,
   onViewProfile,
   onContact,
+  contactPending = false,
   onSendProposal,
 }) {
   const skills = useMemo(() => buildSkillList(helper), [helper])
@@ -82,13 +83,13 @@ export default function HelperPreviewModal({
         <p className={styles.description}>{helper.bio || 'Ayuda general y trato cercano dentro de la comunidad.'}</p>
 
         <div className={styles.actions}>
-          <button type="button" className="secondary-action" onClick={() => onViewProfile?.(helper)}>
+          <button type="button" className="secondary-action" onClick={() => onViewProfile?.(helper)} disabled={contactPending}>
             Ver perfil
           </button>
-          <button type="button" className="secondary-action" onClick={() => onContact?.(helper)}>
-            Contactar
+          <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
+            {contactPending ? 'Abriendo chat...' : 'Contactar'}
           </button>
-          <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)}>
+          <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
             Publicar solicitud
           </button>
         </div>

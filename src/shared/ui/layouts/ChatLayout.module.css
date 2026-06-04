@@ -1,11 +1,33 @@
-﻿.screen {
-  min-height: 100%;
+.screen {
+  min-height: 100dvh;
+  align-items: stretch;
+}
+
+.grid,
+.gridSingle {
+  width: min(100%, 72rem);
+  min-height: min(46rem, calc(100dvh - 2rem));
+  display: grid;
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .grid {
-  display: grid;
   grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
 }
 
+.gridSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 760px) {
+  .screen {
+    padding: 0;
+  }
+
+  .grid,
+  .gridSingle {
+    width: 100%;
+    min-height: 100dvh;
+  }
+}

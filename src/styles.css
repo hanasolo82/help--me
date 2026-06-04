@@ -902,16 +902,25 @@ html[data-theme='light'] .auth-panel {
 .chat-screen {
   /* main chat page shell: pages/Chat/Chat.jsx, features/chat/pages/ChatPage.jsx */
   width: min(100%, 54rem);
+  min-height: min(46rem, calc(100dvh - 2rem));
   display: grid;
   grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
 }
 
 .chat-header {
   /* main chat page header: features/chat/pages/ChatPage.jsx */
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
   margin: 0;
-  padding: 16px;
+  padding: 1rem;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
 }
 
 .chat-header p {
@@ -927,6 +936,10 @@ html[data-theme='light'] .auth-panel {
   flex-direction: column;
   gap: 10px;
   padding: 18px 16px;
+  overflow: auto;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-bg) 40%, transparent), transparent 28%),
+    var(--color-surface-strong);
 }
 
 .message {
@@ -1306,6 +1319,13 @@ html[data-theme='light'] .auth-panel {
   .danger-action,
   .oauth-action {
     max-width: none;
+  }
+
+  .chat-screen {
+    min-height: 100dvh;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
   }
 }
 
