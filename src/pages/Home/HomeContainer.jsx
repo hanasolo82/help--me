@@ -78,6 +78,7 @@ export default function HomeContainer() {
     mode,
     category,
     radius,
+    radiusEnabled: profile?.search_radius_enabled === true,
     location,
   })
   const {

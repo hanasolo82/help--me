@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import { sanitizeText } from '../../../lib/security'
 import { getLocationLabel } from '../../../features/profile/utils/profileFormatters'
 import styles from '../SettingsPage.module.css'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
+
+function sanitizeVisibleZoneDraft(value) {
+  return String(value ?? '')
+    .replace(/[<>]/g, '')
+    .slice(0, 80)
+}
 
 export default function MapSettings() {
   const { form, profile, setField } = useSettings()
@@ -37,7 +42,7 @@ export default function MapSettings() {
           <input
             className={styles.mapZoneInput}
             value={form.visibleZoneName}
-            onChange={(event) => setField('visibleZoneName', sanitizeText(event.target.value, 80))}
+            onChange={(event) => setField('visibleZoneName', sanitizeVisibleZoneDraft(event.target.value))}
             placeholder="Madrid centro"
             aria-label="Zona visible"
           />

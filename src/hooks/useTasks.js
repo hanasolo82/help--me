@@ -14,19 +14,27 @@ function buildTaskDistance(task, location) {
   )
 }
 
-function applyHelperFilters(tasks, { category, radius, location }) {
+function applyHelperFilters(tasks, { category, radius, radiusEnabled, location }) {
   return tasks
     .map((task) => ({
       task,
       distance: buildTaskDistance(task, location),
     }))
     .filter(({ task, distance }) => {
+      const shouldApplyRadius = radiusEnabled !== false && location
+
       if (category !== 'Todas' && task.category !== category) {
         return false
       }
 
-      if (location && Number.isFinite(distance) && distance > radius) {
-        return false
+      if (shouldApplyRadius) {
+        if (!Number.isFinite(distance)) {
+          return false
+        }
+
+        if (distance > radius) {
+          return false
+        }
       }
 
       return true
@@ -56,8 +64,17 @@ function applyHelperFilters(tasks, { category, radius, location }) {
     })
 }
 
-export function useTasks({ profile, mode, category, radius, location }) {
-  const queryKey = ['tasks', profile?.id ?? null, mode, category, radius, location?.lat ?? null, location?.lng ?? null]
+export function useTasks({ profile, mode, category, radius, radiusEnabled = true, location }) {
+  const queryKey = [
+    'tasks',
+    profile?.id ?? null,
+    mode,
+    category,
+    radius,
+    radiusEnabled,
+    location?.lat ?? null,
+    location?.lng ?? null,
+  ]
 
   const query = useQuery({
     queryKey,
@@ -90,7 +107,7 @@ export function useTasks({ profile, mode, category, radius, location }) {
       }
     }
 
-    const filtered = applyHelperFilters(rawTasks, { category, radius, location })
+    const filtered = applyHelperFilters(rawTasks, { category, radius, radiusEnabled, location })
 
     return {
       visibleTasks: filtered,
@@ -101,7 +118,7 @@ export function useTasks({ profile, mode, category, radius, location }) {
         return acc
       }, {}),
     }
-  }, [category, location, mode, query.data, radius])
+  }, [category, location, mode, query.data, radius, radiusEnabled])
 
   return {
     ...query,

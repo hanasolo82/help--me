@@ -109,6 +109,8 @@
 
 | 2026-06-04 | Lote 7 (visibilidad tareas helper) | `src/pages/Home/hooks/useHomeLocation.js`, `src/services/tasksService.js` | Añadido fallback de ubicación del perfil (`profile.lat/lng`) cuando no hay geolocalización del navegador y relajado el filtro de creador para ocultar solo perfiles suspendidos, no solicitudes abiertas con perfil público incompleto/no cargado como `active`. | Medio | `pnpm run lint`, `pnpm run build` — correctos. Requiere prueba manual creando/publicando una tarea requester y entrando como helper con radio ampliado. | Completado (cambios locales, no commiteados)
 
+| 2026-06-04 | Lote 8 (ajustes mapa y matching práctico) | `src/pages/Settings/components/MapSettings.jsx`, `src/pages/Home/HomeContainer.jsx`, `src/pages/Home/hooks/useHomeTasks.js`, `src/hooks/useTasks.js` | Corregido el input de zona visible para permitir espacios mientras se escribe y alineado el matching helper→tareas con `search_radius_enabled`: el radio solo limita resultados cuando la preferencia está activada; si no, las coordenadas se usan para ordenar/distancias sin ocultar tareas por radio. | Medio | `pnpm run lint`, `pnpm run build` — correctos. Build mantiene warning existente de chunk grande. Requiere prueba manual con zona visible compuesta y tareas abiertas dentro/fuera de radio. | Completado (cambios locales, no commiteados) |
+
 ## Validaciones ejecutadas
 
 | Fecha | Comando | Resultado | Notas |
