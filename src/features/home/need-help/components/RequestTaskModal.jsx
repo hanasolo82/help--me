@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
+import TaskLocationSearch from './TaskLocationSearch'
 import styles from './RequestTaskModal.module.css'
 
 const defaultCategories = allowedCategories
@@ -44,13 +45,35 @@ function RequestTaskModalInner({
   const [error, setError] = useState('')
 
   const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
+  const [taskLocation, setTaskLocation] = useState(() => resolvedLocation)
+  const [locationEdited, setLocationEdited] = useState(false)
+
+  useEffect(() => {
+    if (locationEdited || taskLocation || !resolvedLocation) return
+
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setTaskLocation(resolvedLocation)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [locationEdited, resolvedLocation, taskLocation])
+
+  function handleTaskLocationChange(nextLocation) {
+    setLocationEdited(true)
+    setTaskLocation(nextLocation)
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
 
-    if (!resolvedLocation) {
-      setError('Necesitamos tu ubicación para publicar la solicitud.')
+    if (!taskLocation) {
+      setError('Selecciona el lugar de la tarea para situarla en el mapa.')
       return
     }
 
@@ -65,8 +88,9 @@ function RequestTaskModalInner({
         description,
         category,
         price: Number(price || 0),
-        lat: resolvedLocation.lat,
-        lng: resolvedLocation.lng,
+        lat: taskLocation.lat,
+        lng: taskLocation.lng,
+        location_label: taskLocation.label || null,
       }
 
       const savedTask = isEditing ? await updateTask(task.id, payload) : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
@@ -100,11 +124,6 @@ function RequestTaskModalInner({
           <div>
             <p className="eyebrow">{isEditing ? 'Editar solicitud' : 'Publicar solicitud'}</p>
             <h2>{isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}</h2>
-            <p className="muted">
-              {isEditing
-                ? 'Mantendremos la solicitud como visible si sigue abierta.'
-                : 'Publica una petición clara para que las personas disponibles cerca de ti puedan responder.'}
-            </p>
           </div>
           <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Cerrar solicitud">
             ×
@@ -124,10 +143,12 @@ function RequestTaskModalInner({
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Cuenta brevemente qué necesitas y en qué zona."
               maxLength={600}
-              rows={4}
+              rows={3}
               required
             />
           </label>
+
+          <TaskLocationSearch value={taskLocation} onChange={handleTaskLocationChange} />
 
           <div className={styles.inlineRow}>
             <label className="field">
@@ -149,10 +170,10 @@ function RequestTaskModalInner({
 
           {error ? <p className="auth-message error">{error}</p> : null}
 
-          {!resolvedLocation && locationStatus !== 'loading' ? (
+          {!taskLocation && locationStatus !== 'loading' ? (
             <section className={styles.locationHint}>
-              <strong>Activa tu ubicación para publicar.</strong>
-              <p className="muted">Usamos tu posición para situar la solicitud y que los ayudantes la vean cerca de ti.</p>
+              <strong>Selecciona dónde se realizará la tarea.</strong>
+              <p className="muted">Puedes buscar una zona arriba o usar tu ubicación como punto inicial.</p>
               {onRequestLocation ? (
                 <button type="button" className="secondary-action" onClick={onRequestLocation}>
                   Usar mi ubicación
@@ -181,6 +202,7 @@ export default function RequestTaskModal(props) {
   const resetKey = [
     props.task?.id || 'new',
     props.initialTitle || '',
+    props.task?.location_label || '',
     props.location?.label || '',
     props.locationStatus || '',
     props.open ? 'open' : 'closed',

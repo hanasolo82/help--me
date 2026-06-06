@@ -52,6 +52,7 @@ function CreateTaskForm({
         price: Number(priceEuros),
         lat: formLocation.latitude,
         lng: formLocation.longitude,
+        location_label: formLocation.label || null,
       }
 
       return isEditing ? updateTask(taskId, payload) : createTask(payload)
@@ -208,7 +209,7 @@ export default function CreateTask() {
         location: getLocationPayload({
           lat: Number(task.lat),
           lng: Number(task.lng),
-          label: 'Ubicacion guardada',
+          label: task.location_label || 'Ubicacion guardada',
         }),
       }
     }

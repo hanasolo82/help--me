@@ -123,10 +123,12 @@ export default function TaskCard({
   const helper = task.accepted_profile
   const helperName = helper?.display_name || helper?.full_name || helper?.username || 'Ayudante'
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
+  const locationLabel = task.location_label || task.zone || task.location || null
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
   const metaItems = [
     task.category,
+    locationLabel,
     statusLabels[task.status] || task.status,
     formatPublicationAge(task),
     showDistance ? distanceLabel : null,

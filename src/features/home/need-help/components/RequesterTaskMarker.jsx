@@ -19,6 +19,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
   if (!task) return null
 
   const publishedAt = task.published_at || task.created_at
+  const locationLabel = task.location_label || task.zone || task.location || ''
 
   return (
     <Marker
@@ -41,6 +42,12 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
         {task.title}
         <br />
         {task.category} · {task.status}
+        {locationLabel ? (
+          <>
+            <br />
+            {locationLabel}
+          </>
+        ) : null}
         <br />
         {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
       </Popup>

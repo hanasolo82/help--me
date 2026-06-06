@@ -28,6 +28,7 @@ const TASK_SELECT = `
   status,
   lat,
   lng,
+  location_label,
   published_at,
   cancelled_at,
   modified_at,
@@ -152,6 +153,7 @@ export function validateTaskInput(input) {
   const price = Number(input.price)
   const lat = Number(input.lat)
   const lng = Number(input.lng)
+  const locationLabel = sanitizeText(input.location_label ?? input.locationLabel ?? '', 240)
 
   const errors = []
 
@@ -165,7 +167,7 @@ export function validateTaskInput(input) {
   return {
     isValid: errors.length === 0,
     errors,
-    value: { title, description, category, price, lat, lng },
+    value: { title, description, category, price, lat, lng, location_label: locationLabel || null },
   }
 }
 

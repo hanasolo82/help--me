@@ -35,6 +35,7 @@ create table if not exists public.tasks (
     check (status in ('draft', 'open', 'assigned', 'in_progress', 'completed', 'cancelled')),
   lat double precision not null check (lat between -90 and 90),
   lng double precision not null check (lng between -180 and 180),
+  location_label text check (location_label is null or char_length(location_label) <= 240),
   image_url text check (image_url is null or char_length(image_url) <= 500),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

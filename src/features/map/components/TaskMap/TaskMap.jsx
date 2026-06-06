@@ -236,6 +236,7 @@ export default function TaskMap({
           const distance = distances?.[task.id]
           const publishedAt = task.published_at || task.created_at
           const creatorName = formatCreatorName(task)
+          const locationLabel = task.location_label || task.zone || task.location
           return (
             <Marker
               key={task.id}
@@ -256,6 +257,12 @@ export default function TaskMap({
                 <strong>{task.title}</strong>
                 <br />
                 {task.category} · {priceEuros} EUR
+                {locationLabel ? (
+                  <>
+                    <br />
+                    {locationLabel}
+                  </>
+                ) : null}
                 <br />
                 Publicada {formatTaskDate(publishedAt)}
                 <br />
