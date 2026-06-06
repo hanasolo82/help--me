@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
 import { cancelTask, publishTask } from '../../services/tasksService'
+import { searchLocationAutocomplete } from '../../features/onboarding/services/locationAutocompleteService'
 import { useHomeModals } from './hooks/useHomeModals'
 import { useHomeFilters } from './hooks/useHomeFilters'
 import { useHomeLocation } from './hooks/useHomeLocation'
@@ -53,6 +54,8 @@ export default function HomeContainer() {
   } = useHomeFilters(profile)
   const {
     location,
+    currentLocation,
+    profileLocation,
     status,
     error,
     requestLocation,
@@ -61,6 +64,26 @@ export default function HomeContainer() {
     locationLabel,
     userAvatarUrl,
   } = useHomeLocation(profile)
+  const [helperLocationPreference, setHelperLocationPreference] = useState({
+    source: 'profile',
+    location: null,
+  })
+  const [helperZoneSearch, setHelperZoneSearch] = useState('')
+  const [helperZoneSearchStatus, setHelperZoneSearchStatus] = useState('idle')
+  const [helperZoneSearchMessage, setHelperZoneSearchMessage] = useState('')
+  const helperSearchLocation = useMemo(() => {
+    if (helperLocationPreference.source === 'search') {
+      return helperLocationPreference.location
+    }
+
+    if (helperLocationPreference.source === 'current') {
+      return currentLocation || profileLocation || null
+    }
+
+    return profileLocation || null
+  }, [currentLocation, helperLocationPreference, profileLocation])
+  const helperMapLocation = helperSearchLocation
+  const activeLocation = isHelperMode ? helperSearchLocation || location : location
   const [themePreference, setThemePreference] = useState(() =>
     resolveThemePreference({
       isPrivateRoute: true,
@@ -79,7 +102,7 @@ export default function HomeContainer() {
     category,
     radius,
     radiusEnabled: profile?.search_radius_enabled === true,
-    location,
+    location: activeLocation,
   })
   const {
     chats,
@@ -179,6 +202,72 @@ export default function HomeContainer() {
     setMyRequestsDrawerOpen(false)
   }, [])
 
+  const handleUseCurrentHelperLocation = useCallback(() => {
+    setHelperLocationPreference({ source: 'current', location: null })
+    setHelperZoneSearchStatus('idle')
+    setHelperZoneSearchMessage('')
+    requestLocation()
+  }, [requestLocation])
+
+  const handleUseProfileHelperLocation = useCallback(() => {
+    setHelperLocationPreference({ source: 'profile', location: null })
+    setHelperZoneSearchStatus('idle')
+    setHelperZoneSearchMessage('')
+  }, [])
+
+  const handleZoneSearchChange = useCallback((value) => {
+    setHelperZoneSearch(value)
+
+    if (!value.trim()) {
+      setHelperZoneSearchStatus('idle')
+      setHelperZoneSearchMessage('')
+    }
+  }, [])
+
+  const handleZoneSearchSubmit = useCallback(async () => {
+    const query = helperZoneSearch.trim()
+
+    if (!query) {
+      setHelperLocationPreference({ source: 'profile', location: null })
+      setHelperZoneSearchStatus('idle')
+      setHelperZoneSearchMessage('')
+      return
+    }
+
+    setHelperZoneSearchStatus('loading')
+    setHelperZoneSearchMessage(`Buscando "${query}"...`)
+
+    try {
+      const results = await searchLocationAutocomplete(query)
+      const match = results[0]
+
+      if (!match) {
+        setHelperLocationPreference({ source: 'profile', location: null })
+        setHelperZoneSearchStatus('error')
+        setHelperZoneSearchMessage('No se encontró esa zona')
+        return
+      }
+
+      const label = match.formattedAddress || match.city || query
+      setHelperLocationPreference({
+        source: 'search',
+        location: {
+          lat: match.lat,
+          lng: match.lng,
+          label,
+          source: 'search',
+        },
+      })
+      setHelperZoneSearchStatus('success')
+      setHelperZoneSearchMessage(`Mostrando ${label}`)
+    } catch (error) {
+      console.error('[HomeContainer] zone search failed', error)
+      setHelperLocationPreference({ source: 'profile', location: null })
+      setHelperZoneSearchStatus('error')
+      setHelperZoneSearchMessage(error?.message || 'No se encontró esa zona')
+    }
+  }, [helperZoneSearch])
+
   useEffect(() => {
     const nextTheme = resolveThemePreference({
       isPrivateRoute: true,
@@ -236,11 +325,11 @@ export default function HomeContainer() {
   }, [routeLocation.state?.resumeHelperOnboarding])
 
   useEffect(() => {
-    if (mode !== 'need' && mode !== 'help') return
+    if (mode !== 'need' && helperLocationPreference.source !== 'current') return
     if (location || status !== 'idle') return
 
     requestLocation()
-  }, [location, mode, requestLocation, status])
+  }, [helperLocationPreference.source, location, mode, requestLocation, status])
 
   return (
     <>
@@ -264,6 +353,11 @@ export default function HomeContainer() {
         themePreference={themePreference}
         onThemeChange={handleThemeChange}
         isHelperActive={Boolean(profile?.helper_status === 'active')}
+        zoneSearch={helperZoneSearch}
+        zoneSearchStatus={helperZoneSearchStatus}
+        zoneSearchMessage={helperZoneSearchMessage}
+        onZoneSearchChange={handleZoneSearchChange}
+        onZoneSearchSubmit={handleZoneSearchSubmit}
         category={category}
         onCategoryChange={setCategory}
         radius={radius}
@@ -283,10 +377,16 @@ export default function HomeContainer() {
         onCancelTask={handleCancelTask}
         onOpenTaskChat={openTaskChat}
         onEditTask={handleEditTask}
-        location={location}
+        location={activeLocation}
         locationStatus={status}
         locationError={error}
         onRequestNeedLocation={requestLocation}
+        helperLocationSource={helperLocationPreference.source}
+        helperMapLocation={helperMapLocation}
+        currentLocation={currentLocation}
+        profileLocation={profileLocation}
+        onUseCurrentHelperLocation={handleUseCurrentHelperLocation}
+        onUseProfileHelperLocation={handleUseProfileHelperLocation}
         userAvatarUrl={userAvatarUrl}
         chats={chats}
         isChatsLoading={isChatsLoading}

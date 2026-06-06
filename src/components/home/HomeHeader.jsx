@@ -9,6 +9,11 @@ export default function HomeHeader({
   displayName,
   avatarUrl,
   userInitial,
+  zoneSearch = '',
+  zoneSearchStatus = 'idle',
+  zoneSearchMessage = '',
+  onZoneSearchChange,
+  onZoneSearchSubmit,
   onOpenHelper,
   onOpenNeedHelp,
   onOpenChats,
@@ -43,6 +48,11 @@ export default function HomeHeader({
     onLogout?.()
   }
 
+  function handleZoneSearchSubmit(event) {
+    event.preventDefault()
+    onZoneSearchSubmit?.()
+  }
+
   const modeLabel = isHelperMode ? 'Necesito ayuda' : 'Ayudar'
   const modeAction = isHelperMode ? onOpenNeedHelp : onOpenHelper
 
@@ -70,12 +80,47 @@ export default function HomeHeader({
 
   return (
     <>
-      <header className={styles.header}>
+      <header className={`${styles.header} ${isHelperMode ? styles.headerHelper : ''}`}>
         <div>
           <p className={styles.location}>{locationLabel}</p>
           <h1 className={styles.logo}>helpMe</h1>
           <p className="muted">Hola, {displayName}</p>
         </div>
+
+        {isHelperMode ? (
+          <div className={styles.headerSearch} aria-label="Buscar zona del mapa">
+            <form className={styles.headerSearchForm} onSubmit={handleZoneSearchSubmit}>
+              <div className={styles.headerSearchInputWrap}>
+                <input
+                  id="helper-map-zone-search"
+                  className={styles.headerSearchInput}
+                  type="search"
+                  placeholder="Buscar zonas del mapa"
+                  aria-label="Buscar zonas del mapa"
+                  value={zoneSearch}
+                  onChange={(event) => onZoneSearchChange?.(event.target.value)}
+                  spellCheck="false"
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  className={styles.headerSearchButton}
+                  aria-label="Buscar zona"
+                  aria-busy={zoneSearchStatus === 'loading'}
+                >
+                  <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                    <path d="M10.5 4a6.5 6.5 0 1 0 4.13 11.52l4.42 4.43 1.42-1.42-4.43-4.42A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+              {zoneSearchMessage ? (
+                <p className={styles.headerSearchMessage} data-status={zoneSearchStatus}>
+                  {zoneSearchMessage}
+                </p>
+              ) : null}
+            </form>
+          </div>
+        ) : null}
 
         <div className={styles.headerActions}>
           <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />

@@ -3,7 +3,7 @@ import BlockedHelperHome from './BlockedHelperHome'
 
 export default function HelperAccessGate({ profile, helperHomeProps, onStartHelperOnboarding, onNeedHelp }) {
   if (profile?.helper_status === 'active') {
-    return <HelperHome {...helperHomeProps} />
+    return <HelperHome profile={profile} helperHomeProps={helperHomeProps} />
   }
 
   return (

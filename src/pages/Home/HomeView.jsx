@@ -25,6 +25,11 @@ export default function HomeView({
   themePreference,
   onThemeChange,
   isHelperActive,
+  zoneSearch,
+  zoneSearchStatus,
+  zoneSearchMessage,
+  onZoneSearchChange,
+  onZoneSearchSubmit,
   helperModeLabel,
   category,
   onCategoryChange,
@@ -49,6 +54,12 @@ export default function HomeView({
   locationStatus,
   locationError,
   onRequestNeedLocation,
+  helperLocationSource,
+  helperMapLocation,
+  currentLocation,
+  profileLocation,
+  onUseCurrentHelperLocation,
+  onUseProfileHelperLocation,
   userAvatarUrl,
   chats,
   isChatsLoading,
@@ -88,6 +99,11 @@ export default function HomeView({
           onThemeChange={onThemeChange}
           isHelperMode={isHelperMode}
           isHelperActive={isHelperActive}
+          zoneSearch={zoneSearch}
+          zoneSearchStatus={zoneSearchStatus}
+          zoneSearchMessage={zoneSearchMessage}
+          onZoneSearchChange={onZoneSearchChange}
+          onZoneSearchSubmit={onZoneSearchSubmit}
           helperModeLabel={helperModeLabel}
         />
       }
@@ -100,6 +116,14 @@ export default function HomeView({
           helperHomeProps={{
             profile,
             location,
+            mapLocation: helperMapLocation,
+            locationStatus,
+            locationError,
+            locationSource: helperLocationSource,
+            currentLocation,
+            profileLocation,
+            onUseCurrentLocation: onUseCurrentHelperLocation,
+            onUseProfileLocation: onUseProfileHelperLocation,
             userAvatarUrl,
             userInitial,
             radiusKm: radius,

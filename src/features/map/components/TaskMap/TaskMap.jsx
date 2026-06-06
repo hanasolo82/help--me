@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Circle, MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
@@ -19,17 +19,83 @@ function createTaskIcon(priceEuros) {
   })
 }
 
-function RecenterMap({ center }) {
+function RecenterMap({ center, centerSource = 'profile', zoom = 14 }) {
   const map = useMap()
+  const appliedCenterKeyRef = useRef(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!Array.isArray(center) || center.length < 2) return
 
     const [lat, lng] = center
     if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return
 
-    map.setView([Number(lat), Number(lng)], map.getZoom(), { animate: true })
-  }, [center, map])
+    const nextCenter = [Number(lat), Number(lng)]
+    const nextZoom = Number.isFinite(Number(zoom)) ? Number(zoom) : 14
+    const nextCenterKey = `${centerSource}:${nextCenter[0].toFixed(5)}:${nextCenter[1].toFixed(5)}:${nextZoom}`
+
+    if (appliedCenterKeyRef.current === nextCenterKey) {
+      return
+    }
+
+    appliedCenterKeyRef.current = nextCenterKey
+    let cancelled = false
+    let frameId = null
+    let timeoutId = null
+
+    const applyCenter = () => {
+      if (cancelled) return
+      map.stop()
+      map.invalidateSize({ animate: false })
+      map.setView(nextCenter, nextZoom, { animate: false })
+    }
+
+    const applyWithLayoutPass = () => {
+      applyCenter()
+      frameId = window.requestAnimationFrame(applyCenter)
+
+      if (centerSource === 'search') {
+        timeoutId = window.setTimeout(applyCenter, 120)
+      }
+    }
+
+    map.whenReady(applyWithLayoutPass)
+
+    return () => {
+      cancelled = true
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [center, centerSource, map, zoom])
+
+  return null
+}
+
+function FitMapOnce({ tasks }) {
+  const map = useMap()
+  const fittedRef = useRef(false)
+
+  useEffect(() => {
+    const points = tasks
+      .map((task) => [task.lat, task.lng])
+      .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)))
+
+    if (fittedRef.current) return
+    if (points.length === 0) return
+
+    if (points.length > 1) {
+      map.fitBounds(points, { padding: [42, 42], maxZoom: 14 })
+    } else {
+      map.setView(points[0], 14)
+    }
+
+    fittedRef.current = true
+  }, [map, tasks])
 
   return null
 }
@@ -109,6 +175,13 @@ export default function TaskMap({
   userAvatarUrl,
   userInitial,
   onViewportChange,
+  showUserWaypoint = true,
+  showRadiusCircle = true,
+  recenterOnCenter = true,
+  centerSource = 'profile',
+  recenterZoom = 14,
+  fitTasksOnLoad = false,
+  fitTasksKey = 'initial',
 }) {
   const userLat = toFiniteNumber(userLocation?.latitude)
   const userLng = toFiniteNumber(userLocation?.longitude)
@@ -133,23 +206,30 @@ export default function TaskMap({
   return (
     <div className={styles.mapShell}>
       <MapContainer center={center} zoom={14} scrollWheelZoom className={styles.map}>
-        <RecenterMap center={center} />
+        {recenterOnCenter ? (
+          <RecenterMap center={center} centerSource={centerSource} zoom={recenterZoom} />
+        ) : null}
+        {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} /> : null}
         <MapViewportReporter onViewportChange={onViewportChange} />
         <MapTileLayer />
 
-        <Circle
-          center={center}
-          radius={safeRadiusKm * 1000}
-          pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
-        />
+        {showRadiusCircle ? (
+          <Circle
+            center={center}
+            radius={safeRadiusKm * 1000}
+            pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
+          />
+        ) : null}
 
-        <Marker position={center} icon={userIcon}>
-          <Popup>
-            <strong>Tu ubicacion</strong>
-            <br />
-            {userLocation?.label || 'Ubicacion aproximada'}
-          </Popup>
-        </Marker>
+        {showUserWaypoint ? (
+          <Marker position={center} icon={userIcon}>
+            <Popup>
+              <strong>Tu ubicacion</strong>
+              <br />
+              {userLocation?.label || 'Ubicacion aproximada'}
+            </Popup>
+          </Marker>
+        ) : null}
 
         {safeTasks.map((task) => {
           const priceEuros = Number(task.price ?? 0)

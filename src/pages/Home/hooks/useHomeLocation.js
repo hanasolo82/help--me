@@ -76,11 +76,13 @@ export function useHomeLocation(profile) {
     () => ({
       ...locationState,
       location: effectiveLocation,
+      currentLocation: locationState.location,
+      profileLocation,
       displayName,
       userInitial,
       locationLabel,
       userAvatarUrl,
     }),
-    [displayName, effectiveLocation, locationLabel, locationState, userAvatarUrl, userInitial],
+    [displayName, effectiveLocation, locationLabel, locationState, profileLocation, userAvatarUrl, userInitial],
   )
 }
