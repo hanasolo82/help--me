@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
 import {
   getFavoriteProfileIds,
-  getNearbyHelpers,
   getProfileAvailability,
   getProfileById,
   getProfileReviews,
@@ -11,7 +10,7 @@ import {
   getProfileVerifications,
 } from '../api/profileApi'
 
-export function useProfilePageData(profileId, { radiusKm = 10 } = {}) {
+export function useProfilePageData(profileId) {
   const { user, profile: authProfile } = useAuth()
   const targetProfileId = profileId || user?.id || authProfile?.id || null
   const isOwnProfile = Boolean(targetProfileId && user?.id && targetProfileId === user.id)
@@ -52,19 +51,6 @@ export function useProfilePageData(profileId, { radiusKm = 10 } = {}) {
     staleTime: 60_000,
   })
 
-  const nearbyHelpersQuery = useQuery({
-    queryKey: ['nearby-helpers', targetProfileId, profileQuery.data?.lat, profileQuery.data?.lng, radiusKm],
-    queryFn: () =>
-      getNearbyHelpers({
-        lat: profileQuery.data?.lat,
-        lng: profileQuery.data?.lng,
-        radiusKm,
-        excludeProfileId: targetProfileId,
-      }),
-    enabled: Boolean(profileQuery.data?.lat && profileQuery.data?.lng),
-    staleTime: 30_000,
-  })
-
   const favoriteIdsQuery = useQuery({
     queryKey: ['favorite-profile-ids', user?.id],
     queryFn: () => getFavoriteProfileIds(user?.id),
@@ -87,8 +73,7 @@ export function useProfilePageData(profileId, { radiusKm = 10 } = {}) {
     skillsQuery.isPending ||
     reviewsQuery.isPending ||
     verificationsQuery.isPending ||
-    availabilityQuery.isPending ||
-    nearbyHelpersQuery.isPending
+    availabilityQuery.isPending
 
   const error =
     profileQuery.error ||
@@ -96,7 +81,6 @@ export function useProfilePageData(profileId, { radiusKm = 10 } = {}) {
     reviewsQuery.error ||
     verificationsQuery.error ||
     availabilityQuery.error ||
-    nearbyHelpersQuery.error ||
     null
 
   return {
@@ -107,11 +91,9 @@ export function useProfilePageData(profileId, { radiusKm = 10 } = {}) {
     reviews: reviewsQuery.data ?? [],
     verifications: verificationsQuery.data,
     availability: availabilityQuery.data ?? [],
-    nearbyHelpers: nearbyHelpersQuery.data ?? [],
     favoriteState,
     isFavoriteLoading: favoriteIdsQuery.isPending,
     isLoading,
     error,
   }
 }
-

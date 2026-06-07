@@ -55,6 +55,7 @@ export default function HomeHeader({
 
   const modeLabel = isHelperMode ? 'Necesito ayuda' : 'Ayudar'
   const modeAction = isHelperMode ? onOpenNeedHelp : onOpenHelper
+  const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
 
   const primaryItems = [
     { label: 'Mi perfil', action: onOpenProfile },
@@ -80,14 +81,14 @@ export default function HomeHeader({
 
   return (
     <>
-      <header className={`${styles.header} ${isHelperMode ? styles.headerHelper : ''}`}>
+      <header className={`${styles.header} ${showZoneSearch ? styles.headerWithSearch : ''}`}>
         <div>
           <p className={styles.location}>{locationLabel}</p>
           <h1 className={styles.logo}>helpMe</h1>
           <p className="muted">Hola, {displayName}</p>
         </div>
 
-        {isHelperMode ? (
+        {showZoneSearch ? (
           <div className={styles.headerSearch} aria-label="Buscar zona del mapa">
             <form className={styles.headerSearchForm} onSubmit={handleZoneSearchSubmit}>
               <div className={styles.headerSearchInputWrap}>

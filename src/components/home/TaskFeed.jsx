@@ -109,7 +109,7 @@ export default function TaskFeed({
           title={isHelperMode ? 'No hay tareas con estos filtros' : 'Aun no tienes tareas solicitadas'}
           description={
             isHelperMode
-              ? 'Amplia el radio o cambia el tipo de actividad para ver mas oportunidades.'
+              ? 'Mueve el mapa o cambia el tipo de actividad para ver mas oportunidades.'
               : 'Pulsa "Nueva tarea" para pedir tu primera ayuda.'
           }
           actionLabel={!isHelperMode && onAction ? 'Nueva tarea' : null}

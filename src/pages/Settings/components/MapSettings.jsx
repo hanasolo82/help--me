@@ -1,19 +1,12 @@
-import { useState } from 'react'
 import { getLocationLabel } from '../../../features/profile/utils/profileFormatters'
 import styles from '../SettingsPage.module.css'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
-
-function sanitizeVisibleZoneDraft(value) {
-  return String(value ?? '')
-    .replace(/[<>]/g, '')
-    .slice(0, 80)
-}
+import HabitualLocationSearch from './HabitualLocationSearch'
 
 export default function MapSettings() {
   const { form, profile, setField } = useSettings()
-  const [zoneEditing, setZoneEditing] = useState(false)
-  const visibleZoneLabel = form.visibleZoneName || getLocationLabel(profile)
+  const visibleZoneLabel = form.habitualLocationLabel || form.visibleZoneName || getLocationLabel(profile)
 
   return (
     <SettingsCard
@@ -27,74 +20,14 @@ export default function MapSettings() {
           <div className={styles.mapZoneCopy}>
             <span>Zona en la que apareces visible</span>
             <strong>{visibleZoneLabel}</strong>
+            <p>La mostraremos de forma aproximada cuando tu disponibilidad esté activa.</p>
           </div>
-
-          <button
-            type="button"
-            className={`${styles.settingsCompactAction} ${styles.settingsCompactActionWide}`}
-            onClick={() => setZoneEditing((current) => !current)}
-          >
-            Cambiar zona
-          </button>
-        </div>
-
-        {zoneEditing ? (
-          <input
-            className={styles.mapZoneInput}
-            value={form.visibleZoneName}
-            onChange={(event) => setField('visibleZoneName', sanitizeVisibleZoneDraft(event.target.value))}
-            placeholder="Madrid centro"
-            aria-label="Zona visible"
-          />
-        ) : null}
-
-        <label className={styles.mapZoneRow}>
-          <div className={styles.mapZoneCopy}>
-            <span>Radio de búsqueda</span>
-            <strong>{Number(form.searchRadiusKm || 10)} km</strong>
-          </div>
-          <input
-            className={styles.mapZoneInput}
-            type="number"
-            min={1}
-            max={100}
-            step={1}
-            value={form.searchRadiusKm}
-            onChange={(event) => setField('searchRadiusKm', event.target.value)}
-            aria-label="Radio de búsqueda en kilómetros"
-          />
-        </label>
-
-        <div className={styles.mapSwitchRow}>
-          <div className={styles.mapToggleCopy}>
-            <strong>Usar radio de búsqueda</strong>
-            <p>
-              {form.searchRadiusEnabled
-                ? 'Limita los resultados a una distancia cercana desde tu posición.'
-                : 'Se mostrarán resultados de toda el área visible del mapa.'}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className={
-              form.searchRadiusEnabled
-                ? `${styles.settingsSwitch} ${styles.settingsSwitchOn} ${styles.settingsSwitchInline}`
-                : `${styles.settingsSwitch} ${styles.settingsSwitchInline}`
-            }
-            onClick={() => setField('searchRadiusEnabled', !form.searchRadiusEnabled)}
-            role="switch"
-            aria-checked={form.searchRadiusEnabled}
-            aria-label="Usar radio de búsqueda"
-          >
-            <span className={styles.settingsSwitchThumb} aria-hidden="true" />
-          </button>
         </div>
 
         <div className={styles.mapSwitchRow}>
           <div className={styles.mapToggleCopy}>
             <strong>Mostrar ubicación aproximada</strong>
-            <p>Mostraremos solo tu zona general, no tu punto exacto.</p>
+            <p>Si lo desactivas, no aparecerás en el mapa público de helpers.</p>
           </div>
 
           <button
@@ -112,6 +45,8 @@ export default function MapSettings() {
             <span className={styles.settingsSwitchThumb} aria-hidden="true" />
           </button>
         </div>
+
+        <HabitualLocationSearch form={form} setField={setField} />
       </div>
     </SettingsCard>
   )

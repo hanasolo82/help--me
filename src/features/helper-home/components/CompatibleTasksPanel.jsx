@@ -5,8 +5,8 @@ export default function CompatibleTasksPanel(props) {
     <TaskListPanel
       {...props}
       emptyTitle="No hay solicitudes compatibles ahora."
-      emptyDescription="Prueba a ampliar tu radio, añadir disponibilidad o revisar tus habilidades."
-      emptyActionLabel={props.onExpandRadius ? 'Ampliar radio' : null}
+      emptyDescription="Mueve el mapa, añade disponibilidad o revisa tus habilidades."
+      emptyActionLabel={null}
       emptyTone="warning"
     />
   )

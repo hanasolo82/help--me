@@ -13,7 +13,6 @@ export default function OfferHelpMapLayout({
   location,
   userAvatarUrl,
   userInitial,
-  radiusKm,
   visibleTasks = [],
   isLoading,
   error,
@@ -22,9 +21,6 @@ export default function OfferHelpMapLayout({
   category,
   onCategoryChange,
   categories,
-  radius,
-  onRadiusChange,
-  radiusOptions = [],
   title = 'Solicitudes abiertas cerca de ti',
   lead = 'Selecciona una solicitud, revisa el detalle y contacta solo si sigue abierta.',
 }) {
@@ -58,16 +54,11 @@ export default function OfferHelpMapLayout({
   }, [location, profile?.city, profile?.lat, profile?.lng, profile?.neighborhood])
 
   const taskCount = visibleTasks?.length || 0
-  const nextRadiusOption = useMemo(
-    () => radiusOptions.find((option) => option > radius) || radiusOptions[radiusOptions.length - 1] || radius,
-    [radius, radiusOptions],
-  )
   const viewportTasks = visibleTasks || []
   const markerLegend = useMemo(
     () => [
       { label: 'Tu ubicación', tone: 'me' },
       { label: 'Solicitudes abiertas', tone: 'openTask' },
-      { label: 'Radio de búsqueda', tone: 'radius' },
     ],
     [],
   )
@@ -120,9 +111,6 @@ export default function OfferHelpMapLayout({
         category={category}
         onCategoryChange={onCategoryChange}
         categories={categories}
-        radius={radius}
-        onRadiusChange={onRadiusChange}
-        radiusOptions={radiusOptions}
         taskCount={taskCount}
         visibleCount={viewportTasks.length}
         eyebrow="Disponible para ayudar"
@@ -156,9 +144,7 @@ export default function OfferHelpMapLayout({
                   className={
                     item.tone === 'me'
                       ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
-                      : item.tone === 'radius'
-                        ? `${styles.legendSwatch} ${styles.legendSwatchRadius}`
-                          : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
+                      : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
                   }
                 />
                 {item.label}
@@ -170,7 +156,6 @@ export default function OfferHelpMapLayout({
             <TaskMap
               tasks={(visibleTasks || []).map((item) => item.task)}
               userLocation={taskMapLocation}
-              radiusKm={radiusKm}
               distances={distancesById}
               userAvatarUrl={userAvatarUrl}
               userInitial={userInitial}
@@ -194,7 +179,6 @@ export default function OfferHelpMapLayout({
             loading={isLoading}
             error={error}
             locationLabel={location?.label || profile?.neighborhood || profile?.city || 'Tu zona'}
-            onExpandRadius={() => onRadiusChange(nextRadiusOption)}
           />
         </div>
       </div>

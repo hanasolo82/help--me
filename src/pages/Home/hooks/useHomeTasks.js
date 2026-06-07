@@ -1,12 +1,10 @@
 import { useTasks } from '../../../hooks/useTasks'
 
-export function useHomeTasks({ profile, mode, category, radius, radiusEnabled, location }) {
+export function useHomeTasks({ profile, mode, category, location }) {
   const tasksQuery = useTasks({
     profile,
     mode,
     category,
-    radius,
-    radiusEnabled,
     location,
   })
 

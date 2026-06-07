@@ -4,7 +4,6 @@ import { createOrGetDirectConversation } from '../../../services/chatService'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
-import RadiusFilter from '../../../components/home/RadiusFilter'
 import { getHelperStatusCopy, getLocationLabel } from '../../profile/utils/profileFormatters'
 import styles from '../styles/helperHome.module.css'
 
@@ -46,13 +45,31 @@ function buildCenter(location, profile) {
   }
 }
 
-function getCompatibilityScore(task, profile, distanceKm, radiusKm) {
+function isWithinBounds(task, bounds) {
+  if (!bounds) return true
+
+  const lat = Number(task?.lat)
+  const lng = Number(task?.lng)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return false
+  }
+
+  return (
+    lat <= bounds.north &&
+    lat >= bounds.south &&
+    lng <= bounds.east &&
+    lng >= bounds.west
+  )
+}
+
+function getCompatibilityScore(task, profile, distanceKm) {
   if (!task) return 0
 
   const distanceValue = Number(distanceKm)
-  const safeRadius = Number.isFinite(Number(radiusKm)) && Number(radiusKm) > 0 ? Number(radiusKm) : 10
+  const distanceScale = 50
   const distanceScore = Number.isFinite(distanceValue)
-    ? clamp(Math.round(44 - (distanceValue / safeRadius) * 44), 0, 44)
+    ? clamp(Math.round(44 - (distanceValue / distanceScale) * 44), 0, 44)
     : 16
 
   const freshnessDate = new Date(task.published_at || task.created_at || Date.now())
@@ -64,7 +81,7 @@ function getCompatibilityScore(task, profile, distanceKm, radiusKm) {
   return clamp(distanceScore + freshnessScore + priceScore + activeScore, 0, 100)
 }
 
-function buildMapEntries(entries = [], currentUserId, profile, radiusKm) {
+function buildMapEntries(entries = [], currentUserId, profile) {
   return entries
     .map((entry) => {
       const task = entry?.task || entry
@@ -72,7 +89,7 @@ function buildMapEntries(entries = [], currentUserId, profile, radiusKm) {
 
       const distanceValue = Number(entry?.distance ?? entry?.distance_km ?? null)
       const distance = Number.isFinite(distanceValue) ? distanceValue : null
-      const compatibilityScore = Number(entry?.compatibilityScore ?? getCompatibilityScore(task, profile, distance, radiusKm))
+      const compatibilityScore = Number(entry?.compatibilityScore ?? getCompatibilityScore(task, profile, distance))
 
       return {
         task,
@@ -108,18 +125,18 @@ function buildMapEntries(entries = [], currentUserId, profile, radiusKm) {
 export default function HelperHome({ profile, helperHomeProps = {} }) {
   const navigate = useNavigate()
   const [selectedTaskId, setSelectedTaskId] = useState(null)
+  const [mapBounds, setMapBounds] = useState(null)
 
   const helperStatusCopy = getHelperStatusCopy(profile)
   const center = buildCenter(helperHomeProps.mapLocation, profile)
-  const radiusKm = Number.isFinite(Number(helperHomeProps.radiusKm))
-    ? Number(helperHomeProps.radiusKm)
-    : Number.isFinite(Number(helperHomeProps.radius))
-      ? Number(helperHomeProps.radius)
-      : Number(profile?.search_radius_km) || 10
+  const allMapEntries = useMemo(
+    () => buildMapEntries(helperHomeProps.visibleTasks || [], helperHomeProps.currentUserId, profile),
+    [helperHomeProps.currentUserId, helperHomeProps.visibleTasks, profile],
+  )
 
   const mapEntries = useMemo(
-    () => buildMapEntries(helperHomeProps.visibleTasks || [], helperHomeProps.currentUserId, profile, radiusKm),
-    [helperHomeProps.currentUserId, helperHomeProps.visibleTasks, profile, radiusKm],
+    () => allMapEntries.filter((entry) => isWithinBounds(entry.task, mapBounds)),
+    [allMapEntries, mapBounds],
   )
 
   const opportunityDistances = useMemo(
@@ -155,14 +172,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
       : helperHomeProps.locationSource === 'search'
         ? 'search'
         : 'profile'
-  const hasCurrentLocation = Boolean(helperHomeProps.currentLocation)
-  const hasProfileLocation = Boolean(helperHomeProps.profileLocation)
-  const locationSourceLabel =
-    locationSource === 'current'
-      ? 'Ubicación actual'
-      : locationSource === 'search'
-        ? 'Zona buscada'
-        : 'Zona guardada'
   const shouldFitTasksOnLoad = locationSource !== 'search'
 
   async function handleContact(task) {
@@ -180,15 +189,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
 
   function handleOpenTask(task) {
     navigate(`/task/${task.id}`)
-  }
-
-  function handleOpenSettings() {
-    if (helperHomeProps.onOpenSettings) {
-      helperHomeProps.onOpenSettings()
-      return
-    }
-
-    navigate('/settings')
   }
 
   const selectedTaskDetails = selectedTask
@@ -219,14 +219,13 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
           <TaskMap
             tasks={mapTasks}
             userLocation={center}
-            radiusKm={radiusKm}
             distances={opportunityDistances}
             showUserWaypoint={false}
-            showRadiusCircle={false}
             recenterOnCenter
             centerSource={locationSource}
             fitTasksOnLoad={shouldFitTasksOnLoad}
             fitTasksKey={locationSource}
+            onViewportChange={setMapBounds}
             onTaskSelect={(taskId) => {
               const nextTask = mapEntries.find((entry) => entry.task.id === taskId)
               if (nextTask) {
@@ -242,67 +241,22 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
               <div>
                 <p className="eyebrow">Buscar tareas</p>
                 <h3>Solicitudes publicadas</h3>
-                <p className="muted">El mapa se mantiene fijo; ajusta filtros y revisa el detalle aquí.</p>
+                <p className="muted">El mapa se mantiene fijo; filtra por actividad y revisa el detalle aquí.</p>
               </div>
             </div>
 
             <div className={styles.filtersBar}>
-              <div className={styles.locationModePanel} aria-label="Centro de búsqueda">
-                <div>
-                  <span>Centro operativo</span>
-                  <strong>{center.label || locationSourceLabel}</strong>
-                  <p>
-                    {locationSource === 'current'
-                      ? hasCurrentLocation
-                        ? 'Usando tu ubicación actual para ordenar y filtrar.'
-                        : 'Solicitando tu ubicación actual; mientras tanto usamos tu zona guardada.'
-                      : locationSource === 'search'
-                        ? 'Usando la zona buscada para centrar el mapa y filtrar tareas.'
-                      : hasProfileLocation
-                        ? 'Usando la zona guardada en ajustes.'
-                        : 'No hay zona guardada todavía; completa ubicación en ajustes.'}
-                  </p>
-                </div>
-
-                <div className={styles.locationModeActions}>
-                  <button
-                    type="button"
-                    className={locationSource === 'current' ? styles.locationModeButtonActive : styles.locationModeButton}
-                    onClick={helperHomeProps.onUseCurrentLocation}
-                    aria-pressed={locationSource === 'current'}
-                  >
-                    Usar ubicación actual
-                  </button>
-                  <button
-                    type="button"
-                    className={locationSource === 'profile' ? styles.locationModeButtonActive : styles.locationModeButton}
-                    onClick={helperHomeProps.onUseProfileLocation}
-                    aria-pressed={locationSource === 'profile'}
-                  >
-                    Usar zona guardada
-                  </button>
-                  <button type="button" className={styles.locationModeLink} onClick={handleOpenSettings}>
-                    Cambiar zona
-                  </button>
-                </div>
-              </div>
-
               <div className={styles.filtersInner}>
                 <CategoryFilter
                   category={helperHomeProps.category}
                   onChange={helperHomeProps.onCategoryChange}
                   options={helperHomeProps.categories || []}
                 />
-                <RadiusFilter
-                  radius={helperHomeProps.radius}
-                  onChange={helperHomeProps.onRadiusChange}
-                  options={helperHomeProps.radiusOptions || []}
-                />
               </div>
 
               <div className={styles.filtersCount}>
                 <strong>{openTaskCount} solicitudes</strong>
-                <span>{compatibilityAverage}% match medio</span>
+                <span>{allMapEntries.length} con estos filtros · {compatibilityAverage}% match medio</span>
               </div>
             </div>
           </section>
@@ -346,8 +300,8 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
             ) : (
               <div className={styles.empty}>
                 <strong>No hay solicitudes visibles todavía</strong>
-                <p>Cuando una solicitud abierta entre en tu zona operativa, aparecerá en el mapa y en este panel.</p>
-                <span className={styles.emptyNote}>Centro actual: {center.label}</span>
+                <p>Cuando una solicitud abierta entre en la parte visible del mapa, aparecerá aquí.</p>
+                <span className={styles.emptyNote}>Mueve el mapa o busca otra zona desde el header.</span>
               </div>
             )}
           </section>

@@ -42,10 +42,9 @@ export default function TaskListPanel({
   loading = false,
   error = '',
   locationLabel = 'Tu zona',
-  onExpandRadius,
-  emptyTitle = 'No hay solicitudes disponibles cerca de ti.',
-  emptyDescription = 'Prueba a ampliar el radio o revisar tus habilidades.',
-  emptyActionLabel = onExpandRadius ? 'Ampliar radio' : null,
+  emptyTitle = 'No hay solicitudes disponibles en esta parte del mapa.',
+  emptyDescription = 'Mueve el mapa o revisa el tipo de actividad para encontrar más solicitudes.',
+  emptyActionLabel = null,
   emptyTone = 'warning',
 }) {
   return (
@@ -65,7 +64,7 @@ export default function TaskListPanel({
             title={emptyTitle}
             description={emptyDescription}
             actionLabel={emptyActionLabel}
-            onAction={onExpandRadius}
+            onAction={null}
             tone={emptyTone}
           />
         ) : null}

@@ -69,7 +69,6 @@ function buildInitialDraft(user, profile, routeState, savedProgress) {
     lat: profile?.lat ?? savedDraft.lat ?? null,
     lng: profile?.lng ?? savedDraft.lng ?? null,
     helperEnabled: profile?.helper_enabled ?? savedDraft.helperEnabled ?? false,
-    searchRadiusKm: profile?.search_radius_km ?? savedDraft.searchRadiusKm ?? 10,
     responseTimeMinutes: profile?.response_time_minutes ?? savedDraft.responseTimeMinutes ?? '',
     hourlyRate: profile?.hourly_rate ?? savedDraft.hourlyRate ?? '',
     availabilityEnabled: profile?.availability_enabled ?? savedDraft.availabilityEnabled ?? true,

@@ -1,7 +1,6 @@
 import L from 'leaflet'
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { Circle, MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
-import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
+import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import { toFiniteNumber, buildUserIcon } from '../../../../shared/utils/mapHelpers'
 import styles from './TaskMap.module.css'
@@ -125,6 +124,40 @@ function formatCreatorName(task) {
 }
 
 function MapViewportReporter({ onViewportChange }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!onViewportChange) return undefined
+
+    let cancelled = false
+    let frameId = null
+
+    function reportBounds() {
+      if (cancelled) return
+
+      const bounds = map.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    }
+
+    map.whenReady(() => {
+      queueMicrotask(reportBounds)
+      frameId = window.requestAnimationFrame(reportBounds)
+    })
+
+    return () => {
+      cancelled = true
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [map, onViewportChange])
+
   useMapEvents({
     moveend(event) {
       if (!onViewportChange) return
@@ -169,14 +202,12 @@ function MapViewportReporter({ onViewportChange }) {
 export default function TaskMap({
   tasks,
   userLocation,
-  radiusKm,
   onTaskSelect,
   distances,
   userAvatarUrl,
   userInitial,
   onViewportChange,
   showUserWaypoint = true,
-  showRadiusCircle = true,
   recenterOnCenter = true,
   centerSource = 'profile',
   recenterZoom = 14,
@@ -194,7 +225,6 @@ export default function TaskMap({
       fallback: styles.userMarker,
     },
   })
-  const safeRadiusKm = Number.isFinite(Number(radiusKm)) ? Math.max(0, Number(radiusKm)) : 10
   const safeTasks = tasks
     .map((task) => ({
       ...task,
@@ -212,14 +242,6 @@ export default function TaskMap({
         {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} /> : null}
         <MapViewportReporter onViewportChange={onViewportChange} />
         <MapTileLayer />
-
-        {showRadiusCircle ? (
-          <Circle
-            center={center}
-            radius={safeRadiusKm * 1000}
-            pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
-          />
-        ) : null}
 
         {showUserWaypoint ? (
           <Marker position={center} icon={userIcon}>

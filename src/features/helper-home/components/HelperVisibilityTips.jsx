@@ -20,10 +20,10 @@ function collectTips(profile, taskCount) {
     })
   }
 
-  if (!Number.isFinite(Number(profile?.search_radius_km)) || Number(profile?.search_radius_km) <= 3) {
+  if (!profile?.lat || !profile?.lng) {
     tips.push({
-      title: 'Amplía tu radio',
-      body: 'Un radio algo más amplio puede mostrarte más oportunidades sin perder relevancia.',
+      title: 'Completa tu ubicación habitual',
+      body: 'Una zona habitual ayuda a que requester y tareas se organicen sobre el mapa visible.',
     })
   }
 

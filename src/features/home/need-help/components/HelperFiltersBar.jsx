@@ -1,15 +1,10 @@
 import SkillFilter from '../../../skills/components/SkillFilter'
 import styles from './NeedHelpMapLayout.module.css'
 
-const radiusOptions = [1, 3, 5, 10, 20]
-
 export default function HelperFiltersBar({
   skillFilters = [],
   selectedSkillId = 'all',
   onSkillChange,
-  radiusKm = 10,
-  radiusEnabled = true,
-  onRadiusChange,
   onlyAvailable = false,
   onOnlyAvailableChange,
 }) {
@@ -25,21 +20,6 @@ export default function HelperFiltersBar({
       <div className={styles.filtersBlock}>
         <SkillFilter skills={skillFilters} activeSkillId={selectedSkillId} onChange={onSkillChange} />
       </div>
-
-      <label className={styles.filterField}>
-        <span>Radio de búsqueda</span>
-        {radiusEnabled ? (
-          <select value={radiusKm} onChange={(event) => onRadiusChange?.(Number(event.target.value))}>
-            {radiusOptions.map((option) => (
-              <option key={option} value={option}>
-                {option} km
-              </option>
-            ))}
-          </select>
-        ) : (
-          <strong>Sin límite</strong>
-        )}
-      </label>
 
       <div className={styles.filterToggleRow}>
         <span>Disponibilidad</span>

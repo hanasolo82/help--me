@@ -7,7 +7,7 @@ export default function NearbyHelpersFeed({ helpers = [], onHelperSelect }) {
     return (
       <div className={styles.emptyState}>
         <strong>No encontramos helpers cercanos.</strong>
-        <p className="muted">Prueba con otro radio o completa la ubicación del perfil.</p>
+        <p className="muted">Mueve el mapa o completa la ubicación del perfil.</p>
       </div>
     )
   }

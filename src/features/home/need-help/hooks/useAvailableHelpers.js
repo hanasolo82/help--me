@@ -49,8 +49,6 @@ function buildSkillFilters(helpers = []) {
 export function useAvailableHelpers({
   profile,
   location,
-  radiusKm = 10,
-  radiusEnabled = true,
   mapBounds = null,
   selectedSkillId = 'all',
   onlyAvailable = false,
@@ -62,7 +60,8 @@ export function useAvailableHelpers({
       Number.isFinite(Number(mapBounds?.east)) &&
       Number.isFinite(Number(mapBounds?.west)),
   )
-  const canSearch = radiusEnabled ? Boolean(center.hasValue) : hasMapBounds
+  const skillFilter = selectedSkillId && selectedSkillId !== 'all' ? selectedSkillId : null
+  const canSearch = hasMapBounds || Boolean(skillFilter)
   const excludeProfileId = profile?.id || null
 
   const query = useQuery({
@@ -71,22 +70,20 @@ export function useAvailableHelpers({
       excludeProfileId,
       center.lat,
       center.lng,
-      radiusEnabled,
-      radiusEnabled ? radiusKm : null,
-      radiusEnabled ? null : mapBounds?.north ?? null,
-      radiusEnabled ? null : mapBounds?.south ?? null,
-      radiusEnabled ? null : mapBounds?.east ?? null,
-      radiusEnabled ? null : mapBounds?.west ?? null,
+      mapBounds?.north ?? null,
+      mapBounds?.south ?? null,
+      mapBounds?.east ?? null,
+      mapBounds?.west ?? null,
+      skillFilter,
     ],
     queryFn: () =>
       getNearbyHelpers({
         lat: center.lat,
         lng: center.lng,
-        radiusKm,
-        radiusEnabled,
-        bounds: mapBounds,
+        bounds: hasMapBounds ? mapBounds : null,
+        category: skillFilter,
         excludeProfileId,
-        limit: 16,
+        limit: 32,
       }),
     enabled: canSearch,
     staleTime: 30_000,
@@ -102,16 +99,9 @@ export function useAvailableHelpers({
         return false
       }
 
-      if (selectedSkillId === 'all') {
-        return true
-      }
-
-      return (helper.skills || []).some((skill) => {
-        const skillId = skill?.category || skill?.name || skill?.id
-        return skillId === selectedSkillId
-      })
+      return true
     })
-  }, [onlyAvailable, query.data, selectedSkillId])
+  }, [onlyAvailable, query.data])
 
   return {
     center,

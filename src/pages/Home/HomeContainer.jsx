@@ -44,17 +44,13 @@ export default function HomeContainer() {
   const {
     mode,
     category,
-    radius,
     setMode,
     setCategory,
-    setRadius,
     isHelperMode,
     categories,
-    radiusOptions,
   } = useHomeFilters(profile)
   const {
     location,
-    currentLocation,
     profileLocation,
     status,
     error,
@@ -68,6 +64,7 @@ export default function HomeContainer() {
     source: 'profile',
     location: null,
   })
+  const [requesterSearchLocation, setRequesterSearchLocation] = useState(null)
   const [helperZoneSearch, setHelperZoneSearch] = useState('')
   const [helperZoneSearchStatus, setHelperZoneSearchStatus] = useState('idle')
   const [helperZoneSearchMessage, setHelperZoneSearchMessage] = useState('')
@@ -76,14 +73,10 @@ export default function HomeContainer() {
       return helperLocationPreference.location
     }
 
-    if (helperLocationPreference.source === 'current') {
-      return currentLocation || profileLocation || null
-    }
-
     return profileLocation || null
-  }, [currentLocation, helperLocationPreference, profileLocation])
+  }, [helperLocationPreference, profileLocation])
   const helperMapLocation = helperSearchLocation
-  const activeLocation = isHelperMode ? helperSearchLocation || location : location
+  const activeLocation = isHelperMode ? helperSearchLocation || location : requesterSearchLocation || location
   const [themePreference, setThemePreference] = useState(() =>
     resolveThemePreference({
       isPrivateRoute: true,
@@ -100,8 +93,6 @@ export default function HomeContainer() {
     profile,
     mode,
     category,
-    radius,
-    radiusEnabled: profile?.search_radius_enabled === true,
     location: activeLocation,
   })
   const {
@@ -202,19 +193,6 @@ export default function HomeContainer() {
     setMyRequestsDrawerOpen(false)
   }, [])
 
-  const handleUseCurrentHelperLocation = useCallback(() => {
-    setHelperLocationPreference({ source: 'current', location: null })
-    setHelperZoneSearchStatus('idle')
-    setHelperZoneSearchMessage('')
-    requestLocation()
-  }, [requestLocation])
-
-  const handleUseProfileHelperLocation = useCallback(() => {
-    setHelperLocationPreference({ source: 'profile', location: null })
-    setHelperZoneSearchStatus('idle')
-    setHelperZoneSearchMessage('')
-  }, [])
-
   const handleZoneSearchChange = useCallback((value) => {
     setHelperZoneSearch(value)
 
@@ -228,7 +206,11 @@ export default function HomeContainer() {
     const query = helperZoneSearch.trim()
 
     if (!query) {
-      setHelperLocationPreference({ source: 'profile', location: null })
+      if (isHelperMode) {
+        setHelperLocationPreference({ source: 'profile', location: null })
+      } else {
+        setRequesterSearchLocation(null)
+      }
       setHelperZoneSearchStatus('idle')
       setHelperZoneSearchMessage('')
       return
@@ -242,31 +224,35 @@ export default function HomeContainer() {
       const match = results[0]
 
       if (!match) {
-        setHelperLocationPreference({ source: 'profile', location: null })
         setHelperZoneSearchStatus('error')
         setHelperZoneSearchMessage('No se encontró esa zona')
         return
       }
 
       const label = match.formattedAddress || match.city || query
-      setHelperLocationPreference({
+      const nextLocation = {
+        lat: match.lat,
+        lng: match.lng,
+        label,
         source: 'search',
-        location: {
-          lat: match.lat,
-          lng: match.lng,
-          label,
+      }
+
+      if (isHelperMode) {
+        setHelperLocationPreference({
           source: 'search',
-        },
-      })
+          location: nextLocation,
+        })
+      } else {
+        setRequesterSearchLocation(nextLocation)
+      }
       setHelperZoneSearchStatus('success')
       setHelperZoneSearchMessage(`Mostrando ${label}`)
     } catch (error) {
       console.error('[HomeContainer] zone search failed', error)
-      setHelperLocationPreference({ source: 'profile', location: null })
       setHelperZoneSearchStatus('error')
       setHelperZoneSearchMessage(error?.message || 'No se encontró esa zona')
     }
-  }, [helperZoneSearch])
+  }, [helperZoneSearch, isHelperMode])
 
   useEffect(() => {
     const nextTheme = resolveThemePreference({
@@ -325,11 +311,11 @@ export default function HomeContainer() {
   }, [routeLocation.state?.resumeHelperOnboarding])
 
   useEffect(() => {
-    if (mode !== 'need' && helperLocationPreference.source !== 'current') return
+    if (mode !== 'need') return
     if (location || status !== 'idle') return
 
     requestLocation()
-  }, [helperLocationPreference.source, location, mode, requestLocation, status])
+  }, [location, mode, requestLocation, status])
 
   return (
     <>
@@ -360,11 +346,8 @@ export default function HomeContainer() {
         onZoneSearchSubmit={handleZoneSearchSubmit}
         category={category}
         onCategoryChange={setCategory}
-        radius={radius}
-        onRadiusChange={setRadius}
         isHelperMode={isHelperMode}
         categories={categories}
-        radiusOptions={radiusOptions}
         visibleTasks={visibleTasks}
         isTasksLoading={isTasksLoading}
         tasksError={tasksError}
@@ -383,10 +366,6 @@ export default function HomeContainer() {
         onRequestNeedLocation={requestLocation}
         helperLocationSource={helperLocationPreference.source}
         helperMapLocation={helperMapLocation}
-        currentLocation={currentLocation}
-        profileLocation={profileLocation}
-        onUseCurrentHelperLocation={handleUseCurrentHelperLocation}
-        onUseProfileHelperLocation={handleUseProfileHelperLocation}
         userAvatarUrl={userAvatarUrl}
         chats={chats}
         isChatsLoading={isChatsLoading}

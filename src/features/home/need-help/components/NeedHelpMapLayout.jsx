@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Circle, MapContainer, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, useMap, useMapEvents } from 'react-leaflet'
 import { useAvailableHelpers } from '../hooks/useAvailableHelpers'
 import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
 import HelperMapMarker from './HelperMapMarker'
 import RequesterTaskMarker from './RequesterTaskMarker'
-import { MAP_FILL, MAP_PRIMARY } from '../../../../styles/mapColors'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -21,6 +20,40 @@ function RecenterMap({ center }) {
 }
 
 function ViewportReporter({ onViewportChange }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!onViewportChange) return undefined
+
+    let cancelled = false
+    let frameId = null
+
+    function reportBounds() {
+      if (cancelled) return
+
+      const bounds = map.getBounds()
+      onViewportChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      })
+    }
+
+    map.whenReady(() => {
+      queueMicrotask(reportBounds)
+      frameId = window.requestAnimationFrame(reportBounds)
+    })
+
+    return () => {
+      cancelled = true
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [map, onViewportChange])
+
   useMapEvents({
     load(event) {
       if (!onViewportChange) return
@@ -72,6 +105,29 @@ function hasMapPosition(entry) {
   return Number.isFinite(Number(entry?.lat)) && Number.isFinite(Number(entry?.lng))
 }
 
+function isInsideBounds(entry, bounds) {
+  if (!bounds || !hasMapPosition(entry)) return false
+
+  const lat = Number(entry.lat)
+  const lng = Number(entry.lng)
+
+  return (
+    lat <= bounds.north &&
+    lat >= bounds.south &&
+    lng <= bounds.east &&
+    lng >= bounds.west
+  )
+}
+
+function matchesSkill(helper, selectedSkillId) {
+  if (!selectedSkillId || selectedSkillId === 'all') return false
+
+  return (helper?.skills || []).some((skill) => {
+    const skillId = skill?.category || skill?.name || skill?.id
+    return skillId === selectedSkillId
+  })
+}
+
 export default function NeedHelpMapLayout({
   profile,
   location,
@@ -89,27 +145,9 @@ export default function NeedHelpMapLayout({
 }) {
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
-  const [radiusKm, setRadiusKm] = useState(Number(profile?.search_radius_km ?? 10) || 10)
   const [selectedSkillId, setSelectedSkillId] = useState('all')
   const [onlyAvailable, setOnlyAvailable] = useState(false)
   const [mapBounds, setMapBounds] = useState(null)
-  const searchRadiusEnabled = profile?.search_radius_enabled === true
-
-  useEffect(() => {
-    const nextRadiusKm = Number(profile?.search_radius_km ?? 10)
-    if (Number.isFinite(nextRadiusKm)) {
-      let cancelled = false
-
-      queueMicrotask(() => {
-        if (cancelled) return
-        setRadiusKm(nextRadiusKm || 10)
-      })
-
-      return () => {
-        cancelled = true
-      }
-    }
-  }, [profile?.search_radius_km])
 
   const {
     center,
@@ -121,8 +159,6 @@ export default function NeedHelpMapLayout({
   } = useAvailableHelpers({
     profile,
     location,
-    radiusKm,
-    radiusEnabled: searchRadiusEnabled,
     mapBounds,
     selectedSkillId,
     onlyAvailable,
@@ -152,39 +188,14 @@ export default function NeedHelpMapLayout({
     [focusRequesterTaskId, requesterTasks, searchCenter, selectedHelper],
   )
   const viewportHelpers = useMemo(() => {
-    if (!mapBounds) {
-      return helpers
-    }
-
-    const helpersWithPositions = helpers.filter(hasMapPosition)
-
-    if (helpersWithPositions.length === 0) {
-      return helpers
-    }
-
-    return helpersWithPositions.filter((helper) => {
-      const lat = Number(helper?.lat)
-      const lng = Number(helper?.lng)
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        return false
-      }
-
-      return (
-        lat <= mapBounds.north &&
-        lat >= mapBounds.south &&
-        lng <= mapBounds.east &&
-        lng >= mapBounds.west
-      )
-    })
-  }, [helpers, mapBounds])
+    return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesSkill(helper, selectedSkillId))
+  }, [helpers, mapBounds, selectedSkillId])
 
   const markerLegend = useMemo(
     () => [
       { label: 'Tu ubicación', tone: 'me' },
       { label: 'Helpers disponibles', tone: 'helper' },
       { label: 'Mis solicitudes', tone: 'task' },
-      { label: 'Radio de búsqueda', tone: 'radius' },
     ],
     [],
   )
@@ -234,9 +245,7 @@ export default function NeedHelpMapLayout({
                         ? `${styles.legendSwatch} ${styles.legendSwatchHelper}`
                       : item.tone === 'task'
                         ? `${styles.legendSwatch} ${styles.legendSwatchTask}`
-                        : item.tone === 'radius'
-                          ? `${styles.legendSwatch} ${styles.legendSwatchRadius}`
-                          : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
+                      : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
                   }
                 />
                 {item.label}
@@ -249,14 +258,6 @@ export default function NeedHelpMapLayout({
               <RecenterMap center={focusCenter} />
               <ViewportReporter onViewportChange={setMapBounds} />
               <MapTileLayer />
-
-              {searchRadiusEnabled && hasLocation && Number.isFinite(Number(radiusKm)) && (
-                <Circle
-                  center={searchCenter}
-                  radius={radiusKm * 1000}
-                  pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.14, weight: 3 }}
-                />
-              )}
 
               {helpers.filter(hasMapPosition).map((helper) => (
                 <HelperMapMarker
@@ -306,9 +307,6 @@ export default function NeedHelpMapLayout({
             skillFilters={skillFilters}
             selectedSkillId={selectedSkillId}
             onSkillChange={setSelectedSkillId}
-            radiusKm={radiusKm}
-            radiusEnabled={searchRadiusEnabled}
-            onRadiusChange={setRadiusKm}
             onlyAvailable={onlyAvailable}
             onOnlyAvailableChange={setOnlyAvailable}
             loading={isLoading}

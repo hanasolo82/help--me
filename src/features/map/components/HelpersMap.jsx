@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
-import { Circle, MapContainer, useMap } from 'react-leaflet'
+import { MapContainer, useMap } from 'react-leaflet'
 import HelperMarker from './HelperMarker'
-import { MAP_FILL, MAP_PRIMARY } from '../../../styles/mapColors'
 import MapTileLayer from '../../../shared/ui/map/MapTileLayer'
 import { toFiniteNumber } from '../../../shared/utils/mapHelpers'
 import styles from '../../profile/styles/profileNetwork.module.css'
@@ -39,7 +38,6 @@ function buildCenter(center) {
 export default function HelpersMap({
   helpers = [],
   center = null,
-  radiusKm = 10,
   onHelperSelect,
   userLabel = 'Tu zona',
 }) {
@@ -58,19 +56,13 @@ export default function HelpersMap({
         <RecenterMap center={resolvedCenter} />
         <MapTileLayer />
 
-        <Circle
-          center={resolvedCenter}
-          radius={radiusKm * 1000}
-          pathOptions={{ color: MAP_PRIMARY, fillColor: MAP_FILL, fillOpacity: 0.16, weight: 3 }}
-        />
-
         {safeHelpers.map((helper) => (
           <HelperMarker key={helper.id} helper={helper} onSelect={onHelperSelect} />
         ))}
       </MapContainer>
       <div className={styles.highlightCard} style={{ margin: '0.75rem' }}>
         <strong>{userLabel}</strong>
-        <p className="muted">Helpers cercanos según disponibilidad, confianza y distancia aproximada.</p>
+        <p className="muted">Helpers disponibles según actividad y zona visible del mapa.</p>
       </div>
     </div>
   )

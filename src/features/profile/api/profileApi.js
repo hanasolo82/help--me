@@ -173,8 +173,6 @@ export async function getProfileAvailability(profileId) {
 export async function getNearbyHelpers({
   lat,
   lng,
-  radiusKm = 10,
-  radiusEnabled = true,
   bounds = null,
   limit = 12,
   excludeProfileId = null,
@@ -186,8 +184,7 @@ export async function getNearbyHelpers({
   const south = toNumber(bounds?.south)
   const east = toNumber(bounds?.east)
   const west = toNumber(bounds?.west)
-  const safeRadiusKm = Number.isFinite(Number(radiusKm)) && Number(radiusKm) > 0 ? Number(radiusKm) : 10
-  const shouldUseRadius = radiusEnabled !== false
+  const skillFilter = category && category !== 'all' ? String(category) : null
 
   if (centerLat === null || centerLng === null) {
     return []
@@ -196,14 +193,15 @@ export async function getNearbyHelpers({
   const { data, error } = await supabase.rpc('get_public_helpers_for_map', {
     p_center_lat: centerLat,
     p_center_lng: centerLng,
-    p_radius_km: safeRadiusKm,
-    p_radius_enabled: shouldUseRadius,
+    p_radius_km: 10,
+    p_radius_enabled: false,
     p_north: north,
     p_south: south,
     p_east: east,
     p_west: west,
-    p_limit: Math.max(limit * (shouldUseRadius ? 2 : 4), limit),
+    p_limit: Math.max(limit * 4, limit),
     p_exclude_profile_id: excludeProfileId,
+    p_skill_filter: skillFilter,
   })
 
   if (error) {
@@ -254,10 +252,6 @@ export async function getNearbyHelpers({
       ...helper,
       skills: (skillRowsByProfileId.get(helper.id) ?? []).map((entry) => entry.skill).filter(Boolean).slice(0, 3),
     }))
-    .filter((helper) =>
-      !category ||
-      (helper.skills ?? []).some((skill) => skill?.category === category || skill?.name === category),
-    )
     .slice(0, limit)
 
   return helpers.map((helper) => ({

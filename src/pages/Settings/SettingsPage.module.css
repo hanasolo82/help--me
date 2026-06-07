@@ -814,6 +814,7 @@
   line-height: 1.35;
 }
 
+.mapZoneCopy p,
 .mapToggleCopy p {
   color: var(--color-text-muted);
   line-height: 1.45;
@@ -827,6 +828,90 @@
   color: var(--color-text);
   padding: 0.9rem 0.95rem;
   box-shadow: var(--shadow-sm);
+}
+
+.habitualLocationSearch {
+  position: relative;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mapSearchField {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mapSearchField span {
+  color: var(--color-text);
+  font-weight: 900;
+}
+
+.mapSearchField input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+  padding: 0.9rem 0.95rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.mapSearchResults {
+  position: absolute;
+  top: calc(100% - 1.15rem);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 0.4rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.mapSearchResult {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 0.25rem);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+}
+
+.mapSearchResult:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+}
+
+.mapSearchResult strong {
+  font-weight: 900;
+}
+
+.mapSearchResult span,
+.mapSearchStatus {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.mapSearchSelected {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.mapSearchError {
+  color: #b42318;
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 @media (max-width: 42rem) {

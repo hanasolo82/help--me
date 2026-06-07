@@ -15,7 +15,6 @@ export async function saveOnboardingBasics(input, profile) {
       country: input.country,
       lat: input.lat,
       lng: input.lng,
-      searchRadiusKm: input.searchRadiusKm,
       responseTimeMinutes: input.responseTimeMinutes,
       hourlyRate: input.hourlyRate,
       allowExactLocationUpdate: true,

@@ -60,7 +60,6 @@ export default function OnboardingBasicsStep() {
       lng: draft.lng,
       helperEnabled: draft.helperEnabled,
       helperStatus: draft.helperStatus,
-      searchRadiusKm: draft.searchRadiusKm,
       responseTimeMinutes: draft.responseTimeMinutes,
       hourlyRate: draft.hourlyRate,
       verifiedEmail: draft.verifiedEmail,

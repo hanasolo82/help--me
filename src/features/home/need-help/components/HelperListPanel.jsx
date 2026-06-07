@@ -13,9 +13,6 @@ export default function HelperListPanel({
   skillFilters = [],
   selectedSkillId = 'all',
   onSkillChange,
-  radiusKm = 10,
-  radiusEnabled = true,
-  onRadiusChange,
   onlyAvailable = false,
   onOnlyAvailableChange,
   loading = false,
@@ -31,23 +28,20 @@ export default function HelperListPanel({
         skillFilters={skillFilters}
         selectedSkillId={selectedSkillId}
         onSkillChange={onSkillChange}
-        radiusKm={radiusKm}
-        radiusEnabled={radiusEnabled}
-        onRadiusChange={onRadiusChange}
         onlyAvailable={onlyAvailable}
         onOnlyAvailableChange={onOnlyAvailableChange}
       />
 
       <div className={styles.panelMeta}>
         <p className="muted">{locationLabel}</p>
-        <strong>{helpers.length} helpers {radiusEnabled ? 'cerca de ti' : 'en el mapa'}</strong>
-        <span className="muted">{visibleHelpers.length} visibles en esta pantalla del mapa</span>
+        <strong>{visibleHelpers.length} helpers relevantes</strong>
+        <span className="muted">{helpers.length} encontrados por actividad o mapa visible</span>
       </div>
 
       {!hasLocation && (
         <section className={styles.locationBanner}>
-          <strong>Activa tu ubicación para ver personas cercanas.</strong>
-          <p className="muted">Usamos tu posición para ordenar helpers por proximidad aproximada.</p>
+          <strong>Activa tu ubicación para orientar el mapa.</strong>
+          <p className="muted">También puedes buscar una zona desde el header para explorar helpers disponibles.</p>
           {onRequestLocation && (
             <button type="button" className="primary-action" onClick={onRequestLocation}>
               Usar mi ubicación
