@@ -134,6 +134,8 @@ export default function NeedHelpMapLayout({
   locationStatus,
   locationError,
   onRequestLocation,
+  publishNotice = '',
+  contactError = '',
   preferredMobileView,
   onPreviewHelper,
   onPublishRequest,
@@ -146,7 +148,6 @@ export default function NeedHelpMapLayout({
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
   const [selectedSkillId, setSelectedSkillId] = useState('all')
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
   const [mapBounds, setMapBounds] = useState(null)
 
   const {
@@ -161,7 +162,6 @@ export default function NeedHelpMapLayout({
     location,
     mapBounds,
     selectedSkillId,
-    onlyAvailable,
   })
 
   const {
@@ -227,33 +227,26 @@ export default function NeedHelpMapLayout({
 
       <div className={styles.desktopGrid}>
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
-          <div className={styles.mapHeader}>
-            <div>
-              <p className="eyebrow">Necesito ayuda</p>
-              <h2>Personas disponibles</h2>
-            </div>
-          </div>
-
-          <div className={styles.mapLegend} aria-label="Leyenda del mapa">
-            {markerLegend.map((item) => (
-              <span key={item.label} className={styles.legendItem}>
-                <span
-                  className={
-                    item.tone === 'me'
-                      ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
-                      : item.tone === 'helper'
-                        ? `${styles.legendSwatch} ${styles.legendSwatchHelper}`
-                      : item.tone === 'task'
-                        ? `${styles.legendSwatch} ${styles.legendSwatchTask}`
-                      : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
-                  }
-                />
-                {item.label}
-              </span>
-            ))}
-          </div>
-
           <div className={styles.mapShell}>
+            <div className={styles.mapLegend} aria-label="Leyenda del mapa">
+              {markerLegend.map((item) => (
+                <span key={item.label} className={styles.legendItem}>
+                  <span
+                    className={
+                      item.tone === 'me'
+                        ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
+                        : item.tone === 'helper'
+                          ? `${styles.legendSwatch} ${styles.legendSwatchHelper}`
+                        : item.tone === 'task'
+                          ? `${styles.legendSwatch} ${styles.legendSwatchTask}`
+                        : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
+                    }
+                  />
+                  {item.label}
+                </span>
+              ))}
+            </div>
+
             <MapContainer center={focusCenter} zoom={13} scrollWheelZoom className={styles.map}>
               <RecenterMap center={focusCenter} />
               <ViewportReporter onViewportChange={setMapBounds} />
@@ -281,24 +274,27 @@ export default function NeedHelpMapLayout({
             </MapContainer>
           </div>
 
-          {!hasLocation && locationStatus !== 'loading' && (
-            <div className={styles.locationNotice}>
-              <strong>No hemos podido fijar tu zona de referencia.</strong>
-              <p className="muted">
-                {locationError || 'Activa la ubicación o usa tu perfil para ver personas cercanas.'}
-              </p>
-              {onRequestLocation && (
-                <button type="button" className="primary-action" onClick={onRequestLocation}>
-                  Usar mi ubicación
-                </button>
-              )}
-            </div>
-          )}
         </section>
 
         <div className={mobileView === 'map' ? `${styles.panelPane} ${styles.hiddenOnMobile}` : styles.panelPane}>
+          {publishNotice ? (
+            <section className={styles.panelNotice} data-tone="success">
+              <strong>{publishNotice}</strong>
+              <p className="muted">
+                {publishNotice === 'Solicitud publicada'
+                  ? 'Ya es visible para ayudantes cercanos.'
+                  : 'La solicitud quedó publicada y fijada en el mapa.'}
+              </p>
+            </section>
+          ) : null}
+
+          {contactError ? (
+            <p className={`${styles.panelNotice} ${styles.panelNoticeError}`} role="alert">
+              {contactError}
+            </p>
+          ) : null}
+
           <HelperListPanel
-            helpers={helpers}
             visibleHelpers={viewportHelpers}
             selectedHelperId={selectedHelperId}
             onSelectHelper={handleSelectHelper}
@@ -307,12 +303,10 @@ export default function NeedHelpMapLayout({
             skillFilters={skillFilters}
             selectedSkillId={selectedSkillId}
             onSkillChange={setSelectedSkillId}
-            onlyAvailable={onlyAvailable}
-            onOnlyAvailableChange={setOnlyAvailable}
             loading={isLoading}
             error={error}
-            locationLabel={location?.label || profile?.neighborhood || profile?.city || 'Tu zona'}
             hasLocation={hasLocation}
+            locationError={locationStatus !== 'loading' ? locationError : ''}
             onRequestLocation={onRequestLocation}
             onPublishRequest={onPublishRequest}
           />

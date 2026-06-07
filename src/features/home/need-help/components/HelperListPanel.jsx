@@ -4,7 +4,6 @@ import HomeEmptyState from '../../components/HomeEmptyState'
 import styles from './NeedHelpMapLayout.module.css'
 
 export default function HelperListPanel({
-  helpers = [],
   visibleHelpers = [],
   selectedHelperId = null,
   onSelectHelper,
@@ -13,12 +12,10 @@ export default function HelperListPanel({
   skillFilters = [],
   selectedSkillId = 'all',
   onSkillChange,
-  onlyAvailable = false,
-  onOnlyAvailableChange,
   loading = false,
   error = '',
-  locationLabel = 'Tu zona',
   hasLocation = false,
+  locationError = '',
   onRequestLocation,
   onPublishRequest,
 }) {
@@ -28,20 +25,14 @@ export default function HelperListPanel({
         skillFilters={skillFilters}
         selectedSkillId={selectedSkillId}
         onSkillChange={onSkillChange}
-        onlyAvailable={onlyAvailable}
-        onOnlyAvailableChange={onOnlyAvailableChange}
       />
-
-      <div className={styles.panelMeta}>
-        <p className="muted">{locationLabel}</p>
-        <strong>{visibleHelpers.length} helpers relevantes</strong>
-        <span className="muted">{helpers.length} encontrados por actividad o mapa visible</span>
-      </div>
 
       {!hasLocation && (
         <section className={styles.locationBanner}>
           <strong>Activa tu ubicación para orientar el mapa.</strong>
-          <p className="muted">También puedes buscar una zona desde el header para explorar helpers disponibles.</p>
+          <p className="muted">
+            {locationError || 'También puedes buscar una zona desde el header para explorar helpers disponibles.'}
+          </p>
           {onRequestLocation && (
             <button type="button" className="primary-action" onClick={onRequestLocation}>
               Usar mi ubicación

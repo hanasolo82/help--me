@@ -4,11 +4,18 @@ import RippleButton from '../../../../shared/ui/RippleButton'
 export default function RequesterHero({ value, onChange, onPublishRequest }) {
   return (
     <section className={styles.hero}>
-      <div className={styles.headerRow}>
-        <div className={styles.copy}>
-          <p className="eyebrow">Necesito ayuda</p>
-          <h2>¿Qué necesitas?</h2>
-        </div>
+      <label className={styles.promptLabel} htmlFor="requester-task-query">
+        ¿Qué necesitas?
+      </label>
+
+      <div className={styles.actionRow}>
+        <input
+          id="requester-task-query"
+          className={styles.searchInput}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          placeholder="Ej. paseo de perro, recado, ayuda técnica..."
+        />
 
         {onPublishRequest ? (
           <RippleButton type="button" variant="primary" className={styles.publishButton} onClick={onPublishRequest}>
@@ -16,15 +23,6 @@ export default function RequesterHero({ value, onChange, onPublishRequest }) {
           </RippleButton>
         ) : null}
       </div>
-
-      <label className={styles.searchField}>
-        <span className="muted">Describe en pocas palabras lo que buscas</span>
-        <input
-          value={value}
-          onChange={(event) => onChange?.(event.target.value)}
-          placeholder="Ej. paseo de perro, recado, ayuda técnica..."
-        />
-      </label>
     </section>
   )
 }

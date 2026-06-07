@@ -51,7 +51,6 @@ export function useAvailableHelpers({
   location,
   mapBounds = null,
   selectedSkillId = 'all',
-  onlyAvailable = false,
 } = {}) {
   const center = useMemo(() => resolveCenter(profile, location), [location, profile])
   const hasMapBounds = Boolean(
@@ -91,22 +90,10 @@ export function useAvailableHelpers({
 
   const skillFilters = useMemo(() => buildSkillFilters(query.data || []), [query.data])
 
-  const helpers = useMemo(() => {
-    const rawHelpers = query.data || []
-
-    return rawHelpers.filter((helper) => {
-      if (onlyAvailable && helper.availability_enabled === false) {
-        return false
-      }
-
-      return true
-    })
-  }, [onlyAvailable, query.data])
-
   return {
     center,
     hasLocation: Boolean(center.hasValue),
-    helpers,
+    helpers: query.data || [],
     skillFilters,
     isLoading: query.isLoading && !query.data,
     error: query.error?.message || '',

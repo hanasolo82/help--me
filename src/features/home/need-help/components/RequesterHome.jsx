@@ -150,37 +150,6 @@ export default function RequesterHome({
         onPublishRequest={handleOpenTaskModal}
       />
 
-      {publishNotice ? (
-        <section className={styles.publishNotice}>
-          <strong>{publishNotice}</strong>
-          <p className="muted">
-            {publishNotice === 'Solicitud publicada'
-              ? 'Ya es visible para ayudantes cercanos.'
-              : 'Tu solicitud quedó publicada y centrada en el mapa.'}
-          </p>
-        </section>
-      ) : null}
-
-      {contactError ? (
-        <p className="auth-message error" role="alert">
-          {contactError}
-        </p>
-      ) : null}
-
-        {!location && locationStatus !== 'loading' ? (
-          <div className={styles.locationHint}>
-            <strong>Activa tu ubicación para ver personas cercanas.</strong>
-            <p className="muted">
-              Con tu ubicación podemos mostrar personas disponibles por cercanía y ordenar mejor los resultados.
-            </p>
-          {onRequestLocation ? (
-            <button type="button" className="secondary-action" onClick={onRequestLocation}>
-              Usar mi ubicación
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-
       <NeedHelpMapLayout
         key={mapViewEpoch}
         profile={profile}
@@ -188,6 +157,8 @@ export default function RequesterHome({
         locationStatus={locationStatus}
         locationError={locationError}
         onRequestLocation={onRequestLocation}
+        publishNotice={publishNotice}
+        contactError={contactError}
         preferredMobileView={preferredView}
         onPreviewHelper={handlePreviewHelper}
         onPublishRequest={handleOpenTaskModal}

@@ -35,3 +35,14 @@
   padding: 0.95rem;
   box-shadow: var(--shadow-sm);
 }
+
+@media (min-width: 900px) {
+  .requesterShell {
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.78rem;
+    height: calc(100dvh - 13.5rem);
+    min-height: 0;
+    max-height: calc(100dvh - 13.5rem);
+    overflow: hidden;
+  }
+}

@@ -42,6 +42,8 @@ export default function TaskListPanel({
   loading = false,
   error = '',
   locationLabel = 'Tu zona',
+  hasLocation = true,
+  onRequestLocation,
   emptyTitle = 'No hay solicitudes disponibles en esta parte del mapa.',
   emptyDescription = 'Mueve el mapa o revisa el tipo de actividad para encontrar más solicitudes.',
   emptyActionLabel = null,
@@ -54,6 +56,18 @@ export default function TaskListPanel({
         <strong>{tasks.length} solicitudes abiertas</strong>
         <span className="muted">{visibleTasks.length} visibles en esta pantalla del mapa</span>
       </div>
+
+      {!hasLocation ? (
+        <section className={styles.locationBanner}>
+          <strong>Activa tu ubicación para ordenar mejor las tareas.</strong>
+          <p className="muted">O busca una zona desde el header para mover el mapa a donde te interesa.</p>
+          {onRequestLocation ? (
+            <button type="button" className="primary-action" onClick={onRequestLocation}>
+              Usar mi ubicación
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       {loading && <p className="muted">Buscando tareas cercanas...</p>}
       {error && <p className="auth-message error">{error}</p>}
