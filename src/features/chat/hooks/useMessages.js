@@ -3,7 +3,20 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { getMessages } from '../api/chatApi'
 
 function getMessageKey(message) {
-  return message?.id || message?.client_temp_id || null
+  return message?.client_temp_id || message?.id || null
+}
+
+function getMessageKeys(message) {
+  return [message?.client_temp_id, message?.id].filter(Boolean)
+}
+
+function isSameMessage(left, right) {
+  if (!left || !right) return false
+
+  const leftKeys = getMessageKeys(left)
+  const rightKeys = new Set(getMessageKeys(right))
+
+  return leftKeys.some((key) => rightKeys.has(key))
 }
 
 function sortMessagesAscending(messages) {
@@ -75,12 +88,11 @@ export function useMessages(conversationId, { pageSize = 30 } = {}) {
         }
 
         const pages = [...(current.pages || [])]
-        const key = getMessageKey(message)
         let replaced = false
 
         const nextPages = updatePages(pages, (page) =>
           page.map((item) => {
-            if (getMessageKey(item) === key) {
+            if (isSameMessage(item, message)) {
               replaced = true
               return message
             }
@@ -113,12 +125,10 @@ export function useMessages(conversationId, { pageSize = 30 } = {}) {
       queryClient.setQueryData(queryKey, (current) => {
         if (!current) return current
 
-        const key = getMessageKey(message)
-
         return {
           ...current,
           pages: updatePages(current.pages || [], (page) =>
-            page.map((item) => (getMessageKey(item) === key ? message : item)),
+            page.map((item) => (isSameMessage(item, message) ? message : item)),
           ),
         }
       })
@@ -133,11 +143,9 @@ export function useMessages(conversationId, { pageSize = 30 } = {}) {
       queryClient.setQueryData(queryKey, (current) => {
         if (!current) return current
 
-        const key = getMessageKey(message)
-
         return {
           ...current,
-          pages: (current.pages || []).map((page) => page.filter((item) => getMessageKey(item) !== key)),
+          pages: (current.pages || []).map((page) => page.filter((item) => !isSameMessage(item, message))),
         }
       })
     },

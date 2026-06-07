@@ -13,6 +13,8 @@
   display: grid;
   gap: 1.1rem;
   width: min(100%, 35rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: var(--color-surface);
@@ -118,21 +120,47 @@
 }
 
 @media (max-width: 42rem) {
+  .overlay {
+    padding: 0.75rem;
+  }
+
+  .modal {
+    gap: 0.9rem;
+    max-height: calc(100dvh - 1.5rem);
+    padding: 1rem;
+  }
+
   .header {
     align-items: start;
   }
 
   .identity {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .avatar {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .summary h2 {
+    font-size: clamp(1.1rem, 6vw, 1.35rem);
   }
 
   .actions {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .actions :global(.secondary-action),
   .actions :global(.primary-action) {
-    width: 100%;
+    flex: 1 1 8.5rem;
+    width: auto;
+    min-width: 0;
+    min-height: 2.9rem;
+    padding: 0.72rem 0.85rem;
   }
 }
 

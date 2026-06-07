@@ -247,3 +247,40 @@
   }
 }
 
+@media (max-width: 42rem) {
+  .overlay {
+    padding: 0.75rem;
+  }
+
+  .modal {
+    gap: 0.78rem;
+    max-height: calc(100dvh - 1.5rem);
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .header {
+    gap: 0.75rem;
+  }
+
+  .header h2 {
+    font-size: clamp(1.18rem, 6vw, 1.55rem);
+  }
+
+  .closeButton {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .actions {
+    gap: 0.55rem;
+  }
+
+  .actions :global(.secondary-action),
+  .actions :global(.primary-action) {
+    flex: 1 1 8.5rem;
+    min-height: 2.9rem;
+    padding: 0.72rem 0.85rem;
+  }
+}
+

@@ -327,6 +327,6 @@
 
 @media (max-width: 42rem) {
   .mapPane {
-    min-height: 27rem;
+    min-height: clamp(18rem, 62dvh, 24rem);
   }
 }

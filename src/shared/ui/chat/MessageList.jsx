@@ -28,7 +28,7 @@ export default function MessageList({
         <div className={styles.list}>
           {messages.map((message) => (
             <MessageBubble
-              key={message.id}
+              key={message.client_temp_id || message.id}
               message={message}
               isOwn={message.sender_id === currentUserId}
               onEdit={onEditMessage}

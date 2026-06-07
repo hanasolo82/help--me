@@ -13,6 +13,10 @@
   gap: 1rem;
 }
 
+.headerIdentity {
+  min-width: 0;
+}
+
 .headerSearch {
   display: grid;
   gap: 0.35rem;
@@ -197,6 +201,90 @@
   background-color: var(--color-primary);
   color: #ffffff;
   box-shadow: var(--shadow-sm);
+}
+
+.notificationButton {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.notificationButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.notificationButton svg {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -0.22rem;
+  right: -0.22rem;
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid var(--color-surface);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0 0.22rem;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.notificationPanel {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.15rem 0.1rem 0.05rem;
+}
+
+.notificationTitle {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.notificationMeta {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.notificationCta {
+  justify-self: stretch;
+  min-height: 2.45rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 0.65rem 0.85rem;
+}
+
+.notificationCta:hover {
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
 }
 
 .menuButton {
@@ -678,22 +766,63 @@
   }
 
   .header {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .headerWithSearch {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+  }
+
+  .headerIdentity {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .headerSearch {
+    grid-column: 1 / -1;
+    grid-row: 2;
     width: 100%;
     max-width: none;
   }
 
+  .logo {
+    font-size: clamp(1.55rem, 8vw, 2.15rem);
+  }
+
+  .location {
+    font-size: 0.78rem;
+    margin-bottom: 0.1rem;
+  }
+
   .headerActions {
-    flex-direction: column-reverse;
-    align-items: end;
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    align-self: start;
+  }
+
+  .helperLink {
+    font-size: 0.82rem;
+  }
+
+  .avatar,
+  .notificationButton,
+  .menuButton {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .notificationButton svg {
+    width: 1rem;
+    height: 1rem;
   }
 
   .menuDropdown {

@@ -16,6 +16,7 @@ export default function HomeView({
   onOpenMyRequests,
   onOpenSettings,
   onOpenNotifications,
+  notificationSummary,
   onOpenPrivacy,
   onOpenHelp,
   onOpenProfile,
@@ -84,6 +85,7 @@ export default function HomeView({
           onOpenMyRequests={onOpenMyRequests}
           onOpenSettings={onOpenSettings}
           onOpenNotifications={onOpenNotifications}
+          notificationSummary={notificationSummary}
           onOpenPrivacy={onOpenPrivacy}
           onOpenHelp={onOpenHelp}
           onOpenProfile={onOpenProfile}

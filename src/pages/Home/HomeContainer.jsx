@@ -20,6 +20,37 @@ import {
   THEME_LIGHT,
 } from '../../shared/theme/themePreferences'
 
+function getParticipantForUser(conversation, userId) {
+  return conversation?.participants?.find((participant) => participant.user_id === userId) || null
+}
+
+function isUnreadConversation(conversation, userId) {
+  const latestMessage = conversation?.latest_message
+  if (!latestMessage || latestMessage.sender_id === userId) return false
+
+  const participant = getParticipantForUser(conversation, userId)
+  const lastReadAt = participant?.last_read_at
+  if (!lastReadAt) return true
+
+  return new Date(latestMessage.created_at || 0).getTime() > new Date(lastReadAt).getTime()
+}
+
+function buildNotificationSummary(chats = [], userId) {
+  if (!userId) {
+    return {
+      unreadMessageCount: 0,
+      unreadConversationCount: 0,
+    }
+  }
+
+  const unreadConversations = (chats || []).filter((chat) => isUnreadConversation(chat, userId))
+
+  return {
+    unreadMessageCount: unreadConversations.length,
+    unreadConversationCount: unreadConversations.length,
+  }
+}
+
 export default function HomeContainer() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
@@ -100,6 +131,10 @@ export default function HomeContainer() {
     isLoading: isChatsLoading,
     error: chatsError,
   } = useChats()
+  const notificationSummary = useMemo(
+    () => buildNotificationSummary(chats, user?.id),
+    [chats, user?.id],
+  )
 
   const handleLogout = useCallback(async () => {
     try {
@@ -331,6 +366,7 @@ export default function HomeContainer() {
         onOpenMyRequests={isHelperMode ? undefined : handleOpenMyRequests}
         onOpenSettings={handleOpenSettings}
         onOpenNotifications={handleOpenNotifications}
+        notificationSummary={notificationSummary}
         onOpenPrivacy={handleOpenPrivacy}
         onOpenHelp={handleOpenHelp}
         onOpenProfile={() => navigate('/profile')}

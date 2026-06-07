@@ -788,6 +788,7 @@ html[data-theme='light'] .auth-panel {
   /* paired buttons: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx */
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
@@ -1306,11 +1307,60 @@ html[data-theme='light'] .auth-panel {
 
 @media (max-width: 42rem) {
   .two-actions {
-    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
   }
 
   .chat-actions {
     grid-template-columns: 1fr;
+  }
+
+  .app-screen {
+    padding: 1rem 0.75rem;
+  }
+
+  .auth-panel,
+  .completion-panel {
+    padding: 1.15rem;
+  }
+
+  .auth-panel h1,
+  .completion-panel h1 {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    line-height: 1.12;
+  }
+
+  .page-header,
+  .chat-header {
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.25rem, 7vw, 1.75rem);
+    line-height: 1.1;
+  }
+
+  .detail-panel {
+    gap: 0.75rem;
+    padding: 0.9rem;
+  }
+
+  .detail-row {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .two-actions > .primary-action,
+  .two-actions > .success-action,
+  .two-actions > .secondary-action,
+  .two-actions > .danger-action,
+  .two-actions > .sticky-action {
+    flex: 1 1 9rem;
+    width: auto;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.78rem 0.9rem;
   }
 
   .primary-action,

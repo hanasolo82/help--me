@@ -5,7 +5,6 @@ import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import { THEME_DARK } from '../../shared/theme/themePreferences'
 
 export default function HomeHeader({
-  locationLabel,
   displayName,
   avatarUrl,
   userInitial,
@@ -21,6 +20,7 @@ export default function HomeHeader({
   onOpenMyRequests,
   onOpenSettings,
   onOpenNotifications,
+  notificationSummary,
   onOpenPrivacy,
   onOpenHelp,
   onOpenProfile,
@@ -31,6 +31,7 @@ export default function HomeHeader({
   isHelperActive = false,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
 
   function handleAction(action) {
@@ -56,6 +57,9 @@ export default function HomeHeader({
   const modeLabel = isHelperMode ? 'Necesito ayuda' : 'Ayudar'
   const modeAction = isHelperMode ? onOpenNeedHelp : onOpenHelper
   const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
+  const unreadMessageCount = notificationSummary?.unreadMessageCount || 0
+  const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
+  const notificationBadge = unreadMessageCount > 99 ? '99+' : String(unreadMessageCount)
 
   const primaryItems = [
     { label: 'Mi perfil', action: onOpenProfile },
@@ -82,8 +86,7 @@ export default function HomeHeader({
   return (
     <>
       <header className={`${styles.header} ${showZoneSearch ? styles.headerWithSearch : ''}`}>
-        <div>
-          <p className={styles.location}>{locationLabel}</p>
+        <div className={styles.headerIdentity}>
           <h1 className={styles.logo}>helpMe</h1>
           <p className="muted">Hola, {displayName}</p>
         </div>
@@ -131,6 +134,57 @@ export default function HomeHeader({
               {modeLabel}
             </button>
           ) : null}
+
+          <AnimatedDropdown
+            isOpen={notificationsOpen}
+            onOpenChange={setNotificationsOpen}
+            align="end"
+            width={320}
+            portal
+            trigger={
+              <button type="button" className={styles.notificationButton} aria-label="Notificaciones">
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path
+                    d="M12 3a5 5 0 0 0-5 5v2.65c0 .76-.23 1.5-.66 2.12L5.1 14.55A1.55 1.55 0 0 0 6.38 17h11.24a1.55 1.55 0 0 0 1.28-2.43l-1.24-1.8A3.72 3.72 0 0 1 17 10.65V8a5 5 0 0 0-5-5Zm0 19a3 3 0 0 0 2.83-2h-5.66A3 3 0 0 0 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                {unreadMessageCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
+              </button>
+            }
+          >
+            <AnimatedDropdown.Group title="Notificaciones">
+              <div className={styles.notificationPanel}>
+                {unreadMessageCount > 0 ? (
+                  <>
+                    <p className={styles.notificationTitle}>
+                      Tienes {unreadMessageCount} {unreadMessageCount === 1 ? 'mensaje sin leer' : 'mensajes sin leer'}
+                    </p>
+                    <p className={styles.notificationMeta}>
+                      {unreadConversationCount === 1
+                        ? 'En 1 conversación pendiente.'
+                        : `En ${unreadConversationCount} conversaciones pendientes.`}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
+                    <p className={styles.notificationMeta}>Cuando lleguen mensajes pendientes, aparecerán aquí.</p>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className={styles.notificationCta}
+                  onClick={() => {
+                    setNotificationsOpen(false)
+                    onOpenChats?.()
+                  }}
+                >
+                  Ver mensajes
+                </button>
+              </div>
+            </AnimatedDropdown.Group>
+          </AnimatedDropdown>
 
           <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
             {avatarUrl ? <img src={avatarUrl} alt={displayName} /> : userInitial}

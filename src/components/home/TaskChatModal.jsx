@@ -17,6 +17,17 @@ function getCounterpartName(task, userId) {
   )
 }
 
+function getMessageKeys(message) {
+  return [message?.client_temp_id, message?.id].filter(Boolean)
+}
+
+function isSameMessage(left, right) {
+  if (!left || !right) return false
+
+  const rightKeys = new Set(getMessageKeys(right))
+  return getMessageKeys(left).some((key) => rightKeys.has(key))
+}
+
 export default function TaskChatModal({ open, task, onClose }) {
   const { user } = useAuth()
   const taskChatMessagesEndRef = useRef(null)
@@ -28,8 +39,18 @@ export default function TaskChatModal({ open, task, onClose }) {
   const [draftMessage, setDraftMessage] = useState('')
   const appendMessage = useCallback((message) => {
     setMessages((current) => {
-      if (current.some((item) => item.id === message.id || item.client_temp_id === message.client_temp_id)) {
-        return current
+      let replaced = false
+      const nextMessages = current.map((item) => {
+        if (isSameMessage(item, message)) {
+          replaced = true
+          return message
+        }
+
+        return item
+      })
+
+      if (replaced) {
+        return nextMessages
       }
 
       return [...current, message]
@@ -39,14 +60,14 @@ export default function TaskChatModal({ open, task, onClose }) {
   const updateMessage = useCallback((message) => {
     setMessages((current) =>
       current.map((item) =>
-        item.id === message.id || item.client_temp_id === message.client_temp_id ? message : item,
+        isSameMessage(item, message) ? message : item,
       ),
     )
   }, [])
 
   const removeMessage = useCallback((message) => {
     setMessages((current) =>
-      current.filter((item) => item.id !== message.id && item.client_temp_id !== message.client_temp_id),
+      current.filter((item) => !isSameMessage(item, message)),
     )
   }, [])
 
@@ -132,7 +153,7 @@ export default function TaskChatModal({ open, task, onClose }) {
     const updated = await editMessageById(messageId, nextContent)
     setMessages((current) =>
       current.map((message) =>
-        message.id === updated.id || message.client_temp_id === updated.client_temp_id ? updated : message,
+        isSameMessage(message, updated) ? updated : message,
       ),
     )
     return updated

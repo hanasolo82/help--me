@@ -216,3 +216,41 @@
 ---
 
 Nota: actualización inicial completada. Próximo: búsqueda automática de duplicados (helpers/hooks/tipos) y propuesta de lotes. Antes de aplicar cambios, confirmar Lote 1.
+
+## Mobile responsive polish
+
+- Fecha: 2026-06-07
+- Objetivo: Fase 1 de corrección responsive móvil para closed beta sin tocar lógica de negocio.
+- Archivos revisados: `src/pages/Home/Home.module.css`, `src/features/helper-home/styles/helperHome.module.css`, `src/features/home/need-help/components/NeedHelpMapLayout.module.css`, `src/features/tasks/components/TaskCard/TaskCard.module.css`, `src/features/home/need-help/components/RequestTaskModal.module.css`, `src/features/home/need-help/components/HelperPreviewModal.module.css`, `src/shared/ui/chat/MessageInput.module.css`, `src/shared/ui/BrandLogo/BrandLogo.module.css`, `src/styles.css`, `src/shared/ui/layouts/ChatLayout.module.css`, `src/pages/Settings/SettingsPage.module.css`.
+- Cambios aplicados: compactado el header móvil del Home, reducido el alto mínimo de mapas requester/helper en móvil, ajustada la leyenda del mapa requester, compactado el composer de chat, corregido el tamaño `xl` del logo, afinados botones/cards de tarea y modales requester/helper para usar wrap controlado en móvil.
+- Riesgos: los grupos `.two-actions` pasan a envolver en fila en móvil; requiere prueba visual en `TaskDetail` y `TaskComplete` para confirmar que los textos largos siguen cabiendo bien a 360px.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
+
+## Mobile responsive fixes - Home header, Settings and Profile
+
+- Fecha: 2026-06-07
+- Objetivo: corregir fallos detectados tras la fase responsive inicial: localización visible encima del logo en Home, acciones del header cayendo debajo del buscador, y pantallas de ajustes/perfil con desbordes en móvil.
+- Archivos modificados: `src/components/home/HomeHeader.jsx`, `src/pages/Home/Home.module.css`, `src/pages/Settings/SettingsPage.module.css`, `src/features/profile/styles/profilePublicView.module.css`.
+- Cambios aplicados: eliminada la localización visual del bloque de logo del Home, añadida identidad explícita del header, recolocadas acciones móviles en la esquina superior derecha sobre el buscador, compactada la navegación móvil de ajustes en scroll horizontal, reforzados grids/botones/switches de ajustes y perfil para evitar overflow en pantallas estrechas.
+- Riesgos: requiere revisión visual manual en móviles de 360px y 390px para confirmar que la fila superior del header no queda demasiado comprimida cuando aparecen tema, modo, avatar y menú.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
+
+## Chat message duplication fix
+
+- Fecha: 2026-06-07
+- Diagnóstico: el chat usa optimistic update con `client_temp_id` y recibe después el mensaje real por respuesta de envío y/o Supabase Realtime.
+- Causa raíz: la reconciliación priorizaba `message.id`, por lo que el temporal `id=temp-*` y el persistido `id=uuid` podían quedar como dos burbujas aunque compartieran `client_temp_id`. En el modal de tarea también había comparaciones directas de `client_temp_id` que podían ser inseguras si ambos valores eran `undefined`.
+- Cambios: `useMessages` deduplica y reemplaza por claves cruzadas `client_temp_id/id`; `TaskChatModal` usa el mismo criterio para append/update/remove; `MessageList` usa `client_temp_id || id` como key estable de React.
+- Archivos: `src/features/chat/hooks/useMessages.js`, `src/components/home/TaskChatModal.jsx`, `src/shared/ui/chat/MessageList.jsx`.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
+- Riesgos: si un entorno remoto no devuelve `client_temp_id` en los eventos realtime, puede requerir un fallback adicional por contenido/timestamp, pero no se añadió para evitar fusionar mensajes idénticos enviados en ráfaga.
+
+## Header notification bell
+
+- Fecha: 2026-06-07
+- Objetivo: añadir campanita MVP con badge y popover en el header del Home sin crear sistema completo de notificaciones.
+- Fuente de datos usada: conversaciones ya cargadas por `useChats`, derivando pendientes con `latest_message`, `sender_id` y `conversation_participants.last_read_at`.
+- Cambios: calculado resumen de mensajes sin leer en `HomeContainer`, pasado a `HomeView/HomeHeader`, añadida campana accesible con badge `99+` y dropdown con CTA `Ver mensajes`, estilos responsive en `Home.module.css`.
+- Archivos: `src/pages/Home/HomeContainer.jsx`, `src/pages/Home/HomeView.jsx`, `src/components/home/HomeHeader.jsx`, `src/pages/Home/Home.module.css`.
+- Limitaciones: no añade realtime global ni tabla de notificaciones; el contador se refresca con la query existente de chats.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
