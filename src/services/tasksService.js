@@ -600,3 +600,24 @@ export async function cancelTask(taskId) {
 
   return data
 }
+
+// Rechaza el helper asignado antes del pago y devuelve la tarea a abierta.
+// La limpieza segura de pago pendiente y conversacion task-scoped vive en el RPC.
+export async function rejectAssignedHelper(taskId) {
+  await requireUser('Necesitas iniciar sesion para rechazar este helper.')
+
+  const { data, error } = await supabase.rpc('reject_assigned_helper', {
+    p_task_id: taskId,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('No se pudo rechazar el helper.')
+  }
+
+  const tasksWithProfiles = await attachTaskProfiles([data])
+  return tasksWithProfiles[0]
+}

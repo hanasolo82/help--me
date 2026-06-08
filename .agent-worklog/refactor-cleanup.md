@@ -309,3 +309,38 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Qué se conserva: estados internos `assigned/in_progress`, Stripe Checkout, flujo Premium externo, chat task-scoped protegido y backend/RLS.
 - Riesgos: la campana usa consulta `getMyTasks` compartida por React Query; revisar manualmente que el badge no resulte demasiado ruidoso si hay muchas tareas pendientes.
 - Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Payment gate phase 4E - requester confirmation before payment
+
+- Fecha: 2026-06-08
+- Selected agents:
+  - helpme-architect
+  - frontend-ui-agent
+  - product-flow-agent
+  - security-auth-agent
+  - agent-worklog
+- Objetivo: cambiar la semántica visible de `assigned` para que sea revisión/confirmación del helper antes del pago, sin cambiar estados internos ni tocar backend/RLS.
+- Cambios aplicados: `assigned` pasa a mostrarse como `Pendiente de confirmación`; campana muestra “{helper} ha aceptado tu tarea…” con CTA `Revisar`; Mis solicitudes usa sección `Pendientes de confirmación`; cards muestran `Revisar helper` y `Confirmar y pagar`; TaskDetail añade bloque de revisión del helper; TaskPaymentPage usa CTA `Confirmar y pagar`.
+- Leído MVP: las alertas de aceptación revisadas se guardan en `localStorage` mediante `helpme.reviewedTaskAcceptances.v1`, por lo que el estado es local al navegador y no sincroniza entre dispositivos.
+- Rechazar helper: no se implementa en esta fase. Requiere fase posterior con RPC/backend seguro para desasignar helper, limpiar o regenerar conversación task-scoped y tratar pagos pendientes sin dejar referencias inconsistentes.
+- Qué se conserva: estado interno `assigned`, Stripe Checkout, Premium externo, chat privado protegido por RLS, arquitectura financiera y migrations.
+- Restricción aplicada: no se muestra `Enviar mensaje` antes del pago para evitar confundir chat directo con chat privado de tarea.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Payment gate phase 4F - persistent decision gate and safe helper rejection
+
+- Fecha: 2026-06-08
+- Selected agents:
+  - helpme-architect
+  - product-flow-agent
+  - frontend-ui-agent
+  - supabase-data-agent
+  - security-auth-agent
+  - backend-stripe-agent
+  - agent-worklog
+- Objetivo: corregir el flujo comercial de aceptación de helper para que la alerta no desaparezca por revisión y la decisión sea confirmar/pagar o rechazar helper.
+- Cambios aplicados: eliminada la lógica local de aceptaciones revisadas; la campana cuenta tareas `assigned` persistentes; el CTA de alerta va directo al detalle/decision gate; Mis solicitudes usa `Decidir ahora`; TaskDetail muestra helper compacto y acciones `Confirmar y pagar` y `Rechazar helper`.
+- Cambios Supabase: añadida migration `0037_reject_assigned_helper_rpc.sql` con RPC `reject_assigned_helper(task_id)` para validar requester owner, validar `assigned`, bloquear rechazo si hay pago activo/confirmado, marcar pagos pendientes locales como `voided`, borrar conversación task-scoped y devolver la tarea a `open`.
+- Qué se conserva: estados internos `assigned/in_progress`, Stripe Checkout, Premium externo, chat directo normal y RLS de chat task-scoped.
+- Riesgos: si existe una Stripe Checkout Session abierta y el requester rechaza antes de completarla, el registro local queda `voided`; un webhook tardío no debería avanzar la tarea porque ya no estará `assigned`, pero conviene probar ese caso con Stripe CLI.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.

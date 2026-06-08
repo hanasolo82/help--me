@@ -180,11 +180,9 @@ export default function TaskPaymentPage() {
           ←
         </button>
         <div>
-          <p className={styles.eyebrow}>Pendiente de pago</p>
+          <p className={styles.eyebrow}>Confirmación</p>
           <h1>Confirma tu tarea</h1>
-          <p className={styles.lead}>
-            {helperName} aceptó tu solicitud. El pago confirma la tarea dentro de HelpMe y abre el chat privado.
-          </p>
+          <p className={styles.lead}>Revisa el resumen antes de confirmar y pagar.</p>
         </div>
       </header>
 
@@ -228,7 +226,7 @@ export default function TaskPaymentPage() {
               onClick={() => checkoutMutation.mutate()}
               disabled={checkoutMutation.isPending}
             >
-              {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Pagar y abrir chat'}
+              {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Confirmar y pagar'}
             </button>
           ) : null}
 
@@ -264,7 +262,7 @@ export default function TaskPaymentPage() {
 
           <section className={styles.premiumCompact}>
             <p>
-              El pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también puedes coordinar el
+              El pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también puedes acordar el
               pago directamente con el helper.
             </p>
 

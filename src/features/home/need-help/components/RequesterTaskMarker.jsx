@@ -4,7 +4,7 @@ import styles from './NeedHelpMapLayout.module.css'
 
 const STATUS_LABELS = {
   open: 'Tu',
-  assigned: 'Pago',
+  assigned: 'Revisar',
   in_progress: 'Curso',
   completed: 'Fin',
   closed: 'Fin',
@@ -14,7 +14,7 @@ const STATUS_LABELS = {
 
 const STATUS_COPY = {
   open: 'Activa',
-  assigned: 'Pendiente de pago',
+  assigned: 'Pendiente de confirmación',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',

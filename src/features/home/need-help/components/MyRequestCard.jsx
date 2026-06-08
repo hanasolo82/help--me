@@ -2,7 +2,7 @@ import styles from './MyRequestCard.module.css'
 
 const STATUS_COPY = {
   open: 'Activa',
-  assigned: 'Pendiente de pago',
+  assigned: 'Pendiente de confirmación',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',
@@ -29,16 +29,17 @@ export default function MyRequestCard({
   onRetire,
   onOpenChat,
   onOpenDetail,
-  onOpenPayment,
   onOpenSummary,
   onReview,
 }) {
   const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
-  const isPendingPayment = task.status === 'assigned'
+  const isPendingConfirmation = task.status === 'assigned'
+  const helperProfile = task.accepted_profile || {}
+  const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Un helper'
 
   return (
-    <article className={`${styles.card} ${isPendingPayment ? styles.pendingPaymentCard : ''}`.trim()}>
+    <article className={`${styles.card} ${isPendingConfirmation ? styles.pendingConfirmationCard : ''}`.trim()}>
       <div className={styles.header}>
         <div>
           <p className={styles.title}>{task.title}</p>
@@ -52,9 +53,9 @@ export default function MyRequestCard({
         <span>{task.price ? `${Number(task.price)} EUR` : 'Precio libre'}</span>
       </div>
 
-      {isPendingPayment ? (
-        <p className={styles.paymentNotice}>
-          Un helper aceptó tu solicitud. Confirma el pago para activar la tarea y abrir el chat privado.
+      {isPendingConfirmation ? (
+        <p className={styles.confirmationNotice}>
+          {helperName} ha aceptado ayudarte. Decide si quieres confirmar y pagar o rechazar esta oferta.
         </p>
       ) : null}
 
@@ -74,14 +75,9 @@ export default function MyRequestCard({
         )}
 
         {task.status === 'assigned' && (
-          <>
-            <button type="button" className="primary-action" onClick={() => onOpenPayment?.(task)}>
-              Pagar y abrir chat
-            </button>
-            <button type="button" className="secondary-action" onClick={() => onOpenDetail?.(task)}>
-              Ver detalle
-            </button>
-          </>
+          <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
+            Decidir ahora
+          </button>
         )}
 
         {task.status === 'in_progress' && (

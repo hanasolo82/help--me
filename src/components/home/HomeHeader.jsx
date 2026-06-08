@@ -21,6 +21,7 @@ export default function HomeHeader({
   onOpenSettings,
   onOpenNotifications,
   notificationSummary,
+  onReviewAcceptedTask,
   onOpenPrivacy,
   onOpenHelp,
   onOpenProfile,
@@ -59,8 +60,10 @@ export default function HomeHeader({
   const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
   const unreadMessageCount = notificationSummary?.unreadMessageCount || 0
   const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
-  const pendingPaymentCount = notificationSummary?.pendingPaymentCount || 0
-  const totalNotificationCount = unreadMessageCount + pendingPaymentCount
+  const pendingConfirmationCount = notificationSummary?.pendingConfirmationCount || 0
+  const pendingConfirmationTasks = notificationSummary?.pendingConfirmationTasks || []
+  const firstPendingConfirmationTask = pendingConfirmationTasks[0] || null
+  const totalNotificationCount = unreadMessageCount + pendingConfirmationCount
   const notificationBadge = totalNotificationCount > 99 ? '99+' : String(totalNotificationCount)
 
   const primaryItems = [
@@ -157,14 +160,16 @@ export default function HomeHeader({
           >
             <AnimatedDropdown.Group title="Notificaciones">
               <div className={styles.notificationPanel}>
-                {pendingPaymentCount > 0 ? (
+                {pendingConfirmationCount > 0 ? (
                   <>
                     <p className={styles.notificationTitle}>
-                      {pendingPaymentCount === 1
-                        ? 'Una solicitud está pendiente de pago'
-                        : `${pendingPaymentCount} solicitudes están pendientes de pago`}
+                      {firstPendingConfirmationTask
+                        ? `${firstPendingConfirmationTask.helperName} ha aceptado tu tarea “${firstPendingConfirmationTask.title}”.`
+                        : pendingConfirmationCount === 1
+                          ? 'Un helper ha aceptado tu tarea.'
+                          : `${pendingConfirmationCount} helpers han aceptado tus tareas.`}
                     </p>
-                    <p className={styles.notificationMeta}>Revisa tus solicitudes para confirmar la tarea y abrir el chat.</p>
+                    <p className={styles.notificationMeta}>Decide si quieres confirmar y pagar o rechazar esta oferta.</p>
                   </>
                 ) : null}
 
@@ -179,23 +184,23 @@ export default function HomeHeader({
                         : `En ${unreadConversationCount} conversaciones pendientes.`}
                     </p>
                   </>
-                ) : pendingPaymentCount === 0 ? (
+                ) : pendingConfirmationCount === 0 ? (
                   <>
                     <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
                     <p className={styles.notificationMeta}>Cuando lleguen mensajes pendientes, aparecerán aquí.</p>
                   </>
                 ) : null}
 
-                {pendingPaymentCount > 0 ? (
+                {pendingConfirmationCount > 0 ? (
                   <button
                     type="button"
                     className={styles.notificationCta}
                     onClick={() => {
                       setNotificationsOpen(false)
-                      onOpenMyRequests?.()
+                      onReviewAcceptedTask?.(firstPendingConfirmationTask?.id)
                     }}
                   >
-                    Revisar pagos
+                    Decidir ahora
                   </button>
                 ) : null}
 

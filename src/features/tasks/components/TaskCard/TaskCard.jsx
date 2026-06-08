@@ -8,7 +8,7 @@ import messageIcon from '../../../../assets/icons/message.svg'
 const statusLabels = {
   draft: 'Borrador',
   open: 'Publicada',
-  assigned: 'Asignada',
+  assigned: 'Pendiente de confirmación',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',

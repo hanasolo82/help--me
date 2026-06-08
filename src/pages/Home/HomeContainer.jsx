@@ -36,22 +36,35 @@ function isUnreadConversation(conversation, userId) {
   return new Date(latestMessage.created_at || 0).getTime() > new Date(lastReadAt).getTime()
 }
 
+function getAcceptedHelperName(task) {
+  const profile = task?.accepted_profile || {}
+  return profile.display_name || profile.full_name || profile.username || 'Un helper'
+}
+
 function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
   if (!userId) {
     return {
       unreadMessageCount: 0,
       unreadConversationCount: 0,
-      pendingPaymentCount: 0,
+      pendingConfirmationCount: 0,
+      pendingConfirmationTasks: [],
     }
   }
 
   const unreadConversations = (chats || []).filter((chat) => isUnreadConversation(chat, userId))
-  const pendingPaymentCount = (requesterTasks || []).filter((task) => task.status === 'assigned').length
+  const pendingConfirmationTasks = (requesterTasks || [])
+    .filter((task) => task.status === 'assigned')
+    .map((task) => ({
+      id: task.id,
+      title: task.title,
+      helperName: getAcceptedHelperName(task),
+    }))
 
   return {
     unreadMessageCount: unreadConversations.length,
     unreadConversationCount: unreadConversations.length,
-    pendingPaymentCount,
+    pendingConfirmationCount: pendingConfirmationTasks.length,
+    pendingConfirmationTasks,
   }
 }
 
@@ -234,6 +247,20 @@ export default function HomeContainer() {
     navigate('/home', { replace: true, state: { mode: 'need' } })
   }, [navigate])
 
+  const handleReviewAcceptedTask = useCallback(
+    (taskId) => {
+      if (taskId) {
+        navigate(`/task/${taskId}`)
+        return
+      }
+
+      setHelperHomeIntent('need')
+      setMyRequestsDrawerOpen(true)
+      navigate('/home', { replace: true, state: { mode: 'need' } })
+    },
+    [navigate],
+  )
+
   const handleCloseMyRequests = useCallback(() => {
     setMyRequestsDrawerOpen(false)
   }, [])
@@ -377,6 +404,7 @@ export default function HomeContainer() {
         onOpenSettings={handleOpenSettings}
         onOpenNotifications={handleOpenNotifications}
         notificationSummary={notificationSummary}
+        onReviewAcceptedTask={handleReviewAcceptedTask}
         onOpenPrivacy={handleOpenPrivacy}
         onOpenHelp={handleOpenHelp}
         onOpenProfile={() => navigate('/profile')}

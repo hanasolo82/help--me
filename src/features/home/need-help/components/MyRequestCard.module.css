@@ -9,7 +9,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.pendingPaymentCard {
+.pendingConfirmationCard {
   border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
   background:
     radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 36%),
@@ -45,7 +45,7 @@
   font-weight: 700;
 }
 
-.pendingPaymentCard .status {
+.pendingConfirmationCard .status {
   border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
   background: color-mix(in srgb, var(--color-primary) 13%, var(--color-surface));
   color: color-mix(in srgb, var(--color-primary) 86%, var(--color-text));
@@ -61,7 +61,7 @@
   font-weight: 700;
 }
 
-.paymentNotice {
+.confirmationNotice {
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));
   color: var(--color-text);

@@ -4,7 +4,7 @@ import styles from './MyRequestsDrawer.module.css'
 
 const SECTIONS = [
   { key: 'open', title: 'Activas', statuses: ['open'] },
-  { key: 'pending-payment', title: 'Pendientes de pago', statuses: ['assigned'] },
+  { key: 'pending-confirmation', title: 'Pendientes de confirmación', statuses: ['assigned'] },
   { key: 'in-progress', title: 'En curso', statuses: ['in_progress'] },
   { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },
 ]

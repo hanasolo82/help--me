@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
-import { acceptTask } from '../../services/tasksService'
+import { acceptTask, rejectAssignedHelper } from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
@@ -12,7 +12,7 @@ import messageIcon from '../../assets/icons/message.svg'
 const TASK_STATUS_LABELS = {
   draft: 'Borrador',
   open: 'Activa',
-  assigned: 'Pendiente de pago',
+  assigned: 'Pendiente de confirmación',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',
@@ -46,6 +46,22 @@ export default function TaskDetail() {
       navigate(`/task/${id}`, {
         replace: true,
         state: { acceptedTask: true },
+      })
+    },
+  })
+
+  const rejectHelperMutation = useMutation({
+    mutationFn: () => rejectAssignedHelper(id),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+        queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
+      ])
+      navigate('/home', {
+        replace: true,
+        state: { mode: 'need' },
       })
     },
   })
@@ -104,6 +120,18 @@ export default function TaskDetail() {
 
   async function handleAccept() {
     acceptMutation.mutate()
+  }
+
+  function handleRejectHelper() {
+    const shouldReject = window.confirm(
+      `¿Quieres rechazar a ${helperName}?\n\nLa solicitud volverá a estar disponible para otros helpers.`,
+    )
+
+    if (!shouldReject) {
+      return
+    }
+
+    rejectHelperMutation.mutate()
   }
 
   if (loading) {
@@ -192,14 +220,46 @@ export default function TaskDetail() {
         <p>{task.description}</p>
       </section>
 
-      {(error || acceptMutation.error) && (
-        <p className="auth-message error">{error || acceptMutation.error?.message || 'Ha ocurrido un error.'}</p>
+      {(error || acceptMutation.error || rejectHelperMutation.error) && (
+        <p className="auth-message error">
+          {error || acceptMutation.error?.message || rejectHelperMutation.error?.message || 'Ha ocurrido un error.'}
+        </p>
       )}
 
       {location.state?.acceptedTask && isHelper && task.status === 'assigned' && (
         <p className="auth-message">
-          Tarea aceptada. Esperando a que el requester complete el pago.
+          Tarea aceptada. Esperando a que el requester confirme la ayuda.
         </p>
+      )}
+
+      {isOwner && task.status === 'assigned' && (
+        <section className="detail-panel">
+          <p className="eyebrow">Pendiente de confirmación</p>
+          <h2>{helperName} ha aceptado tu tarea</h2>
+          <p>
+            Confirma la tarea para pagar y abrir el chat privado, o rechaza esta oferta para seguir buscando otro helper.
+          </p>
+
+          <div className="user-strip">
+            <span className="avatar-small">
+              {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
+            </span>
+            <div>
+              <strong>{helperName}</strong>
+              <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Listo para ayudarte'}</p>
+              {helperProfile.verified && <p>Perfil verificado</p>}
+            </div>
+          </div>
+
+          <div className="detail-row">
+            <span>Tarea</span>
+            <strong>{task.title}</strong>
+          </div>
+          <div className="detail-row">
+            <span>Precio</span>
+            <strong>{priceEuros} EUR</strong>
+          </div>
+        </section>
       )}
 
       <div className="two-actions">
@@ -227,13 +287,23 @@ export default function TaskDetail() {
         )}
 
         {canOpenPayment && (
-          <button
-            type="button"
-            className="primary-action sticky-action"
-            onClick={() => navigate(`/task/${id}/payment`)}
-          >
-            Pagar y abrir chat
-          </button>
+          <>
+            <button
+              type="button"
+              className="primary-action sticky-action"
+              onClick={() => navigate(`/task/${id}/payment`)}
+            >
+              Confirmar y pagar
+            </button>
+            <button
+              type="button"
+              className="secondary-action sticky-action"
+              onClick={handleRejectHelper}
+              disabled={rejectHelperMutation.isPending}
+            >
+              {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+            </button>
+          </>
         )}
 
         {canCloseTask && (

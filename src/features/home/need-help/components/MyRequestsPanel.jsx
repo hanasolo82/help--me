@@ -24,7 +24,7 @@ export default function MyRequestsPanel({
   }
 
   const openTasks = tasks.filter((task) => task.status === 'open')
-  const pendingPaymentTasks = tasks.filter((task) => task.status === 'assigned')
+  const pendingConfirmationTasks = tasks.filter((task) => task.status === 'assigned')
   const inProgressTasks = tasks.filter((task) => task.status === 'in_progress')
   const historyTasks = tasks.filter((task) => ['completed', 'closed', 'cancelled'].includes(task.status))
   const latestOpenTask = openTasks[0] || null
@@ -53,8 +53,8 @@ export default function MyRequestsPanel({
           <strong>{openTasks.length}</strong>
         </article>
         <article className={styles.countCard}>
-          <span>Pendientes de pago</span>
-          <strong>{pendingPaymentTasks.length}</strong>
+          <span>Pendientes de confirmación</span>
+          <strong>{pendingConfirmationTasks.length}</strong>
         </article>
         <article className={styles.countCard}>
           <span>En curso</span>
