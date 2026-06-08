@@ -2,7 +2,7 @@ import styles from './MyRequestCard.module.css'
 
 const STATUS_COPY = {
   open: 'Activa',
-  assigned: 'Asignada',
+  assigned: 'Pendiente de pago',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',
@@ -29,14 +29,16 @@ export default function MyRequestCard({
   onRetire,
   onOpenChat,
   onOpenDetail,
+  onOpenPayment,
   onOpenSummary,
   onReview,
 }) {
   const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
+  const isPendingPayment = task.status === 'assigned'
 
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} ${isPendingPayment ? styles.pendingPaymentCard : ''}`.trim()}>
       <div className={styles.header}>
         <div>
           <p className={styles.title}>{task.title}</p>
@@ -49,6 +51,12 @@ export default function MyRequestCard({
         <span>{dateLabel}</span>
         <span>{task.price ? `${Number(task.price)} EUR` : 'Precio libre'}</span>
       </div>
+
+      {isPendingPayment ? (
+        <p className={styles.paymentNotice}>
+          Un helper aceptó tu solicitud. Confirma el pago para activar la tarea y abrir el chat privado.
+        </p>
+      ) : null}
 
       <div className={styles.actions}>
         {task.status === 'open' && (
@@ -65,7 +73,18 @@ export default function MyRequestCard({
           </>
         )}
 
-        {['assigned', 'in_progress'].includes(task.status) && (
+        {task.status === 'assigned' && (
+          <>
+            <button type="button" className="primary-action" onClick={() => onOpenPayment?.(task)}>
+              Pagar y abrir chat
+            </button>
+            <button type="button" className="secondary-action" onClick={() => onOpenDetail?.(task)}>
+              Ver detalle
+            </button>
+          </>
+        )}
+
+        {task.status === 'in_progress' && (
           <>
             <button type="button" className="secondary-action" onClick={() => onOpenChat?.(task)}>
               Ver chat

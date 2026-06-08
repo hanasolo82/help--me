@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
-import { cancelTask, publishTask } from '../../services/tasksService'
+import { cancelTask, getMyTasks, publishTask } from '../../services/tasksService'
 import { searchLocationAutocomplete } from '../../features/onboarding/services/locationAutocompleteService'
 import { useHomeModals } from './hooks/useHomeModals'
 import { useHomeFilters } from './hooks/useHomeFilters'
@@ -35,19 +36,22 @@ function isUnreadConversation(conversation, userId) {
   return new Date(latestMessage.created_at || 0).getTime() > new Date(lastReadAt).getTime()
 }
 
-function buildNotificationSummary(chats = [], userId) {
+function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
   if (!userId) {
     return {
       unreadMessageCount: 0,
       unreadConversationCount: 0,
+      pendingPaymentCount: 0,
     }
   }
 
   const unreadConversations = (chats || []).filter((chat) => isUnreadConversation(chat, userId))
+  const pendingPaymentCount = (requesterTasks || []).filter((task) => task.status === 'assigned').length
 
   return {
     unreadMessageCount: unreadConversations.length,
     unreadConversationCount: unreadConversations.length,
+    pendingPaymentCount,
   }
 }
 
@@ -131,9 +135,15 @@ export default function HomeContainer() {
     isLoading: isChatsLoading,
     error: chatsError,
   } = useChats()
+  const requesterTasksQuery = useQuery({
+    queryKey: ['my-tasks', profile?.id],
+    queryFn: () => getMyTasks(profile?.id),
+    enabled: Boolean(profile?.id),
+    staleTime: 15_000,
+  })
   const notificationSummary = useMemo(
-    () => buildNotificationSummary(chats, user?.id),
-    [chats, user?.id],
+    () => buildNotificationSummary(chats, user?.id, requesterTasksQuery.data || []),
+    [chats, requesterTasksQuery.data, user?.id],
   )
 
   const handleLogout = useCallback(async () => {

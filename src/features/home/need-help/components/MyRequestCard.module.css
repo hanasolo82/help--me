@@ -1,4 +1,4 @@
-﻿.card {
+.card {
   display: grid;
   gap: 0.85rem;
   padding: 1rem;
@@ -7,6 +7,13 @@
   background: rgba(255, 255, 255, 0.66);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
+}
+
+.pendingPaymentCard {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  background:
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 36%),
+    rgba(255, 255, 255, 0.78);
 }
 
 .header {
@@ -38,6 +45,12 @@
   font-weight: 700;
 }
 
+.pendingPaymentCard .status {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 13%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-primary) 86%, var(--color-text));
+}
+
 .detailRow {
   display: flex;
   flex-wrap: wrap;
@@ -48,6 +61,16 @@
   font-weight: 700;
 }
 
+.paymentNotice {
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 0.75rem;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -55,9 +78,9 @@
 }
 
 .actions :global(.secondary-action),
-.actions :global(.danger-action) {
+.actions :global(.danger-action),
+.actions :global(.primary-action) {
   width: auto;
   max-width: none;
   flex: 1 1 10rem;
 }
-

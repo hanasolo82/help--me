@@ -25,6 +25,7 @@ const TERMINAL_PAYMENT_STATUSES = new Set([
   'released',
   'refunded',
   'disputed',
+  'external_agreed',
 ])
 
 function ensureSupabaseAdmin() {
@@ -109,6 +110,28 @@ async function getPaymentById(paymentId) {
   }
 
   return data || null
+}
+
+async function getActivePremiumSubscription(userId) {
+  ensureSupabaseAdmin()
+
+  const { data, error } = await supabaseAdmin
+    .from('user_subscriptions')
+    .select('id, user_id, subscription_status, provider, current_period_end')
+    .eq('user_id', userId)
+    .in('subscription_status', ['active', 'trialing'])
+    .order('current_period_end', { ascending: false, nullsFirst: false })
+    .limit(5)
+
+  if (error) {
+    throw error
+  }
+
+  return (data || []).find((subscription) => {
+    if (!subscription.current_period_end) return true
+
+    return new Date(subscription.current_period_end).getTime() > Date.now()
+  }) || null
 }
 
 async function getTransferByPaymentId(paymentId) {
@@ -648,6 +671,166 @@ export async function createTaskCheckout({ taskId, requester }) {
   }
 }
 
+export async function createExternalPaymentAgreement({ taskId, requester }) {
+  ensureSupabaseAdmin()
+
+  if (!requester?.id) {
+    throw new Error('Necesitas iniciar sesion.')
+  }
+
+  const task = await getTaskById(taskId)
+
+  if (!task) {
+    throw new Error('La tarea no existe.')
+  }
+
+  if (task.created_by !== requester.id) {
+    throw new Error('No puedes confirmar pago externo en una tarea ajena.')
+  }
+
+  if (task.status !== 'assigned') {
+    throw new Error('La tarea debe estar asignada antes de continuar con pago externo.')
+  }
+
+  if (!task.accepted_by) {
+    throw new Error('La tarea no tiene helper asignado.')
+  }
+
+  const premiumSubscription = await getActivePremiumSubscription(requester.id)
+
+  if (!premiumSubscription) {
+    throw new Error('Necesitas Premium activo para coordinar un pago externo.')
+  }
+
+  const amountCents = normalizeAmountCents(task.price * 100)
+
+  if (!amountCents) {
+    throw new Error('El precio de la tarea no es valido.')
+  }
+
+  const correlationId = getOrCreateCorrelationId(task)
+  const idempotencyKey = ensureIdempotencyKey(`external-payment:task:${task.id}`, 'external-payment')
+
+  const { data: existingPayment, error: existingError } = await supabaseAdmin
+    .from('payments')
+    .select('*')
+    .eq('task_id', task.id)
+    .maybeSingle()
+
+  if (existingError) {
+    throw existingError
+  }
+
+  if (
+    existingPayment &&
+    existingPayment.provider === 'stripe' &&
+    TERMINAL_PAYMENT_STATUSES.has(existingPayment.status) &&
+    existingPayment.status !== 'external_agreed'
+  ) {
+    throw new Error('La tarea ya tiene un pago seguro asociado.')
+  }
+
+  const paymentPayload = {
+    task_id: task.id,
+    requester_profile_id: requester.id,
+    helper_profile_id: task.accepted_by,
+    payer_id: requester.id,
+    receiver_id: task.accepted_by,
+    amount: Number(task.price || 0),
+    platform_fee: 0,
+    amount_cents: amountCents,
+    platform_fee_cents: 0,
+    helper_amount_cents: amountCents,
+    currency: 'eur',
+    provider: 'external',
+    status: 'external_agreed',
+    external_payment_confirmed_at: new Date().toISOString(),
+    correlation_id: existingPayment?.correlation_id || correlationId,
+    idempotency_key: existingPayment?.idempotency_key || idempotencyKey,
+    reconciliation_status: 'reconciled',
+    reconciliation_error: null,
+    metadata: {
+      ...(existingPayment?.metadata || {}),
+      external_payment: {
+        agreed_by: requester.id,
+        agreed_at: new Date().toISOString(),
+        subscription_id: premiumSubscription.id,
+        warning_acknowledged: true,
+      },
+    },
+    updated_at: new Date().toISOString(),
+  }
+
+  const paymentQuery = existingPayment
+    ? supabaseAdmin
+        .from('payments')
+        .update(paymentPayload)
+        .eq('id', existingPayment.id)
+    : supabaseAdmin
+        .from('payments')
+        .insert(paymentPayload)
+
+  const { data: payment, error: paymentError } = await paymentQuery
+    .select('*')
+    .single()
+
+  if (paymentError) {
+    throw paymentError
+  }
+
+  const { data: updatedTask, error: taskError } = await supabaseAdmin
+    .from('tasks')
+    .update({
+      status: 'in_progress',
+      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', task.id)
+    .eq('created_by', requester.id)
+    .eq('accepted_by', task.accepted_by)
+    .eq('status', 'assigned')
+    .select('id, created_by, accepted_by, status')
+    .maybeSingle()
+
+  if (taskError) {
+    throw taskError
+  }
+
+  if (!updatedTask) {
+    throw new Error('No se pudo activar la tarea con pago externo.')
+  }
+
+  await createIdempotentAuditEvent({
+    eventType: 'external_payment_agreed',
+    severity: 'info',
+    actorType: 'requester',
+    actorProfileId: requester.id,
+    entityType: 'payment',
+    entityId: payment.id,
+    afterState: {
+      task_id: task.id,
+      payment_status: payment.status,
+      provider: payment.provider,
+      task_status: updatedTask.status,
+    },
+    correlationId: payment.correlation_id || correlationId || randomUUID(),
+    metadata: {
+      task_id: task.id,
+      payment_id: payment.id,
+      helper_profile_id: task.accepted_by,
+      subscription_id: premiumSubscription.id,
+    },
+  })
+
+  return {
+    payment_id: payment.id,
+    task_id: task.id,
+    task_status: updatedTask.status,
+    provider: payment.provider,
+    status: payment.status,
+  }
+}
+
 export async function releasePaymentFunds({ paymentId, requester }) {
   ensureSupabaseAdmin()
 
@@ -679,6 +862,35 @@ export async function releasePaymentFunds({ paymentId, requester }) {
       },
     })
     throw new Error('No puedes liberar un pago ajeno.')
+  }
+
+  if (payment.provider === 'external' || payment.status === 'external_agreed') {
+    await createIdempotentAuditEvent({
+      eventType: 'external_payment_release_skipped',
+      severity: 'info',
+      actorType: 'requester',
+      actorProfileId: requester.id,
+      entityType: 'payment',
+      entityId: payment.id,
+      afterState: {
+        reason: 'External payments are coordinated outside HelpMe and do not release Stripe funds.',
+        payment_status: payment.status,
+      },
+      correlationId: payment.correlation_id || getOrCreateCorrelationId(payment),
+      metadata: {
+        payment_id: payment.id,
+        task_id: payment.task_id,
+      },
+    })
+
+    return {
+      payment_id: payment.id,
+      task_id: payment.task_id,
+      payment_status: payment.status,
+      provider: payment.provider,
+      external: true,
+      skipped_release: true,
+    }
   }
 
   const task = await getTaskById(payment.task_id)

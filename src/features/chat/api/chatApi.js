@@ -2,7 +2,7 @@ import { supabase } from '../../../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../../../lib/security'
 import { requireUser } from '../../../lib/authHelpers'
 
-const CONVERSATION_SELECT = 'id, created_by, created_at, updated_at, last_message_at'
+const CONVERSATION_SELECT = 'id, created_by, created_at, updated_at, last_message_at, conversation_type, task_id'
 const PARTICIPANT_SELECT = 'id, conversation_id, user_id, created_at, last_read_at'
 const PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
 const MESSAGE_SELECT = '*'
@@ -110,6 +110,26 @@ export async function createOrGetDirectConversation(otherUserId) {
   }
 
   throw new Error('No se pudo abrir el chat porque falta la función create_or_get_direct_conversation en Supabase. Aplica las migraciones de chat antes de contactar helpers.')
+}
+
+export async function createOrGetTaskConversation(taskId) {
+  assertSupabaseReady()
+
+  await requireUser('Necesitas iniciar sesion para abrir el chat de la tarea.')
+
+  const rpcResult = await supabase.rpc('create_or_get_task_conversation', {
+    p_task_id: taskId,
+  })
+
+  if (!rpcResult.error) {
+    return rpcResult.data
+  }
+
+  if (!isMissingRpcError(rpcResult.error)) {
+    throw rpcResult.error
+  }
+
+  throw new Error('No se pudo abrir el chat porque falta la función create_or_get_task_conversation en Supabase. Aplica las migraciones de pagos/chat antes de continuar.')
 }
 
 async function sendMessageWithRpc(conversationId, body, clientTempId = null) {

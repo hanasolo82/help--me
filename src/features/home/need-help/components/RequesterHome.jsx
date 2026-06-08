@@ -132,6 +132,10 @@ export default function RequesterHome({
     navigate(`/task/${task.id}`)
   }
 
+  function handleOpenPayment(task) {
+    navigate(`/task/${task.id}/payment`)
+  }
+
   function handleOpenSummary(task) {
     navigate(`/task/${task.id}`)
   }
@@ -178,6 +182,7 @@ export default function RequesterHome({
         onRetire={handleRetireTask}
         onOpenChat={handleOpenChat}
         onOpenDetail={handleOpenDetail}
+        onOpenPayment={handleOpenPayment}
         onOpenSummary={handleOpenSummary}
         onReview={handleReview}
       />

@@ -2,6 +2,26 @@ import L from 'leaflet'
 import { Marker, Popup } from 'react-leaflet'
 import styles from './NeedHelpMapLayout.module.css'
 
+const STATUS_LABELS = {
+  open: 'Tu',
+  assigned: 'Pago',
+  in_progress: 'Curso',
+  completed: 'Fin',
+  closed: 'Fin',
+  cancelled: 'Off',
+  draft: 'Draft',
+}
+
+const STATUS_COPY = {
+  open: 'Activa',
+  assigned: 'Pendiente de pago',
+  in_progress: 'En curso',
+  completed: 'Completada',
+  closed: 'Cerrada',
+  cancelled: 'Cancelada',
+  draft: 'Borrador',
+}
+
 function buildRequestMarkerIcon({ selected = false, status = 'open' }) {
   const className = selected
     ? `${styles.requesterTaskMarker} ${styles.requesterTaskMarkerActive}`
@@ -9,7 +29,7 @@ function buildRequestMarkerIcon({ selected = false, status = 'open' }) {
 
   return L.divIcon({
     className,
-    html: `<span class="${styles.requesterTaskMarkerStatus}">${status === 'open' ? 'Tu' : status}</span>`,
+    html: `<span class="${styles.requesterTaskMarkerStatus}">${STATUS_LABELS[status] || 'Tu'}</span>`,
     iconSize: selected ? [52, 52] : [42, 42],
     iconAnchor: selected ? [26, 26] : [21, 21],
   })
@@ -20,6 +40,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
 
   const publishedAt = task.published_at || task.created_at
   const locationLabel = task.location_label || task.zone || task.location || ''
+  const statusLabel = STATUS_COPY[task.status] || task.status
 
   return (
     <Marker
@@ -41,7 +62,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
         <br />
         {task.title}
         <br />
-        {task.category} · {task.status}
+        {task.category} · {statusLabel}
         {locationLabel ? (
           <>
             <br />

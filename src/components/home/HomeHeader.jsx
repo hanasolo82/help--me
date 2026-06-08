@@ -59,7 +59,9 @@ export default function HomeHeader({
   const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
   const unreadMessageCount = notificationSummary?.unreadMessageCount || 0
   const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
-  const notificationBadge = unreadMessageCount > 99 ? '99+' : String(unreadMessageCount)
+  const pendingPaymentCount = notificationSummary?.pendingPaymentCount || 0
+  const totalNotificationCount = unreadMessageCount + pendingPaymentCount
+  const notificationBadge = totalNotificationCount > 99 ? '99+' : String(totalNotificationCount)
 
   const primaryItems = [
     { label: 'Mi perfil', action: onOpenProfile },
@@ -149,12 +151,23 @@ export default function HomeHeader({
                     fill="currentColor"
                   />
                 </svg>
-                {unreadMessageCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
+                {totalNotificationCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
               </button>
             }
           >
             <AnimatedDropdown.Group title="Notificaciones">
               <div className={styles.notificationPanel}>
+                {pendingPaymentCount > 0 ? (
+                  <>
+                    <p className={styles.notificationTitle}>
+                      {pendingPaymentCount === 1
+                        ? 'Una solicitud está pendiente de pago'
+                        : `${pendingPaymentCount} solicitudes están pendientes de pago`}
+                    </p>
+                    <p className={styles.notificationMeta}>Revisa tus solicitudes para confirmar la tarea y abrir el chat.</p>
+                  </>
+                ) : null}
+
                 {unreadMessageCount > 0 ? (
                   <>
                     <p className={styles.notificationTitle}>
@@ -166,22 +179,51 @@ export default function HomeHeader({
                         : `En ${unreadConversationCount} conversaciones pendientes.`}
                     </p>
                   </>
-                ) : (
+                ) : pendingPaymentCount === 0 ? (
                   <>
                     <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
                     <p className={styles.notificationMeta}>Cuando lleguen mensajes pendientes, aparecerán aquí.</p>
                   </>
-                )}
-                <button
-                  type="button"
-                  className={styles.notificationCta}
-                  onClick={() => {
-                    setNotificationsOpen(false)
-                    onOpenChats?.()
-                  }}
-                >
-                  Ver mensajes
-                </button>
+                ) : null}
+
+                {pendingPaymentCount > 0 ? (
+                  <button
+                    type="button"
+                    className={styles.notificationCta}
+                    onClick={() => {
+                      setNotificationsOpen(false)
+                      onOpenMyRequests?.()
+                    }}
+                  >
+                    Revisar pagos
+                  </button>
+                ) : null}
+
+                {unreadMessageCount > 0 ? (
+                  <button
+                    type="button"
+                    className={styles.notificationCta}
+                    onClick={() => {
+                      setNotificationsOpen(false)
+                      onOpenChats?.()
+                    }}
+                  >
+                    Ver mensajes
+                  </button>
+                ) : null}
+
+                {totalNotificationCount === 0 ? (
+                  <button
+                    type="button"
+                    className={styles.notificationCta}
+                    onClick={() => {
+                      setNotificationsOpen(false)
+                      onOpenChats?.()
+                    }}
+                  >
+                    Ver mensajes
+                  </button>
+                ) : null}
               </div>
             </AnimatedDropdown.Group>
           </AnimatedDropdown>

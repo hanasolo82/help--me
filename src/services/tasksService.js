@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 import { requireUser } from '../lib/authHelpers'
 import { getCurrentUser } from './authService'
-import { createOrGetDirectConversation } from '../features/chat/api/chatApi'
+import { createOrGetTaskConversation } from '../features/chat/api/chatApi'
 import { canAcceptTask } from '../features/helper-onboarding/utils/helperPermissions'
 import { getProfileByUserId } from './profilesService'
 
@@ -481,7 +481,7 @@ export async function getTaskById(taskId, { viewer } = {}) {
 
 // Nota funcion:
 // Acepta una tarea abierta, asigna accepted_by y cambia el estado a assigned.
-// Despues crea el chat entre creador y helper.
+// Despues crea el chat vinculado a la tarea. La RLS lo mantiene bloqueado hasta pago/confirmacion.
 // Si la insercion del chat falla, revierte accepted_by para que la tarea vuelva a quedar disponible.
 // Nota Supabase - public.tasks/public.chats:
 // Al ampliar public.tasks, revisa TASK_SELECT. Al ampliar public.chats con columnas obligatorias
@@ -525,7 +525,7 @@ export async function acceptTask(taskId) {
   }
 
   try {
-    const conversationId = await createOrGetDirectConversation(task.created_by)
+    const conversationId = await createOrGetTaskConversation(task.id)
     return { task, conversation: { id: conversationId } }
   } catch (chatError) {
     await supabase

@@ -4,7 +4,8 @@ import styles from './MyRequestsDrawer.module.css'
 
 const SECTIONS = [
   { key: 'open', title: 'Activas', statuses: ['open'] },
-  { key: 'in-progress', title: 'En curso', statuses: ['assigned', 'in_progress'] },
+  { key: 'pending-payment', title: 'Pendientes de pago', statuses: ['assigned'] },
+  { key: 'in-progress', title: 'En curso', statuses: ['in_progress'] },
   { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },
 ]
 
@@ -22,6 +23,7 @@ export default function MyRequestsDrawer({
   onRetire,
   onOpenChat,
   onOpenDetail,
+  onOpenPayment,
   onOpenSummary,
   onReview,
 }) {
@@ -81,6 +83,7 @@ export default function MyRequestsDrawer({
                       onRetire={onRetire}
                       onOpenChat={onOpenChat}
                       onOpenDetail={onOpenDetail}
+                      onOpenPayment={onOpenPayment}
                       onOpenSummary={onOpenSummary}
                       onReview={onReview}
                     />

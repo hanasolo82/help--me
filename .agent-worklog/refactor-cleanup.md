@@ -254,3 +254,58 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Archivos: `src/pages/Home/HomeContainer.jsx`, `src/pages/Home/HomeView.jsx`, `src/components/home/HomeHeader.jsx`, `src/pages/Home/Home.module.css`.
 - Limitaciones: no añade realtime global ni tabla de notificaciones; el contador se refresca con la query existente de chats.
 - Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
+
+## Payment gate phase 4A
+
+- Fecha: 2026-06-07
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - product-flow-agent
+  - frontend-ui-agent
+  - security-auth-agent
+  - agent-worklog
+- Objetivo: crear `/task/:id/payment` como puerta de pago frontend reutilizando Checkout existente, sin reabrir arquitectura financiera.
+- Auditoría usada: pagos ya existen en frontend/backend; `assigned` equivale a pendiente de pago y el webhook de Stripe mueve `assigned -> in_progress`.
+- Cambios aplicados: nueva página `TaskPaymentPage`, ruta protegida `/task/:id/payment`, CTA `Ir al pago` en `TaskDetail` para requester con tarea `assigned`, y navegación post-aceptación del helper al detalle con estado de espera en vez de chat directo.
+- Archivos modificados: `src/pages/TaskPayment/TaskPaymentPage.jsx`, `src/pages/TaskPayment/TaskPaymentPage.module.css`, `src/app/router/AppRouter.jsx`, `src/pages/TaskDetail/TaskDetail.jsx`.
+- Estados usados: `assigned` para pendiente de pago, `in_progress` para pago confirmado, `completed/closed` para estados finales.
+- Qué NO se tocó: Supabase schema, RLS, migraciones, backend Stripe, estados de tarea, Stripe Billing/Premium funcional.
+- Riesgos: el bloqueo fuerte de chat no queda garantizado solo con frontend porque la conversación ya existe; queda apuntado para Fase 4B con backend/RLS.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene aviso no bloqueante de chunk JS superior a 500 kB.
+
+## Payment gate phase 4B - Premium, RLS and task-scoped chat
+
+- Fecha: 2026-06-07
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - supabase-data-agent
+  - security-auth-agent
+  - product-flow-agent
+  - frontend-ui-agent
+  - agent-worklog
+- Objetivo: convertir la puerta de pago en base funcional con soporte Premium externo y chat de tarea protegido por RLS, manteniendo `assigned/in_progress` como estados canónicos.
+- Cambios Supabase: añadida migration `0036_payment_gate_premium_task_chat.sql` con `user_subscriptions`, `payments.provider`, estado `external_agreed`, `conversations.conversation_type/task_id`, RPC `create_or_get_task_conversation`, funciones `has_active_premium`/`can_access_conversation` y policies de conversación/mensajes/adjuntos.
+- Cambios backend: añadido endpoint `POST /api/payments/external` para validar Premium activo, registrar pago externo y mover tarea `assigned -> in_progress`; `releasePaymentFunds` omite liberación Stripe si el pago es externo.
+- Cambios frontend: `TaskPaymentPage` consulta Premium, permite continuar con pago externo solo si está activo, mantiene pago seguro como CTA principal; `chatService` y `tasksService` usan conversación vinculada a tarea para chat contextual.
+- Qué se conserva: checkout Stripe existente, webhooks financieros, tabla `payments`, ruta `/task/:id/payment`, chats directos normales y estados actuales de tareas.
+- Riesgos: requiere aplicar la migration remota antes de probar Premium/chat task-scoped; Stripe Billing para crear suscripciones reales todavía no está implementado, aunque el modelo `user_subscriptions` queda preparado.
+- Validación: `pnpm run lint` correcto, `pnpm run build` correcto con warning conocido de chunk grande/plugin timings, `node --check server/services/payments.service.js` correcto y `node --check server/routes/payments.routes.js` correcto.
+
+## Payment gate phase 4C - requester UX and simplified payment page
+
+- Fecha: 2026-06-08
+- Selected agents:
+  - helpme-architect
+  - frontend-ui-agent
+  - product-flow-agent
+  - security-auth-agent
+  - agent-worklog
+- Objetivo: hacer evidente al requester que una tarea aceptada queda pendiente de pago y simplificar la página `/task/:id/payment`.
+- Auditoría usada: la campana solo mostraba mensajes, `MyRequestCard` traducía `assigned` como “Asignada” y ofrecía “Ver chat”, `TaskPaymentPage` mostraba estado técnico, ubicación poco útil y varios bloques visuales redundantes.
+- Cambios aplicados: campana con conteo de solicitudes pendientes de pago y CTA `Revisar pagos`; drawer de solicitudes con sección `Pendientes de pago`; tarjetas `assigned` destacadas con copy claro y CTA `Pagar y abrir chat`; marcador/detalle requester traducen estados a lenguaje humano.
+- Cambios en Payment Gate: título `Confirma tu tarea`, helper integrado en el resumen, datos reducidos a tarea/helper/precio/total, CTA `Pagar y abrir chat`, Premium compacto y secundario con copy neutral.
+- Qué se conserva: estados internos `assigned/in_progress`, Stripe Checkout, flujo Premium externo, chat task-scoped protegido y backend/RLS.
+- Riesgos: la campana usa consulta `getMyTasks` compartida por React Query; revisar manualmente que el badge no resulte demasiado ruidoso si hay muchas tareas pendientes.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.

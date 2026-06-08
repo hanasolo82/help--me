@@ -25,14 +25,14 @@ async function getAccessToken() {
   return accessToken
 }
 
-async function getPaymentForTask(taskId) {
+export async function getPaymentForTask(taskId) {
   if (!supabase) {
     throw new Error('No hay una sesión de Supabase configurada.')
   }
 
   const { data, error } = await supabase
     .from('payments')
-    .select('id, task_id, status')
+    .select('id, task_id, status, provider')
     .eq('task_id', taskId)
     .maybeSingle()
 
@@ -80,8 +80,49 @@ export async function startTaskCheckout(taskId) {
   return payload
 }
 
+export async function continueWithExternalPayment(taskId) {
+  const accessToken = await getAccessToken()
+
+  let response
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/payments/external`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ taskId }),
+    })
+  } catch {
+    throw new Error(
+      `No pudimos conectar con el servidor de pagos en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
+    )
+  }
+
+  const payload = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(payload?.error || 'No pudimos confirmar el pago externo.')
+  }
+
+  return payload
+}
+
 export async function releaseTaskPayment(taskId) {
   const payment = await getPaymentForTask(taskId)
+
+  if (payment.provider === 'external' || payment.status === 'external_agreed') {
+    return {
+      payment_id: payment.id,
+      task_id: taskId,
+      provider: payment.provider,
+      payment_status: payment.status,
+      external: true,
+      skipped_release: true,
+    }
+  }
+
   const accessToken = await getAccessToken()
 
   let response

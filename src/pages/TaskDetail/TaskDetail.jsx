@@ -3,12 +3,25 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { acceptTask } from '../../services/tasksService'
-import { startTaskCheckout } from '../../services/paymentsService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import messageIcon from '../../assets/icons/message.svg'
+
+const TASK_STATUS_LABELS = {
+  draft: 'Borrador',
+  open: 'Activa',
+  assigned: 'Pendiente de pago',
+  in_progress: 'En curso',
+  completed: 'Completada',
+  closed: 'Cerrada',
+  cancelled: 'Cancelada',
+}
+
+function formatTaskStatus(status) {
+  return TASK_STATUS_LABELS[status] || status || 'No disponible'
+}
 
 // Detalle de tarea conectado a Supabase. Permite aceptarla o abrir chat con el creador.
 export default function TaskDetail() {
@@ -24,21 +37,16 @@ export default function TaskDetail() {
 
   const acceptMutation = useMutation({
     mutationFn: () => acceptTask(id),
-    onSuccess: async ({ conversation }) => {
+    onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['task', id] }),
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
         queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
       ])
-      navigate(`/chat/${conversation.id}`, { replace: true })
-    },
-  })
-
-  const checkoutMutation = useMutation({
-    mutationFn: () => startTaskCheckout(id),
-    onSuccess: async ({ checkout_url }) => {
-      await queryClient.invalidateQueries({ queryKey: ['task', id] })
-      window.location.href = checkout_url
+      navigate(`/task/${id}`, {
+        replace: true,
+        state: { acceptedTask: true },
+      })
     },
   })
 
@@ -87,12 +95,12 @@ export default function TaskDetail() {
   const isOwner = user?.id === task?.created_by
   const isHelper = user?.id === task?.accepted_by
   const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
-  const canStartCheckout = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
+  const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
   const canOpenChat =
     Boolean(task) &&
     ((task.status === 'open' && !isOwner) ||
-      (['assigned', 'in_progress', 'completed', 'closed'].includes(task.status) && (isOwner || isHelper)))
+      (['in_progress', 'completed', 'closed'].includes(task.status) && (isOwner || isHelper)))
 
   async function handleAccept() {
     acceptMutation.mutate()
@@ -175,7 +183,7 @@ export default function TaskDetail() {
         </div>
         <div className="detail-row">
           <span>Estado</span>
-          <strong>{task.status}</strong>
+          <strong>{formatTaskStatus(task.status)}</strong>
         </div>
       </section>
 
@@ -188,8 +196,10 @@ export default function TaskDetail() {
         <p className="auth-message error">{error || acceptMutation.error?.message || 'Ha ocurrido un error.'}</p>
       )}
 
-      {checkoutMutation.error && (
-        <p className="auth-message error">{checkoutMutation.error?.message || 'No hemos podido preparar el pago.'}</p>
+      {location.state?.acceptedTask && isHelper && task.status === 'assigned' && (
+        <p className="auth-message">
+          Tarea aceptada. Esperando a que el requester complete el pago.
+        </p>
       )}
 
       <div className="two-actions">
@@ -216,14 +226,13 @@ export default function TaskDetail() {
           </button>
         )}
 
-        {canStartCheckout && (
+        {canOpenPayment && (
           <button
             type="button"
             className="primary-action sticky-action"
-            onClick={() => checkoutMutation.mutate()}
-            disabled={checkoutMutation.isPending}
+            onClick={() => navigate(`/task/${id}/payment`)}
           >
-            {checkoutMutation.isPending ? 'Preparando pago...' : 'Pagar tarea'}
+            Pagar y abrir chat
           </button>
         )}
 

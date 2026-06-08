@@ -3,6 +3,7 @@ import { requireUser } from '../lib/authHelpers'
 import { sanitizeText } from '../lib/security'
 import {
   createOrGetDirectConversation,
+  createOrGetTaskConversation,
   editMessage as editConversationMessage,
   getConversationById,
   getMessages as getConversationMessages,
@@ -57,7 +58,7 @@ async function resolveTaskConversation(taskId) {
     throw new Error('Todavia no hay otro usuario para abrir este chat.')
   }
 
-  const conversationId = await createOrGetDirectConversation(otherUserId)
+  const conversationId = await createOrGetTaskConversation(task.id)
   const conversation = await getConversationById(conversationId)
 
   return {
@@ -132,6 +133,7 @@ export async function getMyChats() {
 
 export {
   createOrGetDirectConversation,
+  createOrGetTaskConversation,
   getConversationById,
   getConversationById as getDirectConversationById,
   getConversationMessages,

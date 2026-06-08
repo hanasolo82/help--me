@@ -13,6 +13,7 @@ import OnboardingLocationStep from "../../features/onboarding/pages/OnboardingLo
 import OnboardingAvailabilityStep from "../../features/onboarding/pages/OnboardingAvailabilityStep";
 import OnboardingVerificationStep from "../../features/onboarding/pages/OnboardingVerificationStep";
 import TaskDetail from "../../pages/TaskDetail/TaskDetail";
+import TaskPaymentPage from "../../pages/TaskPayment/TaskPaymentPage";
 import CreateTask from "../../pages/CreateTask/CreateTask";
 import Chat from "../../pages/Chat/Chat";
 import Chats from "../../pages/Chats/Chats";
@@ -49,6 +50,7 @@ export default function AppRouter() {
       </Route>
       <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/task/:id" element={<RequireAuth><TaskDetail /></RequireAuth>} />
+      <Route path="/task/:id/payment" element={<RequireAuth><TaskPaymentPage /></RequireAuth>} />
       <Route path="/create" element={<RequireAuth><CreateTask /></RequireAuth>} />
       <Route path="/chat/:id" element={<RequireAuth><Chat /></RequireAuth>} />
       <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />
