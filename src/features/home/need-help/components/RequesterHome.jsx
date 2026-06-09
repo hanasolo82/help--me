@@ -8,6 +8,7 @@ import RequesterHero from './RequesterHero'
 import MyRequestsDrawer from './MyRequestsDrawer'
 import { cancelTask, getMyTasks } from '../../../../services/tasksService'
 import { createOrGetDirectConversation } from '../../../../services/chatService'
+import { getMyReviewsForTasks } from '../../../reviews/api/reviewsApi'
 import styles from './RequesterHome.module.css'
 
 export default function RequesterHome({
@@ -39,6 +40,17 @@ export default function RequesterHome({
     enabled: Boolean(profile?.id),
     staleTime: 15_000,
   })
+  const reviewableTaskIds = (myTasksQuery.data || [])
+    .filter((task) => ['completed', 'closed'].includes(task.status) && task.accepted_by)
+    .map((task) => task.id)
+
+  const taskReviewsQuery = useQuery({
+    queryKey: ['task-reviews', profile?.id, reviewableTaskIds],
+    queryFn: () => getMyReviewsForTasks(reviewableTaskIds),
+    enabled: Boolean(profile?.id) && reviewableTaskIds.length > 0,
+    staleTime: 30_000,
+  })
+  const reviewedTaskIds = new Set((taskReviewsQuery.data || []).map((review) => review.task_id))
 
   const retireTaskMutation = useMutation({
     mutationFn: (task) => cancelTask(task.id),
@@ -141,8 +153,8 @@ export default function RequesterHome({
   }
 
   function handleReview(task) {
-    if (task?.accepted_profile?.id) {
-      navigate(`/profile/${task.accepted_profile.id}`)
+    if (task?.id) {
+      navigate(`/task/${task.id}/review`)
     }
   }
 
@@ -185,6 +197,7 @@ export default function RequesterHome({
         onOpenPayment={handleOpenPayment}
         onOpenSummary={handleOpenSummary}
         onReview={handleReview}
+        reviewedTaskIds={reviewedTaskIds}
       />
 
       <HelperPreviewModal

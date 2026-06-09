@@ -31,10 +31,12 @@ export default function MyRequestCard({
   onOpenDetail,
   onOpenSummary,
   onReview,
+  reviewedTaskIds = new Set(),
 }) {
   const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
   const isPendingConfirmation = task.status === 'assigned'
+  const isReviewed = reviewedTaskIds.has(task.id)
   const helperProfile = task.accepted_profile || {}
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Un helper'
 
@@ -96,9 +98,13 @@ export default function MyRequestCard({
             <button type="button" className="secondary-action" onClick={() => onOpenSummary?.(task)}>
               Ver resumen
             </button>
-            <button type="button" className="secondary-action" onClick={() => onReview?.(task)}>
-              Valorar si aplica
-            </button>
+            {isReviewed ? (
+              <span className={styles.reviewedState}>Valorada</span>
+            ) : (
+              <button type="button" className="secondary-action" onClick={() => onReview?.(task)}>
+                Valorar
+              </button>
+            )}
           </>
         )}
 

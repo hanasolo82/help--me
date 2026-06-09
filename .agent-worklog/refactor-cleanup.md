@@ -344,3 +344,52 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Qué se conserva: estados internos `assigned/in_progress`, Stripe Checkout, Premium externo, chat directo normal y RLS de chat task-scoped.
 - Riesgos: si existe una Stripe Checkout Session abierta y el requester rechaza antes de completarla, el registro local queda `voided`; un webhook tardío no debería avanzar la tarea porque ya no estará `assigned`, pero conviene probar ese caso con Stripe CLI.
 - Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Notifications and chat UX phase 5A
+
+- Fecha: 2026-06-09
+- Selected agents:
+  - helpme-architect
+  - frontend-ui-agent
+  - product-flow-agent
+  - security-auth-agent
+  - agent-worklog
+- Objetivo: separar comportamiento de campana entre mensajes no leídos y tareas pendientes de decisión, y mejorar la UX visual del chat privado sin tocar pagos ni modelo de conversaciones.
+- Auditoría: la campana ya derivaba mensajes desde `latest_message/last_read_at` y tareas desde `assigned`, pero el dropdown mezclaba conceptos; `useConversation` marcaba leído sin refrescar la query global de chats; `markConversationAsRead` usaba un nombre de parámetro distinto al RPC local; el chat no mostraba avatar compacto y las acciones de mensajes eran demasiado pesadas.
+- Cambios aplicados: dropdown de campana separado en secciones `Mensajes` y `Tareas pendientes`; CTA `Abrir chat` va a la conversación no leída; CTA `Decidir ahora` mantiene tareas `assigned` persistentes; al abrir chat se marca leído e invalida `['chats', user.id]`; header de chat muestra avatar/nombre compacto; editar/eliminar y `Mensaje eliminado` quedan más discretos.
+- Decisión sobre chat por tarea: se mantiene el modelo task-scoped, incluso si dos usuarios tienen varias tareas, por trazabilidad de pago, cierre, RLS y futuras valoraciones.
+- Qué se conserva: realtime, chat directo, chat task-scoped, pagos, Stripe, RLS y estados de tarea.
+- Riesgos: si la función remota `mark_conversation_as_read` no tiene el parámetro `p_conversation_id`, habrá que alinear la migration remota; conviene probar que un mensaje recibido mientras la conversación está abierta no quede pendiente al volver a Home.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Home visual cleanup phase 5B
+
+- Fecha: 2026-06-09
+- Selected agents:
+  - helpme-architect
+  - frontend-ui-agent
+  - agent-worklog
+- Objetivo: limpiar visualmente Home, aplicar el logo real en el header, reducir sensación de badges anidados y hacer que las solicitudes propias en mapa se distingan claramente de helpers.
+- Auditoría: HomeHeader seguía pintando `helpMe` como texto; `RequesterTaskMarker` usaba texto de estado dentro del pin; `MyRequestCard` destacaba `assigned` con card, status y notice muy marcados; `Solicitud activa` pertenecía al helper home y duplicaba demasiado resumen fuera del detalle real de tarea.
+- Cambios aplicados: HomeHeader usa `BrandLogo`; marcador de tarea propia pasa a etiqueta/pin `Tu tarea` con icono y halo; popup del marker queda breve; leyenda del mapa es más ligera; card pendiente reduce fondo/notice; helper home renombra `Solicitud activa` a `Solicitud seleccionada` y sustituye los cuatro mini badges por un resumen compacto.
+- Qué se conserva: lógica de selección de markers, tareas propias en mapa, drawer de solicitudes, acciones `Ver solicitud`/`Contactar`, TaskDetail como detalle real y todos los flujos de tareas.
+- Riesgos: revisar manualmente el tamaño del marker `Tu tarea` en móviles estrechos y que no tape helpers cercanos.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Reviews MVP phase 5C - requester to helper
+
+- Fecha: 2026-06-09
+- Selected agents:
+  - helpme-architect
+  - product-flow-agent
+  - frontend-ui-agent
+  - supabase-data-agent
+  - security-auth-agent
+  - agent-worklog
+- Objetivo: implementar MVP de valoraciones post-tarea usando `public.reviews` como modelo principal y mantener `public.ratings` como legacy/no usado.
+- Auditoría: `reviews` ya existía con rating por dimensiones, RLS de insert mutua y contador de reviews; `ratings` sigue en schema legacy; `ProfileReviewsPanel` ya leía `reviews`; `TaskComplete`, `TaskDetail` y `MyRequestCard` no tenían flujo real de valoración.
+- Cambios Supabase: migration `0038_reviews_mvp_requester_to_helper.sql` añade `reviews.tags`, `reviews.updated_at`, constraint segura de tags, RLS de insert restringida a requester -> helper asignado en tarea `completed/closed` y trigger para recalcular `profiles.rating`, `profiles.reviews_count` y `profiles.completed_tasks` desde `reviews`.
+- Cambios frontend: nueva ruta `/task/:id/review`, formulario mobile-first con rating 1-5, chips y comentario opcional; CTAs `Valorar helper` tras cerrar tarea y en detalle; Mis solicitudes muestra `Valorar` o estado `Valorada`; ReviewCard pinta chips si existen.
+- Qué se conserva: cierre de tarea, liberación de fondos, pagos, Stripe, chat protegido, perfil público existente y tabla `ratings` sin nuevos usos.
+- Riesgos: aplicar la migration en Supabase remoto antes de probar el formulario; las reviews antiguas sin `tags` siguen funcionando por default vacío.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.

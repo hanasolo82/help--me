@@ -19,6 +19,7 @@ import Chat from "../../pages/Chat/Chat";
 import Chats from "../../pages/Chats/Chats";
 import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
+import TaskReviewPage from "../../pages/TaskReview/TaskReviewPage";
 import SettingsPage from "../../pages/Settings/SettingsPage";
 import Cookies from "../../pages/Legal/Cookies";
 import CommunityGuidelines from "../../pages/Legal/CommunityGuidelines";
@@ -51,6 +52,7 @@ export default function AppRouter() {
       <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/task/:id" element={<RequireAuth><TaskDetail /></RequireAuth>} />
       <Route path="/task/:id/payment" element={<RequireAuth><TaskPaymentPage /></RequireAuth>} />
+      <Route path="/task/:id/review" element={<RequireAuth><TaskReviewPage /></RequireAuth>} />
       <Route path="/create" element={<RequireAuth><CreateTask /></RequireAuth>} />
       <Route path="/chat/:id" element={<RequireAuth><Chat /></RequireAuth>} />
       <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />

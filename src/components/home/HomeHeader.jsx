@@ -3,6 +3,7 @@ import styles from '../../pages/Home/Home.module.css'
 import AnimatedDropdown from '../../shared/ui/AnimatedDropdown'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import { THEME_DARK } from '../../shared/theme/themePreferences'
+import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
 
 export default function HomeHeader({
   displayName,
@@ -60,6 +61,8 @@ export default function HomeHeader({
   const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
   const unreadMessageCount = notificationSummary?.unreadMessageCount || 0
   const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
+  const unreadConversations = notificationSummary?.unreadConversations || []
+  const firstUnreadConversation = unreadConversations[0] || null
   const pendingConfirmationCount = notificationSummary?.pendingConfirmationCount || 0
   const pendingConfirmationTasks = notificationSummary?.pendingConfirmationTasks || []
   const firstPendingConfirmationTask = pendingConfirmationTasks[0] || null
@@ -92,7 +95,7 @@ export default function HomeHeader({
     <>
       <header className={`${styles.header} ${showZoneSearch ? styles.headerWithSearch : ''}`}>
         <div className={styles.headerIdentity}>
-          <h1 className={styles.logo}>helpMe</h1>
+          <BrandLogo size="sm" variant="auto" className={styles.logo} />
           <p className="muted">Hola, {displayName}</p>
         </div>
 
@@ -160,8 +163,43 @@ export default function HomeHeader({
           >
             <AnimatedDropdown.Group title="Notificaciones">
               <div className={styles.notificationPanel}>
+                {unreadMessageCount > 0 ? (
+                  <section className={styles.notificationSection}>
+                    <p className={styles.notificationSectionLabel}>Mensajes</p>
+                    <p className={styles.notificationTitle}>
+                      {firstUnreadConversation
+                        ? `Nuevo mensaje de ${firstUnreadConversation.senderName}`
+                        : unreadMessageCount === 1
+                          ? 'Tienes 1 mensaje sin leer'
+                          : `Tienes ${unreadMessageCount} mensajes sin leer`}
+                    </p>
+                    <p className={styles.notificationMeta}>
+                      {firstUnreadConversation?.preview || (
+                        unreadConversationCount === 1
+                          ? 'En 1 conversación pendiente.'
+                          : `En ${unreadConversationCount} conversaciones pendientes.`
+                      )}
+                    </p>
+                    <button
+                      type="button"
+                      className={styles.notificationCta}
+                      onClick={() => {
+                        setNotificationsOpen(false)
+                        if (firstUnreadConversation?.id) {
+                          onOpenChats?.(firstUnreadConversation.id)
+                          return
+                        }
+                        onOpenChats?.()
+                      }}
+                    >
+                      Abrir chat
+                    </button>
+                  </section>
+                ) : null}
+
                 {pendingConfirmationCount > 0 ? (
-                  <>
+                  <section className={styles.notificationSection}>
+                    <p className={styles.notificationSectionLabel}>Tareas pendientes</p>
                     <p className={styles.notificationTitle}>
                       {firstPendingConfirmationTask
                         ? `${firstPendingConfirmationTask.helperName} ha aceptado tu tarea “${firstPendingConfirmationTask.title}”.`
@@ -170,51 +208,24 @@ export default function HomeHeader({
                           : `${pendingConfirmationCount} helpers han aceptado tus tareas.`}
                     </p>
                     <p className={styles.notificationMeta}>Decide si quieres confirmar y pagar o rechazar esta oferta.</p>
-                  </>
+                    <button
+                      type="button"
+                      className={styles.notificationCta}
+                      onClick={() => {
+                        setNotificationsOpen(false)
+                        onReviewAcceptedTask?.(firstPendingConfirmationTask?.id)
+                      }}
+                    >
+                      Decidir ahora
+                    </button>
+                  </section>
                 ) : null}
 
-                {unreadMessageCount > 0 ? (
-                  <>
-                    <p className={styles.notificationTitle}>
-                      Tienes {unreadMessageCount} {unreadMessageCount === 1 ? 'mensaje sin leer' : 'mensajes sin leer'}
-                    </p>
-                    <p className={styles.notificationMeta}>
-                      {unreadConversationCount === 1
-                        ? 'En 1 conversación pendiente.'
-                        : `En ${unreadConversationCount} conversaciones pendientes.`}
-                    </p>
-                  </>
-                ) : pendingConfirmationCount === 0 ? (
+                {totalNotificationCount === 0 ? (
                   <>
                     <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
                     <p className={styles.notificationMeta}>Cuando lleguen mensajes pendientes, aparecerán aquí.</p>
                   </>
-                ) : null}
-
-                {pendingConfirmationCount > 0 ? (
-                  <button
-                    type="button"
-                    className={styles.notificationCta}
-                    onClick={() => {
-                      setNotificationsOpen(false)
-                      onReviewAcceptedTask?.(firstPendingConfirmationTask?.id)
-                    }}
-                  >
-                    Decidir ahora
-                  </button>
-                ) : null}
-
-                {unreadMessageCount > 0 ? (
-                  <button
-                    type="button"
-                    className={styles.notificationCta}
-                    onClick={() => {
-                      setNotificationsOpen(false)
-                      onOpenChats?.()
-                    }}
-                  >
-                    Ver mensajes
-                  </button>
                 ) : null}
 
                 {totalNotificationCount === 0 ? (

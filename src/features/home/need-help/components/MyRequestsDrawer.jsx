@@ -26,6 +26,7 @@ export default function MyRequestsDrawer({
   onOpenPayment,
   onOpenSummary,
   onReview,
+  reviewedTaskIds,
 }) {
   useEffect(() => {
     if (!open || variant === 'inline') return undefined
@@ -86,6 +87,7 @@ export default function MyRequestsDrawer({
                       onOpenPayment={onOpenPayment}
                       onOpenSummary={onOpenSummary}
                       onReview={onReview}
+                      reviewedTaskIds={reviewedTaskIds}
                     />
                   ))}
                 </div>

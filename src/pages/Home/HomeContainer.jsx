@@ -41,17 +41,31 @@ function getAcceptedHelperName(task) {
   return profile.display_name || profile.full_name || profile.username || 'Un helper'
 }
 
+function getConversationSenderName(conversation, userId) {
+  const participant = conversation?.participants?.find((item) => item.user_id !== userId)
+  const profile = participant?.profile || conversation?.other_user || {}
+  return profile.display_name || profile.full_name || profile.username || 'Alguien'
+}
+
 function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
   if (!userId) {
     return {
       unreadMessageCount: 0,
       unreadConversationCount: 0,
+      unreadConversations: [],
       pendingConfirmationCount: 0,
       pendingConfirmationTasks: [],
     }
   }
 
   const unreadConversations = (chats || []).filter((chat) => isUnreadConversation(chat, userId))
+  const unreadConversationSummaries = unreadConversations.map((conversation) => ({
+    id: conversation.id,
+    senderName: getConversationSenderName(conversation, userId),
+    preview: conversation.latest_message?.deleted_at
+      ? 'Mensaje eliminado'
+      : conversation.latest_message?.body || conversation.latest_message?.content || 'Nuevo mensaje',
+  }))
   const pendingConfirmationTasks = (requesterTasks || [])
     .filter((task) => task.status === 'assigned')
     .map((task) => ({
@@ -63,6 +77,7 @@ function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
   return {
     unreadMessageCount: unreadConversations.length,
     unreadConversationCount: unreadConversations.length,
+    unreadConversations: unreadConversationSummaries,
     pendingConfirmationCount: pendingConfirmationTasks.length,
     pendingConfirmationTasks,
   }
@@ -224,6 +239,18 @@ export default function HomeContainer() {
   const handleOpenFavorites = useCallback(() => {
     navigate('/profile', { state: { section: 'favorites' } })
   }, [navigate])
+
+  const handleOpenChats = useCallback(
+    (conversationId = null) => {
+      if (conversationId) {
+        navigate(`/chat/${conversationId}`)
+        return
+      }
+
+      openChatsModal()
+    },
+    [navigate, openChatsModal],
+  )
 
   const handleOpenSettings = useCallback(() => {
     navigate('/settings')
@@ -398,7 +425,7 @@ export default function HomeContainer() {
         avatarUrl={profile?.avatar_url || null}
         userInitial={userInitial}
         onOpenHelper={handleOpenHelperMode}
-        onOpenChats={openChatsModal}
+        onOpenChats={handleOpenChats}
         onOpenFavorites={handleOpenFavorites}
         onOpenMyRequests={isHelperMode ? undefined : handleOpenMyRequests}
         onOpenSettings={handleOpenSettings}

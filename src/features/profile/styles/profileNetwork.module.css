@@ -343,6 +343,19 @@
   gap: 0.45rem;
 }
 
+.reviewTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.reviewTags .reviewBadge {
+  min-height: 2rem;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-primary) 78%, var(--color-text));
+  box-shadow: none;
+}
+
 .verificationList {
   display: grid;
   gap: 0.55rem;

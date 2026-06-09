@@ -1,0 +1,160 @@
+.panel {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 38rem);
+  padding: clamp(1rem, 4vw, 1.35rem);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 36%),
+    var(--color-surface);
+  box-shadow:
+    0 24px 64px rgba(15, 23, 42, 0.12),
+    0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.header {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.avatar {
+  width: 3.1rem;
+  height: 3.1rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(41, 171, 255, 0.86));
+  color: var(--color-surface);
+  font-weight: 900;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fieldset {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fieldset legend,
+.commentField span {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.stars {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.star {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(15, 23, 42, 0.28);
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.star:hover,
+.star:focus-visible {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  outline: 0;
+}
+
+.starActive {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-primary);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 2.35rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999rem;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.chipActive {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-text), color-mix(in srgb, var(--color-primary) 72%, var(--color-text)));
+  color: var(--color-surface);
+}
+
+.commentField {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.commentField textarea {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  font: inherit;
+  line-height: 1.5;
+  padding: 0.85rem 0.95rem;
+}
+
+.commentField textarea:focus {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  outline: 0;
+}
+
+@media (max-width: 42rem) {
+  .stars {
+    justify-content: space-between;
+  }
+
+  .star {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+}

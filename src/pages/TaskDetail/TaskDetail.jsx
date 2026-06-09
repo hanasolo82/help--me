@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { acceptTask, rejectAssignedHelper } from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
+import { getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import messageIcon from '../../assets/icons/message.svg'
 
@@ -113,10 +114,18 @@ export default function TaskDetail() {
   const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
+  const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
   const canOpenChat =
     Boolean(task) &&
     ((task.status === 'open' && !isOwner) ||
       (['in_progress', 'completed', 'closed'].includes(task.status) && (isOwner || isHelper)))
+
+  const helperReviewQuery = useQuery({
+    queryKey: ['task-review', id, task?.accepted_by || null],
+    queryFn: () => getMyReviewForTask(id, task.accepted_by),
+    enabled: canReviewHelper,
+    staleTime: 30_000,
+  })
 
   async function handleAccept() {
     acceptMutation.mutate()
@@ -232,6 +241,12 @@ export default function TaskDetail() {
         </p>
       )}
 
+      {location.state?.reviewSaved && (
+        <p className="auth-message">
+          Valoración publicada. Ya aparece en el perfil del helper.
+        </p>
+      )}
+
       {isOwner && task.status === 'assigned' && (
         <section className="detail-panel">
           <p className="eyebrow">Pendiente de confirmación</p>
@@ -314,6 +329,22 @@ export default function TaskDetail() {
           >
             Confirmar finalización
           </button>
+        )}
+
+        {canReviewHelper && (
+          helperReviewQuery.data ? (
+            <button type="button" className="secondary-action sticky-action" disabled>
+              Valorada
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="primary-action sticky-action"
+              onClick={() => navigate(`/task/${id}/review`)}
+            >
+              Valorar helper
+            </button>
+          )
         )}
       </div>
 

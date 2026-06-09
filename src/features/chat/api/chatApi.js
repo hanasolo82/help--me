@@ -455,7 +455,7 @@ export async function markConversationAsRead(conversationId) {
   assertSupabaseReady()
 
   const { error } = await supabase.rpc('mark_conversation_as_read', {
-    conversation_id: conversationId,
+    p_conversation_id: conversationId,
   })
 
   if (error) {

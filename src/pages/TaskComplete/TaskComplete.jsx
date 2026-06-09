@@ -5,7 +5,7 @@ import { getTaskById, markTaskCompleted } from '../../services/tasksService'
 import { releaseTaskPayment } from '../../services/paymentsService'
 import { getOrCreateChatByTaskId } from '../../services/chatService'
 
-// Pantalla de cierre: el creador confirma completada. No hay tabla ratings en este esquema.
+// Pantalla de cierre: el creador confirma completada. La valoración vive en public.reviews.
 export default function TaskComplete() {
   const { id: taskId } = useParams()
   const navigate = useNavigate()
@@ -52,7 +52,6 @@ export default function TaskComplete() {
       await releaseTaskPayment(task.id)
 
       setStatus('done')
-      navigate(`/task/${task.id}`, { replace: true })
     } catch (err) {
       setStatus('error')
       setError(err.message || 'No se pudo cerrar la tarea.')
@@ -114,6 +113,30 @@ export default function TaskComplete() {
             <button className="primary-action" onClick={handleReject}>
               Volver al chat
             </button>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
+  if (status === 'done') {
+    return (
+      <main className="app-screen center-screen">
+        <section className="completion-panel">
+          <p className="eyebrow">Tarea cerrada</p>
+          <h1>La tarea se ha completado</h1>
+          <p className="muted">
+            Gracias por confirmar el cierre. Ya puedes valorar al helper para ayudar a otros requesters.
+          </p>
+          <div className="two-actions">
+            <button className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
+              Volver al detalle
+            </button>
+            {task.accepted_by && (
+              <button className="primary-action" onClick={() => navigate(`/task/${task.id}/review`)}>
+                Valorar helper
+              </button>
+            )}
           </div>
         </section>
       </main>

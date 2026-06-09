@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../../contexts/useAuth'
 import { getConversationById, markConversationAsRead } from '../api/chatApi'
 
 export function useConversation(conversationId) {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: ['conversation', conversationId],
     queryFn: () => getConversationById(conversationId),
@@ -15,8 +18,12 @@ export function useConversation(conversationId) {
       return undefined
     }
 
-    markConversationAsRead(conversationId).catch(() => {})
-  }, [conversationId, query.data])
+    markConversationAsRead(conversationId)
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] })
+      })
+      .catch(() => {})
+  }, [conversationId, query.data, queryClient, user?.id])
 
   return {
     conversation: query.data || null,

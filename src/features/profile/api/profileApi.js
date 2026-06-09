@@ -89,7 +89,9 @@ export async function getProfileReviews(profileId) {
       punctuality_rating,
       trust_rating,
       comment,
+      tags,
       created_at,
+      updated_at,
       task:tasks!reviews_task_id_fkey (
         id,
         title,

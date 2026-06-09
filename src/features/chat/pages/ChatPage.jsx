@@ -54,6 +54,7 @@ export default function ChatPage() {
 
   const counterpartProfile = counterpart?.profile || null
   const counterpartName = getDisplayName(counterpartProfile)
+  const counterpartInitial = counterpartName.charAt(0).toUpperCase()
 
   useEffect(() => {
     if (!stickToBottomRef.current) return
@@ -113,10 +114,17 @@ export default function ChatPage() {
           <button type="button" className="icon-button" onClick={() => navigate('/chats')} aria-label="Volver">
             {'<'}
           </button>
-          <div>
-            <p className="eyebrow">Conversacion privada</p>
+          <span className="chat-contact-avatar" aria-hidden="true">
+            {counterpartProfile?.avatar_url ? <img src={counterpartProfile.avatar_url} alt="" /> : counterpartInitial}
+          </span>
+          <div className="chat-contact-copy">
+            <p className="eyebrow">Conversación privada</p>
             <h1>{counterpartName}</h1>
-            <p>{conversation.last_message_at ? `Ultima actividad ${new Date(conversation.last_message_at).toLocaleString('es-ES')}` : 'Sin actividad todavia'}</p>
+            <p>
+              {conversation.last_message_at
+                ? `Última actividad ${new Date(conversation.last_message_at).toLocaleString('es-ES')}`
+                : 'Sin actividad todavía'}
+            </p>
           </div>
         </header>
       }

@@ -25,17 +25,17 @@ export default function MessageBubble({
               </button>
             )}
             {onDelete && (
-              <button type="button" className={styles.actionLink} onClick={() => onDelete(message)} aria-label="Borrar mensaje" title="Borrar mensaje">
-                x
+              <button type="button" className={styles.iconAction} onClick={() => onDelete(message)} aria-label="Borrar mensaje" title="Borrar mensaje">
+                ×
               </button>
             )}
           </div>
         )}
-        {isOwn && isTemporary && isSending && <span className={styles.badge}>pendiente</span>}
+        {isOwn && isTemporary && isSending && <span className={styles.statusText}>pendiente</span>}
       </div>
 
       {isDeleted ? (
-        <span className={`${styles.content} ${styles.mutedContent}`.trim()}>Mensaje eliminado</span>
+        <span className={styles.deletedContent}>Mensaje eliminado</span>
       ) : (
         <span className={styles.content}>{message.body || message.content}</span>
       )}
@@ -44,8 +44,8 @@ export default function MessageBubble({
         <time className={styles.meta} dateTime={message.created_at}>
           {formatMessageTimestamp(message.created_at)}
         </time>
-        {isEdited && <span className={styles.badge}>editado</span>}
-        {isSending && <span className={styles.badge}>enviando</span>}
+        {isEdited && <span className={styles.statusText}>editado</span>}
+        {isSending && <span className={styles.statusText}>enviando</span>}
         {isFailed && onRetry && (
           <button type="button" className={styles.errorAction} onClick={() => onRetry(message)}>
             Reintentar

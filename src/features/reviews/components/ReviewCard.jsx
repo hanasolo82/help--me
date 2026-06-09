@@ -13,6 +13,7 @@ export default function ReviewCard({ review }) {
   const reviewerName = reviewer.display_name || reviewer.full_name || reviewer.username || 'Vecino'
   const initial = getAvatarInitial(reviewerName)
   const taskTitle = review?.task?.title || 'Tarea completada'
+  const tags = Array.isArray(review?.tags) ? review.tags.filter(Boolean) : []
 
   return (
     <article className={styles.reviewCard}>
@@ -29,6 +30,14 @@ export default function ReviewCard({ review }) {
 
       <p className="muted">{review.comment || 'Sin comentario adicional.'}</p>
 
+      {tags.length > 0 && (
+        <div className={styles.reviewTags}>
+          {tags.map((tag) => (
+            <span key={tag} className={styles.reviewBadge}>{tag}</span>
+          ))}
+        </div>
+      )}
+
       <div className={styles.reviewScores}>
         <span className={styles.reviewBadge}>⭐ {review.rating}/5</span>
         <span className={styles.reviewBadge}>💬 {scoreLabel(review.communication_rating)}</span>
@@ -38,4 +47,3 @@ export default function ReviewCard({ review }) {
     </article>
   )
 }
-

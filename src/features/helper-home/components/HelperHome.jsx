@@ -4,7 +4,7 @@ import { createOrGetDirectConversation } from '../../../services/chatService'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
-import { getHelperStatusCopy, getLocationLabel } from '../../profile/utils/profileFormatters'
+import { getLocationLabel } from '../../profile/utils/profileFormatters'
 import styles from '../styles/helperHome.module.css'
 
 const DEFAULT_CENTER = { latitude: 41.6523, longitude: -0.9019, label: 'Tu zona' }
@@ -127,7 +127,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [mapBounds, setMapBounds] = useState(null)
 
-  const helperStatusCopy = getHelperStatusCopy(profile)
   const center = buildCenter(helperHomeProps.mapLocation, profile)
   const allMapEntries = useMemo(
     () => buildMapEntries(helperHomeProps.visibleTasks || [], helperHomeProps.currentUserId, profile),
@@ -191,27 +190,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     navigate(`/task/${task.id}`)
   }
 
-  const selectedTaskDetails = selectedTask
-    ? [
-        {
-          label: 'Estado',
-          value: selectedTask.status === 'open' ? 'Abierta' : selectedTask.status,
-        },
-        {
-          label: 'Distancia',
-          value: Number.isFinite(Number(selectedDistance)) ? `${Number(selectedDistance).toFixed(1)} km` : 'Sin distancia',
-        },
-        {
-          label: 'Zona',
-          value: formatTaskLocation(selectedTask),
-        },
-        {
-          label: 'Publicada',
-          value: formatTaskAge(selectedTask),
-        },
-      ]
-    : []
-
   return (
     <section className={styles.home}>
       <section className={styles.mapWorkspace} aria-label="Mapa de solicitudes activas">
@@ -264,21 +242,26 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
           <section className={styles.columnPanel} aria-label="Detalle de solicitud">
             <div className={styles.paneHeader}>
               <div>
-                <p className="eyebrow">Detalle</p>
-                <h3>Solicitud activa</h3>
-                <p className="muted">{selectedTask ? helperStatusCopy : 'Selecciona un marcador para cargar su detalle.'}</p>
+                <p className="eyebrow">Selección</p>
+                <h3>Solicitud seleccionada</h3>
+                <p className="muted">
+                  {selectedTask
+                    ? 'Revisa lo esencial y abre el detalle completo cuando quieras actuar.'
+                    : 'Selecciona un marcador para cargar su resumen.'}
+                </p>
               </div>
             </div>
 
             {selectedTask ? (
               <>
-                <div className={styles.profileSummaryList}>
-                  {selectedTaskDetails.map((item) => (
-                    <div key={item.label}>
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
-                    </div>
-                  ))}
+                <div className={styles.selectedTaskSummary}>
+                  <strong>{selectedTask.title}</strong>
+                  <p>{selectedTask.category} · {formatTaskLocation(selectedTask)}</p>
+                  <span>
+                    {Number.isFinite(Number(selectedDistance)) ? `${Number(selectedDistance).toFixed(1)} km` : 'Distancia no disponible'}
+                    {' · '}
+                    {formatTaskAge(selectedTask)}
+                  </span>
                 </div>
 
                 <div key={selectedTask.id} className={styles.selectionShell}>
