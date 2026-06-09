@@ -16,7 +16,7 @@ begin
       and t.relname = 'reviews'
       and c.contype = 'u'
       and (
-        select array_agg(a.attname order by keys.ordinality)
+        select array_agg(a.attname::text order by keys.ordinality)
         from unnest(c.conkey) with ordinality as keys(attnum, ordinality)
         join pg_attribute a on a.attrelid = c.conrelid and a.attnum = keys.attnum
       ) = array['task_id', 'reviewer_id', 'reviewed_user_id']::text[]

@@ -393,3 +393,17 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Qué se conserva: cierre de tarea, liberación de fondos, pagos, Stripe, chat protegido, perfil público existente y tabla `ratings` sin nuevos usos.
 - Riesgos: aplicar la migration en Supabase remoto antes de probar el formulario; las reviews antiguas sin `tags` siguen funcionando por default vacío.
 - Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## React tracker diagnostic phase 5D
+
+- Fecha: 2026-06-09
+- Selected agents:
+  - helpme-architect
+  - agent-worklog
+- Objetivo: diagnosticar y reparar el tracker React roto sin tocar producto, Supabase, Stripe, pagos ni chat.
+- Auditoría: el único tracker React activo en el repo es `react-scan`; no hay React Query Devtools, Sentry, PostHog, LogRocket, reportWebVitals ni tracking de rutas activo. `docs/analytics-plan.md` es planificación, no implementación.
+- Causa probable: `scan()` se ejecutaba en `main.jsx`, pero el módulo ya importaba React/ReactDOM al mismo nivel; React Scan puede fallar si no se importa antes de que React corra.
+- Cambios aplicados: `main.jsx` queda como entrada mínima y carga `react-scan/auto` solo si `VITE_REACT_SCAN=true`; el montaje real de React se movió a `bootstrap.jsx` para garantizar que el tracker se cargue antes de React cuando esté activado.
+- Decisión: React Scan queda desactivado por defecto incluso en dev para no interferir con React DevTools Profiler; se activa explícitamente con `VITE_REACT_SCAN=true`.
+- Riesgos: si se necesita tracking de nombres/fuente más detallado, puede añadirse después el plugin `react-scan/react-component-name/vite`; no se añadió para mantener scope estrecho.
+- Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
