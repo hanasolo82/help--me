@@ -1,4 +1,9 @@
-import { buildBackendUrl, readBackendError, STRIPE_SERVER_CONNECTION_ERROR } from '../../../lib/backendApi'
+import {
+  buildBackendUrl,
+  MISSING_BACKEND_URL_ERROR,
+  readBackendError,
+  STRIPE_SERVER_CONNECTION_ERROR,
+} from '../../../lib/backendApi'
 import { supabase } from '../../../lib/supabaseClient'
 
 async function getAccessToken() {
@@ -35,8 +40,12 @@ export async function startStripeConnectOnboarding() {
       },
       body: '{}',
     })
-  } catch {
-    throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(STRIPE_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
   if (!response.ok) {
@@ -65,8 +74,12 @@ export async function syncStripeConnectStatus() {
         'Content-Type': 'application/json',
       },
     })
-  } catch {
-    throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(STRIPE_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
   if (!response.ok) {

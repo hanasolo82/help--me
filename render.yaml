@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: helpme-api
+    runtime: node
+    rootDir: server
+    plan: starter
+    buildCommand: pnpm install --prod --frozen-lockfile --ignore-workspace
+    startCommand: pnpm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        value: https://helpme-community.com
+      - key: CLIENT_URL
+        value: https://helpme-community.com
+      - key: HELPME_PLATFORM_FEE_BPS
+        value: "0"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false

@@ -1,21 +1,15 @@
-const BACKEND_ENV_KEYS = [
-  'VITE_BACKEND_URL',
-  'VITE_API_BASE_URL',
-  'VITE_PAYMENTS_API_URL',
-  'VITE_API_URL',
-]
-
 function getConfiguredBackendUrl() {
-  for (const key of BACKEND_ENV_KEYS) {
-    const value = import.meta.env[key]
+  const value = import.meta.env.VITE_API_URL
 
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim().replace(/\/+$/, '')
-    }
+  if (typeof value === 'string' && value.trim()) {
+    return value.trim().replace(/\/+$/, '')
   }
 
   return ''
 }
+
+export const MISSING_BACKEND_URL_ERROR =
+  'Falta configurar VITE_API_URL con la URL pública del servidor de pagos.'
 
 export function getBackendBaseUrl() {
   const configuredUrl = getConfiguredBackendUrl()
@@ -24,16 +18,18 @@ export function getBackendBaseUrl() {
     return configuredUrl
   }
 
-  if (import.meta.env.DEV) {
-    return 'http://localhost:3001'
-  }
-
   return ''
 }
 
 export function buildBackendUrl(path) {
+  const baseUrl = getBackendBaseUrl()
+
+  if (!baseUrl) {
+    throw new Error(MISSING_BACKEND_URL_ERROR)
+  }
+
   const normalizedPath = String(path || '').startsWith('/') ? path : `/${path}`
-  return `${getBackendBaseUrl()}${normalizedPath}`
+  return `${baseUrl}${normalizedPath}`
 }
 
 export const PAYMENT_SERVER_CONNECTION_ERROR =

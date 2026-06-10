@@ -1,4 +1,9 @@
-import { buildBackendUrl, PAYMENT_SERVER_CONNECTION_ERROR, readBackendError } from '../lib/backendApi'
+import {
+  buildBackendUrl,
+  MISSING_BACKEND_URL_ERROR,
+  PAYMENT_SERVER_CONNECTION_ERROR,
+  readBackendError,
+} from '../lib/backendApi'
 import { supabase } from '../lib/supabaseClient'
 
 async function getAccessToken() {
@@ -57,8 +62,12 @@ export async function startTaskCheckout(taskId) {
       },
       body: JSON.stringify({ taskId }),
     })
-  } catch {
-    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
   if (!response.ok) {
@@ -88,8 +97,12 @@ export async function continueWithExternalPayment(taskId) {
       },
       body: JSON.stringify({ taskId }),
     })
-  } catch {
-    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
   if (!response.ok) {
@@ -128,8 +141,12 @@ export async function releaseTaskPayment(taskId) {
       },
       body: '{}',
     })
-  } catch {
-    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
   if (!response.ok) {

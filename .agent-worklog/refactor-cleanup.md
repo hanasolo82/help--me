@@ -447,3 +447,71 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Cambio local aplicado: añadida `VITE_BACKEND_URL=http://localhost:3001` al `.env` local para que el frontend local apunte al Express server local.
 - Acción pendiente de producción: configurar `VITE_BACKEND_URL` en Vercel/frontend con la URL pública real del backend, o crear proxy `/api/*`; configurar en el backend de producción `APP_URL=https://helpme-community.com` y `CLIENT_URL=https://helpme-community.com`.
 - Riesgos: si el backend de producción no está desplegado o no tiene URL pública HTTPS, Checkout no puede funcionar aunque el frontend esté correcto.
+
+## Vercel payments API URL correction
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - agent-worklog
+- Objetivo: hacer que el frontend desplegado en Vercel use `VITE_API_URL` como fuente única para el backend privado de pagos y evitar cualquier fallback productivo a `localhost:3001`.
+- Auditoría: `backendApi.js` todavía aceptaba aliases (`VITE_BACKEND_URL`, `VITE_API_BASE_URL`, `VITE_PAYMENTS_API_URL`) y tenía fallback dev a `http://localhost:3001`; `.env.example` documentaba `VITE_BACKEND_URL`; producción no tenía backend/proxy `/api` disponible.
+- Cambios aplicados: `buildBackendUrl()` exige `VITE_API_URL`; checkout, pago externo, release y Stripe Connect preservan el error explícito si falta esa variable; `.env.example` documenta `VITE_API_URL=https://your-backend.example.com`; `.env.local.example` documenta `VITE_API_URL=http://localhost:3001`; se añadió `docs/payment-backend-connection.md`.
+- Qué se conserva: endpoints Express, Checkout Sessions, webhooks, Authorization Bearer, CORS backend, lógica financiera, Stripe Connect y pagos Premium externos.
+- Riesgos: Vercel debe tener `VITE_API_URL` configurada antes del build y el backend debe estar desplegado públicamente; si la URL apunta al frontend (`helpme-community.com`) sin proxy `/api`, seguirá devolviendo 404.
+
+## Express payment backend deploy plan
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - deployment-agent
+  - agent-worklog
+- Objetivo: preparar la restauración del backend Express real para pagos en producción sin convertirlo a Vercel Functions ni cambiar arquitectura financiera.
+- Auditoría: Express arranca con `node server/index.js`; `server/package.json` declara `stripe`, por lo que el deploy debe instalar dependencias de `server/`; `server/index.js` expone `/health`, pagos, Stripe Connect y webhook raw; CORS depende de `APP_URL`/`CLIENT_URL`.
+- Cambios aplicados: añadido `docs/payment-backend-deploy.md` con comandos para Render/Railway/Fly, env vars, endpoints, CORS, Stripe webhook, Vercel `VITE_API_URL`, verificaciones y rollback; `server/.env.example` documenta `NODE_ENV` y `HELPME_PLATFORM_FEE_BPS`; `docs/payment-backend-connection.md` enlaza la guía de deploy.
+- Decisión: opción recomendada es servicio Node separado con Root Directory `server`; alternativa desde raíz usa `pnpm --dir server install --prod` y `node server/index.js`.
+- Riesgos: el backend debe tener URL HTTPS pública y webhook Stripe propio; si Vercel apunta `VITE_API_URL` a un dominio sin backend o sin proxy `/api`, checkout seguirá fallando.
+
+## Render blueprint for payment backend
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - deployment-agent
+  - agent-worklog
+- Objetivo: facilitar el despliegue del backend Express de pagos en Render sin adaptar la arquitectura a Vercel Functions.
+- Cambios aplicados: añadido `render.yaml` con servicio `helpme-api`, root `server`, build `corepack enable && pnpm install --prod`, start `node index.js`, healthcheck `/health` y variables secretas marcadas como `sync: false`; actualizada `docs/payment-backend-deploy.md` con el flujo de Render Blueprint.
+- Qué se conserva: lógica financiera, Stripe Checkout, Stripe Connect, webhook raw, Supabase service role server-side, CORS por `APP_URL`/`CLIENT_URL`.
+- Riesgos: Render debe recibir manualmente los secretos; tras obtener la URL pública hay que configurar `VITE_API_URL` en Vercel y registrar el webhook de Stripe contra esa URL.
+- Validación: healthcheck local `http://localhost:3001/health` correcto con `{"ok":true,"service":"helpme-api"}`.
+
+## Render Stripe dependency startup fix
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - deployment-agent
+  - agent-worklog
+- Objetivo: corregir el fallo de arranque en Render `Cannot find package 'stripe'` sin tocar lógica financiera.
+- Diagnóstico: `server/package.json` ya declaraba `stripe` en `dependencies`, pero `server/pnpm-lock.yaml` estaba desalineado y lo mantenía bajo `devDependencies`; además, al ejecutar pnpm dentro de `server/`, pnpm detecta el `pnpm-workspace.yaml` del repo raíz, por lo que Render podía instalar el workspace raíz en vez del backend independiente. Con `pnpm install --prod`, Stripe quedaba fuera y el import de `server/services/stripe.service.js` fallaba al iniciar.
+- Cambios aplicados: `server/pnpm-lock.yaml` queda alineado con `stripe` como dependencia runtime; `server/package.json` declara `packageManager` y Node `>=20`; `render.yaml` usa `corepack enable && pnpm install --prod --frozen-lockfile --ignore-workspace` y `pnpm start`; `docs/payment-backend-deploy.md` se actualiza con los comandos finales.
+- Qué se conserva: Express, Stripe Checkout, Stripe Connect, webhook raw, Supabase service role server-side, endpoints y lógica de pagos.
+- Acción necesaria en Render: hacer `Clear build cache & deploy` para evitar cache de `node_modules` sin Stripe.
+
+## Render pnpm readonly filesystem fix
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - deployment-agent
+  - agent-worklog
+- Objetivo: corregir el fallo de Render `EROFS: read-only file system, unlink '/usr/bin/pnpm'`.
+- Diagnóstico: `corepack enable` intenta modificar el binario global de pnpm en `/usr/bin/pnpm`; en Render ese path es de solo lectura, por lo que el build falla antes de instalar dependencias.
+- Cambios aplicados: `render.yaml` y `docs/payment-backend-deploy.md` usan `pnpm install --prod --frozen-lockfile --ignore-workspace` sin `corepack enable`.
+- Acción necesaria en Render: actualizar el Build Command y volver a desplegar con `Clear build cache & deploy`.

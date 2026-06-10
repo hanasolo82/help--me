@@ -20,7 +20,6 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.22.2
-    devDependencies:
       stripe:
         specifier: ^17.0.0
         version: 17.7.0
