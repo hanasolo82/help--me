@@ -515,3 +515,17 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Diagnóstico: `corepack enable` intenta modificar el binario global de pnpm en `/usr/bin/pnpm`; en Render ese path es de solo lectura, por lo que el build falla antes de instalar dependencias.
 - Cambios aplicados: `render.yaml` y `docs/payment-backend-deploy.md` usan `pnpm install --prod --frozen-lockfile --ignore-workspace` sin `corepack enable`.
 - Acción necesaria en Render: actualizar el Build Command y volver a desplegar con `Clear build cache & deploy`.
+
+## Vercel Stripe return SPA fallback
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - deployment-agent
+  - agent-worklog
+- Objetivo: corregir el `404: NOT_FOUND` de Vercel al volver de Stripe Checkout a `/stripe/return`.
+- Diagnóstico: React Router sí define `/stripe/return`, pero Vercel no tenía rewrite SPA; al cargar directamente una ruta profunda, Vercel buscaba un archivo/ruta serverless y devolvía 404 antes de que React pudiera montar.
+- Cambios aplicados: añadido `vercel.json` con rewrite de rutas frontend a `/index.html`, excluyendo `/api/*` para no bloquear una futura API/proxy.
+- Qué se conserva: Stripe Checkout, webhook, backend Render, `StripeReturn.jsx`, rutas React y flujo de pagos.
+- Acción necesaria en Vercel: redeploy del frontend para que la rewrite entre en producción.
