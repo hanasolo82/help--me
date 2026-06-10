@@ -435,3 +435,15 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Qué se conserva: creación real de Checkout, validaciones financieras, Stripe, pagos, RLS, tareas y webhooks.
 - Riesgos: si producción devuelve 404, sigue indicando que falta configurar backend/proxy; no repara por sí solo la ausencia de `VITE_BACKEND_URL` o proxy `/api`.
 - Validación: `pnpm run lint` correcto, `pnpm run build` correcto y `node --check server/services/payments.service.js` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Payments production env diagnosis
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - agent-worklog
+- Diagnóstico: `server/.env` existe y el backend local carga sus secretos correctamente, pero el servidor local tiene `APP_URL` y `CLIENT_URL` en `http://localhost:5173`; el frontend `.env` no tenía `VITE_BACKEND_URL`; producción en `https://helpme-community.com/api/payments/checkout` devuelve 404 de Vercel, confirmando que no hay backend/proxy `/api` en el dominio principal.
+- Cambio local aplicado: añadida `VITE_BACKEND_URL=http://localhost:3001` al `.env` local para que el frontend local apunte al Express server local.
+- Acción pendiente de producción: configurar `VITE_BACKEND_URL` en Vercel/frontend con la URL pública real del backend, o crear proxy `/api/*`; configurar en el backend de producción `APP_URL=https://helpme-community.com` y `CLIENT_URL=https://helpme-community.com`.
+- Riesgos: si el backend de producción no está desplegado o no tiene URL pública HTTPS, Checkout no puede funcionar aunque el frontend esté correcto.
