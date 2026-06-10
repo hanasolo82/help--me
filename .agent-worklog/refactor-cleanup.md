@@ -407,3 +407,17 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Decisión: React Scan queda desactivado por defecto incluso en dev para no interferir con React DevTools Profiler; se activa explícitamente con `VITE_REACT_SCAN=true`.
 - Riesgos: si se necesita tracking de nombres/fuente más detallado, puede añadirse después el plugin `react-scan/react-component-name/vite`; no se añadió para mantener scope estrecho.
 - Validación: `pnpm run lint` correcto y `pnpm run build` correcto. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Payments backend URL production fix
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - agent-worklog
+- Objetivo: evitar que el frontend desplegado use `http://localhost:3001` para checkout, pago externo, release y Stripe Connect.
+- Auditoría: `paymentsService.js` y `stripeConnectService.js` leían `VITE_API_URL` y caían a `http://localhost:3001`; `.env.example` documentaba `VITE_API_URL=http://localhost:3001`; no hay `vercel.json` ni URL real de backend de producción en el repo.
+- Cambios aplicados: creado `src/lib/backendApi.js` como fuente central de URL; se prioriza `VITE_BACKEND_URL` y se mantiene compatibilidad con `VITE_API_BASE_URL`, `VITE_PAYMENTS_API_URL` y `VITE_API_URL`; en producción sin env se usa ruta relativa `/api/...`, no localhost; los errores de conexión ya no muestran URL interna al usuario.
+- Qué se conserva: endpoints Express, Authorization Bearer, Checkout, pago externo Premium, release de pago, Stripe Connect y toda la lógica financiera/backend.
+- Riesgos: producción debe configurar `VITE_BACKEND_URL=https://URL_REAL_DEL_BACKEND` salvo que exista proxy same-domain para `/api`; el backend debe permitir CORS desde `https://helpme-community.com` mediante `CLIENT_URL`/`APP_URL`.
+- Validación: `pnpm run lint` correcto, `pnpm run build` correcto y comprobación de `dist/assets/*.js` sin `localhost:3001`, sin `http://localhost:3001` y sin el mensaje antiguo que exponía la URL interna. Build mantiene warning conocido de chunk grande/plugin timings.

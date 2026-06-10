@@ -1,9 +1,5 @@
+import { buildBackendUrl, PAYMENT_SERVER_CONNECTION_ERROR } from '../lib/backendApi'
 import { supabase } from '../lib/supabaseClient'
-
-function getApiBaseUrl() {
-  const value = import.meta.env.VITE_API_URL
-  return typeof value === 'string' && value.trim() ? value.trim().replace(/\/+$/, '') : 'http://localhost:3001'
-}
 
 async function getAccessToken() {
   if (!supabase) {
@@ -53,7 +49,7 @@ export async function startTaskCheckout(taskId) {
   let response
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/api/payments/checkout`, {
+    response = await fetch(buildBackendUrl('/api/payments/checkout'), {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -62,9 +58,7 @@ export async function startTaskCheckout(taskId) {
       body: JSON.stringify({ taskId }),
     })
   } catch {
-    throw new Error(
-      `No pudimos conectar con el servidor de pagos en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
-    )
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
   const payload = await response.json().catch(() => ({}))
@@ -86,7 +80,7 @@ export async function continueWithExternalPayment(taskId) {
   let response
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/api/payments/external`, {
+    response = await fetch(buildBackendUrl('/api/payments/external'), {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -95,9 +89,7 @@ export async function continueWithExternalPayment(taskId) {
       body: JSON.stringify({ taskId }),
     })
   } catch {
-    throw new Error(
-      `No pudimos conectar con el servidor de pagos en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
-    )
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
   const payload = await response.json().catch(() => ({}))
@@ -128,7 +120,7 @@ export async function releaseTaskPayment(taskId) {
   let response
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/api/payments/${payment.id}/release`, {
+    response = await fetch(buildBackendUrl(`/api/payments/${payment.id}/release`), {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -137,9 +129,7 @@ export async function releaseTaskPayment(taskId) {
       body: '{}',
     })
   } catch {
-    throw new Error(
-      `No pudimos conectar con el servidor de pagos en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
-    )
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
   const payload = await response.json().catch(() => ({}))

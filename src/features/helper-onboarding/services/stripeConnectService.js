@@ -1,9 +1,5 @@
+import { buildBackendUrl, STRIPE_SERVER_CONNECTION_ERROR } from '../../../lib/backendApi'
 import { supabase } from '../../../lib/supabaseClient'
-
-function getApiBaseUrl() {
-  const value = import.meta.env.VITE_API_URL
-  return typeof value === 'string' && value.trim() ? value.trim().replace(/\/+$/, '') : 'http://localhost:3001'
-}
 
 async function getAccessToken() {
   if (!supabase) {
@@ -31,7 +27,7 @@ export async function startStripeConnectOnboarding() {
   let response
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/api/stripe/connect/account-link`, {
+    response = await fetch(buildBackendUrl('/api/stripe/connect/account-link'), {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -40,9 +36,7 @@ export async function startStripeConnectOnboarding() {
       body: '{}',
     })
   } catch {
-    throw new Error(
-      `No pudimos conectar con el servidor de Stripe en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
-    )
+    throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
   }
 
   const payload = await response.json().catch(() => ({}))
@@ -64,7 +58,7 @@ export async function syncStripeConnectStatus() {
   let response
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/api/stripe/connect/account-status`, {
+    response = await fetch(buildBackendUrl('/api/stripe/connect/account-status'), {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -72,9 +66,7 @@ export async function syncStripeConnectStatus() {
       },
     })
   } catch {
-    throw new Error(
-      `No pudimos sincronizar el estado de Stripe con el servidor en ${getApiBaseUrl()}. Asegúrate de que el backend esté arrancado.`,
-    )
+    throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
   }
 
   const payload = await response.json().catch(() => ({}))
