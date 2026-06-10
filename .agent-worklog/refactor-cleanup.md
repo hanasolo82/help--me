@@ -421,3 +421,17 @@ Nota: actualización inicial completada. Próximo: búsqueda automática de dupl
 - Qué se conserva: endpoints Express, Authorization Bearer, Checkout, pago externo Premium, release de pago, Stripe Connect y toda la lógica financiera/backend.
 - Riesgos: producción debe configurar `VITE_BACKEND_URL=https://URL_REAL_DEL_BACKEND` salvo que exista proxy same-domain para `/api`; el backend debe permitir CORS desde `https://helpme-community.com` mediante `CLIENT_URL`/`APP_URL`.
 - Validación: `pnpm run lint` correcto, `pnpm run build` correcto y comprobación de `dist/assets/*.js` sin `localhost:3001`, sin `http://localhost:3001` y sin el mensaje antiguo que exponía la URL interna. Build mantiene warning conocido de chunk grande/plugin timings.
+
+## Checkout error response diagnostics
+
+- Fecha: 2026-06-10
+- Selected agents:
+  - helpme-architect
+  - backend-stripe-agent
+  - agent-worklog
+- Objetivo: reemplazar el mensaje opaco `No pudimos preparar el checkout` por respuestas accionables cuando el backend responde con error o cuando `/api/payments/checkout` no existe en producción.
+- Auditoría: `paymentsService.js` solo leía `response.json()` y si la respuesta era HTML/404 o JSON vacío caía al fallback genérico; `createTaskCheckout` lanzaba errores de dominio sin `statusCode`, por lo que Express podía convertirlos en 500 `Internal server error`.
+- Cambios aplicados: `readBackendError()` interpreta JSON, 401, 404 y 5xx; checkout, pago externo, release y Stripe Connect usan ese parser; errores esperables de checkout (`tarea no existe`, `tarea ajena`, `estado no assigned`, `sin helper`, `helper sin Stripe Connect`, pago ya finalizado o inconsistente) devuelven status HTTP seguro.
+- Qué se conserva: creación real de Checkout, validaciones financieras, Stripe, pagos, RLS, tareas y webhooks.
+- Riesgos: si producción devuelve 404, sigue indicando que falta configurar backend/proxy; no repara por sí solo la ausencia de `VITE_BACKEND_URL` o proxy `/api`.
+- Validación: `pnpm run lint` correcto, `pnpm run build` correcto y `node --check server/services/payments.service.js` correcto. Build mantiene warning conocido de chunk grande/plugin timings.

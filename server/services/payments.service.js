@@ -28,6 +28,12 @@ const TERMINAL_PAYMENT_STATUSES = new Set([
   'external_agreed',
 ])
 
+function createPaymentError(message, statusCode = 400) {
+  const error = new Error(message)
+  error.statusCode = statusCode
+  return error
+}
+
 function ensureSupabaseAdmin() {
   if (!supabaseAdmin) {
     throw new Error('Supabase admin client is not configured.')
@@ -204,7 +210,7 @@ async function getHelperConnectAccount(helperProfileId) {
     !connectAccount.payouts_enabled ||
     !connectAccount.details_submitted
   ) {
-    throw new Error('El helper no tiene Stripe Connect activo.')
+    throw createPaymentError('El helper no tiene Stripe Connect activo.', 409)
   }
 
   return connectAccount
@@ -228,11 +234,11 @@ async function getOrCreateCheckoutPayment({ task, requesterId, helperId, amounts
 
   if (existingPayment) {
     if (existingPayment.requester_profile_id !== requesterId || existingPayment.helper_profile_id !== helperId) {
-      throw new Error('La tarea tiene un pago asociado que no coincide con los participantes actuales.')
+      throw createPaymentError('La tarea tiene un pago asociado que no coincide con los participantes actuales.', 409)
     }
 
     if (TERMINAL_PAYMENT_STATUSES.has(existingPayment.status)) {
-      throw new Error('La tarea ya tiene un pago finalizado.')
+      throw createPaymentError('La tarea ya tiene un pago finalizado.', 409)
     }
 
     const nextMetadata = {
@@ -581,25 +587,25 @@ export async function createTaskCheckout({ taskId, requester }) {
   ensureSupabaseAdmin()
 
   if (!requester?.id) {
-    throw new Error('Necesitas iniciar sesion.')
+    throw createPaymentError('Necesitas iniciar sesion.', 401)
   }
 
   const task = await getTaskById(taskId)
 
   if (!task) {
-    throw new Error('La tarea no existe.')
+    throw createPaymentError('La tarea no existe.', 404)
   }
 
   if (task.created_by !== requester.id) {
-    throw new Error('No puedes pagar una tarea ajena.')
+    throw createPaymentError('No puedes pagar una tarea ajena.', 403)
   }
 
   if (task.status !== 'assigned') {
-    throw new Error('La tarea debe estar asignada antes de iniciar el pago.')
+    throw createPaymentError('La tarea debe estar asignada antes de iniciar el pago.', 409)
   }
 
   if (!task.accepted_by) {
-    throw new Error('La tarea no tiene helper asignado.')
+    throw createPaymentError('La tarea no tiene helper asignado.', 409)
   }
 
   await getHelperConnectAccount(task.accepted_by)
@@ -675,13 +681,13 @@ export async function createExternalPaymentAgreement({ taskId, requester }) {
   ensureSupabaseAdmin()
 
   if (!requester?.id) {
-    throw new Error('Necesitas iniciar sesion.')
+    throw createPaymentError('Necesitas iniciar sesion.', 401)
   }
 
   const task = await getTaskById(taskId)
 
   if (!task) {
-    throw new Error('La tarea no existe.')
+    throw createPaymentError('La tarea no existe.', 404)
   }
 
   if (task.created_by !== requester.id) {
@@ -693,7 +699,7 @@ export async function createExternalPaymentAgreement({ taskId, requester }) {
   }
 
   if (!task.accepted_by) {
-    throw new Error('La tarea no tiene helper asignado.')
+    throw createPaymentError('La tarea no tiene helper asignado.', 409)
   }
 
   const premiumSubscription = await getActivePremiumSubscription(requester.id)

@@ -1,4 +1,4 @@
-import { buildBackendUrl, STRIPE_SERVER_CONNECTION_ERROR } from '../../../lib/backendApi'
+import { buildBackendUrl, readBackendError, STRIPE_SERVER_CONNECTION_ERROR } from '../../../lib/backendApi'
 import { supabase } from '../../../lib/supabaseClient'
 
 async function getAccessToken() {
@@ -39,11 +39,11 @@ export async function startStripeConnectOnboarding() {
     throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
   }
 
-  const payload = await response.json().catch(() => ({}))
-
   if (!response.ok) {
-    throw new Error(payload?.error || 'No pudimos preparar el onboarding de Stripe.')
+    throw new Error(await readBackendError(response, 'No pudimos preparar el onboarding de Stripe.'))
   }
+
+  const payload = await response.json().catch(() => ({}))
 
   if (!payload?.url) {
     throw new Error('Stripe no devolvió una URL válida.')
@@ -69,11 +69,11 @@ export async function syncStripeConnectStatus() {
     throw new Error(STRIPE_SERVER_CONNECTION_ERROR)
   }
 
-  const payload = await response.json().catch(() => ({}))
-
   if (!response.ok) {
-    throw new Error(payload?.error || 'No pudimos sincronizar el estado de Stripe.')
+    throw new Error(await readBackendError(response, 'No pudimos sincronizar el estado de Stripe.'))
   }
+
+  const payload = await response.json().catch(() => ({}))
 
   return payload
 }

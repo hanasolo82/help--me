@@ -1,4 +1,4 @@
-import { buildBackendUrl, PAYMENT_SERVER_CONNECTION_ERROR } from '../lib/backendApi'
+import { buildBackendUrl, PAYMENT_SERVER_CONNECTION_ERROR, readBackendError } from '../lib/backendApi'
 import { supabase } from '../lib/supabaseClient'
 
 async function getAccessToken() {
@@ -61,11 +61,11 @@ export async function startTaskCheckout(taskId) {
     throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
-  const payload = await response.json().catch(() => ({}))
-
   if (!response.ok) {
-    throw new Error(payload?.error || 'No pudimos preparar el checkout.')
+    throw new Error(await readBackendError(response, 'No pudimos preparar el checkout.'))
   }
+
+  const payload = await response.json().catch(() => ({}))
 
   if (!payload?.checkout_url) {
     throw new Error('Stripe no devolvió una URL válida de checkout.')
@@ -92,11 +92,11 @@ export async function continueWithExternalPayment(taskId) {
     throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
-  const payload = await response.json().catch(() => ({}))
-
   if (!response.ok) {
-    throw new Error(payload?.error || 'No pudimos confirmar el pago externo.')
+    throw new Error(await readBackendError(response, 'No pudimos confirmar el pago externo.'))
   }
+
+  const payload = await response.json().catch(() => ({}))
 
   return payload
 }
@@ -132,11 +132,11 @@ export async function releaseTaskPayment(taskId) {
     throw new Error(PAYMENT_SERVER_CONNECTION_ERROR)
   }
 
-  const payload = await response.json().catch(() => ({}))
-
   if (!response.ok) {
-    throw new Error(payload?.error || 'No pudimos autorizar la liberacion del pago.')
+    throw new Error(await readBackendError(response, 'No pudimos autorizar la liberacion del pago.'))
   }
+
+  const payload = await response.json().catch(() => ({}))
 
   return payload
 }
