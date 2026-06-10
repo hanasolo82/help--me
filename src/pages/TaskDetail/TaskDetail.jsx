@@ -13,7 +13,7 @@ import messageIcon from '../../assets/icons/message.svg'
 const TASK_STATUS_LABELS = {
   draft: 'Borrador',
   open: 'Activa',
-  assigned: 'Pendiente de confirmación',
+  assigned: 'Oferta pendiente',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',
@@ -115,6 +115,7 @@ export default function TaskDetail() {
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
   const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
+  const showDecisionGate = isOwner && task.status === 'assigned'
   const canOpenChat =
     Boolean(task) &&
     ((task.status === 'open' && !isOwner) ||
@@ -177,57 +178,120 @@ export default function TaskDetail() {
         </div>
       </header>
 
-      <section className="detail-panel">
-        <div className="user-strip">
-          <span className="avatar-small">
-            {creatorProfile.avatar_url ? <img src={creatorProfile.avatar_url} alt={creatorName} /> : creatorInitial}
-          </span>
-          <div>
-            <strong>{creatorName}</strong>
-            <p>{creatorProfile.rating ? `${creatorProfile.rating}/5` : 'Vecino de confianza'}</p>
-            {creatorProfile.verified && <p>Perfil verificado</p>}
-          </div>
-        </div>
+      {showDecisionGate ? (
+        <section className="detail-panel">
+          <p className="eyebrow">Oferta pendiente</p>
+          <h2>{helperName} ha aceptado tu tarea</h2>
+          <p>Confirma la tarea para pagar y abrir el chat privado.</p>
 
-        {task.accepted_profile && (
-          <div className="user-strip">
-            <span className="avatar-small">
-              {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-            </span>
-            <div>
-              <strong>{helperName}</strong>
-              <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Ayudante asignado'}</p>
-              {helperProfile.verified && <p>Perfil verificado</p>}
+          <div className="detail-row">
+            <span>Tarea</span>
+            <strong>{task.title}</strong>
+          </div>
+          <p className="muted">{task.description}</p>
+          <div className="detail-row">
+            <span>Precio</span>
+            <strong>{priceEuros} EUR</strong>
+          </div>
+
+          {task.accepted_profile && (
+            <div className="user-strip">
+              <span className="avatar-small">
+                {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
+              </span>
+              <div>
+                <strong>{helperName}</strong>
+                <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Listo para ayudarte'}</p>
+                {helperProfile.verified && <p>Perfil verificado</p>}
+              </div>
             </div>
+          )}
+
+          <div className="two-actions">
+            {canOpenPayment && (
+              <>
+                <button
+                  type="button"
+                  className="primary-action sticky-action"
+                  onClick={() => navigate(`/task/${id}/payment`)}
+                >
+                  Confirmar y pagar
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action sticky-action"
+                  onClick={handleRejectHelper}
+                  disabled={rejectHelperMutation.isPending}
+                >
+                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+                </button>
+              </>
+            )}
           </div>
-        )}
 
-        <div className="detail-row">
-          <span>Ubicacion</span>
-          <strong>
-            {taskLocationStatus === 'loading'
-              ? 'Buscando direccion...'
-              : taskLocationLabel || 'Direccion privada'}
-          </strong>
-        </div>
-        <div className="detail-row">
-          <span>Precio</span>
-          <strong>{priceEuros} EUR</strong>
-        </div>
-        <div className="detail-row">
-          <span>Categoria</span>
-          <strong>{task.category}</strong>
-        </div>
-        <div className="detail-row">
-          <span>Estado</span>
-          <strong>{formatTaskStatus(task.status)}</strong>
-        </div>
-      </section>
+          <button
+            type="button"
+            className="secondary-action sticky-action"
+            onClick={() => navigate(`/profile/${task.accepted_by}`)}
+          >
+            Ver perfil
+          </button>
+        </section>
+      ) : (
+        <>
+          <section className="detail-panel">
+            <div className="user-strip">
+              <span className="avatar-small">
+                {creatorProfile.avatar_url ? <img src={creatorProfile.avatar_url} alt={creatorName} /> : creatorInitial}
+              </span>
+              <div>
+                <strong>{creatorName}</strong>
+                <p>{creatorProfile.rating ? `${creatorProfile.rating}/5` : 'Vecino de confianza'}</p>
+                {creatorProfile.verified && <p>Perfil verificado</p>}
+              </div>
+            </div>
 
-      <section className="detail-panel">
-        <h2>Descripcion</h2>
-        <p>{task.description}</p>
-      </section>
+            {task.accepted_profile && (
+              <div className="user-strip">
+                <span className="avatar-small">
+                  {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
+                </span>
+                <div>
+                  <strong>{helperName}</strong>
+                  <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Ayudante asignado'}</p>
+                  {helperProfile.verified && <p>Perfil verificado</p>}
+                </div>
+              </div>
+            )}
+
+            <div className="detail-row">
+              <span>Ubicacion</span>
+              <strong>
+                {taskLocationStatus === 'loading'
+                  ? 'Buscando direccion...'
+                  : taskLocationLabel || 'Direccion privada'}
+              </strong>
+            </div>
+            <div className="detail-row">
+              <span>Precio</span>
+              <strong>{priceEuros} EUR</strong>
+            </div>
+            <div className="detail-row">
+              <span>Categoria</span>
+              <strong>{task.category}</strong>
+            </div>
+            <div className="detail-row">
+              <span>Estado</span>
+              <strong>{formatTaskStatus(task.status)}</strong>
+            </div>
+          </section>
+
+          <section className="detail-panel">
+            <h2>Descripcion</h2>
+            <p>{task.description}</p>
+          </section>
+        </>
+      )}
 
       {(error || acceptMutation.error || rejectHelperMutation.error) && (
         <p className="auth-message error">
@@ -247,106 +311,78 @@ export default function TaskDetail() {
         </p>
       )}
 
-      {isOwner && task.status === 'assigned' && (
-        <section className="detail-panel">
-          <p className="eyebrow">Pendiente de confirmación</p>
-          <h2>{helperName} ha aceptado tu tarea</h2>
-          <p>
-            Confirma la tarea para pagar y abrir el chat privado, o rechaza esta oferta para seguir buscando otro helper.
-          </p>
+      {!showDecisionGate && (
+        <div className="two-actions">
+          {canOpenChat && (
+            <button
+              type="button"
+              className="icon-button message-action"
+              onClick={() => setChatOpen(true)}
+              aria-label="Abrir chat"
+              title="Abrir chat"
+            >
+              <img src={messageIcon} alt="" aria-hidden="true" />
+            </button>
+          )}
 
-          <div className="user-strip">
-            <span className="avatar-small">
-              {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-            </span>
-            <div>
-              <strong>{helperName}</strong>
-              <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Listo para ayudarte'}</p>
-              {helperProfile.verified && <p>Perfil verificado</p>}
-            </div>
-          </div>
-
-          <div className="detail-row">
-            <span>Tarea</span>
-            <strong>{task.title}</strong>
-          </div>
-          <div className="detail-row">
-            <span>Precio</span>
-            <strong>{priceEuros} EUR</strong>
-          </div>
-        </section>
-      )}
-
-      <div className="two-actions">
-        {canOpenChat && (
-          <button
-            type="button"
-            className="icon-button message-action"
-            onClick={() => setChatOpen(true)}
-            aria-label="Abrir chat"
-            title="Abrir chat"
-          >
-            <img src={messageIcon} alt="" aria-hidden="true" />
-          </button>
-        )}
-
-        {canAccept && (
-          <button
-            type="button"
-            className="primary-action sticky-action"
-            onClick={handleAccept}
-            disabled={acceptMutation.isPending}
-          >
-            {acceptMutation.isPending ? 'Aceptando...' : 'Aceptar tarea'}
-          </button>
-        )}
-
-        {canOpenPayment && (
-          <>
+          {canAccept && (
             <button
               type="button"
               className="primary-action sticky-action"
-              onClick={() => navigate(`/task/${id}/payment`)}
+              onClick={handleAccept}
+              disabled={acceptMutation.isPending}
             >
-              Confirmar y pagar
+              {acceptMutation.isPending ? 'Aceptando...' : 'Aceptar tarea'}
             </button>
+          )}
+
+          {canOpenPayment && (
+            <>
+              <button
+                type="button"
+                className="primary-action sticky-action"
+                onClick={() => navigate(`/task/${id}/payment`)}
+              >
+                Confirmar y pagar
+              </button>
+              <button
+                type="button"
+                className="secondary-action sticky-action"
+                onClick={handleRejectHelper}
+                disabled={rejectHelperMutation.isPending}
+              >
+                {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+              </button>
+            </>
+          )}
+
+          {canCloseTask && (
             <button
               type="button"
               className="secondary-action sticky-action"
-              onClick={handleRejectHelper}
-              disabled={rejectHelperMutation.isPending}
+              onClick={() => navigate(`/complete/${id}`)}
             >
-              {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+              Confirmar finalización
             </button>
-          </>
-        )}
+          )}
 
-        {canCloseTask && (
-          <button
-            type="button"
-            className="secondary-action sticky-action"
-            onClick={() => navigate(`/complete/${id}`)}
-          >
-            Confirmar finalización
-          </button>
-        )}
-
-        {canReviewHelper && (
-          helperReviewQuery.data ? (
-            <button type="button" className="secondary-action sticky-action" disabled>
-              Valorada
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="primary-action sticky-action"
-              onClick={() => navigate(`/task/${id}/review`)}
-            >
-              Valorar helper
-            </button>
-          )
-        )}
-      </div>
+          {canReviewHelper && (
+            helperReviewQuery.data ? (
+              <button type="button" className="secondary-action sticky-action" disabled>
+                Valorada
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="primary-action sticky-action"
+                onClick={() => navigate(`/task/${id}/review`)}
+              >
+                Valorar helper
+              </button>
+            )
+          )}
+        </div>
+      )}
 
       {isOwner && task.status === 'open' && (
         <p className="muted">Esta es tu tarea. Espera a que alguien la acepte.</p>

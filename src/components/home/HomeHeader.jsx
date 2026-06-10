@@ -199,7 +199,7 @@ export default function HomeHeader({
 
                 {pendingConfirmationCount > 0 ? (
                   <section className={styles.notificationSection}>
-                    <p className={styles.notificationSectionLabel}>Tareas pendientes</p>
+                    <p className={styles.notificationSectionLabel}>Oferta pendiente</p>
                     <p className={styles.notificationTitle}>
                       {firstPendingConfirmationTask
                         ? `${firstPendingConfirmationTask.helperName} ha aceptado tu tarea “${firstPendingConfirmationTask.title}”.`

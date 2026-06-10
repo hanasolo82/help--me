@@ -2,7 +2,7 @@ import styles from './MyRequestCard.module.css'
 
 const STATUS_COPY = {
   open: 'Activa',
-  assigned: 'Pendiente de confirmación',
+  assigned: 'Oferta pendiente',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',
@@ -57,7 +57,7 @@ export default function MyRequestCard({
 
       {isPendingConfirmation ? (
         <p className={styles.confirmationNotice}>
-          {helperName} ha aceptado ayudarte. Decide si quieres confirmar y pagar o rechazar esta oferta.
+          {helperName} ha aceptado tu tarea. Decide si quieres confirmar y pagar o rechazar esta oferta.
         </p>
       ) : null}
 

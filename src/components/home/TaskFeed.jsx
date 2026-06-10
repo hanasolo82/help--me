@@ -56,7 +56,7 @@ export default function TaskFeed({
             (isHelperMode && task.status === 'open' && task.created_by !== currentUserId) ||
             (!isHelperMode &&
               Boolean(task.accepted_by) &&
-              ['assigned', 'in_progress', 'completed'].includes(task.status))
+              ['in_progress', 'completed'].includes(task.status))
 
           return (
             <TaskCard

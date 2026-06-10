@@ -170,10 +170,15 @@
   font-size: 1.65rem;
 }
 
-.summaryCard :global(.primary-action),
-.summaryCard :global(.secondary-action) {
+.summaryCard :global(.primary-action) {
   width: 100%;
   max-width: none;
+}
+
+.summaryCard :global(.secondary-action) {
+  width: auto;
+  max-width: none;
+  justify-self: start;
 }
 
 .premiumCompact {

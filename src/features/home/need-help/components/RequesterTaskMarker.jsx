@@ -4,7 +4,7 @@ import styles from './NeedHelpMapLayout.module.css'
 
 const STATUS_COPY = {
   open: 'Activa',
-  assigned: 'Pendiente de confirmación',
+  assigned: 'Oferta pendiente',
   in_progress: 'En curso',
   completed: 'Completada',
   closed: 'Cerrada',

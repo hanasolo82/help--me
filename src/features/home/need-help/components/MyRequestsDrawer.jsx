@@ -4,7 +4,7 @@ import styles from './MyRequestsDrawer.module.css'
 
 const SECTIONS = [
   { key: 'open', title: 'Activas', statuses: ['open'] },
-  { key: 'pending-confirmation', title: 'Pendientes de confirmación', statuses: ['assigned'] },
+  { key: 'pending-confirmation', title: 'Ofertas pendientes', statuses: ['assigned'] },
   { key: 'in-progress', title: 'En curso', statuses: ['in_progress'] },
   { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },
 ]
@@ -23,7 +23,6 @@ export default function MyRequestsDrawer({
   onRetire,
   onOpenChat,
   onOpenDetail,
-  onOpenPayment,
   onOpenSummary,
   onReview,
   reviewedTaskIds,
@@ -52,8 +51,8 @@ export default function MyRequestsDrawer({
       <header className={styles.header}>
         <div>
           <p className="eyebrow">Mis solicitudes</p>
-          <h2>Detalle completo</h2>
-          <p className="muted">Activas, en curso y todo tu historial en un solo lugar.</p>
+          <h2>Decisiones pendientes</h2>
+          <p className="muted">Primero resuelve las ofertas aceptadas; el resto queda debajo.</p>
         </div>
         <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Volver a requester home">
           ×
@@ -84,7 +83,6 @@ export default function MyRequestsDrawer({
                       onRetire={onRetire}
                       onOpenChat={onOpenChat}
                       onOpenDetail={onOpenDetail}
-                      onOpenPayment={onOpenPayment}
                       onOpenSummary={onOpenSummary}
                       onReview={onReview}
                       reviewedTaskIds={reviewedTaskIds}

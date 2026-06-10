@@ -53,7 +53,7 @@ export default function MyRequestsPanel({
           <strong>{openTasks.length}</strong>
         </article>
         <article className={styles.countCard}>
-          <span>Pendientes de confirmación</span>
+          <span>Ofertas pendientes</span>
           <strong>{pendingConfirmationTasks.length}</strong>
         </article>
         <article className={styles.countCard}>

@@ -72,6 +72,7 @@ export default function TaskPaymentPage() {
   const helperInitial = getAvatarInitial(helperName)
   const isOwner = Boolean(user?.id && task?.created_by === user.id)
   const paymentState = getPaymentState(task, isOwner)
+  const isPayable = paymentState === 'payable'
   const price = Number(task?.price || 0)
   const locationLabel = getHelpfulLocationLabel(task)
 
@@ -180,9 +181,9 @@ export default function TaskPaymentPage() {
           ←
         </button>
         <div>
-          <p className={styles.eyebrow}>Confirmación</p>
-          <h1>Confirma tu tarea</h1>
-          <p className={styles.lead}>Revisa el resumen antes de confirmar y pagar.</p>
+          <p className={styles.eyebrow}>Pago</p>
+          <h1>Confirmar y pagar</h1>
+          <p className={styles.lead}>Revisa el importe antes de continuar con el pago.</p>
         </div>
       </header>
 
@@ -219,77 +220,71 @@ export default function TaskPaymentPage() {
             </div>
           </div>
 
-          {paymentState === 'payable' ? (
-            <button
-              type="button"
-              className="primary-action"
-              onClick={() => checkoutMutation.mutate()}
-              disabled={checkoutMutation.isPending}
-            >
-              {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Confirmar y pagar'}
-            </button>
-          ) : null}
+          {isPayable ? (
+            <>
+              <button
+                type="button"
+                className="primary-action"
+                onClick={() => checkoutMutation.mutate()}
+                disabled={checkoutMutation.isPending}
+              >
+                {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Confirmar y pagar'}
+              </button>
 
-          {paymentState === 'confirmed' ? (
-            <button type="button" className="primary-action" onClick={() => navigate(`/task/${id}`, { state: { openChat: true } })}>
-              Abrir chat
-            </button>
-          ) : null}
+              <section className={styles.premiumCompact}>
+                <p>
+                  El pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también puedes acordar el
+                  pago directamente con el helper.
+                </p>
 
-          {FINAL_STATUSES.has(task.status) ? (
-            <button type="button" className="secondary-action" onClick={() => navigate(`/task/${id}`)}>
-              Ver detalle
-            </button>
-          ) : null}
+                {premiumState.active ? (
+                  <button
+                    type="button"
+                    className={styles.premiumAction}
+                    onClick={() => externalPaymentMutation.mutate()}
+                    disabled={externalPaymentMutation.isPending}
+                  >
+                    {externalPaymentMutation.isPending ? 'Confirmando...' : 'Coordinar pago con el helper'}
+                  </button>
+                ) : (
+                  <button type="button" className={styles.upsellButton} onClick={() => navigate('/settings')}>
+                    {premiumState.loading ? 'Comprobando Premium...' : 'Ver Premium'}
+                  </button>
+                )}
 
-          {paymentState === 'waiting_helper' ? (
-            <p className={styles.notice}>Todavía no hay helper aceptado. Cuando alguien acepte, podrás pagar aquí.</p>
-          ) : null}
-
-          {paymentState === 'cancelled' ? (
-            <p className={styles.notice}>Esta tarea está cancelada y no se puede pagar.</p>
-          ) : null}
-
-          {paymentState === 'not_owner' ? (
-            <p className={styles.notice}>Solo quien publicó la tarea puede completar el pago.</p>
-          ) : null}
-
+                {premiumState.error ? <p className={styles.notice}>{premiumState.error}</p> : null}
+                {externalPaymentMutation.error ? (
+                  <p className={styles.error} role="alert">
+                    {externalPaymentMutation.error?.message || 'No pudimos confirmar el pago externo.'}
+                  </p>
+                ) : null}
+              </section>
+            </>
+          ) : (
+            <>
+              <p className={styles.notice}>
+                {paymentState === 'confirmed'
+                  ? 'La tarea ya está en curso. Vuelve al detalle para revisar el estado.'
+                  : paymentState === 'final'
+                    ? 'Esta tarea ya se cerró.'
+                  : paymentState === 'waiting_helper'
+                    ? 'Todavía no hay helper aceptado. Cuando alguien acepte, podrás pagar aquí.'
+                    : paymentState === 'cancelled'
+                      ? 'Esta tarea está cancelada y no se puede pagar.'
+                      : paymentState === 'not_owner'
+                        ? 'Solo quien publicó la tarea puede completar el pago.'
+                        : 'No podemos completar el pago en este momento.'}
+              </p>
+              <button type="button" className="secondary-action" onClick={() => navigate(`/task/${id}`)}>
+                Volver al detalle
+              </button>
+            </>
+          )}
           {checkoutMutation.error ? (
             <p className={styles.error} role="alert">
               {checkoutMutation.error?.message || 'No hemos podido preparar el pago.'}
             </p>
           ) : null}
-
-          <section className={styles.premiumCompact}>
-            <p>
-              El pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también puedes acordar el
-              pago directamente con el helper.
-            </p>
-
-            {premiumState.active && paymentState === 'payable' ? (
-              <button
-                type="button"
-                className={styles.premiumAction}
-                onClick={() => externalPaymentMutation.mutate()}
-                disabled={externalPaymentMutation.isPending}
-              >
-                {externalPaymentMutation.isPending ? 'Confirmando...' : 'Coordinar pago con el helper'}
-              </button>
-            ) : null}
-
-            {!premiumState.active ? (
-              <button type="button" className={styles.upsellButton} onClick={() => navigate('/settings')}>
-                {premiumState.loading ? 'Comprobando Premium...' : 'Ver Premium'}
-              </button>
-            ) : null}
-
-            {premiumState.error ? <p className={styles.notice}>{premiumState.error}</p> : null}
-            {externalPaymentMutation.error ? (
-              <p className={styles.error} role="alert">
-                {externalPaymentMutation.error?.message || 'No pudimos confirmar el pago externo.'}
-              </p>
-            ) : null}
-          </section>
         </aside>
       </div>
     </main>
