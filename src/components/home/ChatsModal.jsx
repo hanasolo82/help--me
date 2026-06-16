@@ -59,7 +59,7 @@ export default function ChatsModal({ open, chats, loading, error, currentUserId,
         {!loading && !error && sortedChats.length === 0 && (
           <article className="empty-state">
             <h3>Todavia no tienes chats</h3>
-            <p>Cuando aceptes una tarea o alguien acepte la tuya, aparecera aqui.</p>
+            <p>Cuando una tarea esté confirmada y el chat se desbloquee, aparecerá aquí.</p>
           </article>
         )}
 
@@ -95,4 +95,3 @@ export default function ChatsModal({ open, chats, loading, error, currentUserId,
     </div>
   )
 }
-

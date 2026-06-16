@@ -15,7 +15,6 @@ export default function TaskFeed({
   error,
   count,
   isHelperMode,
-  currentUserId,
   expandedTaskIds,
   publishingTaskId,
   distancesById,
@@ -53,10 +52,9 @@ export default function TaskFeed({
           const showCancelAction = !isHelperMode && TASK_CANCELABLE_STATUSES.has(task.status)
           const showEditAction = !isHelperMode && canEditTask(task)
           const showChatAction =
-            (isHelperMode && task.status === 'open' && task.created_by !== currentUserId) ||
-            (!isHelperMode &&
+            !isHelperMode &&
               Boolean(task.accepted_by) &&
-              ['in_progress', 'completed'].includes(task.status))
+              ['in_progress', 'completed'].includes(task.status)
 
           return (
             <TaskCard

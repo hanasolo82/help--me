@@ -8,6 +8,7 @@ const PAYMENT_STATUS_BLOCKING = new Set([
   'release_pending',
   'transferring',
   'released',
+  'external_agreed',
   'refunded',
   'disputed',
 ])

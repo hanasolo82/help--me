@@ -87,7 +87,7 @@ export default function HelperPreviewModal({
             Ver perfil
           </button>
           <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
-            {contactPending ? 'Abriendo chat...' : 'Contactar'}
+            {contactPending ? 'Preparando...' : 'Pedir ayuda'}
           </button>
           <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
             Publicar solicitud

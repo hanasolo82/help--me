@@ -84,8 +84,8 @@ export default function TaskPreviewModal({
 
           <div className={styles.statusNote}>
             {canContact
-              ? 'Puedes abrir chat, guardar la tarea o verla en el mapa.'
-              : 'Esta tarea ya no está abierta para contacto nuevo, o pertenece a tu propio perfil. Puedes verla, pero el contacto directo está bloqueado.'}
+              ? 'Puedes revisar la solicitud, ofrecerte, guardarla o verla en el mapa.'
+              : 'Esta tarea ya no está abierta para nuevas ofertas, o pertenece a tu propio perfil. Puedes verla, pero no ofrecerte.'}
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default function TaskPreviewModal({
             {isFavorite ? 'Quitar favorito' : 'Añadir favorito'}
           </button>
           <button type="button" className="secondary-action" onClick={() => onContact?.(task)} disabled={!canContact}>
-            {canContact ? 'Contactar' : 'Contacto bloqueado'}
+            {canContact ? 'Ofrecerme' : 'No disponible'}
           </button>
           <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
             Ver detalle

@@ -1,8 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Lora:wght@500;600;700&display=swap');
 
 :root {
-  --font-body: 'Roboto', system-ui, sans-serif;
-  --font-heading: 'Roboto', system-ui, sans-serif;
+  --hm-color-bg: #f8f6f1;
+  --hm-color-text: #1c1916;
+  --hm-color-surface: #ffffff;
+  --hm-color-primary: #1f6b48;
+  --hm-color-secondary: #f0ebe0;
+  --hm-color-muted: #6e6860;
+  --hm-color-accent: #d9623b;
+  --hm-color-danger: #c0392b;
+  --hm-color-border-subtle: #eae6dd;
+  --hm-color-success-bg: #d1fae5;
+  --hm-color-success-text: #065f46;
+  --hm-color-warning-bg: #fef3c7;
+  --hm-color-warning-text: #92400e;
+  --hm-color-primary-hover: #2d7a55;
+
+  --hm-font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --hm-font-sans: 'DM Sans', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --hm-space-1: 4px;
+  --hm-space-2: 8px;
+  --hm-space-3: 12px;
+  --hm-space-4: 16px;
+  --hm-space-5: 20px;
+  --hm-space-6: 24px;
+  --hm-space-8: 32px;
+  --hm-space-10: 40px;
+  --hm-space-14: 56px;
+  --hm-space-sticky: 96px;
+
+  --hm-radius-xs: 4px;
+  --hm-radius-sm: 8px;
+  --hm-radius-md: 12px;
+  --hm-radius-lg: 14px;
+  --hm-radius-xl: 16px;
+  --hm-radius-pill: 999px;
+
+  --hm-shadow-sm: 0 1px 2px rgba(28, 25, 22, 0.06), 0 1px 3px rgba(28, 25, 22, 0.08);
+  --hm-shadow-md: 0 2px 4px rgba(28, 25, 22, 0.06), 0 4px 6px rgba(28, 25, 22, 0.08);
+  --hm-shadow-lg: 0 4px 6px rgba(28, 25, 22, 0.08), 0 10px 15px rgba(28, 25, 22, 0.1);
+
+  --hm-z-base: 0;
+  --hm-z-map: 1;
+  --hm-z-header: 20;
+  --hm-z-sticky-cta: 30;
+  --hm-z-drawer: 40;
+  --hm-z-modal-backdrop: 50;
+  --hm-z-modal: 60;
+  --hm-z-toast: 70;
+
+  --font-body: var(--hm-font-sans);
+  --font-heading: var(--hm-font-serif);
 
   --background-50: #f7fbff;
   --background-100: #eef6ff;
@@ -61,35 +110,35 @@
   --accent-800: #156a88;
   --accent-900: #18596f;
 
-  --color-bg: var(--background-50);
-  --color-surface: rgba(255, 255, 255, 0.72);
-  --color-surface-strong: rgba(255, 255, 255, 0.88);
-  --color-text: var(--text-950);
-  --color-text-muted: var(--text-700);
-  --color-primary: var(--primary-600);
-  --color-primary-hover: var(--primary-700);
-  --color-secondary: var(--secondary-600);
-  --color-accent: var(--accent-600);
-  --color-border: rgba(255, 255, 255, 0.18);
-  --color-success: #16a34a;
-  --color-warning: #f59e0b;
-  --color-danger: #dc2626;
-  --app-background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 48%, #f9fbff 100%);
+  --color-bg: var(--hm-color-bg);
+  --color-surface: var(--hm-color-surface);
+  --color-surface-strong: var(--hm-color-surface);
+  --color-text: var(--hm-color-text);
+  --color-text-muted: var(--hm-color-muted);
+  --color-primary: var(--hm-color-primary);
+  --color-primary-hover: var(--hm-color-primary-hover);
+  --color-secondary: var(--hm-color-secondary);
+  --color-accent: var(--hm-color-accent);
+  --color-border: rgba(28, 25, 22, 0.14);
+  --color-success: var(--hm-color-success-text);
+  --color-warning: var(--hm-color-warning-text);
+  --color-danger: var(--hm-color-danger);
+  --app-background: var(--hm-color-bg);
 
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-xl: 36px;
-  --radius-2xl: 32px;
+  --radius-sm: var(--hm-radius-sm);
+  --radius-md: var(--hm-radius-md);
+  --radius-lg: var(--hm-radius-lg);
+  --radius-xl: var(--hm-radius-xl);
+  --radius-2xl: 20px;
   --radius-pill: 999px;
 
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.03);
-  --shadow-sm: 0 2px 12px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.1);
-  --shadow-xl: 0 30px 72px rgba(15, 23, 42, 0.16), 0 12px 28px rgba(15, 23, 42, 0.08);
-  --shadow-focus: 0 0 0 4px rgba(37, 99, 235, 0.12);
-  --shadow-primary: 0 14px 30px rgba(37, 99, 235, 0.22);
+  --shadow-xs: 0 1px 2px rgba(28, 25, 22, 0.05);
+  --shadow-sm: var(--hm-shadow-sm);
+  --shadow-md: var(--hm-shadow-md);
+  --shadow-lg: var(--hm-shadow-lg);
+  --shadow-xl: 0 14px 32px rgba(28, 25, 22, 0.12), 0 6px 16px rgba(28, 25, 22, 0.08);
+  --shadow-focus: 0 0 0 4px rgba(31, 107, 72, 0.16);
+  --shadow-primary: 0 12px 26px rgba(31, 107, 72, 0.18);
 
   --motion-fast: 140ms;
   --motion-normal: 180ms;
@@ -97,7 +146,7 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --app-border: rgba(255, 255, 255, 0.16);
+  --app-border: rgba(28, 25, 22, 0.12);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;

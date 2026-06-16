@@ -7,11 +7,11 @@ function buildHelperActions({ task, isFavorite, onContact, onToggleFavorite, onL
 
   return [
     {
-      label: canContact ? 'Contactar' : 'Contacto bloqueado',
+      label: canContact ? 'Ofrecerme' : 'No disponible',
       variant: canContact ? 'primary' : 'secondary',
       disabled: !canContact,
       onClick: () => onContact?.(task),
-      title: canContact ? 'Abrir o crear conversación' : 'Solo las tareas abiertas permiten contacto nuevo',
+      title: canContact ? 'Revisar la solicitud y ofrecerte' : 'Solo las tareas abiertas permiten nuevas ofertas',
     },
     {
       label: isFavorite ? 'Quitar favorito' : 'Favorito',

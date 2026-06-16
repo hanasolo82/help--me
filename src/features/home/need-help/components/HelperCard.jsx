@@ -118,7 +118,7 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
               onContact?.(helper)
             }}
           >
-            Contactar
+            Pedir ayuda
           </button>
         )}
       </div>

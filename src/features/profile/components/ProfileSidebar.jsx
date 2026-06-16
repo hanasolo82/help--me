@@ -76,7 +76,7 @@ export default function ProfileSidebar({
         ) : (
           <>
             <button type="button" className="primary-action" onClick={onContact}>
-              Contactar
+              Pedir ayuda
             </button>
             <button type="button" className="secondary-action" onClick={onInviteToTask}>
               Invitar a tarea

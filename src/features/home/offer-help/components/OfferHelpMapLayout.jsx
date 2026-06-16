@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { createOrGetDirectConversation } from '../../../../services/chatService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
 import TaskFiltersBar from './TaskFiltersBar'
 import TaskListPanel from './TaskListPanel'
@@ -22,7 +21,7 @@ export default function OfferHelpMapLayout({
   onCategoryChange,
   categories,
   title = 'Solicitudes abiertas cerca de ti',
-  lead = 'Selecciona una solicitud, revisa el detalle y contacta solo si sigue abierta.',
+  lead = 'Selecciona una solicitud, revisa el detalle y ofrécete solo si sigue abierta.',
 }) {
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState('map')
@@ -82,17 +81,12 @@ export default function OfferHelpMapLayout({
     setMobileView('map')
   }
 
-  async function handleContact(task) {
+  function handleContact(task) {
     if (!task || task.status !== 'open' || task.created_by === currentUserId) {
       return
     }
 
-    try {
-      const conversationId = await createOrGetDirectConversation(task.created_by)
-      navigate(`/chat/${conversationId}`)
-    } catch (error) {
-      console.error('[OfferHelpMapLayout] could not open contact chat', error)
-    }
+    navigate(`/task/${task.id}`)
   }
 
   async function handleToggleFavorite(task) {
@@ -133,7 +127,7 @@ export default function OfferHelpMapLayout({
             <div>
               <p className="eyebrow">Solicitudes abiertas</p>
               <h2>Tareas abiertas cerca de ti</h2>
-              <p className="muted">Selecciona una tarea, revisa el detalle y contacta solo si sigue abierta.</p>
+              <p className="muted">Selecciona una tarea, revisa el detalle y ofrécete solo si sigue abierta.</p>
             </div>
           </div>
 

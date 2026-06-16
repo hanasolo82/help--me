@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
-import { acceptTask, rejectAssignedHelper } from '../../services/tasksService'
+import {
+  applyToTask,
+  getTaskApplications,
+  rejectAssignedHelper,
+  rejectTaskApplication,
+  selectTaskHelper,
+} from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
@@ -24,7 +30,7 @@ function formatTaskStatus(status) {
   return TASK_STATUS_LABELS[status] || status || 'No disponible'
 }
 
-// Detalle de tarea conectado a Supabase. Permite aceptarla o abrir chat con el creador.
+// Detalle de tarea conectado a Supabase. Centraliza oferta, decision, pago y chat.
 export default function TaskDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -36,18 +42,42 @@ export default function TaskDetail() {
   const [taskLocationLabel, setTaskLocationLabel] = useState('')
   const [taskLocationStatus, setTaskLocationStatus] = useState('idle')
 
-  const acceptMutation = useMutation({
-    mutationFn: () => acceptTask(id),
+  const applyMutation = useMutation({
+    mutationFn: () => applyToTask(id),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['task-applications', id] }),
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
       ])
       navigate(`/task/${id}`, {
         replace: true,
-        state: { acceptedTask: true },
+        state: { offeredTask: true },
       })
+    },
+  })
+
+  const selectHelperMutation = useMutation({
+    mutationFn: (applicationId) => selectTaskHelper(applicationId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['task-applications', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+      ])
+    },
+  })
+
+  const rejectApplicationMutation = useMutation({
+    mutationFn: (applicationId) => rejectTaskApplication(applicationId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['task-applications', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+      ])
     },
   })
 
@@ -111,15 +141,27 @@ export default function TaskDetail() {
 
   const isOwner = user?.id === task?.created_by
   const isHelper = user?.id === task?.accepted_by
-  const canAccept = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
+  const canApply = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
   const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
-  const showDecisionGate = isOwner && task.status === 'assigned'
+  const showDecisionGate = Boolean(task) && isOwner && task.status === 'assigned'
   const canOpenChat =
     Boolean(task) &&
-    ((task.status === 'open' && !isOwner) ||
-      (['in_progress', 'completed', 'closed'].includes(task.status) && (isOwner || isHelper)))
+    ['in_progress', 'completed', 'closed'].includes(task.status) &&
+    (isOwner || isHelper)
+
+  const applicationsQuery = useQuery({
+    queryKey: ['task-applications', id],
+    queryFn: () => getTaskApplications(id),
+    enabled: Boolean(task) && ['open', 'assigned'].includes(task.status) && (isOwner || canApply),
+    staleTime: 15_000,
+  })
+
+  const taskApplications = applicationsQuery.data || []
+  const pendingApplications = taskApplications.filter((application) => application.status === 'pending')
+  const currentUserApplication = taskApplications.find((application) => application.helper_id === user?.id) || null
+  const showApplicationsGate = Boolean(task) && isOwner && task.status === 'open' && pendingApplications.length > 0
 
   const helperReviewQuery = useQuery({
     queryKey: ['task-review', id, task?.accepted_by || null],
@@ -128,8 +170,30 @@ export default function TaskDetail() {
     staleTime: 30_000,
   })
 
-  async function handleAccept() {
-    acceptMutation.mutate()
+  async function handleApply() {
+    applyMutation.mutate()
+  }
+
+  function handleSelectApplication(application) {
+    if (!application?.id) return
+
+    selectHelperMutation.mutate(application.id)
+  }
+
+  function handleRejectApplication(application) {
+    if (!application?.id) return
+
+    const profile = application.helper_profile || {}
+    const applicationHelperName = profile.display_name || profile.full_name || profile.username || 'este helper'
+    const shouldReject = window.confirm(
+      `¿Quieres rechazar a ${applicationHelperName}?\n\nLa candidatura dejará de aparecer en esta lista.`,
+    )
+
+    if (!shouldReject) {
+      return
+    }
+
+    rejectApplicationMutation.mutate(application.id)
   }
 
   function handleRejectHelper() {
@@ -181,7 +245,7 @@ export default function TaskDetail() {
       {showDecisionGate ? (
         <section className="detail-panel">
           <p className="eyebrow">Oferta pendiente</p>
-          <h2>{helperName} ha aceptado tu tarea</h2>
+          <h2>{helperName} está listo para ayudarte</h2>
           <p>Confirma la tarea para pagar y abrir el chat privado.</p>
 
           <div className="detail-row">
@@ -236,6 +300,83 @@ export default function TaskDetail() {
           >
             Ver perfil
           </button>
+        </section>
+      ) : showApplicationsGate ? (
+        <section className="detail-panel">
+          <p className="eyebrow">Helpers interesados</p>
+          <h2>Tienes helpers interesados</h2>
+          <p>Elige un helper para pasar a oferta pendiente. Después podrás confirmar y pagar.</p>
+
+          <div className="detail-row">
+            <span>Tarea</span>
+            <strong>{task.title}</strong>
+          </div>
+          <div className="detail-row">
+            <span>Precio</span>
+            <strong>{priceEuros} EUR</strong>
+          </div>
+
+          <div className="application-list">
+            {pendingApplications.map((application, index) => {
+              const applicationProfile = application.helper_profile || {}
+              const applicationHelperName =
+                applicationProfile.display_name ||
+                applicationProfile.full_name ||
+                applicationProfile.username ||
+                'Helper interesado'
+              const applicationInitial = getAvatarInitial(applicationHelperName)
+
+              return (
+                <article className="application-card" key={application.id}>
+                  <div className="user-strip">
+                    <span className="avatar-small">
+                      {applicationProfile.avatar_url ? (
+                        <img src={applicationProfile.avatar_url} alt={applicationHelperName} />
+                      ) : (
+                        applicationInitial
+                      )}
+                    </span>
+                    <div>
+                      <p className="eyebrow">{index === 0 ? 'Primera en ofrecerse' : 'Helper interesado'}</p>
+                      <strong>{applicationHelperName}</strong>
+                      <p>
+                        {applicationProfile.rating
+                          ? `${applicationProfile.rating}/5`
+                          : 'Disponible para ayudarte'}
+                      </p>
+                      {application.message ? <p className="muted">{application.message}</p> : null}
+                    </div>
+                  </div>
+
+                  <div className="two-actions">
+                    <button
+                      type="button"
+                      className="primary-action sticky-action"
+                      onClick={() => handleSelectApplication(application)}
+                      disabled={selectHelperMutation.isPending}
+                    >
+                      {selectHelperMutation.isPending ? 'Eligiendo...' : 'Elegir helper'}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-action sticky-action"
+                      onClick={() => navigate(`/profile/${application.helper_id}`)}
+                    >
+                      Ver perfil
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-action sticky-action"
+                      onClick={() => handleRejectApplication(application)}
+                      disabled={rejectApplicationMutation.isPending}
+                    >
+                      {rejectApplicationMutation.isPending ? 'Rechazando...' : 'Rechazar'}
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
         </section>
       ) : (
         <>
@@ -293,15 +434,20 @@ export default function TaskDetail() {
         </>
       )}
 
-      {(error || acceptMutation.error || rejectHelperMutation.error) && (
+      {(error || applyMutation.error || selectHelperMutation.error || rejectApplicationMutation.error || rejectHelperMutation.error) && (
         <p className="auth-message error">
-          {error || acceptMutation.error?.message || rejectHelperMutation.error?.message || 'Ha ocurrido un error.'}
+          {error ||
+            applyMutation.error?.message ||
+            selectHelperMutation.error?.message ||
+            rejectApplicationMutation.error?.message ||
+            rejectHelperMutation.error?.message ||
+            'Ha ocurrido un error.'}
         </p>
       )}
 
-      {location.state?.acceptedTask && isHelper && task.status === 'assigned' && (
+      {location.state?.offeredTask && !isOwner && task.status === 'open' && (
         <p className="auth-message">
-          Tarea aceptada. Esperando a que el requester confirme la ayuda.
+          Te has ofrecido para esta tarea. El requester decidirá si te elige.
         </p>
       )}
 
@@ -325,14 +471,18 @@ export default function TaskDetail() {
             </button>
           )}
 
-          {canAccept && (
+          {canApply && (
             <button
               type="button"
               className="primary-action sticky-action"
-              onClick={handleAccept}
-              disabled={acceptMutation.isPending}
+              onClick={handleApply}
+              disabled={applyMutation.isPending || Boolean(currentUserApplication)}
             >
-              {acceptMutation.isPending ? 'Aceptando...' : 'Aceptar tarea'}
+              {currentUserApplication
+                ? 'Ya te ofreciste'
+                : applyMutation.isPending
+                  ? 'Enviando oferta...'
+                  : 'Ofrecerme'}
             </button>
           )}
 
@@ -385,7 +535,11 @@ export default function TaskDetail() {
       )}
 
       {isOwner && task.status === 'open' && (
-        <p className="muted">Esta es tu tarea. Espera a que alguien la acepte.</p>
+        <p className="muted">
+          {pendingApplications.length > 0
+            ? 'Elige un helper interesado para continuar.'
+            : 'Esta es tu tarea. Espera a que algún helper se ofrezca.'}
+        </p>
       )}
 
       {isOwner && task.status === 'draft' && (

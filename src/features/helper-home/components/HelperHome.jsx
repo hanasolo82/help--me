@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createOrGetDirectConversation } from '../../../services/chatService'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
@@ -164,7 +163,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     ? Math.round(mapEntries.reduce((sum, entry) => sum + entry.compatibilityScore, 0) / mapEntries.length)
     : 0
   const mapTasks = mapEntries.map((entry) => entry.task)
-  const canContact = Boolean(selectedTask && selectedTask.status === 'open' && selectedTask.created_by !== helperHomeProps.currentUserId)
+  const canOffer = Boolean(selectedTask && selectedTask.status === 'open' && selectedTask.created_by !== helperHomeProps.currentUserId)
   const locationSource =
     helperHomeProps.locationSource === 'current'
       ? 'current'
@@ -173,17 +172,12 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         : 'profile'
   const shouldFitTasksOnLoad = locationSource !== 'search'
 
-  async function handleContact(task) {
+  function handleOffer(task) {
     if (!task || task.status !== 'open' || task.created_by === helperHomeProps.currentUserId) {
       return
     }
 
-    try {
-      const conversationId = await createOrGetDirectConversation(task.created_by)
-      navigate(`/chat/${conversationId}`)
-    } catch (error) {
-      console.error('[HelperHome] could not open contact chat', error)
-    }
+    navigate(`/task/${task.id}`)
   }
 
   function handleOpenTask(task) {
@@ -273,10 +267,10 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     primaryActionLabel="Ver solicitud"
                     primaryActionVariant="primary"
                     onPrimaryAction={() => handleOpenTask(selectedTask)}
-                    secondaryActionLabel="Contactar"
+                    secondaryActionLabel="Ofrecerme"
                     secondaryActionVariant="secondary"
-                    secondaryActionDisabled={!canContact}
-                    onSecondaryAction={() => handleContact(selectedTask)}
+                    secondaryActionDisabled={!canOffer}
+                    onSecondaryAction={() => handleOffer(selectedTask)}
                   />
                 </div>
               </>

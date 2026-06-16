@@ -1,0 +1,8 @@
+technical_state,user_label,meaning,visible_to_requester,visible_to_helper,allowed_requester_actions,allowed_helper_actions,next_states,color_recommendation,figma_component
+draft,Borrador,Task created but not published yet,yes (owner only),no,edit; publish; delete,no public action,open or cancelled,slate,status pill / draft badge
+open,Activa,Task is published and awaiting helper acceptance,yes,yes,view detail; edit; cancel; wait,view detail; accept task; contact requester,assigned or cancelled,blue,status pill / public task
+assigned,Oferta pendiente,Helper accepted and requester must decide,yes,yes,confirm and pay; reject helper if safe; view profile,wait for requester decision; view detail, in_progress or open or cancelled,amber,decision gate banner / pending offer
+in_progress,En curso,Payment confirmed and chat should be active,yes,yes,open chat; close task; view detail,open chat; view detail; continue coordination,completed or closed,teal,status pill / active work
+completed,Completada,Task is done and ready for final settlement or review,yes,yes,review helper; view summary; open detail,view detail,closed,green,status pill / completed summary
+closed,Cerrada,Funds released and task lifecycle finished,yes,yes,review if not done; view summary,view detail,none or archived,neutral,status pill / closed archive
+cancelled,Cancelada,Task was cancelled and should stop further action,yes,yes,view detail; abandon flow,view detail,none,red,status pill / cancelled state

@@ -52,7 +52,7 @@ export default function MyRequestsDrawer({
         <div>
           <p className="eyebrow">Mis solicitudes</p>
           <h2>Decisiones pendientes</h2>
-          <p className="muted">Primero resuelve las ofertas aceptadas; el resto queda debajo.</p>
+          <p className="muted">Primero resuelve las ofertas pendientes; el resto queda debajo.</p>
         </div>
         <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Volver a requester home">
           ×

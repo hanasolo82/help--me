@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
-import { createOrGetDirectConversation } from '../../../services/chatService'
 import { useFavoriteProfile } from '../hooks/useFavoriteProfile'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
@@ -54,17 +53,11 @@ export default function ProfilePage() {
     navigate('/create', { state: { helperId: profile?.id } })
   }
 
-  async function handleContact() {
+  function handleContact() {
     if (!profile?.id) return
 
     setContactError('')
-
-    try {
-      const conversationId = await createOrGetDirectConversation(profile.id)
-      navigate(`/chat/${conversationId}`)
-    } catch (error) {
-      setContactError(error?.message || 'No hemos podido abrir la conversación. Inténtalo de nuevo.')
-    }
+    navigate('/create', { state: { helperId: profile.id } })
   }
 
   if (isLoading && !profile) {

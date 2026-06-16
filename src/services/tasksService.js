@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabaseClient'
 import { assertSupabaseReady, sanitizeText } from '../lib/security'
 import { requireUser } from '../lib/authHelpers'
 import { getCurrentUser } from './authService'
-import { createOrGetTaskConversation } from '../features/chat/api/chatApi'
 import { canAcceptTask } from '../features/helper-onboarding/utils/helperPermissions'
 import { getProfileByUserId } from './profilesService'
 
@@ -39,6 +38,7 @@ const TASK_SELECT = `
 
 const BLOCKED_PROFILE_STATUS = 'suspended'
 const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
+const APPLICATION_SELECT = 'id, task_id, helper_id, message, status, created_at, updated_at'
 
 function isProfileAvailable(profile) {
   return profile?.account_status !== BLOCKED_PROFILE_STATUS
@@ -169,6 +169,34 @@ export function validateTaskInput(input) {
     errors,
     value: { title, description, category, price, lat, lng, location_label: locationLabel || null },
   }
+}
+
+async function attachApplicationProfiles(applications) {
+  if (!applications?.length) {
+    return applications || []
+  }
+
+  const helperIds = [...new Set(applications.map((application) => application.helper_id).filter(Boolean))]
+
+  if (helperIds.length === 0) {
+    return applications
+  }
+
+  const { data: profiles, error } = await supabase
+    .from('public_profiles')
+    .select(CREATOR_PROFILE_SELECT)
+    .in('id', helperIds)
+
+  if (error) {
+    throw error
+  }
+
+  const profilesById = new Map((profiles || []).map((profile) => [profile.id, normalizePublicProfile(profile)]))
+
+  return applications.map((application) => ({
+    ...application,
+    helper_profile: profilesById.get(application.helper_id) || null,
+  }))
 }
 
 // Nota funcion:
@@ -480,19 +508,15 @@ export async function getTaskById(taskId, { viewer } = {}) {
 }
 
 // Nota funcion:
-// Acepta una tarea abierta, asigna accepted_by y cambia el estado a assigned.
-// Despues crea el chat vinculado a la tarea. La RLS lo mantiene bloqueado hasta pago/confirmacion.
-// Si la insercion del chat falla, revierte accepted_by para que la tarea vuelva a quedar disponible.
-// Nota Supabase - public.tasks/public.chats:
-// Al ampliar public.tasks, revisa TASK_SELECT. Al ampliar public.chats con columnas obligatorias
-// (por ejemplo last_message_at, status o metadata), anadelas en el insert del chat y en chatService.
-export async function acceptTask(taskId) {
+// Modelo profesional: el helper se ofrece, no asigna la tarea directamente.
+// La seleccion del helper queda en manos del requester mediante selectTaskHelper.
+export async function applyToTask(taskId, message = '') {
   const user = await requireUser('Necesitas iniciar sesion para aceptar una tarea.')
   const helperId = user.id
   const helperProfile = await getProfileByUserId(helperId)
 
   if (!canAcceptTask(helperProfile)) {
-    throw new Error('Completa y activa tu perfil de helper antes de aceptar tareas.')
+    throw new Error('Completa y activa tu perfil de helper antes de ofrecerte a tareas.')
   }
 
   const candidateTask = await getTaskById(taskId, { viewer: user })
@@ -506,36 +530,87 @@ export async function acceptTask(taskId) {
     throw new Error('La tarea ya no esta disponible.')
   }
 
-  const { data: task, error: taskError } = await supabase
-    .from('tasks')
-    .update({ accepted_by: helperId, status: 'assigned' })
-    .eq('id', taskId)
-    .eq('status', 'open')
-    .is('accepted_by', null)
-    .neq('created_by', helperId)
-    .select(TASK_SELECT)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('apply_to_task', {
+    p_task_id: taskId,
+    p_message: sanitizeText(message, 600) || null,
+  })
 
-  if (taskError) {
-    throw taskError
+  if (error) {
+    throw error
   }
 
-  if (!task) {
-    throw new Error('La tarea ya no esta disponible.')
+  return data
+}
+
+// Compatibilidad con imports antiguos: aceptar ahora significa ofrecerse.
+export async function acceptTask(taskId) {
+  const application = await applyToTask(taskId)
+  return { application, conversation: null }
+}
+
+export async function getTaskApplications(taskId) {
+  assertSupabaseReady()
+  await requireUser('Necesitas iniciar sesion para ver los helpers interesados.')
+
+  const { data, error } = await supabase
+    .from('task_applications')
+    .select(APPLICATION_SELECT)
+    .eq('task_id', taskId)
+    .in('status', ['pending', 'selected'])
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    throw error
   }
 
-  try {
-    const conversationId = await createOrGetTaskConversation(task.id)
-    return { task, conversation: { id: conversationId } }
-  } catch (chatError) {
-    await supabase
-      .from('tasks')
-      .update({ accepted_by: null, status: 'open' })
-      .eq('id', taskId)
-      .eq('accepted_by', helperId)
+  return attachApplicationProfiles(data || [])
+}
 
-    throw chatError
+export async function selectTaskHelper(applicationId) {
+  await requireUser('Necesitas iniciar sesion para elegir helper.')
+
+  const { data, error } = await supabase.rpc('select_task_helper', {
+    p_application_id: applicationId,
+  })
+
+  if (error) {
+    throw error
   }
+
+  if (!data) {
+    throw new Error('No se pudo elegir este helper.')
+  }
+
+  const tasksWithProfiles = await attachTaskProfiles([data])
+  return tasksWithProfiles[0]
+}
+
+export async function rejectTaskApplication(applicationId) {
+  await requireUser('Necesitas iniciar sesion para rechazar una candidatura.')
+
+  const { data, error } = await supabase.rpc('reject_task_application', {
+    p_application_id: applicationId,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+export async function withdrawTaskApplication(applicationId) {
+  await requireUser('Necesitas iniciar sesion para retirar tu candidatura.')
+
+  const { data, error } = await supabase.rpc('withdraw_task_application', {
+    p_application_id: applicationId,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data
 }
 
 // Nota funcion:

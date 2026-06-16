@@ -7,22 +7,22 @@
   --surface: var(--color-surface);
   --text: var(--color-text);
   --accent: var(--color-primary);
-  --highlight: rgba(41, 171, 255, 0.1);
-  --shadow: rgba(15, 23, 42, 0.12);
+  --highlight: rgba(31, 107, 72, 0.1);
+  --shadow: rgba(28, 25, 22, 0.12);
 
-  --nav-bg: rgba(255, 255, 255, 0.76);
+  --nav-bg: rgba(248, 246, 241, 0.88);
   --nav-link: var(--color-text);
-  --nav-border: rgba(255, 255, 255, 0.18);
-  --nav-shadow: rgba(15, 23, 42, 0.08);
+  --nav-border: rgba(28, 25, 22, 0.12);
+  --nav-shadow: rgba(28, 25, 22, 0.08);
   --nav-active-bg: var(--color-primary);
   --nav-active-text: #ffffff;
 
-  --task-card-bg: rgba(255, 255, 255, 0.72);
+  --task-card-bg: var(--color-surface);
   --task-card-text: var(--color-text);
-  --task-card-border: rgba(255, 255, 255, 0.2);
-  --task-card-shadow: rgba(15, 23, 42, 0.08);
+  --task-card-border: rgba(28, 25, 22, 0.12);
+  --task-card-shadow: rgba(28, 25, 22, 0.08);
   --task-card-accent: var(--color-primary);
-  --task-card-highlight: rgba(41, 171, 255, 0.12);
+  --task-card-highlight: rgba(31, 107, 72, 0.1);
 
   font-size: 100%;
 }
@@ -125,10 +125,9 @@ p {
 .stats-grid article {
   /* shared panels: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--hm-radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-panel,
@@ -159,9 +158,9 @@ html[data-theme='light'] .auth-panel {
 .completion-panel h1 {
   /* auth/completion titles: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx */
   margin: 0.2rem 0 0.15rem;
-  font-size: clamp(1.75rem, 4vw, 2.4rem);
-  font-weight: 900;
-  line-height: 1.08;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.14;
 }
 
 .auth-panel h1 {
@@ -178,10 +177,11 @@ html[data-theme='light'] .auth-panel {
 
 .eyebrow {
   /* tiny label utility: shared/components/AuthPanel/AuthPanel.jsx, app/router/RequireAuth.jsx, pages/* */
-  color: var(--color-primary);
-  font-size: 0.82rem;
-  font-weight: 900;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .muted {
@@ -207,7 +207,6 @@ html[data-theme='light'] .auth-panel {
   border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-surface-strong) 92%, transparent);
-  backdrop-filter: blur(16px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -274,15 +273,13 @@ html[data-theme='light'] .auth-panel {
 .field select {
   /* form inputs: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
+  border: 1px solid transparent;
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-color-secondary);
   color: var(--color-text);
-  min-height: 3.5rem;
-  padding: 0.9rem 1rem;
-  box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 1px 1px rgba(15, 23, 42, 0.03);
+  min-height: 2.75rem;
+  padding: 0.7rem 0.85rem;
+  box-shadow: none;
   transition:
     border-color var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -308,9 +305,7 @@ html[data-theme='light'] .auth-panel {
 .message-edit-form textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow:
-    var(--shadow-focus),
-    inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--shadow-focus);
 }
 
 .field input::placeholder,
@@ -339,9 +334,9 @@ html[data-theme='light'] .auth-panel {
   border: 1px solid transparent;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  min-height: 3.5rem;
-  font-weight: 800;
-  padding: 0.95rem 1.1rem;
+  min-height: 2.75rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
   box-shadow: var(--shadow-xs);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
@@ -384,7 +379,7 @@ html[data-theme='light'] .auth-panel {
 .primary-action {
   /* primary CTA: shared/components/AuthPanel/AuthPanel.jsx, pages/*, features/* */
   margin-top: 0;
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  background: var(--color-primary);
   color: #ffffff;
   box-shadow: var(--shadow-primary);
 }
@@ -422,8 +417,8 @@ html[data-theme='light'] .auth-panel {
 
 .secondary-action {
   /* secondary CTA: pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  border-color: color-mix(in srgb, var(--color-border) 84%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 90%, white);
+  border-color: transparent;
+  background: var(--hm-color-secondary);
   color: var(--color-text);
 }
 
@@ -435,8 +430,8 @@ html[data-theme='light'] .auth-panel {
 .danger-action {
   /* destructive CTA: pages/Settings/SettingsPage.jsx, features/profile/pages/ProfilePage.jsx */
   border-color: color-mix(in srgb, var(--color-danger) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface-strong));
-  color: #b42318;
+  background: var(--color-danger);
+  color: #ffffff;
 }
 
 .danger-action:hover {
@@ -1415,6 +1410,35 @@ html[data-theme='light'] .auth-panel {
     border-left: 0;
     border-radius: 0;
   }
+}
+
+.application-list {
+  display: grid;
+  gap: var(--hm-space-4);
+  margin-top: var(--hm-space-4);
+}
+
+.application-card {
+  display: grid;
+  gap: var(--hm-space-4);
+  padding: var(--hm-space-4);
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  border-radius: var(--hm-radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.application-card .user-strip {
+  margin: 0;
+  box-shadow: none;
+}
+
+.application-card .two-actions {
+  flex-wrap: wrap;
+}
+
+.application-card .two-actions > button {
+  max-width: none;
 }
 
 .image-preview {

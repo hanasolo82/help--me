@@ -91,10 +91,7 @@ export default function TaskPaymentPage() {
         queryClient.invalidateQueries({ queryKey: ['task', id] }),
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
-      navigate(`/task/${id}`, {
-        replace: true,
-        state: { openChat: true, externalPayment: true },
-      })
+      navigate(`/task/${id}`, { replace: true, state: { externalPayment: true } })
     },
   })
 
@@ -268,7 +265,7 @@ export default function TaskPaymentPage() {
                   : paymentState === 'final'
                     ? 'Esta tarea ya se cerró.'
                   : paymentState === 'waiting_helper'
-                    ? 'Todavía no hay helper aceptado. Cuando alguien acepte, podrás pagar aquí.'
+                    ? 'Todavía no hay helper elegido. Cuando elijas uno, podrás pagar aquí.'
                     : paymentState === 'cancelled'
                       ? 'Esta tarea está cancelada y no se puede pagar.'
                       : paymentState === 'not_owner'

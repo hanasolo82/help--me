@@ -16,7 +16,7 @@ export default function ProfileActionBar({
   return (
     <div className={styles.actionBar} role="toolbar" aria-label="Acciones rápidas del perfil">
       <button type="button" className="primary-action" onClick={onContact}>
-        Contactar
+        Pedir ayuda
       </button>
       <button type="button" className="secondary-action" onClick={onInviteToTask}>
         Invitar

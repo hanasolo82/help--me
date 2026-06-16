@@ -36,7 +36,7 @@ export default function HelperUpcomingPanel({ tasks = [], onOpenTask }) {
       {visibleTasks.length === 0 ? (
         <HelperEmptyState
           title="Aún no tienes tareas próximas."
-          description="Cuando aceptes una solicitud, aparecerá aquí para seguirla sin perder contexto."
+          description="Cuando te elijan para una solicitud, aparecerá aquí para seguirla sin perder contexto."
           actionLabel="Ver solicitudes abiertas"
           onAction={() => navigate('/home', { replace: true, state: { mode: 'help' } })}
         />

@@ -202,10 +202,10 @@ export default function HomeHeader({
                     <p className={styles.notificationSectionLabel}>Oferta pendiente</p>
                     <p className={styles.notificationTitle}>
                       {firstPendingConfirmationTask
-                        ? `${firstPendingConfirmationTask.helperName} ha aceptado tu tarea “${firstPendingConfirmationTask.title}”.`
+                        ? `${firstPendingConfirmationTask.helperName} está listo para ayudarte con “${firstPendingConfirmationTask.title}”.`
                         : pendingConfirmationCount === 1
-                          ? 'Un helper ha aceptado tu tarea.'
-                          : `${pendingConfirmationCount} helpers han aceptado tus tareas.`}
+                          ? 'Tienes una oferta pendiente.'
+                          : `Tienes ${pendingConfirmationCount} ofertas pendientes.`}
                     </p>
                     <p className={styles.notificationMeta}>Decide si quieres confirmar y pagar o rechazar esta oferta.</p>
                     <button

@@ -57,7 +57,7 @@ export default function MyRequestCard({
 
       {isPendingConfirmation ? (
         <p className={styles.confirmationNotice}>
-          {helperName} ha aceptado tu tarea. Decide si quieres confirmar y pagar o rechazar esta oferta.
+          {helperName} está listo para ayudarte. Decide si quieres confirmar y pagar o rechazar esta oferta.
         </p>
       ) : null}
 
