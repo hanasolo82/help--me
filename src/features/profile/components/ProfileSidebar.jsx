@@ -1,4 +1,4 @@
-import { getAvatarInitial } from '../../../utils/avatar'
+import UserAvatar from '../../../shared/ui/UserAvatar'
 import styles from '../styles/profilePublicView.module.css'
 import ProfileSectionTabs from './ProfileSectionTabs'
 import {
@@ -28,14 +28,18 @@ export default function ProfileSidebar({
   const locationLabel = getLocationLabel(profile)
   const helperStatusLabel = getHelperStatusLabel(profile)
   const helperStatusCopy = getHelperStatusCopy(profile)
-  const avatarInitial = getAvatarInitial(displayName)
 
   return (
     <aside className={`${styles.sidebar} ${isOwnProfile ? styles.sidebarOwn : styles.sidebarGuest}`.trim()}>
       <div className={styles.sidebarHero}>
-        <div className={styles.sidebarAvatar}>
-          {profile?.avatar_url ? <img src={profile.avatar_url} alt={displayName} /> : avatarInitial}
-        </div>
+        <UserAvatar
+          src={profile?.avatar_url}
+          name={displayName}
+          alt={displayName}
+          size="xl"
+          variant="rounded"
+          className={styles.sidebarAvatar}
+        />
 
         <div className={styles.sidebarIdentity}>
           <p className={styles.sidebarEyebrow}>{isOwnProfile ? 'Tu perfil público' : 'Perfil de ayudante'}</p>

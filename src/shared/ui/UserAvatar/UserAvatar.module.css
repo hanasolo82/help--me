@@ -1,0 +1,129 @@
+.avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--hm-avatar-border);
+  background: var(--hm-avatar-bg);
+  color: var(--hm-avatar-fg);
+  box-shadow: var(--hm-avatar-shadow);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.avatar:hover {
+  box-shadow: var(--hm-avatar-shadow-hover);
+}
+
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--hm-avatar-object-fit);
+  object-position: var(--hm-avatar-object-position);
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+}
+
+.circle {
+  border-radius: var(--hm-avatar-radius);
+}
+
+.rounded {
+  border-radius: var(--hm-avatar-radius-soft);
+}
+
+.soft {
+  border-radius: var(--hm-radius-md);
+}
+
+.xs {
+  width: 1.8rem;
+  height: 1.8rem;
+  font-size: 0.72rem;
+}
+
+.sm {
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 0.85rem;
+}
+
+.md {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1rem;
+}
+
+.lg {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.24rem;
+}
+
+.xl {
+  width: 5rem;
+  height: 5rem;
+  font-size: 1.45rem;
+}
+
+.badge {
+  position: absolute;
+  right: 0.02rem;
+  bottom: 0.02rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 2px solid var(--hm-color-surface);
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-avatar-badge-bg);
+  color: var(--hm-avatar-badge-fg);
+  box-shadow: var(--hm-shadow-xs);
+}
+
+.badge::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.34rem;
+  height: 0.18rem;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translate(-50%, -62%) rotate(-45deg);
+}
+
+.loading {
+  color: transparent;
+}
+
+.loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, #ffffff 54%, transparent), transparent),
+    var(--hm-avatar-bg);
+  animation: avatarShimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes avatarShimmer {
+  from {
+    transform: translateX(-70%);
+  }
+
+  to {
+    transform: translateX(70%);
+  }
+}

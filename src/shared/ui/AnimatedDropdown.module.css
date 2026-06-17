@@ -3,12 +3,12 @@
   z-index: 10000;
   display: grid;
   gap: 0.45rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, white);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-xl);
+  background: var(--hm-color-surface);
   padding: 0.55rem;
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: blur(18px);
+  box-shadow: var(--hm-shadow-lg);
+  backdrop-filter: none;
   transform-origin: top right;
   will-change: transform, opacity;
   pointer-events: auto;
@@ -64,7 +64,7 @@
 
 .divider {
   height: 1px;
-  background: color-mix(in srgb, var(--color-border) 80%, white);
+  background: var(--hm-color-border-subtle);
   margin: 0.2rem 0;
 }
 
@@ -87,9 +87,9 @@
 }
 
 .item:hover {
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  box-shadow: var(--shadow-xs);
+  background: var(--hm-color-secondary);
+  border-color: var(--hm-color-border-subtle);
+  box-shadow: none;
 }
 
 .item:active {
@@ -102,12 +102,12 @@
 }
 
 .itemDanger {
-  color: #b42318;
+  color: var(--hm-color-danger);
 }
 
 .itemDanger:hover {
-  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-danger) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--hm-color-danger) 9%, var(--hm-color-surface));
+  border-color: color-mix(in srgb, var(--hm-color-danger) 18%, var(--hm-color-border-subtle));
 }
 
 .itemLabel {

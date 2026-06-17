@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/useAuth'
 import { useTaskById } from '../../hooks/useTaskById'
 import { createTaskReview, getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
 import { getAvatarInitial } from '../../utils/avatar'
+import UserAvatar from '../../shared/ui/UserAvatar'
 import styles from './TaskReviewPage.module.css'
 
 const REVIEW_TAGS = [
@@ -143,9 +144,14 @@ export default function TaskReviewPage() {
         </header>
 
         <section className={styles.summary}>
-          <span className={styles.avatar}>
-            {helperProfile?.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-          </span>
+          <UserAvatar
+            src={helperProfile?.avatar_url}
+            name={helperName || helperInitial}
+            alt={helperName}
+            size="md"
+            variant="rounded"
+            className={styles.avatar}
+          />
           <div>
             <strong>{helperName}</strong>
             <p className="muted">{task.title}</p>

@@ -1,5 +1,5 @@
-import { getAvatarInitial } from '../../../../utils/avatar'
 import SkillBadge from '../../../skills/components/SkillBadge'
+import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './NeedHelpMapLayout.module.css'
 
 function formatDistance(distanceKm) {
@@ -48,7 +48,6 @@ function buildSkillList(helper) {
 
 export default function HelperCard({ helper, selected = false, onSelect, onOpenProfile, onContact }) {
   const name = helper?.display_name || helper?.full_name || helper?.username || 'Vecino'
-  const avatarInitial = getAvatarInitial(name)
   const verified = Boolean(
     helper?.verified ||
       helper?.verified_email ||
@@ -74,9 +73,15 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
       aria-pressed={selected}
     >
       <div className={styles.helperCardTop}>
-        <div className={styles.helperAvatar}>
-          {helper?.avatar_url ? <img src={helper.avatar_url} alt={name} /> : avatarInitial}
-        </div>
+        <UserAvatar
+          src={helper?.avatar_url}
+          name={name}
+          alt={name}
+          size="md"
+          variant="rounded"
+          verified={verified}
+          className={styles.helperAvatar}
+        />
         <div className={styles.helperCardHeading}>
           <strong>{name}</strong>
           <p>{formatDistance(helper?.distance_km)}</p>

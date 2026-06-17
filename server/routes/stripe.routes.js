@@ -134,7 +134,15 @@ router.post(
         console.info(`[stripe:webhook] ${event.type}`)
       }
 
-      await processStripeWebhookEvent(event)
+      const result = await processStripeWebhookEvent(event)
+
+      if (result?.processing) {
+        return res.status(409).json({
+          received: false,
+          retry: true,
+          error: 'Stripe webhook event is already processing.',
+        })
+      }
 
       return res.status(200).json({
         received: true,

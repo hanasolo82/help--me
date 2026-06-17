@@ -72,3 +72,48 @@
 - Kept `StripeReturn` polling until `task.status === in_progress` before opening chat.
 - Applied Figma-derived CSS foundations: DM Sans/Lora, warm canvas, green primary, warm secondary surfaces, tighter radii, softer shadows, and simpler cards/buttons.
 - Validation after implementation: `pnpm run lint` and `pnpm run build`.
+
+## Strict visual Figma correction pass
+- Reworked the app shell and critical surfaces to match `output/helpme-figma-style-guide.md` more faithfully without changing workflow logic.
+- Updated `TaskCard`, requester drawer/cards/panels, helper home cards, request modals, helper/task preview modals, task map shell, payment page, Stripe page, and home shell surfaces to use the warm cream canvas, white cards, editorial headings, subtle borders, and Figma CTA colors.
+- Removed the remaining glassy/blue surface treatment from the critical requester and payment flow so the visual language reads consistently as Figma rather than the legacy theme.
+- Updated `TaskDetail` decision-gate copy only, keeping the underlying state and routing behavior intact.
+- No backend, route, payment, chat-gating, RLS, or workflow logic was changed in this pass.
+
+## Figma visual export gap audit
+- Added `output/helpme-figma-visual-gap-audit.md`.
+- Inspected local Figma exports from `\\HANASOLO-LAPTOP\Users\User\Downloads\helpme styles`, including global components, task flow, payment, chat, profile, settings, auth, create task, home map, mobile, support/legal and edge-case PNGs.
+- Compared exports against current app code and documented remaining visual contamination from legacy blue/glass/gradient styles.
+- Scope remained documentation only; no code changes, lint, or build run.
+
+## Figma visual correction application
+- Remapped legacy design-token aliases away from blue/slate and into the Figma warm cream, deep text, green primary and coral accent scale.
+- Normalized shared button, panel, dropdown, chat list, chat composer and chat bubble styling to flat Figma surfaces with subtle borders and soft shadows.
+- Added focused visual classes for the requester decision gate in `TaskDetail` so `Confirmar y pagar` remains the dominant action while `Ver perfil` is secondary.
+- Updated `TaskPaymentPage`, `StripeReturn`, Home Map layout surfaces and Task Review styling to reduce visual noise and align with the exported Figma language.
+- Kept workflow logic, services, Stripe, Supabase, routes, chat gating and task state transitions unchanged.
+
+## Figma remaining surfaces visual pass
+- Normalized Landing away from the legacy dark/slate visual language and into the Figma warm canvas, serif headings, flat green CTA and subtle accent system.
+- Normalized AuthModal, CookieConsent, shared home empty states, Settings, Profile public/network views, app onboarding and helper onboarding surfaces away from glass/blur/slate treatments.
+- Kept modal/backdrop behavior, settings forms, profile editing, helper onboarding state, Stripe Connect onboarding and all service calls unchanged.
+- Used module-level visual overrides for large profile/settings/onboarding CSS modules to avoid rewriting layout/responsive rules while making the visible surfaces follow the Figma token system.
+
+## Avatar and map marker normalization
+- Added a centralized `UserAvatar` display component with image, initials, broken-image fallback, loading state and verified badge support.
+- Added live theme variables for avatars, map markers and map popups in `src/styles/theme-live.css`.
+- Replaced primary hand-rendered avatar usages in home header, task cards, helper cards/modals, task detail, payment, review, chat, profile sidebar, helper onboarding and nearby helpers feed.
+- Added centralized Leaflet marker builders for task markers, requester task markers, helper markers, user waypoint markers and future cluster markers.
+- Updated task/helper/requester map marker components to use the shared marker builders and shared `MapPopupCard` while preserving existing click/select handlers.
+- Converted legacy `buildUserIcon` into a wrapper around the new marker system so old callers do not reintroduce the previous marker style.
+- Removed the inline margin style from `NearbyHelpersFeed` and replaced it with a CSS module class.
+- Conserved Settings avatar upload/crop UI because it is an editing workflow, not a display avatar.
+- Validation: `pnpm run lint` and `pnpm run build`.
+
+## Internal design lab
+- Added a dev-only `/design-lab` route for testing `theme-live.css` visually without adding public navigation.
+- Added `src/pages/DesignLab/DesignLab.jsx` and `DesignLab.module.css` with local mock data only.
+- Covered color tokens, typography, buttons, forms, cards/panels, task components, helper/profile components, payment components, chat components, map markers and common states.
+- Reused real classes/components where practical: `.primary-action`, `.secondary-action`, `.danger-action`, `.field`, `.detail-panel`, `TaskCard`, `HelperCard`, `MyRequestCard`, `UserAvatar`, `MessageList`, `MessageInput`, `HomeEmptyState`, `EmptyChatState`, payment module classes and marker builders.
+- Avoided backend, Supabase, Stripe, payment flows, real data and public navigation changes.
+- Validation: `pnpm run lint`, `pnpm run build`, and local HTTP check for `http://127.0.0.1:5173/design-lab`.

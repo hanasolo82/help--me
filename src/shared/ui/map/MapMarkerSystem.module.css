@@ -1,0 +1,205 @@
+.taskMarker,
+.requesterTaskMarker {
+  display: inline-grid;
+  place-items: center;
+  overflow: visible;
+  border: 1px solid var(--hm-map-marker-task-border);
+  border-radius: var(--hm-map-marker-radius);
+  background: var(--hm-map-marker-task-bg);
+  color: var(--hm-map-marker-fg);
+  box-shadow: var(--hm-map-marker-shadow);
+}
+
+.taskMarker {
+  width: 56px;
+  height: 46px;
+}
+
+.taskMarkerSelected,
+.requesterTaskMarkerSelected,
+.helperMarkerSelected {
+  box-shadow: var(--hm-map-marker-selected-ring), var(--hm-map-marker-shadow-active);
+}
+
+.taskMarkerBody {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-align: center;
+  line-height: 1;
+}
+
+.taskMarkerCode {
+  color: var(--hm-map-marker-muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.taskMarkerPrice {
+  color: var(--hm-map-marker-fg);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.requesterTaskMarker {
+  min-width: 82px;
+  height: 44px;
+  padding: 5px 9px 5px 6px;
+}
+
+.requesterTaskMarkerInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.requesterTaskMarkerDot {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--hm-map-marker-pill-radius);
+  background: var(--hm-map-marker-primary-bg);
+  color: var(--hm-map-marker-primary-fg);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.requesterTaskMarkerText {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.requesterTaskMarkerLabel {
+  color: var(--hm-map-marker-fg);
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.requesterTaskMarkerStatus {
+  color: var(--hm-map-marker-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.helperMarker,
+.userMarker {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid var(--hm-map-marker-helper-border);
+  border-radius: var(--hm-map-marker-pill-radius);
+  background: var(--hm-map-marker-helper-bg);
+  color: var(--hm-map-marker-fg);
+  box-shadow: var(--hm-map-marker-shadow);
+}
+
+.helperMarker {
+  width: 46px;
+  height: 46px;
+}
+
+.helperMarkerCompact {
+  width: 38px;
+  height: 38px;
+}
+
+.userMarker {
+  width: 42px;
+  height: 42px;
+  border-color: var(--hm-avatar-border);
+  background: var(--hm-avatar-bg);
+  color: var(--hm-avatar-fg);
+}
+
+.markerAvatar,
+.markerFallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.markerAvatar {
+  object-fit: var(--hm-avatar-object-fit);
+  object-position: var(--hm-avatar-object-position);
+}
+
+.markerFallback {
+  background: var(--hm-avatar-bg);
+  color: var(--hm-avatar-fg);
+  font-weight: 900;
+}
+
+.popupCard {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 13rem;
+  max-width: 16rem;
+  color: var(--hm-map-popup-fg);
+}
+
+.popupKicker {
+  margin: 0;
+  color: var(--hm-map-popup-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.popupTitle {
+  margin: 0;
+  color: var(--hm-map-popup-fg);
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.12;
+}
+
+.popupMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.popupMeta span {
+  border: 1px solid var(--hm-map-popup-border);
+  border-radius: var(--hm-radius-pill);
+  background: color-mix(in srgb, var(--hm-map-popup-bg) 72%, var(--hm-color-secondary));
+  color: var(--hm-map-popup-fg);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.28rem 0.45rem;
+}
+
+.popupBody {
+  margin: 0;
+  color: var(--hm-map-popup-muted);
+  font-size: 0.78rem;
+  line-height: 1.38;
+}
+
+:global(.leaflet-popup-content-wrapper) {
+  border: 1px solid var(--hm-map-popup-border);
+  border-radius: var(--hm-map-popup-radius);
+  background: var(--hm-map-popup-bg);
+  box-shadow: var(--hm-map-popup-shadow);
+}
+
+:global(.leaflet-popup-content) {
+  margin: 0.85rem;
+}
+
+:global(.leaflet-popup-tip) {
+  background: var(--hm-map-popup-bg);
+  box-shadow: var(--hm-shadow-xs);
+}

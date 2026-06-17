@@ -1,13 +1,12 @@
-﻿.card {
+.card {
   position: relative;
   display: grid;
-  gap: 1rem;
-  background-color: var(--task-card-bg, rgba(255, 255, 255, 0.72));
-  padding: 1rem;
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-sm);
+  gap: var(--hm-card-gap, 0.9rem);
+  padding: var(--hm-card-padding-lg);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .userRow {
@@ -20,12 +19,12 @@
 .userRow strong {
   display: block;
   color: var(--task-card-text, var(--color-text));
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .userRow p {
-  color: var(--task-card-accent, var(--color-primary));
+  color: var(--color-text-muted);
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.35;
@@ -48,9 +47,9 @@
 }
 
 .helperLine {
-  color: var(--task-card-accent, var(--color-primary));
+  color: var(--color-text-muted);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -66,25 +65,20 @@
 .iconButton {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-md);
-  background: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, var(--color-text));
+  width: var(--hm-button-min-height);
+  height: var(--hm-button-min-height);
+  border: 1px solid var(--hm-button-icon-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-icon-bg);
+  color: var(--hm-button-oauth-fg);
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: 700;
   line-height: 1;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-button-shadow);
 }
 
-.iconButton img {
-  width: 1rem;
-  height: 1rem;
-  display: block;
-}
-
+.iconButton img,
 .iconButton svg {
   width: 1rem;
   height: 1rem;
@@ -92,8 +86,9 @@
 }
 
 .iconButton:hover {
-  transform: translate(-0.06rem, -0.06rem);
-  box-shadow: var(--shadow-md);
+  background: var(--hm-button-icon-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .avatarWrap {
@@ -102,9 +97,9 @@
   place-items: center;
   width: 3rem;
   height: 3rem;
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-md);
-  background: var(--task-card-highlight, rgba(41, 171, 255, 0.12));
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
   color: var(--task-card-text, var(--color-text));
   overflow: hidden;
   font-weight: 700;
@@ -123,8 +118,8 @@
   width: 100%;
   max-height: 14rem;
   object-fit: cover;
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-lg);
 }
 
 .topSection {
@@ -136,15 +131,18 @@
 
 .title {
   color: var(--task-card-text, var(--color-text));
-  font-size: clamp(1rem, 1.6vw, 1.18rem);
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.18rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
   margin-bottom: 0.35rem;
 }
 
 .meta {
-  color: var(--task-card-accent, var(--color-primary));
+  color: var(--color-text-muted);
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.4;
 }
 
@@ -155,20 +153,24 @@
 }
 
 .price {
-  background-color: var(--task-card-highlight, var(--highlight));
+  background-color: var(--hm-card-muted-bg);
   color: var(--task-card-text, var(--color-text));
   white-space: nowrap;
   padding: 0.38rem 0.7rem;
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: 999px;
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-pill);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
-.description {
+.description,
+.descriptionExpanded {
   color: var(--task-card-text, var(--color-text));
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+.description {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -176,9 +178,6 @@
 }
 
 .descriptionExpanded {
-  color: var(--task-card-text, var(--color-text));
-  font-size: 0.92rem;
-  line-height: 1.5;
   overflow: visible;
   word-break: break-word;
 }
@@ -187,7 +186,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: end;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .helperActions {
@@ -199,16 +198,21 @@
 .detailButton,
 .publishButton {
   width: min(100%, 50%);
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-md);
-  background-color: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, var(--color-text));
+  min-height: var(--hm-button-min-height);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 700;
-  padding: 0.58rem 0.7rem;
-  box-shadow: var(--shadow-sm);
-  transition: 0.16s ease;
+  font-size: var(--hm-button-font-size);
+  font-weight: var(--hm-button-font-weight);
+  padding: var(--hm-button-padding-block) var(--hm-button-padding-inline);
+  box-shadow: var(--hm-button-shadow);
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
 }
 
 .detailButton {
@@ -218,34 +222,39 @@
 .publishButton {
   margin-left: auto;
   border: 0;
-  background-color: var(--task-card-accent, var(--color-primary));
-  color: var(--task-card-bg, #ffffff);
-  box-shadow: var(--shadow-sm);
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
+  box-shadow: var(--hm-button-primary-shadow);
 }
 
 .detailButton:hover,
 .publishButton:hover {
-  transform: translate(-0.06rem, -0.06rem);
-  box-shadow: none;
+  transform: translateY(-1px);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .button {
   width: min(100%, 17.5rem);
   border: 0;
-  border-radius: var(--radius-md);
-  background-color: var(--task-card-accent, var(--color-primary));
-  color: var(--task-card-bg, #ffffff);
+  min-height: var(--hm-button-min-height);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 0.82rem;
-  box-shadow: var(--shadow-sm);
-  transition: 0.16s ease;
+  font-size: var(--hm-button-font-size);
+  font-weight: var(--hm-button-font-weight);
+  padding: var(--hm-button-padding-block) var(--hm-button-padding-inline);
+  box-shadow: var(--hm-button-primary-shadow);
+  transition:
+    background-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
 }
 
 .button:hover {
-  transform: translate(-0.06rem, -0.06rem);
-  box-shadow: var(--shadow-md);
+  background: var(--hm-button-primary-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .button:disabled,
@@ -257,63 +266,74 @@
 
 .buttonSecondary {
   width: min(100%, 17.5rem);
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-md);
-  background-color: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, var(--color-text));
+  min-height: var(--hm-button-min-height);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   cursor: pointer;
-  font-size: 0.92rem;
-  font-weight: 700;
-  padding: 0.72rem 0.82rem;
-  box-shadow: var(--shadow-sm);
-  transition: 0.16s ease;
+  font-size: var(--hm-button-font-size);
+  font-weight: var(--hm-button-font-weight);
+  padding: var(--hm-button-padding-block) var(--hm-button-padding-inline);
+  box-shadow: var(--hm-button-shadow);
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
 }
 
 .buttonSecondary:hover {
-  transform: translate(-0.06rem, -0.06rem);
-  box-shadow: var(--shadow-md);
+  background: var(--hm-button-secondary-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .helperSecondaryAction,
 .helperPrimaryAction,
 .helperDangerAction {
-  border: 1px solid var(--task-card-border, rgba(255, 255, 255, 0.2));
-  border-radius: var(--radius-md);
+  min-height: var(--hm-button-min-height);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
   cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 700;
-  padding: 0.58rem 0.78rem;
-  box-shadow: var(--shadow-sm);
-  transition: 0.16s ease;
+  font-size: var(--hm-button-font-size);
+  font-weight: var(--hm-button-font-weight);
+  padding: var(--hm-button-padding-block) var(--hm-button-padding-inline);
+  box-shadow: var(--hm-button-shadow);
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
 }
 
 .helperSecondaryAction {
-  background: var(--task-card-bg, #ffffff);
-  color: var(--task-card-text, var(--color-text));
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
 }
 
 .helperPrimaryAction {
   border: 0;
-  background: var(--task-card-accent, var(--color-primary));
-  color: var(--task-card-bg, #ffffff);
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
 }
 
 .helperDangerAction {
-  background: rgba(239, 68, 68, 0.1);
-  color: rgb(185, 28, 28);
+  background: var(--hm-button-danger-bg);
+  color: var(--hm-button-danger-fg);
 }
 
 .helperSecondaryAction:hover,
 .helperPrimaryAction:hover,
 .helperDangerAction:hover {
-  transform: translate(-0.06rem, -0.06rem);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 @media (max-width: 42rem) {
   .card {
     gap: 0.8rem;
-    padding: 0.85rem;
+    padding: 0.9rem;
   }
 
   .descriptionContainer {
@@ -344,4 +364,3 @@
     min-width: 0;
   }
 }
-

@@ -1,12 +1,11 @@
-﻿.overlay {
+.overlay {
   position: fixed;
   inset: 0;
   z-index: 66;
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(14px);
+  background: var(--hm-panel-scrim);
 }
 
 .modal {
@@ -15,12 +14,11 @@
   width: min(100%, 42rem);
   max-height: min(96vh, 52rem);
   overflow: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
-  backdrop-filter: blur(18px);
-  padding: 1.15rem;
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  background: var(--hm-panel-bg);
+  padding: var(--hm-panel-padding-lg);
+  box-shadow: var(--hm-panel-shadow);
   scrollbar-gutter: stable;
 }
 
@@ -34,22 +32,24 @@
 .header h2 {
   margin: 0;
   margin-bottom: 0.35rem;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .closeButton {
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-  color: var(--color-primary);
+  width: var(--hm-button-min-height);
+  height: var(--hm-button-min-height);
+  border: 1px solid var(--hm-button-icon-border);
+  border-radius: var(--hm-button-radius-pill);
+  background: var(--hm-button-icon-bg);
+  color: var(--hm-button-oauth-fg);
   cursor: pointer;
   font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform 0.16s ease,
     background-color 0.16s ease,
@@ -59,20 +59,20 @@
 
 .closeButton:hover {
   transform: translateY(-1px);
-  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-surface));
-  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
-  box-shadow: var(--shadow-md);
+  background: var(--hm-button-icon-bg-hover);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-color-border-subtle));
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .helperHint,
 .locationHint {
   display: grid;
   gap: 0.45rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.66);
-  padding: 0.9rem;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-muted-bg);
+  padding: var(--hm-card-padding);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .form {
@@ -91,11 +91,11 @@
 .form :global(.field input),
 .form :global(.field textarea),
 .form :global(.field select) {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-card-bg);
   color: var(--color-text);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .form :global(.field textarea) {
@@ -111,8 +111,8 @@
 .form :global(.field textarea:focus),
 .form :global(.field select:focus) {
   outline: none;
-  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 16%, transparent), var(--shadow-sm);
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--hm-color-border-subtle));
+  box-shadow: var(--shadow-focus), var(--hm-card-shadow);
 }
 
 .form :global(.field select) {
@@ -140,20 +140,20 @@
   gap: 0.38rem;
   max-height: min(15rem, 42vh);
   overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  background: var(--hm-panel-bg);
   padding: 0.48rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--hm-panel-shadow);
 }
 
 .locationResult {
   display: grid;
   gap: 0.16rem;
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
   color: var(--color-text);
   cursor: pointer;
   padding: 0.56rem 0.64rem;
@@ -161,8 +161,8 @@
 }
 
 .locationResult:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 36%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 36%, var(--hm-color-border-subtle));
+  background: var(--hm-card-muted-bg);
 }
 
 .locationResult strong {
@@ -184,12 +184,12 @@
 
 .locationSelected {
   color: var(--color-text);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .locationError {
   color: var(--color-danger);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .visibility,
@@ -202,21 +202,21 @@
 .visibility :global(.chip) {
   width: auto;
   flex: 0 0 auto;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius-pill);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
+  box-shadow: var(--hm-button-shadow);
 }
 
 .visibility :global(.chip.selected) {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
 }
 
 .visibility :global(.chip:hover) {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .visibility :global(.chip:disabled) {
@@ -232,13 +232,13 @@
 }
 
 .actions :global(.primary-action) {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
 }
 
 .actions :global(.secondary-action) {
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
 }
 
 @media (min-width: 760px) {
@@ -256,7 +256,7 @@
     gap: 0.78rem;
     max-height: calc(100dvh - 1.5rem);
     padding: 1rem;
-    border-radius: var(--radius-lg);
+    border-radius: var(--hm-radius-lg);
   }
 
   .header {
@@ -264,7 +264,7 @@
   }
 
   .header h2 {
-    font-size: clamp(1.18rem, 6vw, 1.55rem);
+    font-size: 1.35rem;
   }
 
   .closeButton {
@@ -283,4 +283,3 @@
     padding: 0.72rem 0.85rem;
   }
 }
-

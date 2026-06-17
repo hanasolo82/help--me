@@ -1,10 +1,10 @@
 ﻿.layout {
-  width: min(100% - 2rem, 56rem);
+  width: min(calc(100% - (var(--hm-shell-padding-inline) * 2)), var(--hm-shell-content-width));
   margin: 0 auto;
-  padding-block: clamp(1.5rem, 4vw, 3rem);
+  padding-block: var(--hm-shell-padding-block);
   display: grid;
-  gap: 1.5rem;
-  color: var(--color-text);
+  gap: var(--hm-shell-gap);
+  color: var(--hm-shell-text);
 }
 
 .header {
@@ -17,9 +17,10 @@
 .back {
   width: 2.6rem;
   height: 2.6rem;
-  border: 0.125rem solid var(--color-text);
-  border-radius: 0.25rem;
-  background: var(--highlight);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   font-size: 1.2rem;
   font-weight: 900;
   cursor: pointer;
@@ -47,24 +48,25 @@
 }
 
 .tab {
-  border: 0.125rem solid var(--color-text);
-  border-radius: 0.25rem;
-  background: var(--color-surface);
-  color: var(--color-text);
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   padding: 0.5rem 0.9rem;
   font-weight: 900;
   text-decoration: none;
 }
 
 .tabActive {
-  background: var(--highlight);
+  border-color: var(--hm-button-primary-bg);
+  background: color-mix(in srgb, var(--hm-button-primary-bg) 10%, var(--hm-color-surface));
 }
 
 .content {
-  background: var(--color-surface);
-  border: 0.125rem solid var(--color-text);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-sm);
+  background: var(--hm-shell-card-bg);
+  border: 1px solid var(--hm-shell-card-border);
+  border-radius: var(--hm-shell-card-radius);
+  box-shadow: var(--hm-shell-card-shadow);
   padding: clamp(1.25rem, 3vw, 2rem);
   display: grid;
   gap: 1rem;
@@ -102,14 +104,14 @@
 
 .content th,
 .content td {
-  border: 1px solid var(--color-text);
+  border: 1px solid var(--hm-shell-card-border);
   padding: 0.5rem 0.7rem;
   text-align: left;
   vertical-align: top;
 }
 
 .content th {
-  background: var(--highlight);
+  background: var(--hm-color-highlight);
 }
 
 .content a {

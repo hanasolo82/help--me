@@ -1,9 +1,10 @@
 .page {
-  width: min(100%, 70rem);
+  width: min(100%, 68rem);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 1.25rem 1rem 6rem;
+  padding: clamp(1rem, 2.2vw, 1.5rem) 1rem 6rem;
   color: var(--color-text);
+  background: var(--hm-color-bg);
 }
 
 .header {
@@ -16,16 +17,17 @@
 .header h1,
 .emptyCard h1 {
   margin: 0.12rem 0 0.35rem;
-  font-size: clamp(2.15rem, 5vw, 3.7rem);
-  font-weight: 900;
-  letter-spacing: -0.045em;
-  line-height: 0.94;
+  font-family: var(--font-heading);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
 }
 
 .eyebrow {
-  color: var(--color-primary);
-  font-size: 0.78rem;
-  font-weight: 900;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -39,28 +41,23 @@
 
 .layout {
   display: grid;
-  gap: 1rem;
+  gap: var(--hm-space-5);
 }
 
 .confirmationCard,
 .summaryCard,
 .emptyCard {
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 38%),
-    color-mix(in srgb, var(--color-surface) 96%, transparent);
-  box-shadow:
-    0 1px 0 color-mix(in srgb, white 18%, transparent),
-    0 18px 52px color-mix(in srgb, var(--color-text) 7%, transparent);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--hm-payment-panel-border);
+  border-radius: var(--hm-payment-panel-radius);
+  background: var(--hm-payment-panel-bg);
+  box-shadow: var(--hm-payment-panel-shadow);
 }
 
 .confirmationCard,
 .summaryCard {
   display: grid;
-  gap: 1rem;
-  padding: clamp(1rem, 2.2vw, 1.35rem);
+  gap: var(--hm-space-4);
+  padding: clamp(1rem, 2.2vw, 1.5rem);
 }
 
 .emptyCard {
@@ -73,7 +70,7 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border-bottom: 1px solid var(--hm-color-border-subtle);
   padding-bottom: 1rem;
 }
 
@@ -82,14 +79,14 @@
 .priceRows span {
   color: var(--color-text-muted);
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .helperRow strong,
 .priceRows strong {
   display: block;
   margin-top: 0.15rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .helperRow p,
@@ -107,11 +104,11 @@
   width: 3.8rem;
   height: 3.8rem;
   overflow: hidden;
-  border-radius: 1.2rem;
-  background: var(--color-primary);
-  color: #fff;
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-secondary);
+  color: var(--color-text);
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .avatar img {
@@ -127,18 +124,19 @@
 
 .taskSummary h2 {
   margin: 0;
-  font-size: clamp(1.45rem, 3vw, 2.25rem);
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.14;
 }
 
 .taskSummary small {
   width: fit-content;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-color-secondary);
   color: var(--color-text-muted);
-  font-weight: 800;
+  font-weight: 700;
   padding: 0.42rem 0.7rem;
 }
 
@@ -156,7 +154,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border-bottom: 1px solid var(--hm-color-border-subtle);
   padding-bottom: 0.75rem;
 }
 
@@ -167,7 +165,8 @@
 
 .totalRow strong {
   color: var(--color-primary);
-  font-size: 1.65rem;
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .summaryCard :global(.primary-action) {
@@ -184,29 +183,43 @@
 .premiumCompact {
   display: grid;
   gap: 0.75rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
-  padding-top: 0.9rem;
+  border-top: 1px solid var(--hm-color-border-subtle);
+  background: color-mix(in srgb, var(--hm-payment-panel-muted-bg) 48%, var(--hm-payment-panel-bg));
+  border-radius: var(--hm-radius-lg);
+  margin-top: 0.15rem;
+  padding: 0.9rem;
+}
+
+.premiumCompact h3 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.premiumCompact p {
+  font-size: 0.9rem;
 }
 
 .upsellButton,
 .premiumAction {
   justify-self: start;
   min-height: 2.65rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  border-radius: 999px;
-  font-weight: 900;
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius-pill);
+  font-weight: 700;
   padding: 0.7rem 0.95rem;
 }
 
 .upsellButton {
-  background: color-mix(in srgb, var(--color-surface) 94%, white);
-  color: var(--color-text);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   cursor: pointer;
 }
 
 .premiumAction {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-  color: color-mix(in srgb, var(--color-primary) 84%, var(--color-text));
+  background: var(--hm-button-icon-bg);
+  color: var(--hm-button-link-fg);
   cursor: pointer;
 }
 
@@ -216,16 +229,16 @@
 }
 
 .notice {
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface) 86%, var(--bg));
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-secondary);
   padding: 0.8rem;
 }
 
 .error {
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, rgb(220 38 38) 8%, var(--color-surface));
-  color: color-mix(in srgb, rgb(185 28 28) 84%, var(--color-text));
-  font-weight: 800;
+  border-radius: var(--hm-radius-lg);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-danger) 84%, var(--color-text));
+  font-weight: 700;
   line-height: 1.45;
   padding: 0.85rem;
 }
@@ -245,6 +258,12 @@
 @media (max-width: 42rem) {
   .page {
     padding: 1rem 0.75rem 5rem;
+  }
+
+  .summaryCard {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: var(--hm-z-sticky-cta);
   }
 
   .header {

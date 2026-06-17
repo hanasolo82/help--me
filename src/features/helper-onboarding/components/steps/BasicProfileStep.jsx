@@ -1,4 +1,5 @@
 import StepFrame from './StepFrame'
+import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './BasicProfileStep.module.css'
 
 function getInitials(fullName = '') {
@@ -51,9 +52,14 @@ export default function BasicProfileStep({ onNext, onBack, journeyDraft, setJour
     >
       <div className={styles.stack}>
         <section className={styles.profilePreview} aria-label="Perfil recuperado">
-          <div className={styles.avatarWrap} aria-hidden="true">
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{avatarInitials}</span>}
-          </div>
+          <UserAvatar
+            src={avatarUrl}
+            name={displayName || avatarInitials}
+            size="lg"
+            variant="rounded"
+            className={styles.avatarWrap}
+            decorative
+          />
           <div className={styles.profilePreviewCopy}>
             <div className={styles.profilePreviewHeader}>
               <p className={styles.previewKicker}>Perfil recuperado</p>

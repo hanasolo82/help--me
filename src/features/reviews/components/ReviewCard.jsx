@@ -1,4 +1,4 @@
-import { getAvatarInitial } from '../../../utils/avatar'
+import UserAvatar from '../../../shared/ui/UserAvatar'
 import styles from '../../profile/styles/profileNetwork.module.css'
 
 function scoreLabel(value) {
@@ -11,16 +11,19 @@ function scoreLabel(value) {
 export default function ReviewCard({ review }) {
   const reviewer = review?.reviewer || {}
   const reviewerName = reviewer.display_name || reviewer.full_name || reviewer.username || 'Vecino'
-  const initial = getAvatarInitial(reviewerName)
   const taskTitle = review?.task?.title || 'Tarea completada'
   const tags = Array.isArray(review?.tags) ? review.tags.filter(Boolean) : []
 
   return (
     <article className={styles.reviewCard}>
       <div className={styles.reviewMeta}>
-        <div className={styles.reviewAvatar}>
-          {reviewer.avatar_url ? <img src={reviewer.avatar_url} alt={reviewerName} /> : initial}
-        </div>
+        <UserAvatar
+          src={reviewer.avatar_url}
+          name={reviewerName}
+          alt={reviewerName}
+          size="sm"
+          className={styles.reviewAvatar}
+        />
         <div className={styles.reviewName}>
           <strong>{reviewerName}</strong>
           <span>@{reviewer.username || 'helpMe'}</span>

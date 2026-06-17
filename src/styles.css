@@ -3,26 +3,26 @@
 }
 
 :root {
-  --bg: var(--color-bg);
-  --surface: var(--color-surface);
-  --text: var(--color-text);
-  --accent: var(--color-primary);
-  --highlight: rgba(31, 107, 72, 0.1);
-  --shadow: rgba(28, 25, 22, 0.12);
+  --bg: var(--hm-color-bg);
+  --surface: var(--hm-color-surface);
+  --text: var(--hm-color-text);
+  --accent: var(--hm-color-accent);
+  --highlight: var(--hm-color-highlight);
+  --shadow: var(--hm-color-shadow);
 
-  --nav-bg: rgba(248, 246, 241, 0.88);
-  --nav-link: var(--color-text);
-  --nav-border: rgba(28, 25, 22, 0.12);
-  --nav-shadow: rgba(28, 25, 22, 0.08);
-  --nav-active-bg: var(--color-primary);
-  --nav-active-text: #ffffff;
+  --nav-bg: var(--hm-nav-bg);
+  --nav-link: var(--hm-nav-link);
+  --nav-border: var(--hm-nav-border);
+  --nav-shadow: var(--hm-nav-shadow);
+  --nav-active-bg: var(--hm-nav-active-bg);
+  --nav-active-text: var(--hm-nav-active-text);
 
-  --task-card-bg: var(--color-surface);
-  --task-card-text: var(--color-text);
-  --task-card-border: rgba(28, 25, 22, 0.12);
-  --task-card-shadow: rgba(28, 25, 22, 0.08);
-  --task-card-accent: var(--color-primary);
-  --task-card-highlight: rgba(31, 107, 72, 0.1);
+  --task-card-bg: var(--hm-task-card-bg);
+  --task-card-text: var(--hm-task-card-text);
+  --task-card-border: var(--hm-task-card-border);
+  --task-card-shadow: var(--hm-task-card-shadow);
+  --task-card-accent: var(--hm-task-card-accent);
+  --task-card-highlight: var(--hm-task-card-highlight);
 
   font-size: 100%;
 }
@@ -96,26 +96,27 @@ p {
 .auth-screen,
 .chat-screen {
   /* app shell: pages/Home/Home.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Profile/Profile.jsx, pages/Chat/Chat.jsx, pages/Settings/SettingsPage.jsx */
-  min-height: 100vh;
-  width: min(100%, 82rem);
+  min-height: 100dvh;
+  width: min(100%, var(--hm-shell-max-width));
   margin: 0 auto;
-  background: transparent;
+  background: var(--hm-shell-surface);
+  color: var(--hm-shell-text);
 }
 
 .app-screen {
-  padding: 1.5rem 1rem;
+  padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline);
 }
 
 .with-nav {
-  padding-bottom: 92px;
+  padding-bottom: var(--hm-shell-nav-offset);
 }
 
 .auth-screen {
   /* auth flow: pages/Login/Login.jsx, pages/ForgotPassword/ForgotPassword.jsx, pages/ResetPassword/ResetPassword.jsx, app/router/RequireAuth.jsx */
-  width: min(100%, 34rem);
+  width: min(100%, var(--hm-shell-auth-width));
   display: grid;
   place-items: center;
-  padding: 1.5rem 1rem;
+  padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline);
 }
 
 .auth-panel,
@@ -124,28 +125,23 @@ p {
 .profile-card,
 .stats-grid article {
   /* shared panels: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
-  border-radius: var(--hm-radius-xl);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
+  backdrop-filter: none;
 }
 
 .auth-panel,
 .completion-panel {
   /* auth and completion cards: shared/components/AuthPanel/AuthPanel.jsx, pages/TaskComplete/TaskComplete.jsx */
   width: 100%;
-  padding: 1.6rem;
+  padding: var(--hm-card-padding-lg);
 }
 
 .auth-panel {
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
-  box-shadow: var(--shadow-lg);
-}
-
-html[data-theme='light'] .auth-panel {
-  background: #ffffff;
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .auth-panel {
@@ -186,7 +182,7 @@ html[data-theme='light'] .auth-panel {
 
 .muted {
   /* secondary text utility: shared/components/AuthPanel/AuthPanel.jsx, pages/Home/HomeHeader.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
-  color: var(--color-text);
+  color: var(--color-text-muted);
   line-height: 1.5;
 }
 
@@ -218,8 +214,8 @@ html[data-theme='light'] .auth-panel {
   width: calc(50% - 0.3rem);
   height: calc(100% - 0.6rem);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  box-shadow: var(--shadow-primary);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.18s var(--ease-spring-soft);
 }
 
@@ -273,13 +269,13 @@ html[data-theme='light'] .auth-panel {
 .field select {
   /* form inputs: shared/components/AuthPanel/AuthPanel.jsx, pages/CreateTask/CreateTask.jsx, pages/Settings/SettingsPage.jsx */
   width: 100%;
-  border: 1px solid transparent;
-  border-radius: var(--hm-radius-md);
-  background: var(--hm-color-secondary);
-  color: var(--color-text);
+  border: 1px solid var(--hm-input-border);
+  border-radius: var(--hm-input-radius);
+  background: var(--hm-input-bg);
+  color: var(--hm-input-text);
   min-height: 2.75rem;
   padding: 0.7rem 0.85rem;
-  box-shadow: none;
+  box-shadow: var(--hm-input-shadow);
   transition:
     border-color var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -304,8 +300,8 @@ html[data-theme='light'] .auth-panel {
 .chat-composer input:focus,
 .message-edit-form textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-focus);
+  border-color: var(--hm-input-border-focus);
+  box-shadow: var(--hm-input-shadow-focus);
 }
 
 .field input::placeholder,
@@ -315,7 +311,7 @@ html[data-theme='light'] .auth-panel {
 .task-chat-composer input::placeholder,
 .chat-composer input::placeholder,
 .message-edit-form textarea::placeholder {
-  color: color-mix(in srgb, var(--color-text-muted) 80%, transparent);
+  color: var(--hm-input-placeholder);
 }
 
 .field:has(textarea),
@@ -327,23 +323,28 @@ html[data-theme='light'] .auth-panel {
 .primary-action,
 .success-action,
 .secondary-action,
-.danger-action {
+.danger-action,
+.oauth-action {
   /* global CTA buttons: shared/components/AuthPanel/AuthPanel.jsx, shared/components/AuthModal/AuthModal.jsx, pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, pages/Home/HomeView.jsx */
   width: 100%;
   max-width: 22.5rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-lg);
+  border-radius: var(--hm-button-radius);
   cursor: pointer;
-  min-height: 2.75rem;
-  font-weight: 700;
-  padding: 0.75rem 1rem;
-  box-shadow: var(--shadow-xs);
+  min-height: var(--hm-button-min-height);
+  font-size: var(--hm-button-font-size);
+  font-weight: var(--hm-button-font-weight);
+  line-height: 1.1;
+  padding: var(--hm-button-padding-block) var(--hm-button-padding-inline);
+  box-shadow: var(--hm-button-shadow);
+  text-align: center;
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out),
     border-color var(--motion-fast) var(--ease-out);
+  touch-action: manipulation;
 }
 
 .primary-action:hover,
@@ -358,7 +359,7 @@ html[data-theme='light'] .auth-panel {
 .message-action-link:hover,
 .chat-list-item:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .primary-action:focus-visible,
@@ -373,26 +374,27 @@ html[data-theme='light'] .auth-panel {
 .message-action-link:focus-visible,
 .chat-list-item:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus), var(--shadow-xs);
+  box-shadow: var(--hm-button-focus-shadow);
 }
 
 .primary-action {
   /* primary CTA: shared/components/AuthPanel/AuthPanel.jsx, pages/*, features/* */
   margin-top: 0;
-  background: var(--color-primary);
-  color: #ffffff;
-  box-shadow: var(--shadow-primary);
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
+  box-shadow: var(--hm-button-shadow);
 }
 
 .primary-action:hover {
-  box-shadow: 0 16px 34px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  background: var(--hm-button-primary-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .primary-action.auth-submit-action {
   /* submit button in auth panel: shared/components/AuthPanel/AuthPanel.jsx */
   border-color: transparent;
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  color: #ffffff;
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -400,43 +402,45 @@ html[data-theme='light'] .auth-panel {
 
 .primary-action.auth-submit-action:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-primary);
+  background: var(--hm-button-primary-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .success-action {
   /* affirmative action: pages/TaskComplete/TaskComplete.jsx, pages/Settings/SettingsPage.jsx */
   border-color: color-mix(in srgb, var(--color-success) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface-strong));
-  color: #166534;
+  background: var(--hm-button-success-bg);
+  color: var(--hm-button-success-fg);
 }
 
 .success-action:hover {
   border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
-  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface-strong));
+  background: var(--hm-button-success-bg-hover);
 }
 
 .secondary-action {
   /* secondary CTA: pages/Settings/SettingsPage.jsx, pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   border-color: transparent;
-  background: var(--hm-color-secondary);
-  color: var(--color-text);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
+  border-color: var(--hm-button-secondary-border);
 }
 
 .secondary-action:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-strong));
+  border-color: var(--hm-button-secondary-border);
+  background: var(--hm-button-secondary-bg-hover);
 }
 
 .danger-action {
   /* destructive CTA: pages/Settings/SettingsPage.jsx, features/profile/pages/ProfilePage.jsx */
   border-color: color-mix(in srgb, var(--color-danger) 18%, var(--color-border));
-  background: var(--color-danger);
-  color: #ffffff;
+  background: var(--hm-button-danger-bg);
+  color: var(--hm-button-danger-fg);
 }
 
 .danger-action:hover {
   border-color: color-mix(in srgb, var(--color-danger) 22%, var(--color-border));
-  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-strong));
+  background: var(--hm-button-danger-bg-hover);
 }
 
 .oauth-action {
@@ -444,24 +448,25 @@ html[data-theme='light'] .auth-panel {
   width: 100%;
   max-width: 22.5rem;
   min-height: 3.5rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
-  color: var(--color-text);
+  border: 1px solid var(--hm-button-oauth-border);
+  border-radius: var(--hm-button-radius);
+  background: var(--hm-button-oauth-bg);
+  color: var(--hm-button-oauth-fg);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: var(--hm-button-font-weight-strong);
   padding: 0.9rem 1rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  box-shadow: var(--shadow-xs);
+  gap: var(--hm-button-gap);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
     border-color var(--motion-fast) var(--ease-out);
+  touch-action: manipulation;
 }
 
 .oauth-action img {
@@ -473,8 +478,8 @@ html[data-theme='light'] .auth-panel {
 .oauth-action:hover {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-strong));
-  box-shadow: var(--shadow-sm);
+  background: var(--hm-button-oauth-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .auth-divider {
@@ -536,8 +541,8 @@ html[data-theme='light'] .auth-panel {
   color: var(--color-text);
   padding: 0.86rem 5.5rem 0.86rem 0.9rem;
   box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 1px 1px rgba(15, 23, 42, 0.02);
+    inset 0 1px 2px rgba(28, 25, 22, 0.05),
+    0 1px 1px rgba(28, 25, 22, 0.03);
 }
 
 .password-toggle {
@@ -546,15 +551,15 @@ html[data-theme='light'] .auth-panel {
   top: 50%;
   right: 8px;
   transform: translateY(-50%);
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
-  color: var(--color-text);
+  border: 1px solid var(--hm-button-oauth-border);
+  border-radius: var(--hm-button-radius-pill);
+  background: var(--hm-button-oauth-bg);
+  color: var(--hm-button-oauth-fg);
   cursor: pointer;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: var(--hm-button-font-weight-strong);
   padding: 6px 10px;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -564,8 +569,9 @@ html[data-theme='light'] .auth-panel {
 
 .password-toggle:hover {
   transform: translateY(-50%) translateY(-1px);
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  box-shadow: var(--shadow-sm);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-oauth-border));
+  background: var(--hm-button-oauth-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .auth-aux-placeholder {
@@ -645,8 +651,11 @@ html[data-theme='light'] .auth-panel {
 
 .page-header h1 {
   /* main page titles: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx, pages/Chats/Chats.jsx */
-  font-size: clamp(1.65rem, 4vw, 2.6rem);
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
 }
 
 .icon-button {
@@ -655,12 +664,12 @@ html[data-theme='light'] .auth-panel {
   height: 42px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  border: 1px solid var(--hm-button-icon-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-button-icon-bg);
   cursor: pointer;
   font-size: 20px;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -669,8 +678,9 @@ html[data-theme='light'] .auth-panel {
 }
 
 .icon-button:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-icon-border));
+  background: var(--hm-button-icon-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .form-stack {
@@ -689,39 +699,46 @@ html[data-theme='light'] .auth-panel {
   /* filter chip: shared/components/AuthPanel/AuthPanel.jsx, features/skills/components/SkillFilter.jsx, features/home/* */
   flex: 0 1 auto;
   min-height: 2.75rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
-  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--hm-button-icon-border);
+  background: var(--hm-button-icon-bg);
+  box-shadow: var(--hm-button-shadow);
 }
 
 .chip.selected {
   border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  box-shadow: var(--shadow-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: var(--hm-button-shadow);
 }
 
 .chip:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-icon-border));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--hm-button-icon-bg));
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .detail-panel {
   /* detail cards: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
   display: grid;
-  gap: 0.9rem;
+  gap: var(--hm-space-4);
   margin-bottom: 1rem;
-  padding: 1.1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .detail-panel h2 {
   /* detail panel titles: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
-  font-size: 18px;
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .detail-panel p {
   /* detail panel text: pages/TaskDetail/TaskDetail.jsx, pages/TaskComplete/TaskComplete.jsx */
-  color: var(--color-text);
   line-height: 1.55;
 }
 
@@ -729,13 +746,21 @@ html[data-theme='light'] .auth-panel {
   /* label/value row: pages/TaskDetail/TaskDetail.jsx, features/profile/pages/ProfilePage.jsx */
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-muted-bg);
 }
 
 .detail-row span {
   /* highlighted value in detail row: pages/TaskDetail/TaskDetail.jsx */
-  color: var(--color-primary);
-  font-weight: 900;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .user-strip {
@@ -743,16 +768,16 @@ html[data-theme='light'] .auth-panel {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-muted-bg);
   padding: 1rem;
-  box-shadow: var(--shadow-xs);
+  box-shadow: none;
 }
 
 .user-strip p {
   margin-top: 4px;
-  color: var(--color-text);
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -776,7 +801,8 @@ html[data-theme='light'] .auth-panel {
 .sticky-action {
   /* sticky CTA wrapper: pages/TaskDetail/TaskDetail.jsx, pages/CreateTask/CreateTask.jsx */
   position: sticky;
-  bottom: 16px;
+  bottom: 12px;
+  z-index: var(--hm-z-sticky-cta);
 }
 
 .two-actions {
@@ -793,10 +819,10 @@ html[data-theme='light'] .auth-panel {
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
-  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--hm-button-icon-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-button-icon-bg);
+  box-shadow: var(--hm-button-shadow);
   padding: 0;
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
@@ -806,8 +832,9 @@ html[data-theme='light'] .auth-panel {
 }
 
 .message-action:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-icon-border));
+  background: var(--hm-button-icon-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .message-action img {
@@ -823,8 +850,7 @@ html[data-theme='light'] .auth-panel {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(10px);
+  background: rgba(28, 25, 22, 0.28);
 }
 
 .task-chat-modal {
@@ -834,10 +860,10 @@ html[data-theme='light'] .auth-panel {
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, white);
-  box-shadow: var(--shadow-lg);
+  background: var(--color-surface);
+  box-shadow: var(--hm-shadow-lg);
 }
 
 .task-chat-header {
@@ -847,8 +873,8 @@ html[data-theme='light'] .auth-panel {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
-  background: transparent;
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-secondary);
 }
 
 .task-chat-header h2 {
@@ -872,7 +898,7 @@ html[data-theme='light'] .auth-panel {
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
   padding: 0.85rem 1rem 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border-top: 1px solid var(--hm-color-border-subtle);
   background: transparent;
 }
 
@@ -880,19 +906,17 @@ html[data-theme='light'] .auth-panel {
   /* contextual task chat composer wrapper when using the shared textarea composer */
   display: block;
   padding: 0.85rem 1rem 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border-top: 1px solid var(--hm-color-border-subtle);
   background: transparent;
 }
 
 .task-chat-composer input {
   /* contextual task chat input: components/home/TaskChatModal.jsx */
-  border: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-md);
   padding: 0.75rem 0.85rem;
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
-  box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 1px 1px rgba(15, 23, 42, 0.02);
+  background: var(--color-surface);
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .chat-screen {
@@ -902,10 +926,10 @@ html[data-theme='light'] .auth-panel {
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-xl);
   background: var(--color-surface);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--hm-shadow-lg);
 }
 
 .chat-header {
@@ -915,8 +939,8 @@ html[data-theme='light'] .auth-panel {
   align-items: center;
   margin: 0;
   padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-secondary);
 }
 
 .chat-contact-avatar {
@@ -971,9 +995,7 @@ html[data-theme='light'] .auth-panel {
   gap: 10px;
   padding: 18px 16px;
   overflow: auto;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-bg) 40%, transparent), transparent 28%),
-    var(--color-surface-strong);
+  background: color-mix(in srgb, var(--hm-color-secondary) 48%, var(--hm-color-surface));
 }
 
 .message {
@@ -984,8 +1006,8 @@ html[data-theme='light'] .auth-panel {
   line-height: 1.45;
   display: grid;
   gap: 0.35rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  border: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
   box-shadow: var(--shadow-xs);
 }
 
@@ -1040,17 +1062,17 @@ html[data-theme='light'] .auth-panel {
 
 .message-action-link {
   /* chat action pill: shared/ui/chat/MessageBubble.jsx */
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
-  color: var(--color-text);
+  border: 1px solid var(--hm-button-oauth-border);
+  background: var(--hm-button-oauth-bg);
+  color: var(--hm-button-oauth-fg);
   cursor: pointer;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: var(--hm-button-font-weight-strong);
   opacity: 0.95;
   padding: 0.42rem 0.7rem;
   text-decoration: none;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-xs);
+  border-radius: var(--hm-button-radius-pill);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -1060,26 +1082,27 @@ html[data-theme='light'] .auth-panel {
 
 .message-action-link.primary {
   /* edit action: shared/ui/chat/MessageBubble.jsx */
-  color: var(--color-primary);
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  color: var(--hm-button-link-fg);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-oauth-border));
+  background: var(--hm-button-ghost-bg-hover);
 }
 
 .message-action-link:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-button-oauth-border));
+  background: var(--hm-button-ghost-bg-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .message-action-link.danger {
   /* delete action: shared/ui/chat/MessageBubble.jsx */
-  color: #b42318;
-  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-danger) 18%, var(--color-border));
+  color: var(--hm-button-danger-fg);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--hm-button-oauth-bg));
+  border-color: color-mix(in srgb, var(--color-danger) 18%, var(--hm-button-oauth-border));
 }
 
 .message-action-link.danger:hover {
-  border-color: color-mix(in srgb, var(--color-danger) 22%, var(--color-border));
-  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--color-danger) 22%, var(--hm-button-oauth-border));
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--hm-button-oauth-bg));
 }
 
 .message-action-link.icon {
@@ -1089,15 +1112,15 @@ html[data-theme='light'] .auth-panel {
   display: inline-grid;
   place-items: center;
   padding: 0;
-  border-radius: var(--radius-pill);
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  border-radius: var(--hm-button-radius-pill);
+  border: 1px solid var(--hm-button-oauth-border);
+  background: var(--hm-button-oauth-bg);
   color: inherit;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--hm-button-shadow);
 }
 
 .message-action-link.icon:hover {
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  background: var(--hm-button-ghost-bg-hover);
 }
 
 .message-action-link.icon img {
@@ -1421,11 +1444,11 @@ html[data-theme='light'] .auth-panel {
 .application-card {
   display: grid;
   gap: var(--hm-space-4);
-  padding: var(--hm-space-4);
-  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-  border-radius: var(--hm-radius-xl);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  padding: clamp(1rem, 2vw, 1.25rem);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .application-card .user-strip {
@@ -1439,6 +1462,83 @@ html[data-theme='light'] .auth-panel {
 
 .application-card .two-actions > button {
   max-width: none;
+}
+
+.decision-gate,
+.applications-gate {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.decision-gate h2,
+.applications-gate h2 {
+  max-width: 34rem;
+}
+
+.decision-gate > .muted,
+.applications-gate > p:not(.eyebrow) {
+  max-width: 38rem;
+  color: var(--hm-color-muted);
+}
+
+.decision-gate .decision-summary-row strong,
+.decision-gate .total-row strong,
+.applications-gate .detail-row strong {
+  text-align: right;
+}
+
+.decision-gate .total-row {
+  background: var(--hm-color-secondary);
+}
+
+.decision-gate .total-row strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--hm-color-primary);
+}
+
+.helper-strip {
+  background: var(--color-surface);
+}
+
+.decision-actions {
+  align-items: stretch;
+  margin-top: var(--hm-space-2);
+}
+
+.decision-actions > button {
+  flex: 1 1 13rem;
+  max-width: none;
+}
+
+.decision-gate .profile-link-action {
+  justify-self: start;
+  width: auto;
+  max-width: none;
+  min-height: 2.5rem;
+  padding-inline: 0.9rem;
+}
+
+.decision-gate .sticky-action,
+.applications-gate .sticky-action {
+  position: static;
+}
+
+@media (max-width: 42rem) {
+  .decision-gate,
+  .applications-gate {
+    margin-bottom: var(--hm-space-sticky);
+  }
+
+  .decision-actions {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: var(--hm-z-sticky-cta);
+    padding: 0.6rem;
+    border: 1px solid var(--hm-color-border-subtle);
+    border-radius: var(--hm-radius-xl);
+    background: var(--hm-color-surface);
+    box-shadow: var(--hm-shadow-lg);
+  }
 }
 
 .image-preview {
@@ -1485,8 +1585,8 @@ html[data-theme='light'] .auth-panel {
   padding: 0.75rem 0.85rem;
   background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
   box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 1px 1px rgba(15, 23, 42, 0.02);
+    inset 0 1px 2px rgba(28, 25, 22, 0.05),
+    0 1px 1px rgba(28, 25, 22, 0.03);
 }
 
 .chat-list {
@@ -1522,7 +1622,7 @@ html[data-theme='light'] .auth-panel {
 .chat-list-item[aria-current='page'] {
   border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
   background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
-  box-shadow: var(--shadow-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .chat-list-item:hover {
@@ -1556,10 +1656,10 @@ html[data-theme='light'] .auth-panel {
   /* generic empty state: shared/ui/chat/EmptyChatState.jsx, pages/Chats/Chats.jsx, pages/TaskDetail/TaskDetail.jsx */
   text-align: center;
   padding: 1.35rem 1rem;
-  border: 1px dashed color-mix(in srgb, var(--color-border) 84%, white);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 92%, white);
-  box-shadow: var(--shadow-xs);
+  border: 1px dashed var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .remembered-account {
@@ -1569,11 +1669,11 @@ html[data-theme='light'] .auth-panel {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
   margin-bottom: 1rem;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .remembered-account strong {
@@ -1586,24 +1686,26 @@ html[data-theme='light'] .auth-panel {
   /* text link button: shared/components/AuthPanel/AuthPanel.jsx, shared/components/CookieConsent/CookieConsent.jsx */
   background: transparent;
   border: none;
-  color: var(--color-primary);
-  font-weight: 900;
+  color: var(--hm-button-link-fg);
+  font-weight: var(--hm-button-font-weight-strong);
   text-decoration: none;
   cursor: pointer;
   padding: 0;
   transition:
     color var(--motion-fast) var(--ease-out),
     opacity var(--motion-fast) var(--ease-out);
+  touch-action: manipulation;
 }
 
 .link-button:hover {
+  color: var(--hm-button-link-fg-hover);
   text-decoration: underline;
 }
 
 .link-button:focus-visible {
   outline: none;
   text-decoration: underline;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--hm-button-focus-shadow);
 }
 
 .auth-legal {

@@ -14,6 +14,7 @@ import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
 import { getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
 import TaskChatModal from '../../components/task/TaskChatModal'
+import UserAvatar from '../../shared/ui/UserAvatar'
 import messageIcon from '../../assets/icons/message.svg'
 
 const TASK_STATUS_LABELS = {
@@ -243,26 +244,30 @@ export default function TaskDetail() {
       </header>
 
       {showDecisionGate ? (
-        <section className="detail-panel">
+        <section className="detail-panel decision-gate">
           <p className="eyebrow">Oferta pendiente</p>
-          <h2>{helperName} está listo para ayudarte</h2>
+          <h2>{helperName} te ayudará con esta tarea</h2>
           <p>Confirma la tarea para pagar y abrir el chat privado.</p>
 
-          <div className="detail-row">
+          <div className="detail-row decision-summary-row">
             <span>Tarea</span>
             <strong>{task.title}</strong>
           </div>
           <p className="muted">{task.description}</p>
-          <div className="detail-row">
+          <div className="detail-row total-row">
             <span>Precio</span>
             <strong>{priceEuros} EUR</strong>
           </div>
 
           {task.accepted_profile && (
-            <div className="user-strip">
-              <span className="avatar-small">
-                {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-              </span>
+            <div className="user-strip helper-strip">
+              <UserAvatar
+                src={helperProfile.avatar_url}
+                name={helperName || helperInitial}
+                alt={helperName}
+                size="sm"
+                className="avatar-small"
+              />
               <div>
                 <strong>{helperName}</strong>
                 <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Listo para ayudarte'}</p>
@@ -271,7 +276,7 @@ export default function TaskDetail() {
             </div>
           )}
 
-          <div className="two-actions">
+          <div className="two-actions decision-actions">
             {canOpenPayment && (
               <>
                 <button
@@ -295,14 +300,14 @@ export default function TaskDetail() {
 
           <button
             type="button"
-            className="secondary-action sticky-action"
+            className="secondary-action profile-link-action"
             onClick={() => navigate(`/profile/${task.accepted_by}`)}
           >
             Ver perfil
           </button>
         </section>
       ) : showApplicationsGate ? (
-        <section className="detail-panel">
+        <section className="detail-panel applications-gate">
           <p className="eyebrow">Helpers interesados</p>
           <h2>Tienes helpers interesados</h2>
           <p>Elige un helper para pasar a oferta pendiente. Después podrás confirmar y pagar.</p>
@@ -329,13 +334,13 @@ export default function TaskDetail() {
               return (
                 <article className="application-card" key={application.id}>
                   <div className="user-strip">
-                    <span className="avatar-small">
-                      {applicationProfile.avatar_url ? (
-                        <img src={applicationProfile.avatar_url} alt={applicationHelperName} />
-                      ) : (
-                        applicationInitial
-                      )}
-                    </span>
+                    <UserAvatar
+                      src={applicationProfile.avatar_url}
+                      name={applicationHelperName || applicationInitial}
+                      alt={applicationHelperName}
+                      size="sm"
+                      className="avatar-small"
+                    />
                     <div>
                       <p className="eyebrow">{index === 0 ? 'Primera en ofrecerse' : 'Helper interesado'}</p>
                       <strong>{applicationHelperName}</strong>
@@ -382,9 +387,13 @@ export default function TaskDetail() {
         <>
           <section className="detail-panel">
             <div className="user-strip">
-              <span className="avatar-small">
-                {creatorProfile.avatar_url ? <img src={creatorProfile.avatar_url} alt={creatorName} /> : creatorInitial}
-              </span>
+              <UserAvatar
+                src={creatorProfile.avatar_url}
+                name={creatorName || creatorInitial}
+                alt={creatorName}
+                size="sm"
+                className="avatar-small"
+              />
               <div>
                 <strong>{creatorName}</strong>
                 <p>{creatorProfile.rating ? `${creatorProfile.rating}/5` : 'Vecino de confianza'}</p>
@@ -394,9 +403,13 @@ export default function TaskDetail() {
 
             {task.accepted_profile && (
               <div className="user-strip">
-                <span className="avatar-small">
-                  {helperProfile.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-                </span>
+                <UserAvatar
+                  src={helperProfile.avatar_url}
+                  name={helperName || helperInitial}
+                  alt={helperName}
+                  size="sm"
+                  className="avatar-small"
+                />
                 <div>
                   <strong>{helperName}</strong>
                   <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Ayudante asignado'}</p>

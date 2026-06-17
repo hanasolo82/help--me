@@ -5,9 +5,9 @@
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.68);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: var(--hm-panel-scrim);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   overflow: auto;
   animation: authBackdropEnter 180ms ease-out both;
 }
@@ -19,14 +19,11 @@
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
   overflow-x: hidden;
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
+  background: var(--hm-panel-bg);
   color: var(--color-text);
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
-  border-radius: var(--radius-2xl);
-  box-shadow:
-    0 32px 96px rgba(15, 23, 42, 0.18),
-    0 14px 36px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  box-shadow: var(--hm-panel-shadow);
   padding: 2rem 1.85rem 1.6rem;
   transform-origin: center center;
   will-change: transform, opacity;
@@ -35,12 +32,9 @@
 }
 
 :global(html[data-theme='light']) .modal {
-  background: #ffffff;
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow:
-    0 36px 110px rgba(15, 23, 42, 0.1),
-    0 16px 42px rgba(15, 23, 42, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  background: var(--hm-panel-bg);
+  border-color: var(--hm-panel-border);
+  box-shadow: var(--hm-panel-shadow);
 }
 
 .modal::before {
@@ -49,7 +43,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-surface) 65%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--hm-card-bg) 65%, transparent);
 }
 
 :global(html[data-theme='light']) .modal::before {
@@ -97,13 +91,10 @@
   min-height: 52px;
   height: 52px;
   padding: 0 1.1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.08),
-    0 4px 10px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 color-mix(in srgb, var(--color-surface) 72%, transparent);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
   justify-content: center;
   gap: 0.7rem;
 }
@@ -116,7 +107,7 @@
 :global(html[data-theme='light']) .modal :global(.password-toggle),
 :global(html[data-theme='light']) .modal :global(.remembered-account),
 :global(html[data-theme='light']) .modal :global(.secondary-action) {
-  background: #ffffff;
+  background: var(--hm-card-bg);
 }
 
 .modal :global(.oauth-action img) {
@@ -125,24 +116,22 @@
 }
 
 .modal :global(.oauth-action:hover) {
-  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
-  box-shadow:
-    0 10px 22px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 color-mix(in srgb, var(--color-surface) 72%, transparent);
+  background: var(--hm-card-muted-bg);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
   transform: translateY(-1px);
 }
 
 :global(html[data-theme='light']) .modal :global(.oauth-action:hover),
 :global(html[data-theme='light']) .modal :global(.secondary-action:hover),
 :global(html[data-theme='light']) .modal :global(.password-toggle:hover) {
-  background: #f8fbff;
+  background: var(--hm-card-muted-bg);
 }
 
 .modal :global(.auth-divider) {
   gap: 0.7rem;
   margin: 0.1rem 0 0.2rem;
-  color: var(--color-text-muted);
+  color: var(--hm-card-muted-fg);
   font-size: 0.8rem;
 }
 
@@ -152,22 +141,22 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--color-border) 70%, transparent),
+    color-mix(in srgb, var(--hm-card-border) 70%, transparent),
     transparent
   );
 }
 
 .modal :global(.segmented) {
   padding: 0.28rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  background: var(--hm-card-muted-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 :global(html[data-theme='light']) .modal :global(.segmented) {
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.segmented::before) {
@@ -176,8 +165,8 @@
   width: calc(50% - 0.28rem);
   height: calc(100% - 0.56rem);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  box-shadow: var(--shadow-primary);
+  background: var(--hm-card-accent-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.segmented button) {
@@ -189,7 +178,7 @@
 }
 
 .modal :global(.segmented .selected) {
-  color: #ffffff;
+  color: var(--hm-card-accent-fg);
 }
 
 .modal :global(.field) {
@@ -205,14 +194,12 @@
 .modal :global(.field select) {
   width: 100%;
   height: 56px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
+  background: var(--hm-color-surface);
   color: var(--color-text);
   padding: 0 1rem;
-  box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.03),
-    0 10px 24px rgba(15, 23, 42, 0.05);
+  box-shadow: none;
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -222,23 +209,21 @@
 :global(html[data-theme='light']) .modal :global(.field input),
 :global(html[data-theme='light']) .modal :global(.field select),
 :global(html[data-theme='light']) .modal :global(.password-field input) {
-  border-color: rgba(15, 23, 42, 0.1);
-  box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.025),
-    0 12px 28px rgba(15, 23, 42, 0.055);
+  border-color: var(--hm-color-border-subtle);
+  box-shadow: none;
 }
 
 .modal :global(.password-field input) {
   width: 100%;
   height: 56px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
+  background: var(--hm-color-surface);
   color: var(--color-text);
   padding: 0 5.5rem 0 1rem;
   box-shadow:
-    inset 0 1px 2px rgba(15, 23, 42, 0.03),
-    0 10px 24px rgba(15, 23, 42, 0.05);
+    inset 0 1px 2px rgba(28, 25, 22, 0.03),
+    0 10px 24px rgba(28, 25, 22, 0.05);
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
@@ -254,10 +239,10 @@
 .modal :global(.password-field input:focus),
 .modal :global(.field select:focus) {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--hm-card-accent-bg);
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-primary) 16%, transparent),
-    inset 0 1px 2px rgba(15, 23, 42, 0.04);
+    0 0 0 4px color-mix(in srgb, var(--hm-card-accent-bg) 16%, transparent),
+    inset 0 1px 2px rgba(28, 25, 22, 0.04);
 }
 
 .modal :global(.password-field) {
@@ -269,24 +254,24 @@
   right: 10px;
   transform: translateY(-50%);
   height: 40px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
+  background: var(--hm-card-bg);
   color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 800;
   padding: 0 0.8rem;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--hm-card-shadow);
 }
 
 :global(html[data-theme='light']) .modal :global(.password-toggle) {
-  border-color: rgba(15, 23, 42, 0.1);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.password-toggle:hover) {
-  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  background: var(--hm-card-muted-bg);
+  border-color: color-mix(in srgb, var(--hm-card-accent-bg) 18%, var(--hm-card-border));
 }
 
 .modal :global(.strength-meter) {
@@ -300,7 +285,7 @@
 
 .modal :global(.auth-message) {
   border-radius: var(--radius-md);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.field-error) {
@@ -309,14 +294,14 @@
 
 .modal :global(.remembered-account) {
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
-  border-color: color-mix(in srgb, var(--color-border) 82%, transparent);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+  background: var(--hm-card-bg);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
 }
 
 :global(html[data-theme='light']) .modal :global(.remembered-account) {
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.turnstile-widget) {
@@ -337,36 +322,32 @@
 }
 
 .modal :global(.primary-action.auth-submit-action) {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--hm-card-accent-bg);
+  color: var(--hm-card-accent-fg);
   border-color: transparent;
-  box-shadow:
-    0 20px 42px rgba(37, 99, 235, 0.18),
-    0 8px 18px rgba(37, 99, 235, 0.1);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.primary-action.auth-submit-action:hover) {
   transform: translateY(-1px);
-  box-shadow:
-    0 24px 48px rgba(37, 99, 235, 0.2),
-    0 10px 22px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--hm-card-shadow-hover);
 }
 
 .modal :global(.secondary-action) {
-  background: color-mix(in srgb, var(--color-surface-strong) 98%, transparent);
-  border-color: color-mix(in srgb, var(--color-border) 82%, transparent);
+  background: var(--hm-card-bg);
+  border-color: var(--hm-card-border);
   color: var(--color-text);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--hm-card-shadow);
 }
 
 :global(html[data-theme='light']) .modal :global(.secondary-action) {
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.045);
+  border-color: var(--hm-card-border);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .modal :global(.secondary-action:hover) {
-  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
+  background: var(--hm-card-muted-bg);
+  border-color: color-mix(in srgb, var(--hm-card-accent-bg) 16%, var(--hm-card-border));
 }
 
 .modal :global(.auth-legal) {
@@ -389,19 +370,17 @@
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 84%, #000 16%) 100%);
-  color: #ffffff;
+  background: var(--hm-card-bg);
+  color: var(--hm-card-muted-fg);
   font-family: inherit;
   font-size: 1.3rem;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  box-shadow:
-    0 18px 36px color-mix(in srgb, var(--color-primary) 20%, transparent),
-    0 8px 18px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--hm-card-shadow);
   transition:
     transform 0.16s ease,
     box-shadow 0.16s ease,
@@ -410,9 +389,7 @@
 
 .closeButton:hover {
   transform: scale(1.04);
-  box-shadow:
-    0 20px 40px color-mix(in srgb, var(--color-primary) 24%, transparent),
-    0 10px 22px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--hm-card-shadow-hover);
 }
 
 .closeButton:active {
@@ -421,10 +398,47 @@
 
 .closeButton:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-primary) 20%, transparent),
-    0 18px 36px color-mix(in srgb, var(--color-primary) 20%, transparent),
-    0 8px 18px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--hm-button-focus-shadow);
+}
+
+.modal :global(.password-field input),
+.modal :global(.password-toggle),
+.modal :global(.auth-message),
+.modal :global(.remembered-account),
+.modal :global(.secondary-action) {
+  border-color: var(--hm-card-border);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
+}
+
+.modal :global(.password-toggle:hover),
+.modal :global(.secondary-action:hover) {
+  border-color: var(--hm-card-border);
+  background: var(--hm-card-muted-bg);
+  box-shadow: var(--hm-card-shadow-hover);
+}
+
+.modal :global(.field input:focus),
+.modal :global(.password-field input:focus),
+.modal :global(.field select:focus) {
+  border-color: var(--hm-card-accent-bg);
+  box-shadow: var(--hm-button-focus-shadow);
+}
+
+.modal :global(.primary-action.auth-submit-action),
+.modal :global(.primary-action.auth-submit-action:hover) {
+  background: var(--hm-card-accent-bg);
+  color: var(--hm-card-accent-fg);
+  box-shadow: var(--hm-card-shadow);
+}
+
+.closeButton,
+.closeButton:hover,
+.closeButton:focus-visible {
+  border-color: var(--hm-card-border);
+  background: var(--hm-card-bg);
+  color: var(--hm-card-muted-fg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 @keyframes authBackdropEnter {

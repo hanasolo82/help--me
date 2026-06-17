@@ -27,27 +27,18 @@
   inset: -1.25rem;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.42;
+  opacity: 0.28;
   background:
-    radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 28%),
-    linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 38%, transparent), transparent 52%);
-  filter: blur(0.5px);
+    radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--hm-color-secondary) 62%, transparent), transparent 28%),
+    radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 30%);
 }
 
 .columnPanel,
 .empty {
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-xl);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-surface) 93%, transparent),
-      color-mix(in srgb, var(--color-surface-strong) 88%, transparent)
-    );
-  box-shadow:
-    0 1px 0 color-mix(in srgb, white 16%, transparent),
-    0 12px 32px color-mix(in srgb, var(--color-text) 8%, transparent);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .profileSummaryList span,
@@ -119,11 +110,11 @@
 .filtersBar {
   display: grid;
   gap: 0.46rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 88%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-secondary);
   padding: 0.56rem;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .filtersInner {
@@ -147,12 +138,12 @@
 
 .filtersInner select {
   width: 100%;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
   background: var(--color-surface);
   color: var(--color-text);
   padding: 0.5rem 0.66rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .filtersCount {
@@ -179,10 +170,11 @@
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 92%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background: var(--color-surface);
   padding: 0.5rem 0.64rem;
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .profileSummaryList strong {
@@ -195,9 +187,9 @@
 .selectedTaskSummary {
   display: grid;
   gap: 0.22rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 88%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-secondary);
   padding: 0.62rem 0.7rem;
 }
 
@@ -232,18 +224,11 @@
 
 .selectionShell > article {
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border)) !important;
-  border-radius: var(--radius-xl) !important;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-surface) 94%, transparent),
-      color-mix(in srgb, var(--color-surface-strong) 90%, transparent)
-    ) !important;
+  border: 1px solid var(--hm-color-border-subtle) !important;
+  border-radius: var(--hm-radius-xl) !important;
+  background: var(--color-surface) !important;
   padding: 0.78rem !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, white 10%, transparent),
-    0 14px 32px color-mix(in srgb, var(--color-text) 7%, transparent) !important;
+  box-shadow: var(--hm-shadow-sm) !important;
 }
 
 .selectionShell :global([class*='descriptionContainer']) {
@@ -265,10 +250,10 @@
 }
 
 .selectionShell :global([class*='price']) {
-  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 20%, var(--hm-color-border-subtle));
+  background: var(--hm-color-secondary);
   color: var(--color-primary);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .selectionShell :global([class*='actions']),
@@ -322,9 +307,9 @@
 .emptyNote {
   display: inline-flex;
   width: fit-content;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-color-secondary);
   color: var(--color-primary);
   padding: 0.28rem 0.52rem;
 }

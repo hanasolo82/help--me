@@ -676,6 +676,10 @@
   gap: 0.65rem;
 }
 
+.helperFeedActionRow {
+  margin-top: 0.75rem;
+}
+
 .emptyState {
   display: grid;
   gap: 0.4rem;
@@ -705,4 +709,41 @@
     grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.9fr);
     align-items: start;
   }
+}
+
+.heroCard,
+.highlightCard,
+.miniStat,
+.section,
+.emptyState,
+.helperCard,
+.mapCard,
+.reviewCard,
+.reviewItem,
+.ratingCard,
+.trustPill,
+.skillBadge,
+.categoryPill,
+.availabilityPill,
+.reviewBadge,
+.verificationBadge {
+  border-color: var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
+  box-shadow: var(--hm-shadow-sm);
+}
+
+.avatar,
+.isActive,
+.skillBadge.isActive,
+.categoryPill.isActive {
+  border-color: var(--hm-color-primary);
+  background: var(--hm-color-primary);
+  color: #ffffff;
+}
+
+.skillBadge:hover,
+.categoryPill:hover,
+.availabilityPill:hover {
+  border-color: color-mix(in srgb, var(--hm-color-primary) 24%, var(--hm-color-border-subtle));
+  box-shadow: var(--hm-shadow-sm);
 }

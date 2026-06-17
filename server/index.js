@@ -63,7 +63,8 @@ app.use((_req, res) => {
   })
 })
 
-app.use((error, _req, res) => {
+app.use((error, _req, res, _next) => {
+  void _next
   console.error('[server] Unhandled error:', error)
   const statusCode = Number.isInteger(error?.statusCode) ? error.statusCode : 500
   const message = statusCode === 500 ? 'Internal server error.' : (error?.message || 'Request failed.')

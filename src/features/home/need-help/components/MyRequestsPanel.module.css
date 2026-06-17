@@ -1,4 +1,4 @@
-﻿.panel {
+.panel {
   width: 100%;
   max-width: 100%;
   justify-self: stretch;
@@ -7,11 +7,10 @@
   display: grid;
   gap: 0.85rem;
   padding: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  background: var(--hm-panel-bg);
+  box-shadow: var(--hm-panel-shadow-soft);
 }
 
 .panel :global(.card) {
@@ -27,8 +26,9 @@
 }
 
 .header h2 {
+  font-family: var(--font-heading);
   font-size: clamp(1.2rem, 2.8vw, 1.8rem);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .actions {
@@ -52,11 +52,11 @@
 .countCard,
 .featuredTask,
 .emptyFeatured {
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
   padding: 0.85rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .countCard {
@@ -65,7 +65,7 @@
 }
 
 .countCard span {
-  color: var(--color-primary);
+  color: var(--hm-card-muted-fg);
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -96,16 +96,16 @@
 
 .featuredStatus {
   flex: 0 0 auto;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 999rem;
-  background: rgba(41, 171, 255, 0.1);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
   font-size: 0.78rem;
   font-weight: 700;
   padding: 0.25rem 0.55rem;
 }
 
 .featuredMeta {
-  color: var(--text);
+  color: var(--hm-card-muted-fg);
   font-weight: 700;
 }
 
@@ -133,4 +133,3 @@
     grid-template-columns: 1fr 1fr;
   }
 }
-

@@ -1,14 +1,17 @@
 .page {
   display: grid;
-  gap: 1rem;
-  padding-bottom: 5rem;
-  width: 100%;
-  max-width: 100%;
+  gap: var(--hm-shell-gap);
+  width: min(100%, var(--hm-shell-max-width));
+  max-width: var(--hm-shell-max-width);
+  margin: 0 auto;
+  padding-bottom: var(--hm-shell-nav-offset);
+  background: var(--hm-shell-surface);
+  color: var(--hm-shell-text);
 }
 
 .layout {
   display: grid;
-  gap: 1.25rem;
+  gap: var(--hm-shell-gap);
   width: 100%;
 }
 
@@ -16,14 +19,10 @@
   display: grid;
   gap: 1rem;
   padding: 1.1rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)), transparent 34%),
-    linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 92%, var(--bg)));
-  box-shadow:
-    0 24px 60px rgba(15, 23, 42, 0.08),
-    0 10px 24px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--hm-shell-sidebar-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-sidebar-gradient);
+  box-shadow: var(--hm-shell-sidebar-shadow);
   overflow: hidden;
 }
 
@@ -90,8 +89,8 @@
   padding: 0.95rem;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-shell-card-border);
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .sidebarStatus strong {
@@ -115,8 +114,8 @@
   padding: 0.85rem;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-shell-card-border);
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .sidebarStat span {
@@ -155,12 +154,12 @@
   gap: 0.75rem;
   padding: 0.8rem 0.9rem;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--hm-shell-card-border);
   background: var(--color-surface);
   color: var(--color-text);
   font-weight: 700;
   text-decoration: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-shell-card-shadow);
   white-space: nowrap;
   scroll-snap-align: start;
 }
@@ -200,12 +199,10 @@
   display: grid;
   gap: 1rem;
   padding: 1.1rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 95%, var(--bg)));
-  box-shadow:
-    0 34px 84px rgba(15, 23, 42, 0.14),
-    0 14px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--hm-shell-card-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-card-bg);
+  box-shadow: var(--hm-shell-card-shadow);
   scroll-margin-top: 6.5rem;
 }
 
@@ -244,10 +241,10 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.9rem 0.95rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--hm-shell-card-border);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  background: var(--hm-shell-card-bg);
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .editableRowCopy {
@@ -300,11 +297,9 @@
   gap: 0.35rem;
   padding: 0.9rem;
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 94%, var(--bg)));
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow:
-    0 18px 44px rgba(15, 23, 42, 0.1),
-    0 6px 16px rgba(15, 23, 42, 0.05);
+  background: var(--hm-shell-card-bg);
+  border: 1px solid var(--hm-shell-card-border);
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .overviewLabel {
@@ -338,11 +333,9 @@
   min-height: 6.5rem;
   padding: 0.9rem;
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 94%, var(--bg)));
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow:
-    0 18px 44px rgba(15, 23, 42, 0.1),
-    0 6px 16px rgba(15, 23, 42, 0.05);
+  background: var(--hm-shell-card-bg);
+  border: 1px solid var(--hm-shell-card-border);
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .trustMetricLabel {
@@ -396,18 +389,16 @@
 
 .actionBar {
   position: sticky;
-  bottom: 0.75rem;
+  bottom: var(--hm-shell-bottom-offset);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
   padding: 0.8rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: calc(var(--radius-xl) + 0.2rem);
-  background: rgba(255, 255, 255, 0.995);
-  backdrop-filter: blur(18px);
-  box-shadow:
-    0 26px 64px rgba(15, 23, 42, 0.14),
-    0 10px 24px rgba(15, 23, 42, 0.07);
+  border: 1px solid var(--hm-shell-card-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-card-bg);
+  backdrop-filter: none;
+  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .actionBar > button {
@@ -417,13 +408,13 @@
 
 @media (min-width: 900px) {
   .layout {
-    grid-template-columns: minmax(20rem, 22rem) minmax(0, 1fr);
+    grid-template-columns: minmax(20rem, var(--hm-shell-sidebar-width)) minmax(0, 1fr);
     align-items: start;
   }
 
   .sidebar {
     position: sticky;
-    top: 1rem;
+    top: var(--hm-shell-sticky-top);
   }
 
   .mobileSectionNav {
@@ -482,7 +473,7 @@
 @media (max-width: 42rem) {
   .page {
     gap: 0.85rem;
-    padding-bottom: 6.5rem;
+    padding-bottom: var(--hm-shell-nav-offset);
     overflow-x: hidden;
   }
 
@@ -557,13 +548,41 @@
 
 @media (min-width: 1280px) {
   .page {
-    max-width: 1500px;
+    max-width: var(--hm-shell-max-width);
     margin: 0 auto;
-    padding-inline: 1rem;
+    padding-inline: var(--hm-shell-padding-inline);
   }
 
   .layout {
-    grid-template-columns: minmax(22rem, 24rem) minmax(0, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: minmax(22rem, var(--hm-shell-sidebar-width-wide)) minmax(0, 1fr);
+    gap: var(--hm-shell-gap);
   }
+}
+
+.sidebar,
+.sidebarStatus,
+.sidebarStat,
+.sectionTab,
+.sectionCard,
+.overviewCard,
+.trustMetricCard,
+.portfolioCard,
+.reviewCard,
+.emptyState,
+.actionBar {
+  border-color: var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
+  box-shadow: var(--hm-shadow-sm);
+}
+
+.sidebarAvatar {
+  border-color: var(--hm-color-border-subtle);
+  background: var(--hm-color-primary);
+  color: #ffffff;
+  box-shadow: var(--hm-shadow-xs);
+}
+
+.sectionTabActive {
+  border-color: color-mix(in srgb, var(--hm-color-primary) 24%, var(--hm-color-border-subtle));
+  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
 }

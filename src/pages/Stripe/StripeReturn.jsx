@@ -16,14 +16,18 @@ export default function StripeReturn() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const { user, loading, profileLoading, refreshProfile } = useAuth()
-  const [checkingState, setCheckingState] = useState('loading')
-  const [message, setMessage] = useState('Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.')
   const hasResolvedRef = useRef(false)
   const searchParams = new URLSearchParams(location.search)
   const flow = searchParams.get('flow') || 'helper-onboarding'
   const taskId = searchParams.get('task_id') || ''
   const paymentId = searchParams.get('payment_id') || ''
   const isPaymentFlow = flow === 'payment'
+  const [checkingState, setCheckingState] = useState('loading')
+  const [message, setMessage] = useState(
+    isPaymentFlow
+      ? 'Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.'
+      : 'Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.',
+  )
 
   useEffect(() => {
     if (hasResolvedRef.current || loading || profileLoading) {
@@ -47,7 +51,7 @@ export default function StripeReturn() {
 
       async function waitForTaskPromotion() {
         setCheckingState('loading')
-        setMessage('Pago recibido. Estamos confirmando la tarea. Esto puede tardar unos segundos.')
+        setMessage('Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.')
 
         try {
           await Promise.all([
@@ -66,8 +70,8 @@ export default function StripeReturn() {
             if (cancelled) return
 
             if (latestTask?.status === 'in_progress') {
-              setCheckingState('ready')
-              setMessage('La tarea ya está en curso. Volvemos al detalle ahora.')
+              setCheckingState('confirmed')
+              setMessage('Pago confirmado. La tarea ya está en curso. Volvemos al detalle ahora.')
               redirectTimer = window.setTimeout(() => {
                 if (cancelled) return
                 navigate(taskId ? `/task/${taskId}` : '/home', {
@@ -196,8 +200,14 @@ export default function StripeReturn() {
     <main className={styles.page}>
       <section className={styles.card}>
         <p className={styles.eyebrow}>{isPaymentFlow ? 'Pago' : 'Stripe Connect'}</p>
-        <h1 className={styles.title}>{isPaymentFlow ? 'Pago recibido' : 'Hemos recibido tu información'}</h1>
-        <p className={styles.lead}>{isPaymentFlow ? 'Estamos confirmando la tarea. Esto puede tardar unos segundos.' : message}</p>
+        <h1 className={styles.title}>
+          {isPaymentFlow
+            ? checkingState === 'confirmed'
+              ? 'Pago confirmado'
+              : 'Confirmando tu pago'
+            : 'Hemos recibido tu información'}
+        </h1>
+        <p className={styles.lead}>{message}</p>
 
         <div className={`${styles.statusCard} ${checkingState === 'error' ? styles.errorCard : ''}`}>
           <strong>Estado actual</strong>
@@ -209,6 +219,8 @@ export default function StripeReturn() {
                   ? 'La tarea aún se está actualizando.'
                   : checkingState === 'error'
                     ? 'No hemos podido verificar la tarea todavía.'
+                    : checkingState === 'confirmed'
+                      ? 'La tarea ya está en curso.'
                     : 'La tarea ya está lista para continuar.'
               : checkingState === 'loading'
                 ? 'Sincronizando tu perfil...'

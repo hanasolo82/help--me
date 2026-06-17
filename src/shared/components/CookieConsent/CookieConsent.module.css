@@ -4,10 +4,10 @@
   z-index: 70;
   display: grid;
   gap: 1rem;
-  background: color-mix(in srgb, var(--color-surface-strong) 96%, white);
+  background: var(--hm-panel-bg);
   color: var(--color-text);
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
-  box-shadow: var(--shadow-lg);
+  border-top: 1px solid var(--hm-panel-border);
+  box-shadow: var(--hm-panel-shadow);
   padding: clamp(1rem, 2vw, 1.5rem);
 }
 
@@ -16,9 +16,9 @@
     grid-template-columns: 1fr auto;
     align-items: center;
     inset: auto 1rem 1rem 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--hm-panel-border);
+    border-radius: var(--hm-panel-radius);
+    box-shadow: var(--hm-panel-shadow);
   }
 }
 
@@ -38,7 +38,7 @@
 }
 
 .content a {
-  color: var(--color-primary);
+  color: var(--hm-card-accent-bg);
   font-weight: 900;
 }
 
@@ -47,7 +47,7 @@
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 900;
-  color: var(--color-primary);
+  color: var(--hm-card-accent-bg);
 }
 
 .actions {
@@ -60,12 +60,12 @@
 .primaryButton,
 .secondaryButton {
   min-height: 2.75rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  border-radius: var(--hm-button-radius);
+  border: 1px solid var(--hm-card-border);
   padding: 0.7rem 1rem;
-  font-weight: 900;
+  font-weight: var(--hm-button-font-weight-strong);
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--hm-button-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -74,35 +74,36 @@
 }
 
 .primaryButton {
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  color: #ffffff;
-  box-shadow: var(--shadow-primary);
+  background: var(--hm-card-accent-bg);
+  color: var(--hm-card-accent-fg);
+  box-shadow: var(--hm-button-shadow);
 }
 
 .secondaryButton {
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: var(--hm-card-muted-bg);
   color: var(--color-text);
 }
 
 .primaryButton:hover,
 .secondaryButton:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .primaryButton:hover {
-  box-shadow: 0 16px 34px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  background: var(--hm-color-primary-hover);
+  box-shadow: var(--hm-button-shadow-hover);
 }
 
 .secondaryButton:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-strong));
+  border-color: var(--hm-card-border);
+  background: var(--hm-card-muted-bg);
 }
 
 .primaryButton:focus-visible,
 .secondaryButton:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus), var(--shadow-xs);
+  box-shadow: var(--hm-button-focus-shadow);
 }
 
 .modalBackdrop {
@@ -113,9 +114,9 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.68);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: var(--hm-panel-scrim);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   overflow: auto;
 }
 
@@ -124,13 +125,10 @@
   width: min(100%, 36rem);
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: var(--radius-2xl);
-  box-shadow:
-    0 24px 80px rgba(15, 23, 42, 0.28),
-    0 8px 24px rgba(15, 23, 42, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: var(--hm-panel-bg);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  box-shadow: var(--hm-panel-shadow);
   padding: 3.25rem clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
   display: grid;
   gap: 1rem;
@@ -142,19 +140,17 @@
   right: 0.6rem;
   width: 2.4rem;
   height: 2.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 84%, #000 16%) 100%);
-  color: #ffffff;
+  background: var(--hm-card-bg);
+  color: var(--hm-color-text);
   font-size: 1.45rem;
   font-weight: 900;
   cursor: pointer;
   display: grid;
   place-items: center;
   z-index: 2;
-  box-shadow:
-    0 14px 26px rgba(37, 99, 235, 0.26),
-    0 4px 12px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--hm-card-shadow);
   transition:
     transform var(--motion-fast) var(--ease-spring-soft),
     box-shadow var(--motion-fast) var(--ease-out),
@@ -171,10 +167,7 @@
 
 .closeButton:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 4px rgba(37, 99, 235, 0.22),
-    0 14px 26px rgba(37, 99, 235, 0.26),
-    0 4px 12px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--hm-button-focus-shadow);
 }
 
 .list {
@@ -189,10 +182,10 @@
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border: 1px solid var(--hm-card-border);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
-  box-shadow: var(--shadow-xs);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .list strong {
@@ -215,7 +208,7 @@
 }
 
 .toggle input {
-  accent-color: var(--color-primary);
+  accent-color: var(--hm-card-accent-bg);
 }
 
 .note {
@@ -223,6 +216,6 @@
 }
 
 .note a {
-  color: var(--color-primary);
+  color: var(--hm-card-accent-bg);
   font-weight: 900;
 }

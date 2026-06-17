@@ -7,14 +7,11 @@
   display: grid;
   gap: 1rem;
   padding: clamp(1rem, 3vw, 1.35rem);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-xl);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82)),
-    radial-gradient(circle at top right, rgba(41, 171, 255, 0.12), transparent 36%),
-    radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.08), transparent 28%);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-xl);
+  background: var(--hm-color-surface);
+  box-shadow: var(--hm-shadow-sm);
+  backdrop-filter: none;
 }
 
 .header {
@@ -33,7 +30,8 @@
 .heading {
   color: var(--color-text);
   font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-weight: 600;
   line-height: 1.08;
 }
 
@@ -57,9 +55,9 @@
   gap: 0.9rem;
   align-items: start;
   padding: 0.95rem 1rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--hm-color-surface);
   box-shadow: var(--shadow-sm);
 }
 
@@ -69,7 +67,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
-  background: rgba(41, 171, 255, 0.12);
+  background: color-mix(in srgb, var(--hm-color-primary) 10%, var(--hm-color-surface));
   color: var(--color-primary);
   font-size: 0.95rem;
   font-weight: 900;
@@ -98,11 +96,9 @@
   display: grid;
   gap: 0.55rem;
   padding: 1rem 1.05rem;
-  border: 1px solid rgba(41, 171, 255, 0.16);
+  border: 1px solid color-mix(in srgb, var(--hm-color-primary) 18%, var(--hm-color-border-subtle));
   border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(248, 253, 255, 0.95), rgba(239, 249, 255, 0.84)),
-    radial-gradient(circle at top left, rgba(41, 171, 255, 0.14), transparent 38%);
+  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
   box-shadow: var(--shadow-sm);
 }
 

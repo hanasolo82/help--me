@@ -1,0 +1,294 @@
+/*
+  Live theme layer
+  Edit this file to change the app look without touching components.
+  Keep component CSS connected to --hm-* tokens; use --live-* here as the editable source.
+*/
+
+:root {
+  /* Palette */
+  --live-bg: #f8f6f1;
+  --live-bg-soft: #fbfaf7;
+  --live-surface: #ffffff;
+  --live-surface-strong: #ffffff;
+  --live-text: #1c1916;
+  --live-text-muted: #6e6860;
+  --live-primary: #1f6b48;
+  --live-primary-hover: #2d7a55;
+  --live-secondary: #f0ebe0;
+  --live-accent: #d9623b;
+  --live-danger: #c0392b;
+  --live-border: rgba(28, 25, 22, 0.14);
+  --live-border-subtle: #eae6dd;
+  --live-highlight: rgba(31, 107, 72, 0.1);
+  --live-shadow-color: rgba(28, 25, 22, 0.12);
+
+  /* App background and text */
+  --live-app-background: linear-gradient(180deg, var(--live-bg) 0%, var(--live-bg-soft) 48%, var(--live-bg) 100%);
+  --live-selection-bg: var(--live-highlight);
+  --live-selection-text: var(--live-text);
+
+  /* Radius */
+  --live-radius-xs: 4px;
+  --live-radius-sm: 8px;
+  --live-radius-md: 12px;
+  --live-radius-lg: 14px;
+  --live-radius-xl: 16px;
+  --live-radius-pill: 999px;
+
+  /* Shadows */
+  --live-shadow-xs: 0 1px 2px rgba(28, 25, 22, 0.05);
+  --live-shadow-sm: 0 1px 2px rgba(28, 25, 22, 0.06), 0 1px 3px rgba(28, 25, 22, 0.08);
+  --live-shadow-md: 0 2px 4px rgba(28, 25, 22, 0.06), 0 4px 6px rgba(28, 25, 22, 0.08);
+  --live-shadow-lg: 0 4px 6px rgba(28, 25, 22, 0.08), 0 10px 15px rgba(28, 25, 22, 0.1);
+  --live-shadow-focus: 0 0 0 4px rgba(31, 107, 72, 0.16);
+  --live-shadow-primary: 0 8px 18px rgba(31, 107, 72, 0.14);
+
+  /* Buttons */
+  --live-button-radius: var(--live-radius-lg);
+  --live-button-radius-pill: var(--live-radius-pill);
+  --live-button-min-height: 2.75rem;
+  --live-button-primary-bg: var(--live-primary);
+  --live-button-primary-bg-hover: var(--live-primary-hover);
+  --live-button-primary-text: #ffffff;
+  --live-button-primary-shadow: var(--live-shadow-primary);
+  --live-button-secondary-bg: var(--live-secondary);
+  --live-button-secondary-bg-hover: color-mix(in srgb, var(--live-secondary) 72%, var(--live-surface));
+  --live-button-secondary-text: var(--live-text);
+  --live-button-secondary-border: var(--live-border-subtle);
+  --live-button-danger-bg: var(--live-danger);
+  --live-button-danger-bg-hover: color-mix(in srgb, var(--live-danger) 88%, #000 12%);
+  --live-button-danger-text: #ffffff;
+  --live-button-shadow: var(--live-shadow-xs);
+  --live-button-shadow-hover: var(--live-shadow-sm);
+
+  /* Cards and panels */
+  --live-card-bg: var(--live-surface);
+  --live-card-muted-bg: var(--live-secondary);
+  --live-card-text: var(--live-text);
+  --live-card-muted-text: var(--live-text-muted);
+  --live-card-border: var(--live-border-subtle);
+  --live-card-radius: var(--live-radius-xl);
+  --live-card-shadow: var(--live-shadow-sm);
+  --live-card-shadow-hover: var(--live-shadow-md);
+  --live-panel-bg: var(--live-surface);
+  --live-panel-border: var(--live-border-subtle);
+  --live-panel-radius: var(--live-radius-xl);
+  --live-panel-shadow: var(--live-shadow-lg);
+  --live-panel-shadow-soft: var(--live-shadow-sm);
+  --live-modal-scrim: rgba(28, 25, 22, 0.34);
+
+  /* Inputs */
+  --live-input-bg: var(--live-secondary);
+  --live-input-text: var(--live-text);
+  --live-input-placeholder: color-mix(in srgb, var(--live-text-muted) 80%, transparent);
+  --live-input-border: transparent;
+  --live-input-border-focus: var(--live-primary);
+  --live-input-radius: var(--live-radius-md);
+  --live-input-shadow: none;
+  --live-input-shadow-focus: var(--live-shadow-focus);
+
+  /* Headers */
+  --live-header-text: var(--live-text);
+  --live-header-muted: var(--live-text-muted);
+  --live-header-surface: transparent;
+  --live-header-border: var(--live-border-subtle);
+
+  /* Task and payment panels */
+  --live-task-card-bg: var(--live-card-bg);
+  --live-task-card-text: var(--live-card-text);
+  --live-task-card-border: var(--live-card-border);
+  --live-task-card-shadow: var(--live-card-shadow);
+  --live-task-card-accent: var(--live-primary);
+  --live-task-card-highlight: var(--live-highlight);
+  --live-payment-panel-bg: var(--live-panel-bg);
+  --live-payment-panel-border: var(--live-panel-border);
+  --live-payment-panel-radius: var(--live-panel-radius);
+  --live-payment-panel-shadow: var(--live-panel-shadow-soft);
+  --live-payment-panel-muted-bg: var(--live-card-muted-bg);
+
+  /* Avatars */
+  --live-avatar-bg: linear-gradient(135deg, var(--live-primary), color-mix(in srgb, var(--live-primary) 72%, var(--live-accent)));
+  --live-avatar-text: #ffffff;
+  --live-avatar-border: color-mix(in srgb, var(--live-surface) 70%, var(--live-border-subtle));
+  --live-avatar-ring: color-mix(in srgb, var(--live-primary) 18%, transparent);
+  --live-avatar-radius: var(--live-radius-pill);
+  --live-avatar-radius-soft: var(--live-radius-lg);
+  --live-avatar-shadow: var(--live-shadow-sm);
+  --live-avatar-shadow-hover: var(--live-shadow-md);
+  --live-avatar-badge-bg: var(--live-primary);
+  --live-avatar-badge-text: #ffffff;
+  --live-avatar-object-fit: cover;
+  --live-avatar-object-position: center;
+
+  /* Map markers and popups */
+  --live-map-marker-bg: var(--live-surface);
+  --live-map-marker-text: var(--live-text);
+  --live-map-marker-muted: var(--live-text-muted);
+  --live-map-marker-border: var(--live-border-subtle);
+  --live-map-marker-primary-bg: var(--live-primary);
+  --live-map-marker-primary-text: #ffffff;
+  --live-map-marker-task-bg: color-mix(in srgb, var(--live-accent) 14%, var(--live-surface));
+  --live-map-marker-task-border: color-mix(in srgb, var(--live-accent) 36%, var(--live-border-subtle));
+  --live-map-marker-helper-bg: color-mix(in srgb, var(--live-primary) 10%, var(--live-surface));
+  --live-map-marker-helper-border: color-mix(in srgb, var(--live-primary) 30%, var(--live-border-subtle));
+  --live-map-marker-selected-ring: 0 0 0 4px color-mix(in srgb, var(--live-primary) 18%, transparent);
+  --live-map-marker-radius: var(--live-radius-lg);
+  --live-map-marker-pill-radius: var(--live-radius-pill);
+  --live-map-marker-shadow: var(--live-shadow-md);
+  --live-map-marker-shadow-active: var(--live-shadow-lg);
+  --live-map-popup-bg: var(--live-surface);
+  --live-map-popup-text: var(--live-text);
+  --live-map-popup-muted: var(--live-text-muted);
+  --live-map-popup-border: var(--live-border-subtle);
+  --live-map-popup-radius: var(--live-radius-lg);
+  --live-map-popup-shadow: var(--live-shadow-lg);
+
+  /* Shell */
+  --live-shell-bg: transparent;
+  --live-shell-text: var(--live-text);
+}
+
+:root {
+  --hm-color-bg: var(--live-bg);
+  --hm-color-text: var(--live-text);
+  --hm-color-surface: var(--live-surface);
+  --hm-color-surface-strong: var(--live-surface-strong);
+  --hm-color-primary: var(--live-primary);
+  --hm-color-primary-hover: var(--live-primary-hover);
+  --hm-color-secondary: var(--live-secondary);
+  --hm-color-muted: var(--live-text-muted);
+  --hm-color-accent: var(--live-accent);
+  --hm-color-danger: var(--live-danger);
+  --hm-color-border: var(--live-border);
+  --hm-color-border-subtle: var(--live-border-subtle);
+  --hm-color-highlight: var(--live-highlight);
+  --hm-color-shadow: var(--live-shadow-color);
+  --hm-app-background: var(--live-app-background);
+  --hm-app-border: var(--live-border);
+
+  --hm-radius-xs: var(--live-radius-xs);
+  --hm-radius-sm: var(--live-radius-sm);
+  --hm-radius-md: var(--live-radius-md);
+  --hm-radius-lg: var(--live-radius-lg);
+  --hm-radius-xl: var(--live-radius-xl);
+  --hm-radius-pill: var(--live-radius-pill);
+
+  --hm-shadow-xs: var(--live-shadow-xs);
+  --hm-shadow-sm: var(--live-shadow-sm);
+  --hm-shadow-md: var(--live-shadow-md);
+  --hm-shadow-lg: var(--live-shadow-lg);
+  --shadow-focus: var(--live-shadow-focus);
+  --shadow-primary: var(--live-shadow-primary);
+
+  --hm-button-radius: var(--live-button-radius);
+  --hm-button-radius-pill: var(--live-button-radius-pill);
+  --hm-button-min-height: var(--live-button-min-height);
+  --hm-button-shadow: var(--live-button-shadow);
+  --hm-button-shadow-hover: var(--live-button-shadow-hover);
+  --hm-button-focus-shadow: var(--live-input-shadow-focus), var(--live-button-shadow);
+  --hm-button-primary-bg: var(--live-button-primary-bg);
+  --hm-button-primary-bg-hover: var(--live-button-primary-bg-hover);
+  --hm-button-primary-fg: var(--live-button-primary-text);
+  --hm-button-primary-shadow: var(--live-button-primary-shadow);
+  --hm-button-secondary-bg: var(--live-button-secondary-bg);
+  --hm-button-secondary-bg-hover: var(--live-button-secondary-bg-hover);
+  --hm-button-secondary-fg: var(--live-button-secondary-text);
+  --hm-button-secondary-border: var(--live-button-secondary-border);
+  --hm-button-danger-bg: var(--live-button-danger-bg);
+  --hm-button-danger-bg-hover: var(--live-button-danger-bg-hover);
+  --hm-button-danger-fg: var(--live-button-danger-text);
+  --hm-button-icon-bg: var(--live-card-bg);
+  --hm-button-icon-bg-hover: var(--live-card-muted-bg);
+  --hm-button-icon-border: var(--live-card-border);
+
+  --hm-card-bg: var(--live-card-bg);
+  --hm-card-border: var(--live-card-border);
+  --hm-card-radius: var(--live-card-radius);
+  --hm-card-shadow: var(--live-card-shadow);
+  --hm-card-shadow-hover: var(--live-card-shadow-hover);
+  --hm-card-muted-bg: var(--live-card-muted-bg);
+  --hm-card-muted-fg: var(--live-card-muted-text);
+  --hm-card-accent-bg: var(--live-primary);
+  --hm-card-accent-fg: var(--live-button-primary-text);
+  --hm-card-scrim: var(--live-modal-scrim);
+
+  --hm-panel-bg: var(--live-panel-bg);
+  --hm-panel-border: var(--live-panel-border);
+  --hm-panel-radius: var(--live-panel-radius);
+  --hm-panel-shadow: var(--live-panel-shadow);
+  --hm-panel-shadow-soft: var(--live-panel-shadow-soft);
+  --hm-panel-muted-bg: var(--live-card-muted-bg);
+  --hm-panel-muted-fg: var(--live-card-muted-text);
+  --hm-panel-scrim: var(--live-modal-scrim);
+
+  --hm-input-bg: var(--live-input-bg);
+  --hm-input-text: var(--live-input-text);
+  --hm-input-placeholder: var(--live-input-placeholder);
+  --hm-input-border: var(--live-input-border);
+  --hm-input-border-focus: var(--live-input-border-focus);
+  --hm-input-radius: var(--live-input-radius);
+  --hm-input-shadow: var(--live-input-shadow);
+  --hm-input-shadow-focus: var(--live-input-shadow-focus);
+
+  --hm-task-card-bg: var(--live-task-card-bg);
+  --hm-task-card-text: var(--live-task-card-text);
+  --hm-task-card-border: var(--live-task-card-border);
+  --hm-task-card-shadow: var(--live-task-card-shadow);
+  --hm-task-card-accent: var(--live-task-card-accent);
+  --hm-task-card-highlight: var(--live-task-card-highlight);
+
+  --hm-payment-panel-bg: var(--live-payment-panel-bg);
+  --hm-payment-panel-border: var(--live-payment-panel-border);
+  --hm-payment-panel-radius: var(--live-payment-panel-radius);
+  --hm-payment-panel-shadow: var(--live-payment-panel-shadow);
+  --hm-payment-panel-muted-bg: var(--live-payment-panel-muted-bg);
+
+  --hm-avatar-bg: var(--live-avatar-bg);
+  --hm-avatar-fg: var(--live-avatar-text);
+  --hm-avatar-border: var(--live-avatar-border);
+  --hm-avatar-ring: var(--live-avatar-ring);
+  --hm-avatar-radius: var(--live-avatar-radius);
+  --hm-avatar-radius-soft: var(--live-avatar-radius-soft);
+  --hm-avatar-shadow: var(--live-avatar-shadow);
+  --hm-avatar-shadow-hover: var(--live-avatar-shadow-hover);
+  --hm-avatar-badge-bg: var(--live-avatar-badge-bg);
+  --hm-avatar-badge-fg: var(--live-avatar-badge-text);
+  --hm-avatar-object-fit: var(--live-avatar-object-fit);
+  --hm-avatar-object-position: var(--live-avatar-object-position);
+
+  --hm-map-marker-bg: var(--live-map-marker-bg);
+  --hm-map-marker-fg: var(--live-map-marker-text);
+  --hm-map-marker-muted: var(--live-map-marker-muted);
+  --hm-map-marker-border: var(--live-map-marker-border);
+  --hm-map-marker-primary-bg: var(--live-map-marker-primary-bg);
+  --hm-map-marker-primary-fg: var(--live-map-marker-primary-text);
+  --hm-map-marker-task-bg: var(--live-map-marker-task-bg);
+  --hm-map-marker-task-border: var(--live-map-marker-task-border);
+  --hm-map-marker-helper-bg: var(--live-map-marker-helper-bg);
+  --hm-map-marker-helper-border: var(--live-map-marker-helper-border);
+  --hm-map-marker-selected-ring: var(--live-map-marker-selected-ring);
+  --hm-map-marker-radius: var(--live-map-marker-radius);
+  --hm-map-marker-pill-radius: var(--live-map-marker-pill-radius);
+  --hm-map-marker-shadow: var(--live-map-marker-shadow);
+  --hm-map-marker-shadow-active: var(--live-map-marker-shadow-active);
+  --hm-map-popup-bg: var(--live-map-popup-bg);
+  --hm-map-popup-fg: var(--live-map-popup-text);
+  --hm-map-popup-muted: var(--live-map-popup-muted);
+  --hm-map-popup-border: var(--live-map-popup-border);
+  --hm-map-popup-radius: var(--live-map-popup-radius);
+  --hm-map-popup-shadow: var(--live-map-popup-shadow);
+
+  --hm-shell-surface: var(--live-shell-bg);
+  --hm-shell-text: var(--live-shell-text);
+  --hm-shell-card-bg: var(--live-panel-bg);
+  --hm-shell-card-border: var(--live-panel-border);
+  --hm-shell-card-shadow: var(--live-panel-shadow);
+  --hm-shell-topbar-bg: var(--live-card-bg);
+  --hm-shell-topbar-border: var(--live-card-border);
+  --hm-shell-topbar-shadow: var(--live-card-shadow);
+  --hm-shell-sidebar-bg: var(--live-card-bg);
+  --hm-shell-sidebar-border: var(--live-card-border);
+  --hm-shell-sidebar-shadow: var(--live-card-shadow);
+  --hm-shell-sidebar-muted-bg: var(--live-card-muted-bg);
+  --hm-shell-sidebar-gradient: linear-gradient(180deg, var(--live-card-bg), color-mix(in srgb, var(--live-card-bg) 94%, var(--live-bg)));
+}

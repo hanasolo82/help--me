@@ -4,6 +4,7 @@ import AnimatedDropdown from '../../shared/ui/AnimatedDropdown'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import { THEME_DARK } from '../../shared/theme/themePreferences'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
+import UserAvatar from '../../shared/ui/UserAvatar'
 
 export default function HomeHeader({
   displayName,
@@ -245,7 +246,7 @@ export default function HomeHeader({
           </AnimatedDropdown>
 
           <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
-            {avatarUrl ? <img src={avatarUrl} alt={displayName} /> : userInitial}
+            <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="sm" />
           </button>
 
           <AnimatedDropdown

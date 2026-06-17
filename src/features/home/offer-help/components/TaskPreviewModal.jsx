@@ -1,4 +1,4 @@
-import { getAvatarInitial } from '../../../../utils/avatar'
+import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './TaskPreviewModal.module.css'
 
 function formatDistance(distanceKm) {
@@ -38,7 +38,6 @@ export default function TaskPreviewModal({
 
   const creator = task.creator_profile || {}
   const creatorName = creator.display_name || creator.full_name || creator.username || 'Vecino'
-  const creatorInitial = getAvatarInitial(creatorName)
   const canContact = task.status === 'open' && task.created_by !== currentUserId
   const publishedAt = task.published_at || task.created_at
 
@@ -71,9 +70,13 @@ export default function TaskPreviewModal({
 
         <div className={styles.body}>
           <div className="user-strip">
-            <span className="avatar-small">
-              {creator.avatar_url ? <img src={creator.avatar_url} alt={creatorName} /> : creatorInitial}
-            </span>
+            <UserAvatar
+              src={creator.avatar_url}
+              name={creatorName}
+              alt={creatorName}
+              size="sm"
+              className="avatar-small"
+            />
             <div>
               <strong>{creatorName}</strong>
               <p>{creator.rating ? `${creator.rating}/5` : 'Publicada por un vecino'}</p>

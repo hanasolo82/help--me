@@ -6,6 +6,7 @@ import { useConversationComposer } from '../hooks/useConversationComposer'
 import { useMessages } from '../hooks/useMessages'
 import { useTypingIndicator } from '../hooks/useTypingIndicator'
 import ChatLayout from '../../../shared/ui/layouts/ChatLayout'
+import UserAvatar from '../../../shared/ui/UserAvatar'
 import MessageList from '../components/MessageList'
 import MessageInput from '../components/MessageInput'
 import TypingIndicator from '../components/TypingIndicator'
@@ -114,9 +115,14 @@ export default function ChatPage() {
           <button type="button" className="icon-button" onClick={() => navigate('/chats')} aria-label="Volver">
             {'<'}
           </button>
-          <span className="chat-contact-avatar" aria-hidden="true">
-            {counterpartProfile?.avatar_url ? <img src={counterpartProfile.avatar_url} alt="" /> : counterpartInitial}
-          </span>
+          <UserAvatar
+            src={counterpartProfile?.avatar_url}
+            name={counterpartName || counterpartInitial}
+            alt={counterpartName}
+            size="sm"
+            className="chat-contact-avatar"
+            decorative
+          />
           <div className="chat-contact-copy">
             <p className="eyebrow">Conversación privada</p>
             <h1>{counterpartName}</h1>

@@ -7,12 +7,12 @@
   display: grid;
   gap: 0.85rem;
   align-items: start;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
   padding: 1rem;
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-sm);
+  backdrop-filter: none;
+  box-shadow: var(--hm-card-shadow);
 }
 
 .body {
@@ -34,17 +34,17 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--hm-card-border);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-  color: var(--color-text);
+  background: color-mix(in srgb, var(--hm-card-accent-bg) 10%, var(--hm-card-bg));
+  color: var(--hm-card-accent-bg);
   font-weight: 700;
 }
 
 .positive .icon {
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  background: color-mix(in srgb, var(--hm-card-accent-bg) 14%, var(--hm-card-bg));
 }
 
 .warning .icon {
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  background: color-mix(in srgb, var(--hm-card-accent-bg) 8%, var(--hm-card-bg));
 }

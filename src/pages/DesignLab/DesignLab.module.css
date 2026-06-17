@@ -1,0 +1,406 @@
+.page {
+  display: grid;
+  gap: clamp(1.25rem, 2.8vw, 2rem);
+  width: min(100%, 76rem);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.8vw, 2rem) 1rem 5rem;
+  color: var(--color-text);
+}
+
+.hero,
+.section,
+.specCard {
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
+}
+
+.hero {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.15rem, 2.8vw, 1.8rem);
+}
+
+.hero h1,
+.sectionHeader h2,
+.typePreview h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 4rem);
+}
+
+.hero p,
+.sectionHeader p,
+.typePreview p {
+  max-width: 68ch;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.hero code,
+.specMeta code,
+.tokenSwatch code {
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-sm);
+  background: var(--hm-card-muted-bg);
+  color: var(--color-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.12rem 0.32rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.nav a {
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.42rem 0.7rem;
+  text-decoration: none;
+}
+
+.nav a:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--hm-shadow-xs);
+}
+
+.section {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 2.6vw, 1.35rem);
+  scroll-margin-top: 1rem;
+}
+
+.sectionHeader {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.9rem;
+}
+
+.specCard {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: 1rem;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.specMeta {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.specMeta h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.specMeta p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.specMeta ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview {
+  min-width: 0;
+}
+
+.preview :global(.primary-action),
+.preview :global(.secondary-action),
+.preview :global(.danger-action) {
+  width: auto;
+}
+
+.tokenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.6rem;
+}
+
+.tokenSwatch {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.swatch {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
+  box-shadow: var(--hm-shadow-xs);
+}
+
+.swatchLiveBg {
+  background: var(--live-bg);
+}
+
+.swatchLiveSurface {
+  background: var(--live-surface);
+}
+
+.swatchLiveText {
+  background: var(--live-text);
+}
+
+.swatchLiveTextMuted {
+  background: var(--live-text-muted);
+}
+
+.swatchLivePrimary {
+  background: var(--live-primary);
+}
+
+.swatchLiveSecondary {
+  background: var(--live-secondary);
+}
+
+.swatchLiveAccent {
+  background: var(--live-accent);
+}
+
+.swatchLiveDanger {
+  background: var(--live-danger);
+}
+
+.swatchLiveBorderSubtle {
+  background: var(--live-border-subtle);
+}
+
+.swatchLiveButtonPrimaryBg {
+  background: var(--live-button-primary-bg);
+}
+
+.swatchLiveButtonPrimaryText {
+  background: var(--live-button-primary-text);
+}
+
+.swatchLiveButtonSecondaryBg {
+  background: var(--live-button-secondary-bg);
+}
+
+.swatchLiveRadius {
+  border-radius: var(--live-button-radius);
+  background: var(--hm-card-muted-bg);
+}
+
+.swatchLiveShadow {
+  background: var(--live-surface);
+  box-shadow: var(--live-shadow-md);
+}
+
+.swatchLiveAvatarBg {
+  background: var(--live-avatar-bg);
+}
+
+.swatchLiveMapTaskBg {
+  background: var(--live-map-marker-task-bg);
+}
+
+.swatchLiveMapHelperBg {
+  background: var(--live-map-marker-helper-bg);
+}
+
+.swatchLiveMapPopupBg {
+  background: var(--live-map-popup-bg);
+}
+
+.typePreview {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.typePreview h1 {
+  font-size: clamp(1.65rem, 5vw, 3rem);
+}
+
+.embeddedModal {
+  position: static;
+  width: 100%;
+  max-height: none;
+}
+
+.embeddedDrawer {
+  width: 100%;
+  max-width: none;
+}
+
+.avatarRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.markerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+
+.markerPreview {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: center;
+  min-width: 5.5rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hm-color-border-subtle) 35%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--hm-color-border-subtle) 35%, transparent) 1px, transparent 1px),
+    var(--hm-color-secondary);
+  background-size: 18px 18px;
+  padding: 1rem;
+}
+
+.markerPreview > div {
+  position: relative;
+}
+
+.markerPreview span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.stateHeader {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-card-bg);
+  padding: 0.9rem;
+}
+
+.stateHeader p {
+  margin: 0.18rem 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.stateDot {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-primary);
+  box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--hm-color-primary) 14%, transparent);
+}
+
+.skeletonStack {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.skeletonLine,
+.skeletonLineShort,
+.skeletonBlock {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
+}
+
+.skeletonLine {
+  width: 100%;
+  height: 0.9rem;
+}
+
+.skeletonLineShort {
+  width: 62%;
+  height: 0.9rem;
+}
+
+.skeletonBlock {
+  width: 100%;
+  height: 5rem;
+}
+
+.skeletonLine::after,
+.skeletonLineShort::after,
+.skeletonBlock::after {
+  content: '';
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, #ffffff 48%, transparent), transparent);
+  animation: shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-110%);
+  }
+
+  to {
+    transform: translateX(240%);
+  }
+}
+
+@media (max-width: 42rem) {
+  .page {
+    padding-inline: 0.75rem;
+  }
+
+  .specCard {
+    padding: 0.85rem;
+  }
+
+  .preview :global(.primary-action),
+  .preview :global(.secondary-action),
+  .preview :global(.danger-action) {
+    width: 100%;
+  }
+}

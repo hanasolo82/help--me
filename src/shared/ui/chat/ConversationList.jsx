@@ -1,4 +1,5 @@
 import { formatMessageTimestamp } from '../../../utils/formatMessageTimestamp'
+import UserAvatar from '../UserAvatar'
 import styles from './ConversationList.module.css'
 
 function getDisplayName(profile) {
@@ -15,7 +16,6 @@ export default function ConversationList({ conversations = [], currentConversati
       {conversations.map((conversation) => {
         const counterpart = conversation.other_user
         const name = getDisplayName(counterpart)
-        const initial = name.charAt(0).toUpperCase()
         const preview = conversation.latest_message?.deleted_at
           ? 'Mensaje eliminado'
           : conversation.latest_message?.body || 'Sin mensajes todavia'
@@ -28,7 +28,7 @@ export default function ConversationList({ conversations = [], currentConversati
               aria-current={currentConversationId === conversation.id ? 'page' : undefined}
               onClick={() => onSelectConversation?.(conversation)}
             >
-              <span className={styles.avatar}>{initial}</span>
+              <UserAvatar src={counterpart?.avatar_url} name={name} alt={name} size="sm" className={styles.avatar} />
               <span>
                 <strong>{name}</strong>
                 <p>

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Home from "../../pages/Home/Home";
@@ -28,6 +29,8 @@ import Terms from "../../pages/Legal/Terms";
 import StripeReturn from "../../pages/Stripe/StripeReturn";
 import StripeRefresh from "../../pages/Stripe/StripeRefresh";
 import RequireAuth from "./RequireAuth";
+
+const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/DesignLab")) : null;
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
 export default function AppRouter() {
@@ -62,6 +65,16 @@ export default function AppRouter() {
       <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
       <Route path="/stripe/return" element={<StripeReturn />} />
       <Route path="/stripe/refresh" element={<RequireAuth><StripeRefresh /></RequireAuth>} />
+      {DesignLab ? (
+        <Route
+          path="/design-lab"
+          element={
+            <Suspense fallback={<main className="app-screen"><p className="muted">Cargando laboratorio visual...</p></main>}>
+              <DesignLab />
+            </Suspense>
+          }
+        />
+      ) : null}
     </Routes>
   );
 }

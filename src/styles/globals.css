@@ -72,6 +72,6 @@ img {
 }
 
 ::selection {
-  background: rgba(31, 107, 72, 0.16);
+  background: var(--hm-color-highlight);
   color: var(--color-text);
 }

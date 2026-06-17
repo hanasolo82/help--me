@@ -5,10 +5,10 @@
 
 .grid,
 .gridSingle {
-  width: min(100%, 72rem);
-  min-height: min(46rem, calc(100dvh - 2rem));
+  width: min(100%, var(--hm-shell-chat-width));
+  min-height: var(--hm-shell-chat-min-height);
   display: grid;
-  gap: 1rem;
+  gap: var(--hm-shell-gap);
   align-items: stretch;
 }
 

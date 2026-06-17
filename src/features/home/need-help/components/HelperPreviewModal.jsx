@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { getAvatarInitial } from '../../../../utils/avatar'
 import SkillBadge from '../../../skills/components/SkillBadge'
+import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './HelperPreviewModal.module.css'
 
 function formatDistance(distanceKm) {
@@ -42,7 +42,6 @@ export default function HelperPreviewModal({
   if (!open || !helper) return null
 
   const name = helper.display_name || helper.full_name || helper.username || 'Vecino'
-  const avatarInitial = getAvatarInitial(name)
 
   return (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
@@ -55,9 +54,14 @@ export default function HelperPreviewModal({
       >
         <div className={styles.header}>
           <div className={styles.identity}>
-            <div className={styles.avatar}>
-              {helper.avatar_url ? <img src={helper.avatar_url} alt={name} /> : avatarInitial}
-            </div>
+            <UserAvatar
+              src={helper.avatar_url}
+              name={name}
+              alt={name}
+              size="lg"
+              variant="rounded"
+              className={styles.avatar}
+            />
             <div className={styles.summary}>
               <p className="eyebrow">Persona disponible</p>
               <h2>{name}</h2>

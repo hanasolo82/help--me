@@ -1,22 +1,13 @@
-import L from 'leaflet'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
-import { toFiniteNumber, buildUserIcon } from '../../../../shared/utils/mapHelpers'
+import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
+import { createTaskMarkerIcon, createUserMarkerIcon, getTaskStatusLabel } from '../../../../shared/ui/map/mapMarkerIcons'
+import { toFiniteNumber } from '../../../../shared/utils/mapHelpers'
 import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
 const defaultCenter = [41.6523, -0.9019]
-
-
-function createTaskIcon(priceEuros) {
-  return L.divIcon({
-    className: styles.taskMarker,
-    html: `<span>${priceEuros}€</span>`,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21],
-  })
-}
 
 function RecenterMap({ center, centerSource = 'profile', zoom = 14 }) {
   const map = useMap()
@@ -217,13 +208,9 @@ export default function TaskMap({
   const userLat = toFiniteNumber(userLocation?.latitude)
   const userLng = toFiniteNumber(userLocation?.longitude)
   const center = userLat !== null && userLng !== null ? [userLat, userLng] : defaultCenter
-  const userIcon = buildUserIcon({
+  const userIcon = createUserMarkerIcon({
     avatarUrl: userAvatarUrl,
     initial: userInitial,
-    classNames: {
-      image: styles.userMarkerImage,
-      fallback: styles.userMarker,
-    },
   })
   const safeTasks = tasks
     .map((task) => ({
@@ -246,9 +233,11 @@ export default function TaskMap({
         {showUserWaypoint ? (
           <Marker position={center} icon={userIcon}>
             <Popup>
-              <strong>Tu ubicacion</strong>
-              <br />
-              {userLocation?.label || 'Ubicacion aproximada'}
+              <MapPopupCard
+                kicker="Tu posicion"
+                title={userLocation?.label || 'Ubicacion aproximada'}
+                meta={['Referencia del mapa']}
+              />
             </Popup>
           </Marker>
         ) : null}
@@ -259,11 +248,12 @@ export default function TaskMap({
           const publishedAt = task.published_at || task.created_at
           const creatorName = formatCreatorName(task)
           const locationLabel = task.location_label || task.zone || task.location
+          const statusLabel = getTaskStatusLabel(task)
           return (
             <Marker
               key={task.id}
               position={[task.lat, task.lng]}
-              icon={createTaskIcon(priceEuros)}
+              icon={createTaskMarkerIcon({ task })}
               eventHandlers={{
                 click: (e) => {
                   try {
@@ -276,25 +266,18 @@ export default function TaskMap({
               }}
             >
               <Popup>
-                <strong>{task.title}</strong>
-                <br />
-                {task.category} · {priceEuros} EUR
-                {locationLabel ? (
-                  <>
-                    <br />
-                    {locationLabel}
-                  </>
-                ) : null}
-                <br />
-                Publicada {formatTaskDate(publishedAt)}
-                <br />
-                Creador: {creatorName}
-                {Number.isFinite(distance) ? (
-                  <>
-                    <br />
-                    {distance} km
-                  </>
-                ) : null}
+                <MapPopupCard
+                  kicker={statusLabel}
+                  title={task.title}
+                  meta={[
+                    task.category,
+                    `${priceEuros} EUR`,
+                    locationLabel,
+                    Number.isFinite(distance) ? `${distance} km` : null,
+                  ]}
+                >
+                  {`Publicada ${formatTaskDate(publishedAt)}. Creador: ${creatorName}.`}
+                </MapPopupCard>
               </Popup>
             </Marker>
           )

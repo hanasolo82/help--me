@@ -1,6 +1,6 @@
-import L from 'leaflet'
 import { Marker, Popup } from 'react-leaflet'
-import styles from './NeedHelpMapLayout.module.css'
+import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
+import { createTaskMarkerIcon } from '../../../../shared/ui/map/mapMarkerIcons'
 
 const STATUS_COPY = {
   open: 'Activa',
@@ -12,22 +12,6 @@ const STATUS_COPY = {
   draft: 'Borrador',
 }
 
-function buildRequestMarkerIcon({ selected = false }) {
-  const className = selected
-    ? `${styles.requesterTaskMarker} ${styles.requesterTaskMarkerActive}`
-    : styles.requesterTaskMarker
-
-  return L.divIcon({
-    className,
-    html: `
-      <span class="${styles.requesterTaskMarkerIcon}" aria-hidden="true">✓</span>
-      <span class="${styles.requesterTaskMarkerLabel}">Tu tarea</span>
-    `,
-    iconSize: selected ? [76, 48] : [70, 44],
-    iconAnchor: selected ? [38, 44] : [35, 40],
-  })
-}
-
 export default function RequesterTaskMarker({ task, selected = false, onSelect }) {
   if (!task) return null
 
@@ -37,7 +21,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
   return (
     <Marker
       position={[task.lat, task.lng]}
-      icon={buildRequestMarkerIcon({ selected })}
+      icon={createTaskMarkerIcon({ task, selected, requester: true })}
       eventHandlers={{
         click: (e) => {
           try {
@@ -50,13 +34,13 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
       }}
     >
       <Popup>
-        <strong>Tu solicitud</strong>
-        <br />
-        {task.title}
-        <br />
-        {task.category} · {statusLabel}
-        <br />
-        {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
+        <MapPopupCard
+          kicker="Tu solicitud"
+          title={task.title}
+          meta={[task.category, statusLabel]}
+        >
+          {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
+        </MapPopupCard>
       </Popup>
     </Marker>
   )

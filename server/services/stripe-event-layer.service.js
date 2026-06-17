@@ -42,6 +42,8 @@ const PAYMENT_STATUS_DISPUTE_APPLICABLE = new Set([
   'held',
 ])
 
+const STALE_WEBHOOK_PROCESSING_MS = 5 * 60 * 1000
+
 const PAYOUT_STATUS_ORDER = {
   pending: 0,
   in_transit: 1,
@@ -198,6 +200,16 @@ function createDomainError(message, statusCode = 400, cause = null) {
     error.cause = cause
   }
   return error
+}
+
+function isWebhookProcessingStale(eventRow) {
+  const receivedAt = new Date(eventRow?.received_at || 0).getTime()
+
+  if (!Number.isFinite(receivedAt) || receivedAt <= 0) {
+    return false
+  }
+
+  return Date.now() - receivedAt > STALE_WEBHOOK_PROCESSING_MS
 }
 
 function getLedgerIdempotencyKey({
@@ -2274,7 +2286,8 @@ export async function processStripeWebhookEvent(event) {
     throw createDomainError('Invalid Stripe event payload.', 400)
   }
 
-  const { eventRow, duplicate } = await createWebhookEventInboxRow(event)
+  const { eventRow: inboxEventRow, duplicate } = await createWebhookEventInboxRow(event)
+  let eventRow = inboxEventRow
 
   if (duplicate && eventRow.processing_status === 'processed') {
     return {
@@ -2286,12 +2299,26 @@ export async function processStripeWebhookEvent(event) {
   }
 
   if (eventRow.processing_status === 'processing') {
-    return {
-      duplicate: true,
-      processed: false,
-      eventId: eventRow.id,
-      eventType: event.type,
-      processing: true,
+    if (isWebhookProcessingStale(eventRow)) {
+      await markWebhookFailed(
+        eventRow,
+        createDomainError('Webhook processing timed out; retrying event.', 500),
+        {
+          correlationId: eventRow.correlation_id || getWebhookCorrelationId(event),
+        },
+      )
+      eventRow = {
+        ...eventRow,
+        processing_status: 'failed',
+      }
+    } else {
+      return {
+        duplicate: true,
+        processed: false,
+        eventId: eventRow.id,
+        eventType: event.type,
+        processing: true,
+      }
     }
   }
 

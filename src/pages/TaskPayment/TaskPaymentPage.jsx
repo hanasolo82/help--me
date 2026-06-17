@@ -6,6 +6,7 @@ import { useTaskById } from '../../hooks/useTaskById'
 import { supabase } from '../../lib/supabaseClient'
 import { continueWithExternalPayment, startTaskCheckout } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
+import UserAvatar from '../../shared/ui/UserAvatar'
 import styles from './TaskPaymentPage.module.css'
 
 const FINAL_STATUSES = new Set(['completed', 'closed'])
@@ -187,9 +188,14 @@ export default function TaskPaymentPage() {
       <div className={styles.layout}>
         <section className={styles.confirmationCard}>
           <div className={styles.helperRow}>
-            <span className={styles.avatar}>
-              {helperProfile?.avatar_url ? <img src={helperProfile.avatar_url} alt={helperName} /> : helperInitial}
-            </span>
+            <UserAvatar
+              src={helperProfile?.avatar_url}
+              name={helperName || helperInitial}
+              alt={helperName}
+              size="md"
+              variant="rounded"
+              className={styles.avatar}
+            />
             <div>
               <span>Helper seleccionado</span>
               <strong>{helperName}</strong>

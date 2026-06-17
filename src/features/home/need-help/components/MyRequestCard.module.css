@@ -2,16 +2,15 @@
   display: grid;
   gap: 0.85rem;
   padding: 1rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.66);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
 }
 
 .pendingConfirmationCard {
-  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
-  background: rgba(255, 255, 255, 0.76);
+  border-color: color-mix(in srgb, var(--color-primary) 20%, var(--hm-card-border));
+  background: var(--hm-card-muted-bg);
 }
 
 .header {
@@ -22,31 +21,38 @@
 }
 
 .title {
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .meta {
-  color: var(--color-primary);
-  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
   font-weight: 700;
+  line-height: 1.35;
 }
 
 .status {
   flex: 0 0 auto;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 999rem;
-  padding: 0.35rem 0.65rem;
-  background: rgba(41, 171, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-md);
+  padding: 0.32rem 0.65rem;
+  background: var(--hm-card-muted-bg);
   color: var(--color-text);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
 .pendingConfirmationCard .status {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));
-  color: color-mix(in srgb, var(--color-primary) 86%, var(--color-text));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-card-border));
+  background: var(--hm-card-bg);
+  color: var(--color-primary);
 }
 
 .detailRow {
@@ -59,14 +65,18 @@
   font-weight: 700;
 }
 
-.confirmationNotice {
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+.detailRow span:last-child {
   color: var(--color-text-muted);
-  font-size: 0.86rem;
   font-weight: 700;
-  line-height: 1.4;
-  padding: 0.65rem 0.72rem;
+}
+
+.confirmationNotice {
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-card-muted-bg);
+  color: var(--hm-card-muted-fg);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  padding: 0.8rem 0.9rem;
 }
 
 .actions {
@@ -90,10 +100,10 @@
   justify-content: center;
   min-height: 2.75rem;
   padding: 0.65rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--color-success) 18%, var(--color-border));
-  border-radius: 999rem;
-  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
-  color: color-mix(in srgb, var(--color-success) 72%, var(--color-text));
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
+  color: var(--hm-card-muted-fg);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
 }

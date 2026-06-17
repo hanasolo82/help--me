@@ -2,10 +2,10 @@
   display: grid;
   gap: 0.45rem;
   padding: 1.15rem 1rem;
-  border: 1px dashed color-mix(in srgb, var(--color-border) 84%, white);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 92%, white);
-  box-shadow: var(--shadow-xs);
+  border: 1px dashed var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
   text-align: center;
 }
 
@@ -15,7 +15,7 @@
 }
 
 .card p {
-  color: var(--color-text-muted);
+  color: var(--hm-card-muted-fg);
   line-height: 1.5;
 }
 

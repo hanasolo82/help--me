@@ -1,12 +1,12 @@
 .frame {
   display: grid;
   gap: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-xl);
+  background: var(--hm-color-surface);
   padding: clamp(1rem, 3vw, 1.5rem);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(18px);
+  box-shadow: var(--hm-shadow-sm);
+  backdrop-filter: none;
 }
 
 .plainFrame {

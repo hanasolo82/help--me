@@ -2,13 +2,13 @@
   position: relative;
   isolation: isolate;
   overflow: visible;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 78rem;
+  min-height: 100dvh;
+  width: min(100%, var(--hm-shell-max-width));
+  max-width: var(--hm-shell-max-width);
   margin: 0 auto;
-  padding: 1.35rem 1rem 5.5rem;
-  background-color: transparent;
-  color: var(--color-text);
+  padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline) var(--hm-shell-nav-offset);
+  background: var(--hm-shell-surface);
+  color: var(--hm-shell-text);
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -20,19 +20,19 @@
 }
 
 .wide {
-  max-width: none;
-  width: 100%;
+  width: min(100%, var(--hm-shell-max-width-wide));
+  max-width: var(--hm-shell-max-width-wide);
 }
 
 .content {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 1.25rem;
+  gap: var(--hm-shell-gap);
 }
 
 @media (max-width: 42rem) {
   .shell {
-    padding-inline: 0.75rem;
+    padding-inline: var(--hm-shell-padding-inline-mobile);
   }
 }

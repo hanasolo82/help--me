@@ -9,6 +9,7 @@ import { queryClient } from './lib/queryClient'
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx'
 import 'leaflet/dist/leaflet.css'
 import './styles/design-tokens.css'
+import './styles/theme-live.css'
 import './styles/globals.css'
 import './styles.css'
 

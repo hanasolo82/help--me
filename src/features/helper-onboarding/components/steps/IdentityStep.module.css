@@ -30,10 +30,10 @@
   gap: 1rem;
   padding: 1rem;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 88%, white 12%);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
+  box-shadow: var(--hm-shadow-sm);
+  backdrop-filter: none;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
@@ -47,14 +47,10 @@
   gap: 1rem;
   padding: 1rem;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 4%),
-    color-mix(in srgb, var(--color-surface) 94%, white 6%)
-  );
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--hm-color-border-subtle);
+  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
+  box-shadow: var(--hm-shadow-sm);
+  backdrop-filter: none;
 }
 
 .stripeHeader {

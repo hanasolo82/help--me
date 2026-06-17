@@ -4,8 +4,8 @@
   --surface-strong: var(--color-surface-strong);
   --text: var(--color-text);
   --accent: var(--color-primary);
-  --highlight: rgba(41, 171, 255, 0.12);
-  --shadow: rgba(15, 23, 42, 0.1);
+  --highlight: color-mix(in srgb, var(--hm-color-accent) 12%, transparent);
+  --shadow: rgba(28, 25, 22, 0.1);
   position: relative;
   isolation: isolate;
   min-height: 100vh;
@@ -28,17 +28,17 @@
 }
 
 .dark {
-  --bg: #0b1220;
-  --surface: rgba(15, 23, 42, 0.72);
-  --surface-strong: rgba(15, 23, 42, 0.88);
-  --text: #f8fbff;
-  --accent: #41d4ff;
-  --highlight: rgba(65, 212, 255, 0.14);
-  --shadow: rgba(0, 0, 0, 0.24);
+  --bg: var(--hm-color-bg);
+  --surface: var(--hm-color-surface);
+  --surface-strong: var(--hm-color-surface);
+  --text: var(--hm-color-text);
+  --accent: var(--hm-color-primary);
+  --highlight: color-mix(in srgb, var(--hm-color-accent) 12%, transparent);
+  --shadow: rgba(28, 25, 22, 0.1);
   background:
-    radial-gradient(circle at 16% 8%, rgba(65, 212, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 80% 6%, rgba(83, 200, 255, 0.1), transparent 24%),
-    linear-gradient(180deg, #0b1220 0%, #0f172a 48%, #111c31 100%);
+    radial-gradient(circle at 16% 8%, color-mix(in srgb, var(--hm-color-primary) 10%, transparent), transparent 28%),
+    radial-gradient(circle at 80% 6%, color-mix(in srgb, var(--hm-color-accent) 8%, transparent), transparent 24%),
+    var(--hm-color-bg);
 }
 
 .hero,
@@ -64,7 +64,7 @@
   padding: 1rem clamp(1rem, 2vw, 2rem);
   background: color-mix(in srgb, var(--surface) 90%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--border, var(--color-border)) 88%, transparent);
-  backdrop-filter: blur(22px);
+  backdrop-filter: none;
 }
 
 .brand {
@@ -145,7 +145,7 @@
   background: var(--accent);
   color: #fff;
   padding: 0.9rem 1.15rem;
-  box-shadow: var(--shadow-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .primaryCtaSecondary {
@@ -207,10 +207,11 @@
 .splitCopy h2,
 .finalCtaCard h2 {
   color: var(--text);
-  font-size: clamp(2.55rem, 6.8vw, 6rem);
-  font-weight: 900;
-  line-height: 0.94;
-  letter-spacing: -0.05em;
+  font-family: var(--font-heading);
+  font-size: clamp(2.25rem, 5.6vw, 4.8rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
 .heroLead,

@@ -3,16 +3,16 @@
   gap: 0.35rem;
   max-width: min(80%, 34rem);
   padding: 0.85rem 0.95rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 84%, white);
+  border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
+  background: var(--hm-color-surface);
   box-shadow: var(--shadow-xs);
 }
 
 .outgoing {
   margin-left: auto;
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-strong));
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--hm-color-primary) 10%, var(--hm-color-surface));
+  border-color: color-mix(in srgb, var(--hm-color-primary) 20%, var(--hm-color-border-subtle));
 }
 
 .incoming {
@@ -36,8 +36,8 @@
 
 .actionLink,
 .iconAction {
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, white);
-  background: color-mix(in srgb, var(--color-surface-strong) 78%, transparent);
+  border: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-secondary);
   color: var(--color-text-muted);
   cursor: pointer;
   font: inherit;
@@ -66,8 +66,8 @@
 .iconAction:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-xs);
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));
+  border-color: color-mix(in srgb, var(--hm-color-primary) 18%, var(--hm-color-border-subtle));
+  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
   color: var(--color-primary);
 }
 

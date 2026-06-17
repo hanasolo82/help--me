@@ -1,20 +1,14 @@
 ﻿.page {
-  min-height: 100vh;
-  width: min(100%, 78rem);
+  min-height: 100dvh;
+  width: min(100%, var(--hm-shell-max-width));
   margin: 0 auto;
-  padding: 1.75rem 1rem 6.75rem;
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--settings-accent) 16%, transparent), transparent 38%),
-    radial-gradient(circle at 8% 18%, color-mix(in srgb, var(--highlight) 16%, transparent), transparent 30%),
-    linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--surface)) 100%);
-  color: var(--color-text);
+  padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline) var(--hm-shell-nav-offset);
+  background: var(--hm-shell-surface);
+  color: var(--hm-shell-text);
 }
 
 .dark {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--settings-accent) 20%, transparent), transparent 36%),
-    radial-gradient(circle at 8% 18%, color-mix(in srgb, var(--highlight) 18%, transparent), transparent 30%),
-    linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, var(--surface)) 100%);
+  background: var(--hm-shell-surface);
 }
 
 .hero {
@@ -34,7 +28,7 @@
   width: 100%;
   margin: 0 0 1rem auto;
   padding: 0.25rem;
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
 }
 
 .heroCopy {
@@ -63,7 +57,7 @@
     color-mix(in srgb, var(--color-surface) 98%, white 2%),
     color-mix(in srgb, var(--color-surface) 94%, var(--bg))
   );
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
   box-shadow: var(--shadow-sm);
 }
 
@@ -115,7 +109,7 @@
   font-weight: 800;
   line-height: 1.45;
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(12px);
+  backdrop-filter: none;
   text-align: center;
   pointer-events: none;
   transform: translateX(-50%);
@@ -236,7 +230,7 @@
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
   background: color-mix(in srgb, var(--color-surface) 88%, white 12%);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   transform: translate(50%, 50%);
   box-shadow:
     0 8px 18px color-mix(in srgb, var(--text) 8%, transparent),
@@ -462,7 +456,7 @@
   place-items: center;
   padding: 1rem;
   background: color-mix(in srgb, rgba(7, 10, 18, 0.82), transparent);
-  backdrop-filter: blur(22px);
+  backdrop-filter: none;
 }
 
 .avatarModal {
@@ -471,13 +465,11 @@
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
-  border-radius: calc(var(--radius-xl) + 0.35rem);
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 38%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 16%, #0b1220 84%), #08101b);
-  color: #fff;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-xl);
+  background: var(--hm-color-surface);
+  color: var(--hm-color-text);
+  box-shadow: var(--hm-shadow-lg);
 }
 
 .avatarModalHeader {
@@ -1032,12 +1024,12 @@
 
 .shell {
   display: grid;
-  gap: 1rem;
+  gap: var(--hm-shell-gap);
 }
 
 .topBar {
   position: sticky;
-  top: 1rem;
+  top: var(--hm-shell-sticky-top);
   z-index: 20;
   display: flex;
   align-items: center;
@@ -1047,11 +1039,11 @@
   margin-left: auto;
   max-width: 100%;
   padding: 0.3rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--color-surface) 96%, white);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(14px);
+  border: 1px solid var(--hm-shell-topbar-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-topbar-bg);
+  box-shadow: var(--hm-shell-topbar-shadow);
+  backdrop-filter: none;
 }
 
 .topBar :global(.primary-action),
@@ -1064,34 +1056,30 @@
 }
 
 .topBar :global(.primary-action) {
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
+  box-shadow: var(--hm-button-primary-shadow);
 }
 
 .topBar :global(.secondary-action) {
-  background: color-mix(in srgb, var(--color-surface) 88%, white);
-  color: var(--color-text);
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
   box-shadow: none;
 }
 
 .shellGrid {
   display: grid;
-  gap: 1rem;
+  gap: var(--hm-shell-gap);
 }
 
 .sidebar {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-surface) 98%, white 2%),
-    color-mix(in srgb, var(--color-surface) 94%, var(--bg))
-  );
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hm-shell-sidebar-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-sidebar-gradient);
+  box-shadow: var(--hm-shell-sidebar-shadow);
 }
 
 .sidebarIntro {
@@ -1917,13 +1905,13 @@
 
 @media (min-width: 920px) {
   .shellGrid {
-    grid-template-columns: minmax(18rem, 20rem) minmax(0, 1fr);
+    grid-template-columns: minmax(18rem, var(--hm-shell-sidebar-width)) minmax(0, 1fr);
     align-items: start;
   }
 
   .sidebar {
     position: sticky;
-    top: 5.25rem;
+    top: var(--hm-shell-sticky-top-with-actions);
   }
 }
 
@@ -2023,7 +2011,7 @@
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
-    padding: 1rem 0.75rem 6.75rem;
+    padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline-mobile) var(--hm-shell-nav-offset);
   }
 
   .hero {
@@ -2039,7 +2027,7 @@
   }
 
   .topBar {
-    top: 0.5rem;
+    top: var(--hm-shell-padding-inline-mobile);
     flex-direction: row;
     justify-content: flex-end;
     width: 100%;
@@ -2119,4 +2107,59 @@
   .mapSearchResults {
     max-height: 12rem;
   }
+}
+
+.page,
+.dark {
+  background: var(--hm-shell-surface);
+}
+
+.floatingActions,
+.bannerSuccess,
+.bannerError,
+.avatarModalBackdrop,
+.avatarModal,
+.stateCard,
+.card,
+.sidebar,
+.sidebarItem,
+.content,
+.sectionCard,
+.profileForm,
+.helperDetails,
+.premiumRow,
+.infoGroup,
+.premiumPanel,
+.zonePreview,
+.certificateItem,
+.dangerNote {
+  border-color: var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
+  box-shadow: var(--hm-shadow-sm);
+  backdrop-filter: none;
+}
+
+.avatarModal {
+  color: var(--hm-color-text);
+}
+
+.avatarModalHeading h2 {
+  color: var(--hm-color-text);
+}
+
+.avatarModalEyebrow {
+  color: var(--hm-color-primary);
+}
+
+.cardAccent,
+.sidebarItemActive {
+  border-color: color-mix(in srgb, var(--hm-color-primary) 24%, var(--hm-color-border-subtle));
+  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
+}
+
+.heroCopy h1,
+.sidebarTitle {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }

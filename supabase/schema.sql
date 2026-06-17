@@ -147,16 +147,47 @@ with check (
 );
 
 drop policy if exists "Requester or helper can update related tasks" on public.tasks;
-create policy "Requester or helper can update related tasks"
+drop policy if exists "Requester can update own draft or open tasks" on public.tasks;
+create policy "Requester can update own draft or open tasks"
 on public.tasks for update
 to authenticated
 using (
   created_by = (select auth.uid())
-  or accepted_by = (select auth.uid())
+  and status in ('draft', 'open')
+  and accepted_by is null
 )
 with check (
   created_by = (select auth.uid())
-  or accepted_by = (select auth.uid())
+  and status in ('draft', 'open', 'cancelled')
+  and accepted_by is null
+);
+
+drop policy if exists "Requester can cancel own unresolved tasks" on public.tasks;
+create policy "Requester can cancel own unresolved tasks"
+on public.tasks for update
+to authenticated
+using (
+  created_by = (select auth.uid())
+  and status in ('draft', 'open', 'assigned', 'in_progress')
+)
+with check (
+  created_by = (select auth.uid())
+  and status = 'cancelled'
+);
+
+drop policy if exists "Requester can complete own in-progress tasks" on public.tasks;
+create policy "Requester can complete own in-progress tasks"
+on public.tasks for update
+to authenticated
+using (
+  created_by = (select auth.uid())
+  and accepted_by is not null
+  and status in ('in_progress', 'completed')
+)
+with check (
+  created_by = (select auth.uid())
+  and accepted_by is not null
+  and status = 'completed'
 );
 
 drop policy if exists "Requester can delete own tasks" on public.tasks;
@@ -179,78 +210,15 @@ using (
 );
 
 drop policy if exists "Participants can create chats" on public.chats;
-create policy "Participants can create chats"
-on public.chats for insert
-to authenticated
-with check (
-  user1_id = (select auth.uid())
-  or user2_id = (select auth.uid())
-);
 
 -- messages
 drop policy if exists "Participants can view messages" on public.messages;
-create policy "Participants can view messages"
-on public.messages for select
-to authenticated
-using (
-  exists (
-    select 1
-    from public.chats c
-    where c.id = chat_id
-    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
-  )
-);
 
 drop policy if exists "Participants can send messages" on public.messages;
-create policy "Participants can send messages"
-on public.messages for insert
-to authenticated
-with check (
-  sender_id = (select auth.uid())
-  and exists (
-    select 1
-    from public.chats c
-    where c.id = chat_id
-    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
-  )
-);
 
 drop policy if exists "Participants can update own messages" on public.messages;
-create policy "Participants can update own messages"
-on public.messages for update
-to authenticated
-using (
-  sender_id = (select auth.uid())
-  and exists (
-    select 1
-    from public.chats c
-    where c.id = chat_id
-    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
-  )
-)
-with check (
-  sender_id = (select auth.uid())
-  and exists (
-    select 1
-    from public.chats c
-    where c.id = chat_id
-    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
-  )
-);
 
 drop policy if exists "Participants can delete own messages" on public.messages;
-create policy "Participants can delete own messages"
-on public.messages for delete
-to authenticated
-using (
-  sender_id = (select auth.uid())
-  and exists (
-    select 1
-    from public.chats c
-    where c.id = chat_id
-    and (c.user1_id = (select auth.uid()) or c.user2_id = (select auth.uid()))
-  )
-);
 
 -- ratings
 drop policy if exists "Ratings readable by authenticated" on public.ratings;

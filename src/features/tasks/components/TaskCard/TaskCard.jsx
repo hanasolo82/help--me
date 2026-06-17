@@ -2,6 +2,7 @@ import styles from './TaskCard.module.css'
 import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
 import messageIcon from '../../../../assets/icons/message.svg'
+import UserAvatar from '../../../../shared/ui/UserAvatar'
 
 // Card de tarea conectada a Supabase. Las columnas siguen el esquema actual:
 // id, title, description, price (numeric en euros), category, lat, lng, status, created_by, accepted_by.
@@ -116,7 +117,6 @@ export default function TaskCard({
   const priceEuros = Number(task.price ?? 0)
   const creator = task.creator_profile
   const creatorName = creator?.display_name || creator?.full_name || creator?.username || 'Vecino'
-  const creatorInitial = creatorName.charAt(0).toUpperCase()
   const creatorRating = Number(creator?.rating ?? 0)
   const ratingValue = Number.isFinite(creatorRating) ? Math.max(0, Math.min(5, Math.round(creatorRating))) : 0
   const ratingLabel = `${ratingValue}/5`
@@ -137,9 +137,15 @@ export default function TaskCard({
   return (
     <article className={styles.card}>
       <div className={styles.userRow}>
-        <span className={styles.avatarWrap}>
-          {creator?.avatar_url ? <img src={creator.avatar_url} alt="" /> : creatorInitial}
-        </span>
+        <UserAvatar
+          src={creator?.avatar_url}
+          name={creatorName}
+          alt={creatorName}
+          size="sm"
+          variant="rounded"
+          className={styles.avatarWrap}
+          decorative
+        />
         <div>
           <strong>{creatorName}</strong>
           <p className={styles.ratingLine}>

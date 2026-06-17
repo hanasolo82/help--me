@@ -17,6 +17,8 @@
     "inspect:financial-state": "node scripts/inspect-financial-state.mjs",
     "stripe:readiness-report": "node scripts/stripe-readiness-report.mjs",
     "verify:stripe-event-layer": "node scripts/verify-stripe-event-layer.mjs",
+    "verify:webhook-reliability": "node scripts/verify-webhook-reliability.mjs",
+    "verify:rls-payment-gate": "node scripts/verify-rls-payment-gate.mjs",
     "server": "node server/index.js",
     "start": "concurrently \"pnpm run server\" \"pnpm run dev\""
   },
