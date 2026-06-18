@@ -36,6 +36,8 @@ export default function MyRequestCard({
   const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
   const isPendingConfirmation = task.status === 'assigned'
+  const applicationCount = Number(task.application_count || 0)
+  const hasInterestedHelpers = task.status === 'open' && applicationCount > 0
   const isReviewed = reviewedTaskIds.has(task.id)
   const helperProfile = task.accepted_profile || {}
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Un helper'
@@ -61,9 +63,22 @@ export default function MyRequestCard({
         </p>
       ) : null}
 
+      {hasInterestedHelpers ? (
+        <p className={styles.interestNotice}>
+          {applicationCount === 1
+            ? '1 helper se ha ofrecido para ayudarte.'
+            : `${applicationCount} helpers se han ofrecido para ayudarte.`}
+        </p>
+      ) : null}
+
       <div className={styles.actions}>
         {task.status === 'open' && (
           <>
+            {hasInterestedHelpers ? (
+              <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
+                Ver interesados
+              </button>
+            ) : null}
             <button type="button" className="secondary-action" onClick={() => onFocusMap?.(task)}>
               Ver en mapa
             </button>

@@ -199,6 +199,37 @@ async function attachApplicationProfiles(applications) {
   }))
 }
 
+async function attachTaskApplicationCounts(tasks) {
+  if (!tasks?.length) {
+    return tasks || []
+  }
+
+  const taskIds = tasks.map((task) => task.id).filter(Boolean)
+  if (taskIds.length === 0) {
+    return tasks
+  }
+
+  const { data, error } = await supabase
+    .from('task_applications')
+    .select('task_id')
+    .in('task_id', taskIds)
+    .eq('status', 'pending')
+
+  if (error) {
+    throw error
+  }
+
+  const countsByTaskId = new Map()
+  for (const application of data || []) {
+    countsByTaskId.set(application.task_id, (countsByTaskId.get(application.task_id) || 0) + 1)
+  }
+
+  return tasks.map((task) => ({
+    ...task,
+    application_count: countsByTaskId.get(task.id) || 0,
+  }))
+}
+
 // Nota funcion:
 // Crea una tarea en public.tasks usando el usuario autenticado como created_by.
 // Tambien fuerza status='draft' para que la tarea se guarde sin publicar hasta que el usuario lo decida.
@@ -396,7 +427,12 @@ export async function getMyTasks(profileId = null, { role = 'requester' } = {}) 
 
   const tasksWithProfiles = await attachTaskProfiles(data)
 
-  return role === 'requester' ? sortRequesterTasks(tasksWithProfiles) : tasksWithProfiles
+  if (role !== 'requester') {
+    return tasksWithProfiles
+  }
+
+  const tasksWithApplicationCounts = await attachTaskApplicationCounts(tasksWithProfiles)
+  return sortRequesterTasks(tasksWithApplicationCounts)
 }
 
 // Nota funcion:

@@ -39,10 +39,15 @@
 
 .mapPane {
   display: grid;
+  position: relative;
+  z-index: var(--hm-z-map);
+  isolation: isolate;
 }
 
 .mapShell {
   position: relative;
+  z-index: var(--hm-z-map);
+  isolation: isolate;
   min-height: clamp(24rem, 58vw, 40rem);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-xl);
@@ -369,6 +374,7 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
+  /* Leaflet panes use internal layers up to 400; mapShell contains them. */
   z-index: 450;
   display: flex;
   flex-wrap: wrap;

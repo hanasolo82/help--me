@@ -79,6 +79,17 @@
   padding: 0.8rem 0.9rem;
 }
 
+.interestNotice {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--hm-card-border));
+  border-radius: var(--hm-radius-lg);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--hm-card-bg));
+  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0.8rem 0.9rem;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

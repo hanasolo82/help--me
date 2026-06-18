@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 66;
+  z-index: var(--hm-z-modal-backdrop);
   display: grid;
   place-items: center;
   padding: 1rem;

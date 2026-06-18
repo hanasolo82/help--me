@@ -453,7 +453,7 @@
 .logoutOverlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: var(--hm-z-modal-backdrop);
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -662,7 +662,7 @@
 .mapLayer {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: var(--hm-z-modal-backdrop);
   display: grid;
   place-items: center;
   padding: 1rem;

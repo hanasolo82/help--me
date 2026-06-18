@@ -31,6 +31,20 @@ function formatTaskStatus(status) {
   return TASK_STATUS_LABELS[status] || status || 'No disponible'
 }
 
+function formatApplicationDate(value) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
 // Detalle de tarea conectado a Supabase. Centraliza oferta, decision, pago y chat.
 export default function TaskDetail() {
   const { id } = useParams()
@@ -162,7 +176,7 @@ export default function TaskDetail() {
   const taskApplications = applicationsQuery.data || []
   const pendingApplications = taskApplications.filter((application) => application.status === 'pending')
   const currentUserApplication = taskApplications.find((application) => application.helper_id === user?.id) || null
-  const showApplicationsGate = Boolean(task) && isOwner && task.status === 'open' && pendingApplications.length > 0
+  const showApplicationsGate = Boolean(task) && isOwner && task.status === 'open'
 
   const helperReviewQuery = useQuery({
     queryKey: ['task-review', id, task?.accepted_by || null],
@@ -309,8 +323,20 @@ export default function TaskDetail() {
       ) : showApplicationsGate ? (
         <section className="detail-panel applications-gate">
           <p className="eyebrow">Helpers interesados</p>
-          <h2>Tienes helpers interesados</h2>
-          <p>Elige un helper para pasar a oferta pendiente. Después podrás confirmar y pagar.</p>
+          <h2>
+            {pendingApplications.length > 0
+              ? pendingApplications.length === 1
+                ? '1 persona se ha ofrecido para ayudarte'
+                : `${pendingApplications.length} personas se han ofrecido para ayudarte`
+              : 'Tu tarea está publicada'}
+          </h2>
+          <p>
+            {applicationsQuery.isLoading
+              ? 'Estamos comprobando si algún helper se ha ofrecido.'
+              : pendingApplications.length > 0
+                ? 'Revisa los perfiles y elige un helper. Después podrás confirmar y pagar.'
+                : 'Aún no hay helpers interesados. Te avisaremos cuando alguien se ofrezca.'}
+          </p>
 
           <div className="detail-row">
             <span>Tarea</span>
@@ -321,67 +347,77 @@ export default function TaskDetail() {
             <strong>{priceEuros} EUR</strong>
           </div>
 
-          <div className="application-list">
-            {pendingApplications.map((application, index) => {
-              const applicationProfile = application.helper_profile || {}
-              const applicationHelperName =
-                applicationProfile.display_name ||
-                applicationProfile.full_name ||
-                applicationProfile.username ||
-                'Helper interesado'
-              const applicationInitial = getAvatarInitial(applicationHelperName)
+          {applicationsQuery.error ? (
+            <p className="auth-message error">
+              {applicationsQuery.error.message || 'No pudimos cargar los helpers interesados.'}
+            </p>
+          ) : null}
 
-              return (
-                <article className="application-card" key={application.id}>
-                  <div className="user-strip">
-                    <UserAvatar
-                      src={applicationProfile.avatar_url}
-                      name={applicationHelperName || applicationInitial}
-                      alt={applicationHelperName}
-                      size="sm"
-                      className="avatar-small"
-                    />
-                    <div>
-                      <p className="eyebrow">{index === 0 ? 'Primera en ofrecerse' : 'Helper interesado'}</p>
-                      <strong>{applicationHelperName}</strong>
-                      <p>
-                        {applicationProfile.rating
-                          ? `${applicationProfile.rating}/5`
-                          : 'Disponible para ayudarte'}
-                      </p>
-                      {application.message ? <p className="muted">{application.message}</p> : null}
+          {pendingApplications.length > 0 ? (
+            <div className="application-list">
+              {pendingApplications.map((application, index) => {
+                const applicationProfile = application.helper_profile || {}
+                const applicationHelperName =
+                  applicationProfile.display_name ||
+                  applicationProfile.full_name ||
+                  applicationProfile.username ||
+                  'Helper interesado'
+                const applicationInitial = getAvatarInitial(applicationHelperName)
+                const applicationDate = formatApplicationDate(application.created_at)
+
+                return (
+                  <article className="application-card" key={application.id}>
+                    <div className="user-strip">
+                      <UserAvatar
+                        src={applicationProfile.avatar_url}
+                        name={applicationHelperName || applicationInitial}
+                        alt={applicationHelperName}
+                        size="sm"
+                        className="avatar-small"
+                      />
+                      <div>
+                        <p className="eyebrow">{index === 0 ? 'Primera en ofrecerse' : 'Helper interesado'}</p>
+                        <strong>{applicationHelperName}</strong>
+                        <p>
+                          {applicationProfile.rating
+                            ? `${applicationProfile.rating}/5`
+                            : 'Disponible para ayudarte'}
+                        </p>
+                        {applicationDate ? <p className="muted">Se ofreció el {applicationDate}</p> : null}
+                        {application.message ? <p className="muted">{application.message}</p> : null}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="two-actions">
-                    <button
-                      type="button"
-                      className="primary-action sticky-action"
-                      onClick={() => handleSelectApplication(application)}
-                      disabled={selectHelperMutation.isPending}
-                    >
-                      {selectHelperMutation.isPending ? 'Eligiendo...' : 'Elegir helper'}
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary-action sticky-action"
-                      onClick={() => navigate(`/profile/${application.helper_id}`)}
-                    >
-                      Ver perfil
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary-action sticky-action"
-                      onClick={() => handleRejectApplication(application)}
-                      disabled={rejectApplicationMutation.isPending}
-                    >
-                      {rejectApplicationMutation.isPending ? 'Rechazando...' : 'Rechazar'}
-                    </button>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+                    <div className="two-actions">
+                      <button
+                        type="button"
+                        className="primary-action sticky-action"
+                        onClick={() => handleSelectApplication(application)}
+                        disabled={selectHelperMutation.isPending}
+                      >
+                        {selectHelperMutation.isPending ? 'Eligiendo...' : 'Elegir helper'}
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-action sticky-action"
+                        onClick={() => navigate(`/profile/${application.helper_id}`)}
+                      >
+                        Ver perfil
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-action sticky-action"
+                        onClick={() => handleRejectApplication(application)}
+                        disabled={rejectApplicationMutation.isPending}
+                      >
+                        {rejectApplicationMutation.isPending ? 'Rechazando...' : 'Rechazar'}
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          ) : null}
         </section>
       ) : (
         <>
