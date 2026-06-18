@@ -104,16 +104,12 @@ export default function TaskComplete() {
         <section className="completion-panel">
           <h1>La tarea aún no se puede cerrar</h1>
           <p className="muted">
-            El cierre solo está disponible cuando la tarea ya está en curso o ha sido completada por el helper.
+            El cierre solo está disponible cuando la tarea ya está en curso. El chat se desbloqueará cuando el pago
+            esté confirmado.
           </p>
-          <div className="two-actions">
-            <button className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
-              Volver al detalle
-            </button>
-            <button className="primary-action" onClick={handleReject}>
-              Volver al chat
-            </button>
-          </div>
+          <button className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
+            Volver al detalle
+          </button>
         </section>
       </main>
     )
@@ -126,7 +122,8 @@ export default function TaskComplete() {
           <p className="eyebrow">Tarea cerrada</p>
           <h1>La tarea se ha completado</h1>
           <p className="muted">
-            Gracias por confirmar el cierre. Ya puedes valorar al helper para ayudar a otros requesters.
+            Gracias por confirmar el cierre. Si había pago retenido, HelpMe puede iniciar la liberación correspondiente.
+            Ya puedes valorar al helper para ayudar a otros requesters.
           </p>
           <div className="two-actions">
             <button className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
@@ -147,15 +144,18 @@ export default function TaskComplete() {
     <main className="app-screen center-screen">
       <section className="completion-panel">
         <p className="eyebrow">Tarea</p>
-        <h1>Se ha completado la tarea?</h1>
-        <p className="muted">{task.title}</p>
+        <h1>Confirma que la tarea se ha completado</h1>
+        <p className="muted">
+          {task.title}. Al cerrar la tarea confirmas que el trabajo terminó y HelpMe puede iniciar la liberación del
+          pago si aplica.
+        </p>
 
         <div className="two-actions">
           <button className="secondary-action" onClick={handleReject} disabled={status === 'loading'}>
             No, volver al chat
           </button>
           <button className="success-action" onClick={handleConfirm} disabled={status === 'loading'}>
-            {status === 'loading' ? 'Cerrando...' : 'Si, cerrar'}
+            {status === 'loading' ? 'Cerrando...' : 'Sí, cerrar tarea'}
           </button>
         </div>
 

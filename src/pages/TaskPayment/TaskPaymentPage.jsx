@@ -231,13 +231,13 @@ export default function TaskPaymentPage() {
                 onClick={() => checkoutMutation.mutate()}
                 disabled={checkoutMutation.isPending}
               >
-                {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Confirmar y pagar'}
+                {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Pagar de forma segura'}
               </button>
 
               <section className={styles.premiumCompact}>
                 <p>
-                  El pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también puedes acordar el
-                  pago directamente con el helper.
+                  Opción secundaria: el pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también
+                  puedes acordar el pago directamente con el helper.
                 </p>
 
                 {premiumState.active ? (
