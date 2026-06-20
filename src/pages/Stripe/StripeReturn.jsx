@@ -6,10 +6,13 @@ import { setHelperHomeIntent } from '../../features/helper-onboarding/services/h
 import { syncStripeConnectStatus } from '../../features/helper-onboarding/services/stripeConnectService'
 import { helperOnboardingKeys } from '../../features/helper-onboarding/utils/helperOnboardingKeys'
 import { getTaskById } from '../../services/tasksService'
+import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import styles from './StripePage.module.css'
 
-const PAYMENT_POLL_INTERVAL_MS = 1500
-const PAYMENT_POLL_ATTEMPTS = 8
+const PAYMENT_POLL_FAST_INTERVAL_MS = 1500
+const PAYMENT_POLL_SLOW_INTERVAL_MS = 5000
+const PAYMENT_WAITING_THRESHOLD_MS = 12_000
+const PAYMENT_DELAYED_THRESHOLD_MS = 30_000
 
 export default function StripeReturn() {
   const navigate = useNavigate()
@@ -22,6 +25,7 @@ export default function StripeReturn() {
   const taskId = searchParams.get('task_id') || ''
   const paymentId = searchParams.get('payment_id') || ''
   const isPaymentFlow = flow === 'payment'
+  const paymentReturnPath = taskId ? `/task/${taskId}` : '/home'
   const [checkingState, setCheckingState] = useState('loading')
   const [message, setMessage] = useState(
     isPaymentFlow
@@ -44,12 +48,24 @@ export default function StripeReturn() {
       return undefined
     }
 
+    if (isPaymentFlow && !taskId) {
+      const missingTaskTimer = window.setTimeout(() => {
+        setCheckingState('error')
+        setMessage('No encontramos la tarea asociada a este retorno. Puedes volver al inicio sin repetir el pago.')
+      }, 0)
+
+      return () => {
+        window.clearTimeout(missingTaskTimer)
+      }
+    }
+
     if (isPaymentFlow) {
       let cancelled = false
       let redirectTimer = null
       let pollTimer = null
 
       async function waitForTaskPromotion() {
+        const startedAt = Date.now()
         setCheckingState('loading')
         setMessage('Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.')
 
@@ -59,7 +75,19 @@ export default function StripeReturn() {
             queryClient.invalidateQueries({ queryKey: ['tasks'] }),
           ])
 
-          for (let attempt = 0; attempt < PAYMENT_POLL_ATTEMPTS; attempt += 1) {
+          while (!cancelled) {
+            const elapsedMs = Date.now() - startedAt
+
+            if (elapsedMs >= PAYMENT_DELAYED_THRESHOLD_MS) {
+              setCheckingState('delayed')
+              setMessage(
+                'Esto está tardando más de lo normal. Puedes volver al detalle; seguiremos comprobándolo.',
+              )
+            } else if (elapsedMs >= PAYMENT_WAITING_THRESHOLD_MS) {
+              setCheckingState('waiting')
+              setMessage('Seguimos esperando la confirmación segura de Stripe. No necesitas repetir el pago.')
+            }
+
             const latestTask = taskId
               ? await queryClient.fetchQuery({
                   queryKey: ['task', taskId],
@@ -74,12 +102,13 @@ export default function StripeReturn() {
               setMessage('Pago confirmado. La tarea ya está en curso. Volvemos al detalle ahora.')
               redirectTimer = window.setTimeout(() => {
                 if (cancelled) return
-                navigate(taskId ? `/task/${taskId}` : '/home', {
+                navigate(paymentReturnPath, {
                   replace: true,
                   state: {
                     openChat: true,
                     paymentCheckout: true,
                     paymentId: paymentId || null,
+                    returnTo: '/home',
                   },
                 })
               }, 700)
@@ -91,28 +120,26 @@ export default function StripeReturn() {
               setMessage('La tarea ya se actualizó. Volveremos al detalle para revisar el estado.')
               redirectTimer = window.setTimeout(() => {
                 if (cancelled) return
-                navigate(taskId ? `/task/${taskId}` : '/home', {
+                navigate(paymentReturnPath, {
                   replace: true,
                   state: {
                     paymentCheckout: true,
                     paymentId: paymentId || null,
+                    returnTo: '/home',
                   },
                 })
               }, 700)
               return
             }
 
-            if (attempt < PAYMENT_POLL_ATTEMPTS - 1) {
-              await new Promise((resolve) => {
-                pollTimer = window.setTimeout(resolve, PAYMENT_POLL_INTERVAL_MS)
-              })
-            }
+            await new Promise((resolve) => {
+              const nextInterval =
+                elapsedMs >= PAYMENT_DELAYED_THRESHOLD_MS
+                  ? PAYMENT_POLL_SLOW_INTERVAL_MS
+                  : PAYMENT_POLL_FAST_INTERVAL_MS
+              pollTimer = window.setTimeout(resolve, nextInterval)
+            })
           }
-
-          if (cancelled) return
-
-          setCheckingState('pending')
-          setMessage('Todavía estamos confirmando la tarea. Puedes volver al detalle y revisar el estado actual.')
         } catch (error) {
           if (cancelled) return
 
@@ -194,7 +221,7 @@ export default function StripeReturn() {
         window.clearTimeout(redirectTimer)
       }
     }
-  }, [flow, loading, navigate, paymentId, profileLoading, queryClient, refreshProfile, taskId, user, isPaymentFlow])
+  }, [flow, loading, navigate, paymentId, paymentReturnPath, profileLoading, queryClient, refreshProfile, taskId, user, isPaymentFlow])
 
   return (
     <main className={styles.page}>
@@ -204,7 +231,9 @@ export default function StripeReturn() {
           {isPaymentFlow
             ? checkingState === 'confirmed'
               ? 'Pago confirmado'
-              : 'Confirmando tu pago'
+              : checkingState === 'delayed'
+                ? 'Confirmación en curso'
+                : 'Confirmando tu pago'
             : 'Hemos recibido tu información'}
         </h1>
         <p className={styles.lead}>{message}</p>
@@ -215,8 +244,10 @@ export default function StripeReturn() {
             {isPaymentFlow
               ? checkingState === 'loading'
                 ? 'Comprobando la tarea...'
-                : checkingState === 'pending'
-                  ? 'La tarea aún se está actualizando.'
+                : checkingState === 'waiting'
+                  ? 'Stripe aún está confirmando el pago de forma segura.'
+                  : checkingState === 'delayed'
+                    ? 'Seguimos comprobando el estado en segundo plano.'
                   : checkingState === 'error'
                     ? 'No hemos podido verificar la tarea todavía.'
                     : checkingState === 'confirmed'
@@ -236,16 +267,17 @@ export default function StripeReturn() {
               type="button"
               className="secondary-action"
               onClick={() =>
-                navigate(taskId ? `/task/${taskId}` : '/home', {
+                navigate(paymentReturnPath, {
                   replace: true,
                   state: {
                     paymentCheckout: true,
                     paymentId: paymentId || null,
+                    returnTo: '/home',
                   },
                 })
               }
             >
-              Volver al detalle
+              {taskId ? 'Volver al detalle' : 'Volver al inicio'}
             </button>
           ) : (
             <>
@@ -278,6 +310,15 @@ export default function StripeReturn() {
           )}
         </div>
       </section>
+      <ActionStatusOverlay
+        open={isPaymentFlow && ['loading', 'waiting'].includes(checkingState)}
+        title={checkingState === 'waiting' ? 'Seguimos esperando a Stripe...' : 'Confirmando tu pago...'}
+        message={
+          checkingState === 'waiting'
+            ? 'La confirmación está tardando un poco más. No repitas el pago.'
+            : 'Estamos verificando el estado real de la tarea antes de continuar.'
+        }
+      />
     </main>
   )
 }

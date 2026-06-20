@@ -1,0 +1,57 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--hm-z-modal);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--hm-panel-scrim);
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  width: min(100%, 28rem);
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  background: var(--hm-panel-bg);
+  color: var(--color-text);
+  padding: 1.1rem;
+  box-shadow: var(--hm-panel-shadow);
+}
+
+.panel strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+}
+
+.panel p {
+  margin-top: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid color-mix(in srgb, var(--color-primary) 18%, var(--hm-panel-border));
+  border-top-color: var(--color-primary);
+  border-radius: 999px;
+  animation: action-status-spin 0.8s linear infinite;
+}
+
+@keyframes action-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.8s;
+  }
+}

@@ -15,6 +15,8 @@ import { useTaskById } from '../../hooks/useTaskById'
 import { getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
+import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
+import { resolveReturnTo } from '../../shared/utils/navigation'
 import messageIcon from '../../assets/icons/message.svg'
 
 const TASK_STATUS_LABELS = {
@@ -53,6 +55,8 @@ export default function TaskDetail() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { task, loading, error } = useTaskById(id)
+  const taskPath = `/task/${id}`
+  const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
   const [chatOpen, setChatOpen] = useState(() => Boolean(location.state?.openChat))
   const [taskLocationLabel, setTaskLocationLabel] = useState('')
   const [taskLocationStatus, setTaskLocationStatus] = useState('idle')
@@ -105,9 +109,9 @@ export default function TaskDetail() {
         queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
         queryClient.invalidateQueries({ queryKey: ['chats', user?.id ?? null] }),
       ])
-      navigate('/home', {
+      navigate(taskPath, {
         replace: true,
-        state: { mode: 'need' },
+        state: { helperRejected: true, returnTo },
       })
     },
   })
@@ -177,6 +181,17 @@ export default function TaskDetail() {
   const pendingApplications = taskApplications.filter((application) => application.status === 'pending')
   const currentUserApplication = taskApplications.find((application) => application.helper_id === user?.id) || null
   const showApplicationsGate = Boolean(task) && isOwner && task.status === 'open'
+  const actionStatus = selectHelperMutation.isPending
+    ? {
+        title: 'Asignando helper...',
+        message: 'Estamos preparando la oferta pendiente para que puedas confirmar y pagar.',
+      }
+    : rejectHelperMutation.isPending || rejectApplicationMutation.isPending
+      ? {
+          title: 'Actualizando la tarea...',
+          message: 'Estamos guardando tu decisión y actualizando los helpers interesados.',
+        }
+      : null
 
   const helperReviewQuery = useQuery({
     queryKey: ['task-review', id, task?.accepted_by || null],
@@ -235,7 +250,7 @@ export default function TaskDetail() {
     return (
       <main className="app-screen">
         <header className="page-header">
-          <button className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
+          <button className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
             ←
           </button>
           <h1>Tarea no disponible</h1>
@@ -248,7 +263,7 @@ export default function TaskDetail() {
   return (
     <main className="app-screen">
       <header className="page-header">
-        <button className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
+        <button className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
           ←
         </button>
         <div>
@@ -296,7 +311,7 @@ export default function TaskDetail() {
                 <button
                   type="button"
                   className="primary-action sticky-action"
-                  onClick={() => navigate(`/task/${id}/payment`)}
+                  onClick={() => navigate(`/task/${id}/payment`, { state: { returnTo: taskPath } })}
                 >
                   Confirmar y pagar
                 </button>
@@ -315,7 +330,7 @@ export default function TaskDetail() {
           <button
             type="button"
             className="secondary-action profile-link-action"
-            onClick={() => navigate(`/profile/${task.accepted_by}`)}
+            onClick={() => navigate(`/profile/${task.accepted_by}`, { state: { returnTo: taskPath } })}
           >
             Ver perfil
           </button>
@@ -400,7 +415,7 @@ export default function TaskDetail() {
                       <button
                         type="button"
                         className="secondary-action sticky-action"
-                        onClick={() => navigate(`/profile/${application.helper_id}`)}
+                        onClick={() => navigate(`/profile/${application.helper_id}`, { state: { returnTo: taskPath } })}
                       >
                         Ver perfil
                       </button>
@@ -506,6 +521,12 @@ export default function TaskDetail() {
         </p>
       )}
 
+      {location.state?.helperRejected && (
+        <p className="auth-message">
+          Helper rechazado. La tarea vuelve a estar disponible para nuevas personas interesadas.
+        </p>
+      )}
+
       {!showDecisionGate && (
         <div className="two-actions">
           {canOpenChat && (
@@ -540,7 +561,7 @@ export default function TaskDetail() {
               <button
                 type="button"
                 className="primary-action sticky-action"
-                onClick={() => navigate(`/task/${id}/payment`)}
+                onClick={() => navigate(`/task/${id}/payment`, { state: { returnTo: taskPath } })}
               >
                 Confirmar y pagar
               </button>
@@ -559,7 +580,7 @@ export default function TaskDetail() {
             <button
               type="button"
               className="secondary-action sticky-action"
-              onClick={() => navigate(`/complete/${id}`)}
+              onClick={() => navigate(`/complete/${id}`, { state: { returnTo: taskPath } })}
             >
               Confirmar finalización
             </button>
@@ -574,7 +595,7 @@ export default function TaskDetail() {
               <button
                 type="button"
                 className="primary-action sticky-action"
-                onClick={() => navigate(`/task/${id}/review`)}
+                onClick={() => navigate(`/task/${id}/review`, { state: { returnTo: taskPath } })}
               >
                 Valorar helper
               </button>
@@ -607,6 +628,11 @@ export default function TaskDetail() {
         open={chatOpen}
         task={task}
         onClose={() => setChatOpen(false)}
+      />
+      <ActionStatusOverlay
+        open={Boolean(actionStatus)}
+        title={actionStatus?.title}
+        message={actionStatus?.message}
       />
     </main>
   )

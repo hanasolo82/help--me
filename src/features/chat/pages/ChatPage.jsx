@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
 import { useConversation } from '../hooks/useConversation'
 import { useConversationComposer } from '../hooks/useConversationComposer'
@@ -10,6 +10,7 @@ import UserAvatar from '../../../shared/ui/UserAvatar'
 import MessageList from '../components/MessageList'
 import MessageInput from '../components/MessageInput'
 import TypingIndicator from '../components/TypingIndicator'
+import { resolveReturnTo } from '../../../shared/utils/navigation'
 
 function getDisplayName(profile) {
   return profile?.display_name || profile?.full_name || profile?.username || 'Vecino'
@@ -18,6 +19,7 @@ function getDisplayName(profile) {
 export default function ChatPage() {
   const { id: conversationId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const { conversation, loading: conversationLoading, error: conversationError } = useConversation(conversationId)
   const {
@@ -56,6 +58,8 @@ export default function ChatPage() {
   const counterpartProfile = counterpart?.profile || null
   const counterpartName = getDisplayName(counterpartProfile)
   const counterpartInitial = counterpartName.charAt(0).toUpperCase()
+  const conversationReturnTo = conversation?.task_id ? `/task/${conversation.task_id}` : '/chats'
+  const returnTo = resolveReturnTo(location.state?.returnTo, conversationReturnTo)
 
   useEffect(() => {
     if (!stickToBottomRef.current) return
@@ -100,8 +104,8 @@ export default function ChatPage() {
           <p className="eyebrow">Chat</p>
           <h1>No hemos podido abrir la conversacion</h1>
           <p className="auth-message error">{conversationError || 'La conversacion no existe o no tienes acceso.'}</p>
-          <button type="button" className="primary-action" onClick={() => navigate('/chats')}>
-            Volver a chats
+          <button type="button" className="primary-action" onClick={() => navigate(returnTo)}>
+            Volver
           </button>
         </section>
       </main>
@@ -112,7 +116,7 @@ export default function ChatPage() {
     <ChatLayout
       header={
         <header className="chat-header">
-          <button type="button" className="icon-button" onClick={() => navigate('/chats')} aria-label="Volver">
+          <button type="button" className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
             {'<'}
           </button>
           <UserAvatar

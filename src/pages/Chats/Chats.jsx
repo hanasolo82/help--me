@@ -1,9 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ConversationList from '../../features/chat/components/ConversationList'
 import { useChats } from '../../hooks/useChats'
+import { resolveReturnTo } from '../../shared/utils/navigation'
 
 export default function Chats() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
   const {
     chats: conversations,
     isLoading: loading,
@@ -13,7 +16,7 @@ export default function Chats() {
   return (
     <main className="app-screen with-nav">
       <header className="page-header">
-        <button type="button" className="icon-button" onClick={() => navigate('/home')} aria-label="Volver">
+        <button type="button" className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
           {'<'}
         </button>
         <div>
@@ -36,7 +39,9 @@ export default function Chats() {
       <ConversationList
         conversations={conversations}
         currentConversationId={null}
-        onSelectConversation={(conversation) => navigate(`/chat/${conversation.id}`)}
+        onSelectConversation={(conversation) =>
+          navigate(`/chat/${conversation.id}`, { state: { returnTo: '/chats' } })
+        }
       />
     </main>
   )

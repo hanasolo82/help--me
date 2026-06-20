@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { useTaskById } from '../../hooks/useTaskById'
 import { createTaskReview, getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
 import { getAvatarInitial } from '../../utils/avatar'
 import UserAvatar from '../../shared/ui/UserAvatar'
+import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
+import { resolveReturnTo } from '../../shared/utils/navigation'
 import styles from './TaskReviewPage.module.css'
 
 const REVIEW_TAGS = [
@@ -23,12 +25,16 @@ function getProfileName(profile) {
 export default function TaskReviewPage() {
   const { id: taskId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const { task, loading, error } = useTaskById(taskId)
   const [rating, setRating] = useState(0)
   const [selectedTags, setSelectedTags] = useState([])
   const [comment, setComment] = useState('')
+  const [reviewPublished, setReviewPublished] = useState(false)
+  const taskPath = `/task/${taskId}`
+  const returnTo = resolveReturnTo(location.state?.returnTo, taskPath)
 
   const isRequester = Boolean(task) && user?.id === task.created_by
   const helperProfile = task?.accepted_profile || null
@@ -58,9 +64,24 @@ export default function TaskReviewPage() {
         queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
         queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
       ])
-      navigate(`/task/${taskId}`, { replace: true, state: { reviewSaved: true } })
+      setReviewPublished(true)
     },
   })
+
+  useEffect(() => {
+    if (!reviewPublished) return undefined
+
+    const timer = window.setTimeout(() => {
+      navigate(taskPath, {
+        replace: true,
+        state: { reviewSaved: true, returnTo },
+      })
+    }, 1400)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [navigate, returnTo, reviewPublished, taskPath])
 
   function toggleTag(tag) {
     setSelectedTags((current) => (
@@ -92,8 +113,8 @@ export default function TaskReviewPage() {
         <section className="completion-panel">
           <h1>No encontramos esta tarea</h1>
           <p className="auth-message error">{error || 'Puede que ya no este disponible.'}</p>
-          <button type="button" className="secondary-action" onClick={() => navigate('/home')}>
-            Volver al home
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
+            Volver
           </button>
         </section>
       </main>
@@ -109,9 +130,33 @@ export default function TaskReviewPage() {
           <p className="muted">
             Las valoraciones se activan cuando la tarea está completada o cerrada por el requester.
           </p>
-          <button type="button" className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
             Volver al detalle
           </button>
+        </section>
+      </main>
+    )
+  }
+
+  if (reviewPublished) {
+    return (
+      <main className="app-screen center-screen">
+        <section className="completion-panel" aria-live="polite">
+          <p className="eyebrow">Valoración publicada</p>
+          <h1>Gracias por valorar a {helperName}</h1>
+          <p className="muted">Tu valoración ya forma parte del perfil del helper. Volvemos a la tarea.</p>
+          <div className="two-actions">
+            <button
+              type="button"
+              className="primary-action"
+              onClick={() => navigate(taskPath, { replace: true, state: { reviewSaved: true, returnTo } })}
+            >
+              Volver al detalle
+            </button>
+            <button type="button" className="secondary-action" onClick={() => navigate('/home')}>
+              Volver al inicio
+            </button>
+          </div>
         </section>
       </main>
     )
@@ -124,7 +169,7 @@ export default function TaskReviewPage() {
           <p className="eyebrow">Valoración enviada</p>
           <h1>Esta tarea ya está valorada</h1>
           <p className="muted">Gracias por ayudar a construir la reputación de HelpMe.</p>
-          <button type="button" className="primary-action" onClick={() => navigate(`/task/${task.id}`)}>
+          <button type="button" className="primary-action" onClick={() => navigate(returnTo)}>
             Volver al detalle
           </button>
         </section>
@@ -211,7 +256,7 @@ export default function TaskReviewPage() {
         )}
 
         <div className="two-actions">
-          <button type="button" className="secondary-action" onClick={() => navigate(`/task/${task.id}`)}>
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
             Ahora no
           </button>
           <button type="submit" className="primary-action" disabled={rating < 1 || reviewMutation.isPending}>
@@ -219,6 +264,11 @@ export default function TaskReviewPage() {
           </button>
         </div>
       </form>
+      <ActionStatusOverlay
+        open={reviewMutation.isPending}
+        title="Publicando valoración..."
+        message="Estamos guardando tu opinión y actualizando la reputación del helper."
+      />
     </main>
   )
 }

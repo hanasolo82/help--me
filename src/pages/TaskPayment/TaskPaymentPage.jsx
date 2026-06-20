@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { useTaskById } from '../../hooks/useTaskById'
@@ -7,6 +7,8 @@ import { supabase } from '../../lib/supabaseClient'
 import { continueWithExternalPayment, startTaskCheckout } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
 import UserAvatar from '../../shared/ui/UserAvatar'
+import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
+import { resolveReturnTo } from '../../shared/utils/navigation'
 import styles from './TaskPaymentPage.module.css'
 
 const FINAL_STATUSES = new Set(['completed', 'closed'])
@@ -59,6 +61,7 @@ function isActivePremiumSubscription(subscription) {
 export default function TaskPaymentPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const routeLocation = useLocation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const { task, loading, error } = useTaskById(id)
@@ -76,6 +79,8 @@ export default function TaskPaymentPage() {
   const isPayable = paymentState === 'payable'
   const price = Number(task?.price || 0)
   const locationLabel = getHelpfulLocationLabel(task)
+  const taskPath = `/task/${id}`
+  const returnTo = resolveReturnTo(routeLocation.state?.returnTo, taskPath)
 
   const checkoutMutation = useMutation({
     mutationFn: () => startTaskCheckout(id),
@@ -164,8 +169,8 @@ export default function TaskPaymentPage() {
           <p className={styles.eyebrow}>Pago</p>
           <h1>Tarea no disponible</h1>
           <p className={styles.error}>{error || 'No hemos podido cargar esta tarea.'}</p>
-          <button type="button" className="secondary-action" onClick={() => navigate('/home')}>
-            Volver a Home
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
+            Volver
           </button>
         </section>
       </main>
@@ -175,7 +180,7 @@ export default function TaskPaymentPage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <button type="button" className="icon-button" onClick={() => navigate(`/task/${id}`)} aria-label="Volver">
+        <button type="button" className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
           ←
         </button>
         <div>
@@ -278,7 +283,7 @@ export default function TaskPaymentPage() {
                         ? 'Solo quien publicó la tarea puede completar el pago.'
                         : 'No podemos completar el pago en este momento.'}
               </p>
-              <button type="button" className="secondary-action" onClick={() => navigate(`/task/${id}`)}>
+              <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
                 Volver al detalle
               </button>
             </>
@@ -290,6 +295,11 @@ export default function TaskPaymentPage() {
           ) : null}
         </aside>
       </div>
+      <ActionStatusOverlay
+        open={checkoutMutation.isPending}
+        title="Preparando pago seguro..."
+        message="Estamos conectando con Stripe. No cierres esta pantalla ni vuelvas a pulsar el botón."
+      />
     </main>
   )
 }

@@ -1,18 +1,21 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
 import { useFavoriteProfile } from '../hooks/useFavoriteProfile'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
 import { buildSkillOptions } from '../utils/profileFormatters'
+import { resolveReturnTo } from '../../../shared/utils/navigation'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const params = useParams()
   const { user, profile: authProfile } = useAuth()
   const profileId = params.id || user?.id || authProfile?.id || null
   const [activeSkillId, setActiveSkillId] = useState('all')
   const [contactError, setContactError] = useState('')
+  const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
 
   const {
     profile,
@@ -79,7 +82,7 @@ export default function ProfilePage() {
           <p className="eyebrow">Perfil</p>
           <h1>No pudimos cargar este perfil</h1>
           <p className="muted">{error.message || 'Intenta de nuevo más tarde.'}</p>
-          <button type="button" className="secondary-action" onClick={() => navigate(-1)}>
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
             Volver
           </button>
         </section>
@@ -121,7 +124,7 @@ export default function ProfilePage() {
         onSkillChange={setActiveSkillId}
         isOwnProfile={isOwnProfile}
         onEditProfile={() => navigate('/settings#perfil')}
-        onBack={() => navigate(-1)}
+        onBack={() => navigate(returnTo)}
         onContact={handleContact}
         onInviteToTask={handleInviteToTask}
         onToggleFavorite={handleToggleFavorite}
