@@ -469,8 +469,6 @@ export default function TaskDetail() {
         <section className="detail-panel decision-gate">
           <p className="eyebrow">Oferta pendiente</p>
           <h2>{helperName} te ayudará con esta tarea</h2>
-          <p>Confirma la tarea para pagar y abrir el chat privado.</p>
-
           <p className="muted">{task.description}</p>
 
           <div className="two-actions decision-actions">
@@ -513,13 +511,11 @@ export default function TaskDetail() {
                 : `${pendingApplications.length} personas se han ofrecido para ayudarte`
               : 'Tu tarea está publicada'}
           </h2>
-          <p>
-            {applicationsQuery.isLoading
-              ? 'Estamos comprobando si algún helper se ha ofrecido.'
-              : pendingApplications.length > 0
-                ? 'Revisa los perfiles y elige un helper. Después podrás confirmar y pagar.'
-                : 'Aún no hay helpers interesados. Te avisaremos cuando alguien se ofrezca.'}
-          </p>
+          {applicationsQuery.isLoading ? (
+            <p>Estamos comprobando las personas interesadas.</p>
+          ) : pendingApplications.length > 0 ? (
+            <p>Después de elegir un perfil, podrás confirmar la tarea y pagar.</p>
+          ) : null}
 
           {applicationsQuery.error ? (
             <p className="auth-message error">
@@ -698,9 +694,7 @@ export default function TaskDetail() {
           {canReviewHelper && (
             helperReviewQuery.isLoading ? (
               <span className="muted" role="status">Comprobando valoración...</span>
-            ) : helperReviewQuery.data ? (
-              <span className="muted">Valoración publicada</span>
-            ) : !helperReviewQuery.error ? (
+            ) : !helperReviewQuery.data && !helperReviewQuery.error ? (
               <button
                 type="button"
                 className="primary-action sticky-action"
@@ -713,24 +707,12 @@ export default function TaskDetail() {
         </div>
       )}
 
-      {isOwner && task.status === 'open' && (
-        <p className="muted">
-          {pendingApplications.length > 0
-            ? 'Elige un helper interesado para continuar.'
-            : 'Esta es tu tarea. Espera a que algún helper se ofrezca.'}
-        </p>
-      )}
-
       {isOwner && task.status === 'draft' && (
-        <p className="muted">Esta tarea sigue como borrador. Publicala desde "Tareas solicitadas" cuando quieras.</p>
+        <p className="muted">Puedes publicarla desde “Tareas solicitadas” cuando quieras.</p>
       )}
 
       {isOwner && task.status === 'cancelled' && (
-        <p className="muted">Esta tarea se ha cancelado y ya no aparece en la lista principal.</p>
-      )}
-
-      {isOwner && task.status === 'closed' && (
-        <p className="muted">La ayuda ya se cerró y los fondos quedaron liberados.</p>
+        <p className="muted">Ya no aparece entre las solicitudes activas.</p>
       )}
 
       <TaskChatModal
