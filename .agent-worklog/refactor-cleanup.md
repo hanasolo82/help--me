@@ -136,3 +136,5 @@
 - Bounded TaskComplete initial loading, task completion and query invalidation so every blocking overlay has a finite exit.
 - Added explicit recovery screens for both unconfirmed closure and completed-task/payment-pending states, with no hidden retry.
 - Abort timed-out completion/release requests on the client before enabling manual retry, while retaining backend idempotency as the final safeguard.
+- Kept payment/release retry actions out of final `completed` task summaries; they now exist only inside explicit recovery states.
+- Gated `Valorar helper` behind a completed review lookup and replaced it with passive `Valoración publicada` copy after submission.

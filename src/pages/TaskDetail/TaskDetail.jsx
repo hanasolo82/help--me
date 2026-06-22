@@ -10,7 +10,6 @@ import {
   selectTaskHelper,
 } from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
-import { getPaymentForTask } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
 import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
@@ -33,16 +32,12 @@ function formatTaskStatus(status) {
   return TASK_STATUS_LABELS[status] || 'Estado no disponible'
 }
 
-function getHumanTaskStatus({ taskStatus, paymentStatus, isOwner, isHelper, helperReviewPublished }) {
+function getHumanTaskStatus({ taskStatus, isOwner, isHelper, helperReviewPublished }) {
   if (taskStatus === 'in_progress') return 'Tarea en curso'
 
   if (taskStatus === 'completed') {
     if (isHelper) {
-      return 'Trabajo completado · ingreso en proceso'
-    }
-
-    if (['held', 'release_pending', 'transferring'].includes(paymentStatus)) {
-      return 'Tarea completada · pago en actualización'
+      return 'Trabajo completado'
     }
 
     if (isOwner && !helperReviewPublished) {
@@ -59,6 +54,52 @@ function getHumanTaskStatus({ taskStatus, paymentStatus, isOwner, isHelper, help
   }
 
   return formatTaskStatus(taskStatus)
+}
+
+// Eyebrow que identifica quién eres tú en esta tarea (rol + propiedad).
+function getRoleEyebrow({ isOwner, isHelper, canApply, creatorName }) {
+  if (isOwner) return 'Tú pediste esta ayuda'
+  if (isHelper) return `Estás ayudando a ${creatorName}`
+  if (canApply) return 'Puedes ofrecerte para ayudar'
+  return 'Detalle de tarea'
+}
+
+// De quién depende la siguiente acción: 'you' (te toca), 'waiting' (en espera) o 'none'.
+function getTurnContext({ status, isOwner, isHelper, canApply, alreadyApplied, hasPendingApplications, helperReviewPublished }) {
+  if (isOwner) {
+    if (status === 'draft') return { tone: 'none', detail: 'Esta tarea sigue en borrador.' }
+    if (status === 'open') {
+      return hasPendingApplications
+        ? { tone: 'you', lead: 'Te toca a ti:', detail: 'elige un helper para continuar.' }
+        : { tone: 'waiting', lead: 'En espera', detail: 'de que algún helper se ofrezca.' }
+    }
+    if (status === 'assigned') return { tone: 'you', lead: 'Te toca a ti:', detail: 'confirma y paga para desbloquear el chat.' }
+    if (status === 'in_progress') return { tone: 'you', lead: 'Te toca a ti:', detail: 'coordina por el chat y cierra la tarea cuando termine.' }
+    if (status === 'completed') {
+      return helperReviewPublished
+        ? { tone: 'none', detail: 'Tarea completada y valorada.' }
+        : { tone: 'you', lead: 'Te toca a ti:', detail: 'valora al helper.' }
+    }
+    if (status === 'closed') return { tone: 'none', detail: 'Tarea cerrada. Pago liberado.' }
+    if (status === 'cancelled') return { tone: 'none', detail: 'Tarea cancelada.' }
+    return { tone: 'none', detail: '' }
+  }
+
+  if (isHelper) {
+    if (status === 'assigned') return { tone: 'waiting', lead: 'En espera', detail: 'de que el requester confirme y pague.' }
+    if (status === 'in_progress') return { tone: 'you', lead: 'Te toca a ti:', detail: 'resuelve la tarea y coordina por el chat.' }
+    if (status === 'completed') return { tone: 'waiting', lead: 'Ingreso en proceso', detail: '· en espera del cierre y la liberación.' }
+    if (status === 'closed') return { tone: 'none', detail: 'Ingreso confirmado.' }
+    return { tone: 'none', detail: '' }
+  }
+
+  if (canApply) {
+    return alreadyApplied
+      ? { tone: 'waiting', lead: 'En espera', detail: 'de que el requester elija.' }
+      : { tone: 'you', lead: 'Te toca a ti:', detail: 'ofrécete si quieres ayudar.' }
+  }
+
+  return { tone: 'none', detail: '' }
 }
 
 function formatApplicationDate(value) {
@@ -190,7 +231,7 @@ export default function TaskDetail() {
   const isHelper = user?.id === task?.accepted_by
   const canApply = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
-  const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['in_progress', 'completed'].includes(task.status)
+  const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && task.status === 'in_progress'
   const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
   const showDecisionGate = Boolean(task) && isOwner && task.status === 'assigned'
   const canOpenChat =
@@ -221,17 +262,6 @@ export default function TaskDetail() {
         }
       : null
 
-  const paymentQuery = useQuery({
-    queryKey: ['task-payment-status', id],
-    queryFn: () => getPaymentForTask(id),
-    enabled:
-      Boolean(task) &&
-      Boolean(isOwner || isHelper) &&
-      ['in_progress', 'completed', 'closed'].includes(task.status),
-    staleTime: 10_000,
-    retry: false,
-  })
-
   const helperReviewQuery = useQuery({
     queryKey: ['task-review-status', id, task?.accepted_by || null],
     queryFn: () => getTaskReviewForUser(id, task.accepted_by),
@@ -244,9 +274,18 @@ export default function TaskDetail() {
 
   const humanTaskStatus = getHumanTaskStatus({
     taskStatus: task?.status,
-    paymentStatus: paymentQuery.data?.status || '',
     isOwner,
     isHelper,
+    helperReviewPublished: Boolean(helperReviewQuery.data),
+  })
+  const roleEyebrow = getRoleEyebrow({ isOwner, isHelper, canApply, creatorName })
+  const turnContext = getTurnContext({
+    status: task?.status,
+    isOwner,
+    isHelper,
+    canApply,
+    alreadyApplied: Boolean(currentUserApplication),
+    hasPendingApplications: pendingApplications.length > 0,
     helperReviewPublished: Boolean(helperReviewQuery.data),
   })
   const moneyLabel = isOwner
@@ -260,6 +299,8 @@ export default function TaskDetail() {
       ? 'Disponible al finalizar'
       : helperReviewQuery.isLoading
         ? 'Comprobando...'
+        : helperReviewQuery.error
+          ? 'No disponible'
         : helperReviewQuery.data
           ? 'Publicada'
           : 'Pendiente'
@@ -338,9 +379,19 @@ export default function TaskDetail() {
           ←
         </button>
         <div>
-          <p className="eyebrow">Detalle de tarea</p>
+          <p className="eyebrow">{roleEyebrow}</p>
           <h1>{task.title}</h1>
           <p className="task-header-status">{humanTaskStatus}</p>
+          {turnContext.tone === 'none' ? (
+            turnContext.detail ? <p className="task-header-turn">{turnContext.detail}</p> : null
+          ) : (
+            <p className="task-header-turn">
+              <span className={`task-turn-actor${turnContext.tone === 'waiting' ? ' is-waiting' : ''}`}>
+                {turnContext.lead}
+              </span>
+              {turnContext.detail ? ` ${turnContext.detail}` : ''}
+            </p>
+          )}
         </div>
       </header>
 
@@ -355,7 +406,7 @@ export default function TaskDetail() {
               className="avatar-small"
             />
             <div>
-              <span>Requester</span>
+              <span>{isOwner ? 'Requester · tú' : 'Requester'}</span>
               <strong>{creatorName}</strong>
               <p>Solicita y confirma la ayuda</p>
             </div>
@@ -374,7 +425,7 @@ export default function TaskDetail() {
               <span className="task-person-placeholder" aria-hidden="true">—</span>
             )}
             <div>
-              <span>Helper</span>
+              <span>{isHelper ? 'Helper · tú' : 'Helper'}</span>
               <strong>{task.accepted_by ? helperName : 'Sin helper elegido'}</strong>
               <p>{task.accepted_by ? 'Persona asignada a la tarea' : 'Pendiente de selección'}</p>
             </div>
@@ -640,16 +691,16 @@ export default function TaskDetail() {
               className="secondary-action sticky-action"
               onClick={() => navigate(`/complete/${id}`, { state: { returnTo: taskPath } })}
             >
-              {task.status === 'completed' ? 'Actualizar estado del pago' : 'Confirmar finalización'}
+              Confirmar finalización
             </button>
           )}
 
           {canReviewHelper && (
-            helperReviewQuery.data ? (
-              <button type="button" className="secondary-action sticky-action" disabled>
-                Valorada
-              </button>
-            ) : (
+            helperReviewQuery.isLoading ? (
+              <span className="muted" role="status">Comprobando valoración...</span>
+            ) : helperReviewQuery.data ? (
+              <span className="muted">Valoración publicada</span>
+            ) : !helperReviewQuery.error ? (
               <button
                 type="button"
                 className="primary-action sticky-action"
@@ -657,7 +708,7 @@ export default function TaskDetail() {
               >
                 Valorar helper
               </button>
-            )
+            ) : null
           )}
         </div>
       )}

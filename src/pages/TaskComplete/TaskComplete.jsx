@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { getTaskById, markTaskCompleted } from '../../services/tasksService'
 import { getPaymentForTask, releaseTaskPayment } from '../../services/paymentsService'
+import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import { resolveReturnTo } from '../../shared/utils/navigation'
 
@@ -57,6 +58,14 @@ export default function TaskComplete() {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [paymentStatus, setPaymentStatus] = useState('')
+  const helperReviewQuery = useQuery({
+    queryKey: ['task-review-status', taskId, task?.accepted_by || null],
+    queryFn: () => getTaskReviewForUser(taskId, task.accepted_by),
+    enabled:
+      Boolean(task?.accepted_by) &&
+      ['completed', 'closed'].includes(task?.status),
+    staleTime: 30_000,
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -240,14 +249,18 @@ export default function TaskComplete() {
             <button className="secondary-action" onClick={() => navigate(returnTo)}>
               Volver al detalle
             </button>
-            {task.accepted_by && (
+            {task.accepted_by && helperReviewQuery.isLoading ? (
+              <span className="muted" role="status">Comprobando valoración...</span>
+            ) : task.accepted_by && helperReviewQuery.data ? (
+              <span className="muted">Valoración publicada</span>
+            ) : task.accepted_by && !helperReviewQuery.error ? (
               <button
                 className="primary-action"
                 onClick={() => navigate(`/task/${task.id}/review`, { state: { returnTo: taskPath } })}
               >
                 Valorar helper
               </button>
-            )}
+            ) : null}
           </div>
         </section>
       </main>
