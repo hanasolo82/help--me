@@ -124,3 +124,15 @@
 - Reused real classes/components where practical: `.primary-action`, `.secondary-action`, `.danger-action`, `.field`, `.detail-panel`, `TaskCard`, `HelperCard`, `MyRequestCard`, `UserAvatar`, `MessageList`, `MessageInput`, `HomeEmptyState`, `EmptyChatState`, payment module classes and marker builders.
 - Avoided backend, Supabase, Stripe, payment flows, real data and public navigation changes.
 - Validation: `pnpm run lint`, `pnpm run build`, and local HTTP check for `http://127.0.0.1:5173/design-lab`.
+
+## Task-context messaging and resilient closure
+- Routed message notifications, the Home messages modal and `/chats` selections into `/task/:id` with the task chat opened.
+- Converted `/chat/:conversationId` into a compatibility resolver: task conversations redirect to `TaskDetail`; legacy conversations without `task_id` show an explicit recovery screen.
+- Replaced the TaskDetail message icon with a labelled `Chat de la tarea` panel and preserved payment-gated chat availability.
+- Added a structured TaskDetail summary for Requester, Helper, task location, role-specific money copy, human task/payment status and helper-review status.
+- Added a 15-second release timeout and bounded state refresh to TaskComplete. A completed task now remains recoverable if payment release cannot be confirmed immediately.
+- Removed the hidden automatic release retry; the user receives an explicit, safe retry action instead.
+- Kept requester-to-helper review as the beta flow and documented helper-to-requester review as a deferred P2 product decision.
+- Bounded TaskComplete initial loading, task completion and query invalidation so every blocking overlay has a finite exit.
+- Added explicit recovery screens for both unconfirmed closure and completed-task/payment-pending states, with no hidden retry.
+- Abort timed-out completion/release requests on the client before enabling manual retry, while retaining backend idempotency as the final safeguard.

@@ -654,12 +654,12 @@ export async function withdrawTaskApplication(applicationId) {
 // La UI deberia ofrecer esta accion solo al creador; Supabase/RLS debe reforzar esa regla.
 // Nota Supabase - public.tasks:
 // Si anades completed_at, completed_by o datos de cierre, actualiza este update.
-export async function markTaskCompleted(taskId) {
+export async function markTaskCompleted(taskId, { signal } = {}) {
   assertSupabaseReady()
   const user = await requireUser('Necesitas iniciar sesion para cerrar una tarea.')
 
   const now = new Date().toISOString()
-  const { data, error } = await supabase
+  let query = supabase
     .from('tasks')
     .update({
       status: 'completed',
@@ -671,6 +671,12 @@ export async function markTaskCompleted(taskId) {
     .in('status', ['in_progress', 'completed'])
     .select(TASK_SELECT)
     .maybeSingle()
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw error

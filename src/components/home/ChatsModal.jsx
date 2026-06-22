@@ -78,7 +78,18 @@ export default function ChatsModal({ open, chats, loading, error, currentUserId,
                   className="chat-list-item"
                   onClick={() => {
                     onClose()
-                    navigate(`/chat/${chat.id}`)
+                    if (chat.task_id) {
+                      navigate(`/task/${chat.task_id}`, {
+                        state: {
+                          openChat: true,
+                          conversationId: chat.id,
+                          returnTo: '/home',
+                        },
+                      })
+                      return
+                    }
+
+                    navigate(`/chat/${chat.id}`, { state: { returnTo: '/home' } })
                   }}
                 >
                   <span className="avatar-small">{initial}</span>

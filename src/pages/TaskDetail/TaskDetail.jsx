@@ -10,14 +10,14 @@ import {
   selectTaskHelper,
 } from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
+import { getPaymentForTask } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
-import { getMyReviewForTask } from '../../features/reviews/api/reviewsApi'
+import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import { resolveReturnTo } from '../../shared/utils/navigation'
-import messageIcon from '../../assets/icons/message.svg'
 
 const TASK_STATUS_LABELS = {
   draft: 'Borrador',
@@ -30,7 +30,35 @@ const TASK_STATUS_LABELS = {
 }
 
 function formatTaskStatus(status) {
-  return TASK_STATUS_LABELS[status] || status || 'No disponible'
+  return TASK_STATUS_LABELS[status] || 'Estado no disponible'
+}
+
+function getHumanTaskStatus({ taskStatus, paymentStatus, isOwner, isHelper, helperReviewPublished }) {
+  if (taskStatus === 'in_progress') return 'Tarea en curso'
+
+  if (taskStatus === 'completed') {
+    if (isHelper) {
+      return 'Trabajo completado · ingreso en proceso'
+    }
+
+    if (['held', 'release_pending', 'transferring'].includes(paymentStatus)) {
+      return 'Tarea completada · pago en actualización'
+    }
+
+    if (isOwner && !helperReviewPublished) {
+      return 'Tarea completada · valoración pendiente'
+    }
+
+    return 'Tarea completada'
+  }
+
+  if (taskStatus === 'closed') {
+    return isHelper
+      ? 'Tarea cerrada · ingreso confirmado'
+      : 'Tarea cerrada · pago liberado'
+  }
+
+  return formatTaskStatus(taskStatus)
 }
 
 function formatApplicationDate(value) {
@@ -193,12 +221,55 @@ export default function TaskDetail() {
         }
       : null
 
+  const paymentQuery = useQuery({
+    queryKey: ['task-payment-status', id],
+    queryFn: () => getPaymentForTask(id),
+    enabled:
+      Boolean(task) &&
+      Boolean(isOwner || isHelper) &&
+      ['in_progress', 'completed', 'closed'].includes(task.status),
+    staleTime: 10_000,
+    retry: false,
+  })
+
   const helperReviewQuery = useQuery({
-    queryKey: ['task-review', id, task?.accepted_by || null],
-    queryFn: () => getMyReviewForTask(id, task.accepted_by),
-    enabled: canReviewHelper,
+    queryKey: ['task-review-status', id, task?.accepted_by || null],
+    queryFn: () => getTaskReviewForUser(id, task.accepted_by),
+    enabled:
+      Boolean(task?.accepted_by) &&
+      Boolean(isOwner || isHelper) &&
+      ['completed', 'closed'].includes(task.status),
     staleTime: 30_000,
   })
+
+  const humanTaskStatus = getHumanTaskStatus({
+    taskStatus: task?.status,
+    paymentStatus: paymentQuery.data?.status || '',
+    isOwner,
+    isHelper,
+    helperReviewPublished: Boolean(helperReviewQuery.data),
+  })
+  const moneyLabel = isOwner
+    ? 'Coste de la tarea'
+    : isHelper
+      ? 'Beneficio estimado'
+      : 'Precio de la tarea'
+  const helperReviewStatus = !task?.accepted_by
+    ? 'Sin helper elegido'
+    : !['completed', 'closed'].includes(task.status)
+      ? 'Disponible al finalizar'
+      : helperReviewQuery.isLoading
+        ? 'Comprobando...'
+        : helperReviewQuery.data
+          ? 'Publicada'
+          : 'Pendiente'
+  const chatAvailabilityCopy = canOpenChat
+    ? 'Habla con la otra persona sin salir del contexto de esta tarea.'
+    : task?.status === 'assigned'
+      ? 'El chat se desbloqueará cuando el pago esté confirmado.'
+      : task?.status === 'open'
+        ? 'El chat estará disponible cuando elijas helper y confirmes la tarea.'
+        : 'El chat todavía no está disponible para esta tarea.'
 
   async function handleApply() {
     applyMutation.mutate()
@@ -269,27 +340,29 @@ export default function TaskDetail() {
         <div>
           <p className="eyebrow">Detalle de tarea</p>
           <h1>{task.title}</h1>
+          <p className="task-header-status">{humanTaskStatus}</p>
         </div>
       </header>
 
-      {showDecisionGate ? (
-        <section className="detail-panel decision-gate">
-          <p className="eyebrow">Oferta pendiente</p>
-          <h2>{helperName} te ayudará con esta tarea</h2>
-          <p>Confirma la tarea para pagar y abrir el chat privado.</p>
+      <section className="detail-panel task-overview-panel" aria-label="Resumen de la tarea">
+        <div className="task-people-grid">
+          <article className="task-person-card">
+            <UserAvatar
+              src={creatorProfile.avatar_url}
+              name={creatorName || creatorInitial}
+              alt={creatorName}
+              size="sm"
+              className="avatar-small"
+            />
+            <div>
+              <span>Requester</span>
+              <strong>{creatorName}</strong>
+              <p>Solicita y confirma la ayuda</p>
+            </div>
+          </article>
 
-          <div className="detail-row decision-summary-row">
-            <span>Tarea</span>
-            <strong>{task.title}</strong>
-          </div>
-          <p className="muted">{task.description}</p>
-          <div className="detail-row total-row">
-            <span>Precio</span>
-            <strong>{priceEuros} EUR</strong>
-          </div>
-
-          {task.accepted_profile && (
-            <div className="user-strip helper-strip">
+          <article className="task-person-card">
+            {task.accepted_by ? (
               <UserAvatar
                 src={helperProfile.avatar_url}
                 name={helperName || helperInitial}
@@ -297,13 +370,57 @@ export default function TaskDetail() {
                 size="sm"
                 className="avatar-small"
               />
-              <div>
-                <strong>{helperName}</strong>
-                <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Listo para ayudarte'}</p>
-                {helperProfile.verified && <p>Perfil verificado</p>}
-              </div>
+            ) : (
+              <span className="task-person-placeholder" aria-hidden="true">—</span>
+            )}
+            <div>
+              <span>Helper</span>
+              <strong>{task.accepted_by ? helperName : 'Sin helper elegido'}</strong>
+              <p>{task.accepted_by ? 'Persona asignada a la tarea' : 'Pendiente de selección'}</p>
             </div>
-          )}
+          </article>
+        </div>
+
+        <div className="task-facts-grid">
+          <div className="task-fact">
+            <span>Ubicación de la tarea</span>
+            <strong>
+              {taskLocationStatus === 'loading'
+                ? 'Buscando dirección...'
+                : taskLocationLabel || task.location_label || 'Dirección privada'}
+            </strong>
+          </div>
+          <div className="task-fact">
+            <span>{moneyLabel}</span>
+            <strong>{priceEuros} EUR</strong>
+          </div>
+          <div className="task-fact">
+            <span>Categoría</span>
+            <strong>{task.category}</strong>
+          </div>
+        </div>
+
+        {task.accepted_by ? (
+          <div className="task-review-grid">
+            <div>
+              <span>Valoración del helper</span>
+              <strong>{helperReviewStatus}</strong>
+            </div>
+            <div>
+              <span>Valoración del requester</span>
+              <strong>No incluida en esta beta</strong>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      {showDecisionGate ? (
+        <section className="detail-panel decision-gate">
+          <p className="eyebrow">Oferta pendiente</p>
+          <h2>{helperName} te ayudará con esta tarea</h2>
+          <p>Confirma la tarea para pagar y abrir el chat privado.</p>
+
+          <p className="muted">{task.description}</p>
 
           <div className="two-actions decision-actions">
             {canOpenPayment && (
@@ -352,15 +469,6 @@ export default function TaskDetail() {
                 ? 'Revisa los perfiles y elige un helper. Después podrás confirmar y pagar.'
                 : 'Aún no hay helpers interesados. Te avisaremos cuando alguien se ofrezca.'}
           </p>
-
-          <div className="detail-row">
-            <span>Tarea</span>
-            <strong>{task.title}</strong>
-          </div>
-          <div className="detail-row">
-            <span>Precio</span>
-            <strong>{priceEuros} EUR</strong>
-          </div>
 
           {applicationsQuery.error ? (
             <p className="auth-message error">
@@ -435,68 +543,30 @@ export default function TaskDetail() {
           ) : null}
         </section>
       ) : (
-        <>
-          <section className="detail-panel">
-            <div className="user-strip">
-              <UserAvatar
-                src={creatorProfile.avatar_url}
-                name={creatorName || creatorInitial}
-                alt={creatorName}
-                size="sm"
-                className="avatar-small"
-              />
-              <div>
-                <strong>{creatorName}</strong>
-                <p>{creatorProfile.rating ? `${creatorProfile.rating}/5` : 'Vecino de confianza'}</p>
-                {creatorProfile.verified && <p>Perfil verificado</p>}
-              </div>
-            </div>
-
-            {task.accepted_profile && (
-              <div className="user-strip">
-                <UserAvatar
-                  src={helperProfile.avatar_url}
-                  name={helperName || helperInitial}
-                  alt={helperName}
-                  size="sm"
-                  className="avatar-small"
-                />
-                <div>
-                  <strong>{helperName}</strong>
-                  <p>{helperProfile.rating ? `${helperProfile.rating}/5` : 'Ayudante asignado'}</p>
-                  {helperProfile.verified && <p>Perfil verificado</p>}
-                </div>
-              </div>
-            )}
-
-            <div className="detail-row">
-              <span>Ubicacion</span>
-              <strong>
-                {taskLocationStatus === 'loading'
-                  ? 'Buscando direccion...'
-                  : taskLocationLabel || 'Direccion privada'}
-              </strong>
-            </div>
-            <div className="detail-row">
-              <span>Precio</span>
-              <strong>{priceEuros} EUR</strong>
-            </div>
-            <div className="detail-row">
-              <span>Categoria</span>
-              <strong>{task.category}</strong>
-            </div>
-            <div className="detail-row">
-              <span>Estado</span>
-              <strong>{formatTaskStatus(task.status)}</strong>
-            </div>
-          </section>
-
-          <section className="detail-panel">
-            <h2>Descripcion</h2>
-            <p>{task.description}</p>
-          </section>
-        </>
+        <section className="detail-panel">
+          <h2>Descripción</h2>
+          <p>{task.description}</p>
+        </section>
       )}
+
+      {(isOwner || isHelper) ? (
+        <section className="detail-panel task-chat-panel">
+          <div>
+            <p className="eyebrow">Mensajes</p>
+            <h2>Chat de la tarea</h2>
+            <p className="muted">{chatAvailabilityCopy}</p>
+          </div>
+          {canOpenChat ? (
+            <button type="button" className="primary-action" onClick={() => setChatOpen(true)}>
+              Abrir chat
+            </button>
+          ) : (
+            <button type="button" className="secondary-action" disabled>
+              Chat bloqueado
+            </button>
+          )}
+        </section>
+      ) : null}
 
       {(error || applyMutation.error || selectHelperMutation.error || rejectApplicationMutation.error || rejectHelperMutation.error) && (
         <p className="auth-message error">
@@ -529,18 +599,6 @@ export default function TaskDetail() {
 
       {!showDecisionGate && (
         <div className="two-actions">
-          {canOpenChat && (
-            <button
-              type="button"
-              className="icon-button message-action"
-              onClick={() => setChatOpen(true)}
-              aria-label="Abrir chat"
-              title="Abrir chat"
-            >
-              <img src={messageIcon} alt="" aria-hidden="true" />
-            </button>
-          )}
-
           {canApply && (
             <button
               type="button"
@@ -582,7 +640,7 @@ export default function TaskDetail() {
               className="secondary-action sticky-action"
               onClick={() => navigate(`/complete/${id}`, { state: { returnTo: taskPath } })}
             >
-              Confirmar finalización
+              {task.status === 'completed' ? 'Actualizar estado del pago' : 'Confirmar finalización'}
             </button>
           )}
 
@@ -625,7 +683,7 @@ export default function TaskDetail() {
       )}
 
       <TaskChatModal
-        open={chatOpen}
+        open={chatOpen && canOpenChat}
         task={task}
         onClose={() => setChatOpen(false)}
       />

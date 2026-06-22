@@ -187,7 +187,7 @@ export default function HomeHeader({
                       onClick={() => {
                         setNotificationsOpen(false)
                         if (firstUnreadConversation?.id) {
-                          onOpenChats?.(firstUnreadConversation.id)
+                          onOpenChats?.(firstUnreadConversation.id, firstUnreadConversation.taskId)
                           return
                         }
                         onOpenChats?.()

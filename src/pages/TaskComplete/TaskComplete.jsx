@@ -3,15 +3,45 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { getTaskById, markTaskCompleted } from '../../services/tasksService'
-import { releaseTaskPayment } from '../../services/paymentsService'
-import { getOrCreateChatByTaskId } from '../../services/chatService'
+import { getPaymentForTask, releaseTaskPayment } from '../../services/paymentsService'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import { resolveReturnTo } from '../../shared/utils/navigation'
 
-function wait(milliseconds) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, milliseconds)
+const INITIAL_LOAD_TIMEOUT_MS = 10_000
+const COMPLETE_TIMEOUT_MS = 12_000
+const RELEASE_TIMEOUT_MS = 15_000
+const INVALIDATION_TIMEOUT_MS = 8_000
+const REFRESH_TIMEOUT_MS = 5_000
+
+function withTimeout(promise, milliseconds, timeoutMessage, onTimeout = null) {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      onTimeout?.()
+      reject(new Error(timeoutMessage))
+    }, milliseconds)
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId)
+        resolve(value)
+      },
+      (error) => {
+        window.clearTimeout(timeoutId)
+        reject(error)
+      },
+    )
   })
+}
+
+function withAbortableTimeout(operation, milliseconds, timeoutMessage) {
+  const controller = new AbortController()
+
+  return withTimeout(
+    operation(controller.signal),
+    milliseconds,
+    timeoutMessage,
+    () => controller.abort(),
+  )
 }
 
 // Pantalla de cierre: el creador confirma completada. La valoración vive en public.reviews.
@@ -26,10 +56,15 @@ export default function TaskComplete() {
   const [task, setTask] = useState(null)
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState('')
 
   useEffect(() => {
     let cancelled = false
-    getTaskById(taskId)
+    withTimeout(
+      getTaskById(taskId),
+      INITIAL_LOAD_TIMEOUT_MS,
+      'La tarea está tardando más de lo normal en cargar.',
+    )
       .then((data) => {
         if (cancelled) return
         if (!data) {
@@ -47,8 +82,30 @@ export default function TaskComplete() {
     }
   }, [taskId])
 
+  async function refreshCompletionState() {
+    const [taskResult, paymentResult] = await Promise.allSettled([
+      withTimeout(getTaskById(taskId), REFRESH_TIMEOUT_MS, 'No pudimos refrescar la tarea a tiempo.'),
+      withTimeout(getPaymentForTask(taskId), REFRESH_TIMEOUT_MS, 'No pudimos refrescar el pago a tiempo.'),
+    ])
+
+    if (taskResult.status === 'fulfilled' && taskResult.value) {
+      setTask(taskResult.value)
+      queryClient.setQueryData(['task', taskId], taskResult.value)
+    }
+
+    if (paymentResult.status === 'fulfilled') {
+      setPaymentStatus(paymentResult.value?.status || '')
+      queryClient.setQueryData(['task-payment-status', taskId], paymentResult.value)
+    }
+
+    return {
+      task: taskResult.status === 'fulfilled' ? taskResult.value : null,
+      payment: paymentResult.status === 'fulfilled' ? paymentResult.value : null,
+    }
+  }
+
   async function handleConfirm() {
-    if (!task || ['completing', 'releasing'].includes(status)) return
+    if (!task || ['completing', 'releasing', 'syncing'].includes(status)) return
 
     let taskCompleted = task.status === 'completed'
     setError('')
@@ -60,43 +117,58 @@ export default function TaskComplete() {
 
       if (task.status !== 'completed') {
         setStatus('completing')
-        const updated = await markTaskCompleted(task.id)
+        const updated = await withAbortableTimeout(
+          (signal) => markTaskCompleted(task.id, { signal }),
+          COMPLETE_TIMEOUT_MS,
+          'No hemos podido confirmar el cierre a tiempo.',
+        )
         setTask(updated)
         queryClient.setQueryData(['task', task.id], updated)
         taskCompleted = true
       }
 
       setStatus('releasing')
+      const releaseResult = await withAbortableTimeout(
+        (signal) => releaseTaskPayment(task.id, { signal }),
+        RELEASE_TIMEOUT_MS,
+        'La actualización del pago está tardando más de lo normal.',
+      )
+      setPaymentStatus(releaseResult?.payment_status || '')
 
-      try {
-        await releaseTaskPayment(task.id)
-      } catch {
-        await wait(900)
-        await releaseTaskPayment(task.id)
-      }
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['task', task.id] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
-      ])
+      setStatus('syncing')
+      await withTimeout(
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['task', task.id] }),
+          queryClient.invalidateQueries({ queryKey: ['task-payment-status', task.id] }),
+          queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+          queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+        ]),
+        INVALIDATION_TIMEOUT_MS,
+        'No hemos podido confirmar todos los cambios a tiempo.',
+      )
+      await refreshCompletionState()
       setStatus('done')
     } catch (err) {
-      setStatus(taskCompleted ? 'release_error' : 'error')
+      const refreshedState = await refreshCompletionState()
+      const completionConfirmed =
+        taskCompleted || ['completed', 'closed'].includes(refreshedState.task?.status)
+
+      setStatus(completionConfirmed ? 'release_error' : 'error')
       setError(
-        taskCompleted
-          ? 'La tarea quedó completada, pero no pudimos actualizar el pago todavía. Puedes reintentarlo de forma segura.'
-          : err.message || 'No se pudo cerrar la tarea.',
+        completionConfirmed
+          ? 'La tarea se ha marcado como completada. El pago sigue actualizándose. Puedes volver al detalle o reintentar la actualización de forma segura.'
+          : `${err.message || 'No hemos podido confirmar todos los cambios.'} Vuelve al detalle de la tarea o inténtalo de nuevo.`,
       )
     }
   }
 
-  function handleReject() {
-    getOrCreateChatByTaskId(taskId)
-      .then((chat) => navigate(`/chat/${chat.id}`, { state: { returnTo: taskPath } }))
-      .catch((err) => {
-        setError(err?.message || 'No se pudo abrir el chat.')
-      })
+  function handleBackToChat() {
+    navigate(taskPath, {
+      state: {
+        openChat: true,
+        returnTo,
+      },
+    })
   }
 
   if (!task && !error) {
@@ -128,7 +200,7 @@ export default function TaskComplete() {
         <section className="completion-panel">
           <h1>Solo el solicitante puede cerrar la tarea</h1>
           <p className="muted">Espera a que la otra persona confirme el cierre.</p>
-          <button className="primary-action" onClick={handleReject}>
+          <button className="primary-action" onClick={handleBackToChat}>
             Volver al chat
           </button>
         </section>
@@ -160,7 +232,9 @@ export default function TaskComplete() {
           <p className="eyebrow">Cierre confirmado</p>
           <h1>La tarea está completada</h1>
           <p className="muted">
-            Gracias por confirmar el trabajo. La actualización del pago ya está en marcha y puedes valorar al helper.
+            {paymentStatus === 'released'
+              ? 'Gracias por confirmar el trabajo. El pago figura como liberado y puedes valorar al helper.'
+              : 'Gracias por confirmar el trabajo. La actualización del pago ya está en marcha y puedes valorar al helper.'}
           </p>
           <div className="two-actions">
             <button className="secondary-action" onClick={() => navigate(returnTo)}>
@@ -200,7 +274,41 @@ export default function TaskComplete() {
     )
   }
 
-  const actionPending = ['completing', 'releasing'].includes(status)
+  if (status === 'error') {
+    return (
+      <main className="app-screen center-screen">
+        <section className="completion-panel">
+          <p className="eyebrow">Cierre pendiente</p>
+          <h1>No hemos podido confirmar todos los cambios</h1>
+          <p className="muted">{error}</p>
+          <div className="two-actions">
+            <button className="secondary-action" onClick={() => navigate(returnTo)}>
+              Volver al detalle
+            </button>
+            <button className="primary-action" onClick={handleConfirm}>
+              Reintentar cierre
+            </button>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
+  const actionPending = ['completing', 'releasing', 'syncing'].includes(status)
+  const overlayCopy = status === 'releasing'
+    ? {
+        title: 'Actualizando el pago...',
+        message: 'La tarea ya está completada. Estamos iniciando la actualización segura del pago.',
+      }
+    : status === 'syncing'
+      ? {
+          title: 'Confirmando los cambios...',
+          message: 'Estamos refrescando el estado final de la tarea y del pago.',
+        }
+      : {
+          title: 'Cerrando tarea...',
+          message: 'Estamos guardando que el trabajo ha terminado.',
+        }
 
   return (
     <main className="app-screen center-screen">
@@ -213,7 +321,7 @@ export default function TaskComplete() {
         </p>
 
         <div className="two-actions">
-          <button className="secondary-action" onClick={handleReject} disabled={actionPending}>
+          <button className="secondary-action" onClick={handleBackToChat} disabled={actionPending}>
             No, volver al chat
           </button>
           <button className="success-action" onClick={handleConfirm} disabled={actionPending}>
@@ -225,12 +333,8 @@ export default function TaskComplete() {
       </section>
       <ActionStatusOverlay
         open={actionPending}
-        title={status === 'releasing' ? 'Cerrando tarea y actualizando pago...' : 'Confirmando la tarea...'}
-        message={
-          status === 'releasing'
-            ? 'La tarea ya está completada. Estamos iniciando la actualización segura del pago.'
-            : 'Estamos guardando que el trabajo ha terminado.'
-        }
+        title={overlayCopy.title}
+        message={overlayCopy.message}
       />
     </main>
   )

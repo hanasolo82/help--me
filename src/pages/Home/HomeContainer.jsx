@@ -61,6 +61,7 @@ function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
   const unreadConversations = (chats || []).filter((chat) => isUnreadConversation(chat, userId))
   const unreadConversationSummaries = unreadConversations.map((conversation) => ({
     id: conversation.id,
+    taskId: conversation.task_id || null,
     senderName: getConversationSenderName(conversation, userId),
     preview: conversation.latest_message?.deleted_at
       ? 'Mensaje eliminado'
@@ -241,15 +242,31 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenChats = useCallback(
-    (conversationId = null) => {
+    (conversationId = null, taskId = null) => {
+      const conversation = conversationId
+        ? chats.find((chat) => chat.id === conversationId)
+        : null
+      const resolvedTaskId = taskId || conversation?.task_id || null
+
+      if (resolvedTaskId) {
+        navigate(`/task/${resolvedTaskId}`, {
+          state: {
+            openChat: true,
+            conversationId,
+            returnTo: '/home',
+          },
+        })
+        return
+      }
+
       if (conversationId) {
-        navigate(`/chat/${conversationId}`)
+        navigate(`/chat/${conversationId}`, { state: { returnTo: '/chats' } })
         return
       }
 
       openChatsModal()
     },
-    [navigate, openChatsModal],
+    [chats, navigate, openChatsModal],
   )
 
   const handleOpenSettings = useCallback(() => {

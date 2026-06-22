@@ -59,6 +59,7 @@ export default function TaskReviewPage() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['task-review', taskId, task?.accepted_by || null] }),
+        queryClient.invalidateQueries({ queryKey: ['task-review-status', taskId, task?.accepted_by || null] }),
         queryClient.invalidateQueries({ queryKey: ['task-reviews', user?.id] }),
         queryClient.invalidateQueries({ queryKey: ['profile-reviews', task?.accepted_by] }),
         queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),

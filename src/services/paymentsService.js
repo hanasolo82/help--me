@@ -26,16 +26,22 @@ async function getAccessToken() {
   return accessToken
 }
 
-export async function getPaymentForTask(taskId) {
+export async function getPaymentForTask(taskId, { signal } = {}) {
   if (!supabase) {
     throw new Error('No hay una sesión de Supabase configurada.')
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('payments')
     .select('id, task_id, status, provider')
     .eq('task_id', taskId)
     .maybeSingle()
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw error
@@ -114,8 +120,8 @@ export async function continueWithExternalPayment(taskId) {
   return payload
 }
 
-export async function releaseTaskPayment(taskId) {
-  const payment = await getPaymentForTask(taskId)
+export async function releaseTaskPayment(taskId, { signal } = {}) {
+  const payment = await getPaymentForTask(taskId, { signal })
 
   if (payment.provider === 'external' || payment.status === 'external_agreed') {
     return {
@@ -135,6 +141,7 @@ export async function releaseTaskPayment(taskId) {
   try {
     response = await fetch(buildBackendUrl(`/api/payments/${payment.id}/release`), {
       method: 'POST',
+      signal,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',

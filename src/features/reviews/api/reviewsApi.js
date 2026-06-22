@@ -42,6 +42,24 @@ export async function getMyReviewForTask(taskId, reviewedUserId = null) {
   return data
 }
 
+export async function getTaskReviewForUser(taskId, reviewedUserId) {
+  if (!taskId || !reviewedUserId) return null
+
+  await requireUser()
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('id, task_id, reviewer_id, reviewed_user_id, rating, created_at')
+    .eq('task_id', taskId)
+    .eq('reviewed_user_id', reviewedUserId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 export async function getMyReviewsForTasks(taskIds = []) {
   const ids = [...new Set(taskIds.filter(Boolean))]
 

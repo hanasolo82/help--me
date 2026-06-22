@@ -20,9 +20,9 @@ export default function Chats() {
           {'<'}
         </button>
         <div>
-          <p className="eyebrow">Conversaciones</p>
-          <h1>Tus chats privados</h1>
-          <p className="muted">Solo veras conversaciones donde participas.</p>
+          <p className="eyebrow">Mensajes</p>
+          <h1>Chats de tus tareas</h1>
+          <p className="muted">Cada conversación se abre dentro de la tarea a la que pertenece.</p>
         </div>
       </header>
 
@@ -39,9 +39,20 @@ export default function Chats() {
       <ConversationList
         conversations={conversations}
         currentConversationId={null}
-        onSelectConversation={(conversation) =>
+        onSelectConversation={(conversation) => {
+          if (conversation.task_id) {
+            navigate(`/task/${conversation.task_id}`, {
+              state: {
+                openChat: true,
+                conversationId: conversation.id,
+                returnTo: '/chats',
+              },
+            })
+            return
+          }
+
           navigate(`/chat/${conversation.id}`, { state: { returnTo: '/chats' } })
-        }
+        }}
       />
     </main>
   )
