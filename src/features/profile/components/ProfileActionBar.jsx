@@ -2,8 +2,9 @@ import styles from '../styles/profilePublicView.module.css'
 
 export default function ProfileActionBar({
   isOwnProfile,
-  onContact,
-  onInviteToTask,
+  onPrimaryAction,
+  primaryActionLabel,
+  showPrimaryAction,
   onToggleFavorite,
   favoriteLabel,
   favoriteState,
@@ -14,13 +15,16 @@ export default function ProfileActionBar({
   }
 
   return (
-    <div className={styles.actionBar} role="toolbar" aria-label="Acciones rápidas del perfil">
-      <button type="button" className="primary-action" onClick={onContact}>
-        Pedir ayuda
-      </button>
-      <button type="button" className="secondary-action" onClick={onInviteToTask}>
-        Invitar
-      </button>
+    <div
+      className={`${styles.actionBar} ${showPrimaryAction ? '' : styles.actionBarSingle}`.trim()}
+      role="toolbar"
+      aria-label="Acciones rápidas del perfil"
+    >
+      {showPrimaryAction ? (
+        <button type="button" className="primary-action" onClick={onPrimaryAction}>
+          {primaryActionLabel}
+        </button>
+      ) : null}
       <button
         type="button"
         className="secondary-action"

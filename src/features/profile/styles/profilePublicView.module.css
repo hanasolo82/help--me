@@ -15,6 +15,25 @@
   width: 100%;
 }
 
+.profileNavigation {
+  position: sticky;
+  top: var(--hm-shell-sticky-top);
+  z-index: var(--hm-z-sticky-cta);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+  padding: 0.7rem;
+  border: 1px solid var(--hm-shell-card-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-card-bg);
+  box-shadow: var(--hm-shell-card-shadow);
+}
+
+.backButton {
+  min-width: 7rem;
+}
+
 .sidebar {
   display: grid;
   gap: 1rem;
@@ -130,48 +149,59 @@
   font-size: 1.05rem;
 }
 
-.sectionNav {
+.sectionStepper {
   display: grid;
-  gap: 0.5rem;
-}
-
-.sectionTabs {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.sectionTabsCompact {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.15rem;
-  scroll-snap-type: x proximity;
-}
-
-.sectionTab {
-  display: flex;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.75rem;
-  padding: 0.8rem 0.9rem;
+  align-items: center;
+}
+
+.sectionProgress {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.sectionProgress span {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sectionProgress strong {
+  overflow: hidden;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectionControls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sectionStepButton {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--hm-shell-card-border);
   background: var(--color-surface);
   color: var(--color-text);
   font-weight: 700;
-  text-decoration: none;
   box-shadow: var(--hm-shell-card-shadow);
-  white-space: nowrap;
-  scroll-snap-align: start;
+  cursor: pointer;
 }
 
-.sectionTab:hover {
+.sectionStepButton:not(:disabled):hover {
   border-color: color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
   transform: translateY(-1px);
 }
 
-.sectionTabActive {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-  border-color: color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
+.sectionStepButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .sidebarActions {
@@ -189,10 +219,6 @@
   display: grid;
   gap: 1rem;
   min-width: 0;
-}
-
-.mobileSectionNav {
-  display: block;
 }
 
 .sectionCard {
@@ -374,24 +400,11 @@
     0 6px 16px rgba(15, 23, 42, 0.04);
 }
 
-.sectionNavCompact {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.15rem;
-  scroll-snap-type: x proximity;
-}
-
-.sectionNavCompact .sectionNavItem {
-  white-space: nowrap;
-  scroll-snap-align: start;
-}
-
 .actionBar {
   position: sticky;
   bottom: var(--hm-shell-bottom-offset);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
   padding: 0.8rem;
   border: 1px solid var(--hm-shell-card-border);
@@ -406,6 +419,10 @@
   white-space: normal;
 }
 
+.actionBarSingle {
+  grid-template-columns: 1fr;
+}
+
 @media (min-width: 900px) {
   .layout {
     grid-template-columns: minmax(20rem, var(--hm-shell-sidebar-width)) minmax(0, 1fr);
@@ -414,11 +431,7 @@
 
   .sidebar {
     position: sticky;
-    top: var(--hm-shell-sticky-top);
-  }
-
-  .mobileSectionNav {
-    display: none;
+    top: calc(var(--hm-shell-sticky-top) + 5.5rem);
   }
 
   .overviewGrid {
@@ -437,10 +450,6 @@
 @media (max-width: 899px) {
   .layout {
     gap: 1rem;
-  }
-
-  .sidebar .sectionTabs {
-    display: none;
   }
 
   .sidebarGuest .sidebarActions {
@@ -510,15 +519,27 @@
     grid-template-columns: 1fr;
   }
 
-  .sectionTabsCompact,
-  .sectionNavCompact {
-    margin-inline: -0.15rem;
-    padding-inline: 0.15rem;
+  .profileNavigation {
+    top: 0.5rem;
+    grid-template-columns: 1fr;
+    padding: 0.6rem;
   }
 
-  .sectionTab {
-    padding: 0.68rem 0.78rem;
-    font-size: 0.9rem;
+  .backButton {
+    width: 100%;
+  }
+
+  .sectionStepper {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionControls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sectionStepButton {
+    width: 100%;
   }
 
   .sectionCard {
@@ -562,7 +583,8 @@
 .sidebar,
 .sidebarStatus,
 .sidebarStat,
-.sectionTab,
+.profileNavigation,
+.sectionStepButton,
 .sectionCard,
 .overviewCard,
 .trustMetricCard,
@@ -580,9 +602,4 @@
   background: var(--hm-color-primary);
   color: #ffffff;
   box-shadow: var(--hm-shadow-xs);
-}
-
-.sectionTabActive {
-  border-color: color-mix(in srgb, var(--hm-color-primary) 24%, var(--hm-color-border-subtle));
-  background: color-mix(in srgb, var(--hm-color-primary) 8%, var(--hm-color-surface));
 }

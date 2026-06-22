@@ -13,8 +13,9 @@ export default function ProfilePublicView({
   isOwnProfile,
   onEditProfile,
   onBack,
-  onContact,
-  onInviteToTask,
+  onPrimaryAction,
+  primaryActionLabel,
+  showPrimaryAction,
   onToggleFavorite,
   favoriteState,
   favoriteLabel,
@@ -34,8 +35,9 @@ export default function ProfilePublicView({
     isOwnProfile={isOwnProfile}
     onEditProfile={onEditProfile}
     onBack={onBack}
-    onContact={onContact}
-    onInviteToTask={onInviteToTask}
+    onPrimaryAction={onPrimaryAction}
+    primaryActionLabel={primaryActionLabel}
+    showPrimaryAction={showPrimaryAction}
     onToggleFavorite={onToggleFavorite}
     favoriteState={favoriteState}
     favoriteLabel={favoriteLabel}

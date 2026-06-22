@@ -1,5 +1,4 @@
 import styles from '../styles/profilePublicView.module.css'
-import ProfileSectionTabs from './ProfileSectionTabs'
 import ProfileOverviewPanel from './panels/ProfileOverviewPanel'
 import ProfileSkillsPanel from './panels/ProfileSkillsPanel'
 import ProfileTrustPanel from './panels/ProfileTrustPanel'
@@ -7,7 +6,6 @@ import ProfileReviewsPanel from './panels/ProfileReviewsPanel'
 import ProfileAvailabilityPanel from './panels/ProfileAvailabilityPanel'
 
 export default function ProfileMain({
-  sections = [],
   profile,
   reviews = [],
   skills = [],
@@ -19,10 +17,6 @@ export default function ProfileMain({
 }) {
   return (
     <main className={styles.main}>
-      <div className={styles.mobileSectionNav}>
-        <ProfileSectionTabs sections={sections} compact />
-      </div>
-
       <ProfileOverviewPanel profile={profile} reviews={reviews} />
       <ProfileSkillsPanel
         skills={skills}

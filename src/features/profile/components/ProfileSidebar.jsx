@@ -1,6 +1,5 @@
 import UserAvatar from '../../../shared/ui/UserAvatar'
 import styles from '../styles/profilePublicView.module.css'
-import ProfileSectionTabs from './ProfileSectionTabs'
 import {
   getHelperStatusCopy,
   getHelperStatusLabel,
@@ -13,14 +12,13 @@ export default function ProfileSidebar({
   profile,
   isOwnProfile,
   onEditProfile,
-  onBack,
-  onContact,
-  onInviteToTask,
+  onPrimaryAction,
+  primaryActionLabel,
+  showPrimaryAction,
   onToggleFavorite,
   favoriteLabel,
   isFavoriteLoading,
   favoriteState,
-  sections = [],
   helperAvailable = false,
 }) {
   const displayName = getProfileName(profile)
@@ -65,26 +63,18 @@ export default function ProfileSidebar({
         </div>
       </div>
 
-      <ProfileSectionTabs sections={sections} />
-
       <div className={styles.sidebarActions}>
         {isOwnProfile ? (
-          <>
-            <button type="button" className="primary-action" onClick={onEditProfile}>
-              Editar perfil
-            </button>
-            <button type="button" className="secondary-action" onClick={onBack}>
-              Atrás
-            </button>
-          </>
+          <button type="button" className="primary-action" onClick={onEditProfile}>
+            Editar perfil
+          </button>
         ) : (
           <>
-            <button type="button" className="primary-action" onClick={onContact}>
-              Pedir ayuda
-            </button>
-            <button type="button" className="secondary-action" onClick={onInviteToTask}>
-              Invitar a tarea
-            </button>
+            {showPrimaryAction ? (
+              <button type="button" className="primary-action" onClick={onPrimaryAction}>
+                {primaryActionLabel}
+              </button>
+            ) : null}
             <button
               type="button"
               className="secondary-action"

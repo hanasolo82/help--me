@@ -62,6 +62,13 @@
 - Confirmed Figma variables/styles are documented visually in frames, not published as local Figma variables/styles.
 - Scope remained documentation only; no code changes, lint, or build run.
 
+## Contextual profile navigation
+- Profile visits now keep a persistent `Volver` action and respect the originating task route.
+- Opening a helper from `/task/:id` no longer offers a conflicting new-task action or a duplicate return CTA.
+- Duplicate `Pedir ayuda` / `Invitar` actions were consolidated into one contextual primary action.
+- Profile sections now follow their real DOM order with one sequential `Anterior` / `Siguiente` control.
+- Removed the unused legacy section navigation component and its CSS selectors.
+
 ## Workflow + Figma styles implementation
 - Added `supabase/migrations/0039_task_applications_workflow.sql` to introduce `task_applications`, requester-side selection/rejection, helper-side application/withdrawal, and a safer `reject_assigned_helper` reset path.
 - Reframed helper action from accepting a task directly to offering/applying for a task.

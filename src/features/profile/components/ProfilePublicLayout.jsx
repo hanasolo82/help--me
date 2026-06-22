@@ -2,6 +2,7 @@ import styles from '../styles/profilePublicView.module.css'
 import ProfileSidebar from './ProfileSidebar'
 import ProfileMain from './ProfileMain'
 import ProfileActionBar from './ProfileActionBar'
+import ProfileSectionTabs from './ProfileSectionTabs'
 
 export default function ProfilePublicLayout({
   profile,
@@ -16,8 +17,9 @@ export default function ProfilePublicLayout({
   isOwnProfile,
   onEditProfile,
   onBack,
-  onContact,
-  onInviteToTask,
+  onPrimaryAction,
+  primaryActionLabel,
+  showPrimaryAction,
   onToggleFavorite,
   favoriteState,
   favoriteLabel,
@@ -26,24 +28,29 @@ export default function ProfilePublicLayout({
 }) {
   return (
     <div className={styles.page}>
+      <div className={styles.profileNavigation}>
+        <button type="button" className={`secondary-action ${styles.backButton}`} onClick={onBack}>
+          Volver
+        </button>
+        <ProfileSectionTabs sections={sections} />
+      </div>
+
       <div className={styles.layout}>
         <ProfileSidebar
           profile={profile}
           isOwnProfile={isOwnProfile}
           onEditProfile={onEditProfile}
-          onBack={onBack}
-          onContact={onContact}
-          onInviteToTask={onInviteToTask}
+          onPrimaryAction={onPrimaryAction}
+          primaryActionLabel={primaryActionLabel}
+          showPrimaryAction={showPrimaryAction}
           onToggleFavorite={onToggleFavorite}
           favoriteLabel={favoriteLabel}
           isFavoriteLoading={isFavoriteLoading}
           favoriteState={favoriteState}
-          sections={sections}
           helperAvailable={helperAvailable}
         />
 
         <ProfileMain
-          sections={sections}
           profile={profile}
           reviews={reviews}
           skills={skills}
@@ -57,8 +64,9 @@ export default function ProfilePublicLayout({
 
       <ProfileActionBar
         isOwnProfile={isOwnProfile}
-        onContact={onContact}
-        onInviteToTask={onInviteToTask}
+        onPrimaryAction={onPrimaryAction}
+        primaryActionLabel={primaryActionLabel}
+        showPrimaryAction={showPrimaryAction}
         onToggleFavorite={onToggleFavorite}
         favoriteLabel={favoriteLabel}
         favoriteState={favoriteState}

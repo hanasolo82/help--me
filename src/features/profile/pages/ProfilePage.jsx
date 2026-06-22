@@ -41,26 +41,28 @@ export default function ProfilePage() {
     () => [
       { id: 'resumen', label: 'Sobre mí' },
       { id: 'habilidades', label: 'Habilidades' },
-      { id: 'disponibilidad', label: 'Disponibilidad' },
-      { id: 'opiniones', label: 'Opiniones' },
       { id: 'confianza', label: 'Confianza' },
+      { id: 'opiniones', label: 'Opiniones' },
+      { id: 'disponibilidad', label: 'Disponibilidad' },
     ],
     [],
   )
+  const hasTaskContext = /^\/task\/[^/?#]+(?:[/?#]|$)/.test(returnTo)
 
   function handleToggleFavorite() {
     favoriteMutation.mutate()
   }
 
-  function handleInviteToTask() {
-    navigate('/create', { state: { helperId: profile?.id } })
-  }
-
-  function handleContact() {
+  function handlePrimaryAction() {
     if (!profile?.id) return
 
     setContactError('')
-    navigate('/create', { state: { helperId: profile.id } })
+    navigate('/create', {
+      state: {
+        helperId: profile.id,
+        returnTo: location.pathname,
+      },
+    })
   }
 
   if (isLoading && !profile) {
@@ -70,6 +72,9 @@ export default function ProfilePage() {
           <p className="eyebrow">Perfil</p>
           <h1>Cargando identidad pública...</h1>
           <p className="muted">Estamos trayendo reputación, skills, disponibilidad y confianza.</p>
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
+            Volver
+          </button>
         </section>
       </main>
     )
@@ -97,6 +102,9 @@ export default function ProfilePage() {
           <p className="eyebrow">Perfil</p>
           <h1>Perfil no encontrado</h1>
           <p className="muted">Puede que el usuario todavía no haya completado su onboarding.</p>
+          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
+            Volver
+          </button>
         </section>
       </main>
     )
@@ -125,8 +133,9 @@ export default function ProfilePage() {
         isOwnProfile={isOwnProfile}
         onEditProfile={() => navigate('/settings#perfil')}
         onBack={() => navigate(returnTo)}
-        onContact={handleContact}
-        onInviteToTask={handleInviteToTask}
+        onPrimaryAction={handlePrimaryAction}
+        primaryActionLabel="Pedir ayuda"
+        showPrimaryAction={!hasTaskContext}
         onToggleFavorite={handleToggleFavorite}
         favoriteState={favoriteState}
         favoriteLabel={favoriteLabel}
