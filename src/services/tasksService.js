@@ -602,6 +602,30 @@ export async function getTaskApplications(taskId) {
   return attachApplicationProfiles(data || [])
 }
 
+export async function getPendingTaskApplications(taskIds = []) {
+  const ids = [...new Set(taskIds.filter(Boolean))]
+
+  if (ids.length === 0) {
+    return []
+  }
+
+  assertSupabaseReady()
+  await requireUser('Necesitas iniciar sesion para ver los helpers interesados.')
+
+  const { data, error } = await supabase
+    .from('task_applications')
+    .select(APPLICATION_SELECT)
+    .in('task_id', ids)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    throw error
+  }
+
+  return attachApplicationProfiles(data || [])
+}
+
 export async function selectTaskHelper(applicationId) {
   await requireUser('Necesitas iniciar sesion para elegir helper.')
 

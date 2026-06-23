@@ -133,8 +133,19 @@
 - Added a 15-second release timeout and bounded state refresh to TaskComplete. A completed task now remains recoverable if payment release cannot be confirmed immediately.
 - Removed the hidden automatic release retry; the user receives an explicit, safe retry action instead.
 - Kept requester-to-helper review as the beta flow and documented helper-to-requester review as a deferred P2 product decision.
+
+## Phase 2B notification, closure and review continuity
+- Added requester notification polling for pending helper applications on open tasks; the Home bell now distinguishes helper interest from chat messages and opens the relevant `/task/:id`.
+- Aligned the interested-helper block with the normal TaskDetail content width on desktop.
+- Moved the relevant Requester or Helper avatar into the TaskDetail header and removed the duplicated two-profile summary hierarchy.
+- Reused the resilient `TaskComplete` flow as a non-dismissible TaskDetail modal with explicit `Volver` and `Cerrar tarea` actions.
+- Removed requester-facing payment-update language from closure success and recovery states.
+- Added an immediate post-closure review modal with helper identity, stars, optional comment, a safe skip path and a final return to Home.
+- Existing requester reviews remain passive as `Valoración publicada`; no second review action is shown.
 - Bounded TaskComplete initial loading, task completion and query invalidation so every blocking overlay has a finite exit.
 - Added explicit recovery screens for both unconfirmed closure and completed-task/payment-pending states, with no hidden retry.
 - Abort timed-out completion/release requests on the client before enabling manual retry, while retaining backend idempotency as the final safeguard.
 - Kept payment/release retry actions out of final `completed` task summaries; they now exist only inside explicit recovery states.
 - Gated `Valorar helper` behind a completed review lookup and replaced it with passive `Valoración publicada` copy after submission.
+- Made completion cache invalidation tolerant of individual query failures while preserving the global timeout.
+- Made the post-review success redirect honor a safe `returnTo`, with `/task/:id` remaining the default.

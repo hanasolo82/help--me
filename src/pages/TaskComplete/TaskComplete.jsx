@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
@@ -46,28 +47,39 @@ function withAbortableTimeout(operation, milliseconds, timeoutMessage) {
 }
 
 // Pantalla de cierre: el creador confirma completada. La valoración vive en public.reviews.
-export default function TaskComplete() {
-  const { id: taskId } = useParams()
+export default function TaskComplete({
+  embedded = false,
+  open = true,
+  taskId: embeddedTaskId = null,
+  initialTask = null,
+  onClose = null,
+  onCompleted = null,
+}) {
+  const { id: routeTaskId } = useParams()
+  const taskId = embeddedTaskId || routeTaskId
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const taskPath = `/task/${taskId}`
   const returnTo = resolveReturnTo(location.state?.returnTo, taskPath)
-  const [task, setTask] = useState(null)
+  const [task, setTask] = useState(initialTask)
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [paymentStatus, setPaymentStatus] = useState('')
+  const [, setPaymentStatus] = useState('')
   const helperReviewQuery = useQuery({
     queryKey: ['task-review-status', taskId, task?.accepted_by || null],
     queryFn: () => getTaskReviewForUser(taskId, task.accepted_by),
     enabled:
+      open &&
       Boolean(task?.accepted_by) &&
       ['completed', 'closed'].includes(task?.status),
     staleTime: 30_000,
   })
 
   useEffect(() => {
+    if (!open || !taskId) return undefined
+
     let cancelled = false
     withTimeout(
       getTaskById(taskId),
@@ -89,7 +101,35 @@ export default function TaskComplete() {
     return () => {
       cancelled = true
     }
-  }, [taskId])
+  }, [open, taskId])
+
+  function renderSurface(content) {
+    if (!embedded) {
+      return (
+        <main className="app-screen center-screen">
+          <section className="completion-panel">{content}</section>
+        </main>
+      )
+    }
+
+    if (!open || typeof document === 'undefined') {
+      return null
+    }
+
+    return createPortal(
+      <div className="task-flow-modal-backdrop">
+        <section
+          className="completion-panel task-flow-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="task-completion-title"
+        >
+          {content}
+        </section>
+      </div>,
+      document.body,
+    )
+  }
 
   async function refreshCompletionState() {
     const [taskResult, paymentResult] = await Promise.allSettled([
@@ -146,7 +186,7 @@ export default function TaskComplete() {
 
       setStatus('syncing')
       await withTimeout(
-        Promise.all([
+        Promise.allSettled([
           queryClient.invalidateQueries({ queryKey: ['task', task.id] }),
           queryClient.invalidateQueries({ queryKey: ['task-payment-status', task.id] }),
           queryClient.invalidateQueries({ queryKey: ['tasks'] }),
@@ -157,6 +197,7 @@ export default function TaskComplete() {
       )
       await refreshCompletionState()
       setStatus('done')
+      onCompleted?.()
     } catch (err) {
       const refreshedState = await refreshCompletionState()
       const completionConfirmed =
@@ -165,13 +206,27 @@ export default function TaskComplete() {
       setStatus(completionConfirmed ? 'release_error' : 'error')
       setError(
         completionConfirmed
-          ? 'La tarea se ha marcado como completada. El pago sigue actualizándose. Puedes volver al detalle o reintentar la actualización de forma segura.'
+          ? 'La tarea se ha marcado como completada, pero no hemos podido confirmar todos los cambios. Puedes volver al detalle o reintentar la confirmación.'
           : `${err.message || 'No hemos podido confirmar todos los cambios.'} Vuelve al detalle de la tarea o inténtalo de nuevo.`,
       )
     }
   }
 
+  function handleReturn() {
+    if (embedded) {
+      onClose?.()
+      return
+    }
+
+    navigate(returnTo)
+  }
+
   function handleBackToChat() {
+    if (embedded) {
+      onClose?.()
+      return
+    }
+
     navigate(taskPath, {
       state: {
         openChat: true,
@@ -181,72 +236,57 @@ export default function TaskComplete() {
   }
 
   if (!task && !error) {
-    return (
-      <main className="app-screen center-screen">
-        <p className="muted">Cargando tarea...</p>
-      </main>
-    )
+    return renderSurface(<p className="muted">Cargando tarea...</p>)
   }
 
   if (!task) {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <p className="auth-message error">{error}</p>
-          <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
-            Volver
-          </button>
-        </section>
-      </main>
+    return renderSurface(
+      <>
+        <p className="auth-message error">{error}</p>
+        <button type="button" className="secondary-action" onClick={handleReturn}>
+          Volver
+        </button>
+      </>,
     )
   }
 
   const isRequester = user?.id === task.created_by
 
   if (!isRequester) {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <h1>Solo el solicitante puede cerrar la tarea</h1>
-          <p className="muted">Espera a que la otra persona confirme el cierre.</p>
-          <button className="primary-action" onClick={handleBackToChat}>
-            Volver al chat
-          </button>
-        </section>
-      </main>
+    return renderSurface(
+      <>
+        <h1 id="task-completion-title">Solo el solicitante puede cerrar la tarea</h1>
+        <p className="muted">Espera a que la otra persona confirme el cierre.</p>
+        <button className="primary-action" onClick={handleBackToChat}>
+          Volver al detalle
+        </button>
+      </>,
     )
   }
 
   if (!['in_progress', 'completed'].includes(task.status)) {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <h1>La tarea aún no se puede cerrar</h1>
-          <p className="muted">
-            El cierre solo está disponible cuando la tarea ya está en curso. El chat se desbloqueará cuando el pago
-            esté confirmado.
-          </p>
-          <button className="secondary-action" onClick={() => navigate(returnTo)}>
-            Volver al detalle
-          </button>
-        </section>
-      </main>
+    return renderSurface(
+      <>
+        <h1 id="task-completion-title">La tarea aún no se puede cerrar</h1>
+        <p className="muted">
+          El cierre solo está disponible cuando la tarea ya está en curso.
+        </p>
+        <button className="secondary-action" onClick={handleReturn}>
+          Volver al detalle
+        </button>
+      </>,
     )
   }
 
   if (status === 'done') {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <p className="eyebrow">Cierre confirmado</p>
-          <h1>La tarea está completada</h1>
-          <p className="muted">
-            {paymentStatus === 'released'
-              ? 'Gracias por confirmar el trabajo. El pago figura como liberado y puedes valorar al helper.'
-              : 'Gracias por confirmar el trabajo. La actualización del pago ya está en marcha y puedes valorar al helper.'}
-          </p>
+    return renderSurface(
+      <>
+        <p className="eyebrow">Cierre confirmado</p>
+        <h1 id="task-completion-title">La tarea está completada</h1>
+        <p className="muted">Gracias por confirmar que la ayuda ha terminado.</p>
+        {!embedded ? (
           <div className="two-actions">
-            <button className="secondary-action" onClick={() => navigate(returnTo)}>
+            <button className="secondary-action" onClick={handleReturn}>
               Volver al detalle
             </button>
             {task.accepted_by && helperReviewQuery.isLoading ? (
@@ -262,93 +302,92 @@ export default function TaskComplete() {
               </button>
             ) : null}
           </div>
-        </section>
-      </main>
+        ) : null}
+      </>,
     )
   }
 
   if (status === 'release_error') {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <p className="eyebrow">Pago pendiente de actualizar</p>
-          <h1>La tarea ya está completada</h1>
-          <p className="muted">{error}</p>
-          <div className="two-actions">
-            <button className="secondary-action" onClick={() => navigate(returnTo)}>
-              Volver al detalle
-            </button>
-            <button className="primary-action" onClick={handleConfirm}>
-              Reintentar actualización del pago
-            </button>
-          </div>
-        </section>
-      </main>
+    return renderSurface(
+      <>
+        <p className="eyebrow">Confirmación pendiente</p>
+        <h1 id="task-completion-title">La tarea ya está completada</h1>
+        <p className="muted">{error}</p>
+        <div className="two-actions">
+          <button className="secondary-action" onClick={handleReturn}>
+            Volver al detalle
+          </button>
+          <button className="primary-action" onClick={handleConfirm}>
+            Reintentar confirmación
+          </button>
+        </div>
+      </>,
     )
   }
 
   if (status === 'error') {
-    return (
-      <main className="app-screen center-screen">
-        <section className="completion-panel">
-          <p className="eyebrow">Cierre pendiente</p>
-          <h1>No hemos podido confirmar todos los cambios</h1>
-          <p className="muted">{error}</p>
-          <div className="two-actions">
-            <button className="secondary-action" onClick={() => navigate(returnTo)}>
-              Volver al detalle
-            </button>
-            <button className="primary-action" onClick={handleConfirm}>
-              Reintentar cierre
-            </button>
-          </div>
-        </section>
-      </main>
+    return renderSurface(
+      <>
+        <p className="eyebrow">Cierre pendiente</p>
+        <h1 id="task-completion-title">No hemos podido confirmar todos los cambios</h1>
+        <p className="muted">{error}</p>
+        <div className="two-actions">
+          <button className="secondary-action" onClick={handleReturn}>
+            Volver al detalle
+          </button>
+          <button className="primary-action" onClick={handleConfirm}>
+            Reintentar cierre
+          </button>
+        </div>
+      </>,
     )
   }
 
   const actionPending = ['completing', 'releasing', 'syncing'].includes(status)
   const overlayCopy = status === 'releasing'
     ? {
-        title: 'Actualizando el pago...',
-        message: 'La tarea ya está completada. Estamos iniciando la actualización segura del pago.',
+        title: 'Confirmando el cierre...',
+        message: 'La tarea ya está completada. Estamos terminando la confirmación de forma segura.',
       }
     : status === 'syncing'
       ? {
           title: 'Confirmando los cambios...',
-          message: 'Estamos refrescando el estado final de la tarea y del pago.',
+          message: 'Estamos comprobando el estado final de la tarea.',
         }
       : {
           title: 'Cerrando tarea...',
           message: 'Estamos guardando que el trabajo ha terminado.',
         }
 
-  return (
-    <main className="app-screen center-screen">
-      <section className="completion-panel">
+  const confirmationContent = (
+    <>
         <p className="eyebrow">Tarea</p>
-        <h1>Confirma que la tarea se ha completado</h1>
+        <h1 id="task-completion-title">¿Quieres cerrar esta tarea?</h1>
         <p className="muted">
-          {task.title}. Al cerrar la tarea confirmas que el trabajo terminó y HelpMe puede iniciar la liberación del
-          pago si aplica.
+          Confirma solo cuando la ayuda se haya completado. Después podrás valorar al helper.
         </p>
 
         <div className="two-actions">
-          <button className="secondary-action" onClick={handleBackToChat} disabled={actionPending}>
-            No, volver al chat
+          <button className="secondary-action" onClick={handleReturn} disabled={actionPending}>
+            Volver
           </button>
           <button className="success-action" onClick={handleConfirm} disabled={actionPending}>
-            {actionPending ? 'Cerrando...' : 'Sí, cerrar tarea'}
+            {actionPending ? 'Cerrando...' : 'Cerrar tarea'}
           </button>
         </div>
 
         {error && <p className="auth-message error">{error}</p>}
-      </section>
+    </>
+  )
+
+  return (
+    <>
+      {renderSurface(confirmationContent)}
       <ActionStatusOverlay
         open={actionPending}
         title={overlayCopy.title}
         message={overlayCopy.message}
       />
-    </main>
+    </>
   )
 }

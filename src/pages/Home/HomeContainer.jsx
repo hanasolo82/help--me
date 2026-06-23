@@ -3,7 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
-import { cancelTask, getMyTasks, publishTask } from '../../services/tasksService'
+import {
+  cancelTask,
+  getMyTasks,
+  getPendingTaskApplications,
+  publishTask,
+} from '../../services/tasksService'
 import { searchLocationAutocomplete } from '../../features/onboarding/services/locationAutocompleteService'
 import { useHomeModals } from './hooks/useHomeModals'
 import { useHomeFilters } from './hooks/useHomeFilters'
@@ -47,12 +52,19 @@ function getConversationSenderName(conversation, userId) {
   return profile.display_name || profile.full_name || profile.username || 'Alguien'
 }
 
-function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
+function getApplicationHelperName(application) {
+  const profile = application?.helper_profile || {}
+  return profile.display_name || profile.full_name || profile.username || 'Un helper'
+}
+
+function buildNotificationSummary(chats = [], userId, requesterTasks = [], pendingApplications = []) {
   if (!userId) {
     return {
       unreadMessageCount: 0,
       unreadConversationCount: 0,
       unreadConversations: [],
+      interestedHelperCount: 0,
+      interestedTasks: [],
       pendingConfirmationCount: 0,
       pendingConfirmationTasks: [],
     }
@@ -74,11 +86,27 @@ function buildNotificationSummary(chats = [], userId, requesterTasks = []) {
       title: task.title,
       helperName: getAcceptedHelperName(task),
     }))
+  const tasksById = new Map((requesterTasks || []).map((task) => [task.id, task]))
+  const interestedTasksById = new Map()
+
+  for (const application of pendingApplications || []) {
+    const task = tasksById.get(application.task_id)
+    if (!task || interestedTasksById.has(task.id)) continue
+
+    interestedTasksById.set(task.id, {
+      id: task.id,
+      title: task.title,
+      helperName: getApplicationHelperName(application),
+    })
+  }
+  const interestedTasks = [...interestedTasksById.values()]
 
   return {
     unreadMessageCount: unreadConversations.length,
     unreadConversationCount: unreadConversations.length,
     unreadConversations: unreadConversationSummaries,
+    interestedHelperCount: pendingApplications.length,
+    interestedTasks,
     pendingConfirmationCount: pendingConfirmationTasks.length,
     pendingConfirmationTasks,
   }
@@ -169,10 +197,29 @@ export default function HomeContainer() {
     queryFn: () => getMyTasks(profile?.id),
     enabled: Boolean(profile?.id),
     staleTime: 15_000,
+    refetchInterval: 15_000,
+  })
+  const openRequesterTaskIds = useMemo(
+    () => (requesterTasksQuery.data || [])
+      .filter((task) => task.status === 'open')
+      .map((task) => task.id),
+    [requesterTasksQuery.data],
+  )
+  const pendingApplicationsQuery = useQuery({
+    queryKey: ['pending-task-applications', profile?.id, openRequesterTaskIds],
+    queryFn: () => getPendingTaskApplications(openRequesterTaskIds),
+    enabled: Boolean(profile?.id) && openRequesterTaskIds.length > 0,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
   })
   const notificationSummary = useMemo(
-    () => buildNotificationSummary(chats, user?.id, requesterTasksQuery.data || []),
-    [chats, requesterTasksQuery.data, user?.id],
+    () => buildNotificationSummary(
+      chats,
+      user?.id,
+      requesterTasksQuery.data || [],
+      pendingApplicationsQuery.data || [],
+    ),
+    [chats, pendingApplicationsQuery.data, requesterTasksQuery.data, user?.id],
   )
 
   const handleLogout = useCallback(async () => {

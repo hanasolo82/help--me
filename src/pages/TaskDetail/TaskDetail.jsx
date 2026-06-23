@@ -17,6 +17,8 @@ import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import { resolveReturnTo } from '../../shared/utils/navigation'
+import TaskComplete from '../TaskComplete/TaskComplete'
+import TaskReviewPromptModal from './TaskReviewPromptModal'
 
 const TASK_STATUS_LABELS = {
   draft: 'Borrador',
@@ -50,7 +52,7 @@ function getHumanTaskStatus({ taskStatus, isOwner, isHelper, helperReviewPublish
   if (taskStatus === 'closed') {
     return isHelper
       ? 'Tarea cerrada · ingreso confirmado'
-      : 'Tarea cerrada · pago liberado'
+      : 'Tarea cerrada'
   }
 
   return formatTaskStatus(taskStatus)
@@ -80,7 +82,7 @@ function getTurnContext({ status, isOwner, isHelper, canApply, alreadyApplied, h
         ? { tone: 'none', detail: 'Tarea completada y valorada.' }
         : { tone: 'you', lead: 'Te toca a ti:', detail: 'valora al helper.' }
     }
-    if (status === 'closed') return { tone: 'none', detail: 'Tarea cerrada. Pago liberado.' }
+    if (status === 'closed') return { tone: 'none', detail: 'Tarea cerrada.' }
     if (status === 'cancelled') return { tone: 'none', detail: 'Tarea cancelada.' }
     return { tone: 'none', detail: '' }
   }
@@ -127,6 +129,8 @@ export default function TaskDetail() {
   const taskPath = `/task/${id}`
   const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
   const [chatOpen, setChatOpen] = useState(() => Boolean(location.state?.openChat))
+  const [completionOpen, setCompletionOpen] = useState(false)
+  const [reviewPromptOpen, setReviewPromptOpen] = useState(false)
   const [taskLocationLabel, setTaskLocationLabel] = useState('')
   const [taskLocationStatus, setTaskLocationStatus] = useState('idle')
 
@@ -189,8 +193,6 @@ export default function TaskDetail() {
   const helperProfile = task?.accepted_profile || {}
   const creatorName = creatorProfile.display_name || creatorProfile.full_name || creatorProfile.username || 'Vecino'
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Ayudante'
-  const creatorInitial = getAvatarInitial(creatorName)
-  const helperInitial = getAvatarInitial(helperName)
   const priceEuros = Number(task?.price ?? 0)
   const hasCoordinates = Number.isFinite(Number(task?.lat)) && Number.isFinite(Number(task?.lng))
 
@@ -311,6 +313,13 @@ export default function TaskDetail() {
       : task?.status === 'open'
         ? 'El chat estará disponible cuando elijas helper y confirmes la tarea.'
         : 'El chat todavía no está disponible para esta tarea.'
+  const contextualProfile = isOwner && task?.accepted_by ? helperProfile : creatorProfile
+  const contextualName = isOwner && task?.accepted_by ? helperName : creatorName
+  const contextualRole = isOwner
+    ? task?.accepted_by
+      ? 'Helper'
+      : 'Requester · Tú'
+    : 'Requester'
 
   async function handleApply() {
     applyMutation.mutate()
@@ -378,9 +387,21 @@ export default function TaskDetail() {
         <button className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
           ←
         </button>
-        <div>
+        <div className="task-header-copy">
           <p className="eyebrow">{roleEyebrow}</p>
           <h1>{task.title}</h1>
+          <div className="task-header-person">
+            <UserAvatar
+              src={contextualProfile.avatar_url}
+              name={contextualName}
+              alt={contextualName}
+              size="sm"
+            />
+            <div>
+              <span>{contextualRole}</span>
+              <strong>{contextualName}</strong>
+            </div>
+          </div>
           <p className="task-header-status">{humanTaskStatus}</p>
           {turnContext.tone === 'none' ? (
             turnContext.detail ? <p className="task-header-turn">{turnContext.detail}</p> : null
@@ -396,42 +417,6 @@ export default function TaskDetail() {
       </header>
 
       <section className="detail-panel task-overview-panel" aria-label="Resumen de la tarea">
-        <div className="task-people-grid">
-          <article className="task-person-card">
-            <UserAvatar
-              src={creatorProfile.avatar_url}
-              name={creatorName || creatorInitial}
-              alt={creatorName}
-              size="sm"
-              className="avatar-small"
-            />
-            <div>
-              <span>{isOwner ? 'Requester · tú' : 'Requester'}</span>
-              <strong>{creatorName}</strong>
-              <p>Solicita y confirma la ayuda</p>
-            </div>
-          </article>
-
-          <article className="task-person-card">
-            {task.accepted_by ? (
-              <UserAvatar
-                src={helperProfile.avatar_url}
-                name={helperName || helperInitial}
-                alt={helperName}
-                size="sm"
-                className="avatar-small"
-              />
-            ) : (
-              <span className="task-person-placeholder" aria-hidden="true">—</span>
-            )}
-            <div>
-              <span>{isHelper ? 'Helper · tú' : 'Helper'}</span>
-              <strong>{task.accepted_by ? helperName : 'Sin helper elegido'}</strong>
-              <p>{task.accepted_by ? 'Persona asignada a la tarea' : 'Pendiente de selección'}</p>
-            </div>
-          </article>
-        </div>
-
         <div className="task-facts-grid">
           <div className="task-fact">
             <span>Ubicación de la tarea</span>
@@ -685,7 +670,7 @@ export default function TaskDetail() {
             <button
               type="button"
               className="secondary-action sticky-action"
-              onClick={() => navigate(`/complete/${id}`, { state: { returnTo: taskPath } })}
+              onClick={() => setCompletionOpen(true)}
             >
               Confirmar finalización
             </button>
@@ -720,6 +705,18 @@ export default function TaskDetail() {
         task={task}
         onClose={() => setChatOpen(false)}
       />
+      <TaskComplete
+        embedded
+        open={completionOpen}
+        taskId={id}
+        initialTask={task}
+        onClose={() => setCompletionOpen(false)}
+        onCompleted={() => {
+          setCompletionOpen(false)
+          setReviewPromptOpen(true)
+        }}
+      />
+      {reviewPromptOpen ? <TaskReviewPromptModal task={task} /> : null}
       <ActionStatusOverlay
         open={Boolean(actionStatus)}
         title={actionStatus?.title}

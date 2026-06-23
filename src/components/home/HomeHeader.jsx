@@ -64,10 +64,13 @@ export default function HomeHeader({
   const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
   const unreadConversations = notificationSummary?.unreadConversations || []
   const firstUnreadConversation = unreadConversations[0] || null
+  const interestedHelperCount = notificationSummary?.interestedHelperCount || 0
+  const interestedTasks = notificationSummary?.interestedTasks || []
+  const firstInterestedTask = interestedTasks[0] || null
   const pendingConfirmationCount = notificationSummary?.pendingConfirmationCount || 0
   const pendingConfirmationTasks = notificationSummary?.pendingConfirmationTasks || []
   const firstPendingConfirmationTask = pendingConfirmationTasks[0] || null
-  const totalNotificationCount = unreadMessageCount + pendingConfirmationCount
+  const totalNotificationCount = unreadMessageCount + interestedHelperCount + pendingConfirmationCount
   const notificationBadge = totalNotificationCount > 99 ? '99+' : String(totalNotificationCount)
 
   const primaryItems = [
@@ -198,6 +201,32 @@ export default function HomeHeader({
                   </section>
                 ) : null}
 
+                {interestedHelperCount > 0 ? (
+                  <section className={styles.notificationSection}>
+                    <p className={styles.notificationSectionLabel}>Helper interesado</p>
+                    <p className={styles.notificationTitle}>
+                      {firstInterestedTask
+                        ? `${firstInterestedTask.helperName} se ha ofrecido para ayudarte.`
+                        : 'Un helper se ha ofrecido para ayudarte.'}
+                    </p>
+                    <p className={styles.notificationMeta}>
+                      {firstInterestedTask?.title
+                        ? `Revisa las personas interesadas en “${firstInterestedTask.title}”.`
+                        : 'Revisa su perfil antes de elegir.'}
+                    </p>
+                    <button
+                      type="button"
+                      className={styles.notificationCta}
+                      onClick={() => {
+                        setNotificationsOpen(false)
+                        onReviewAcceptedTask?.(firstInterestedTask?.id)
+                      }}
+                    >
+                      Ver interesados
+                    </button>
+                  </section>
+                ) : null}
+
                 {pendingConfirmationCount > 0 ? (
                   <section className={styles.notificationSection}>
                     <p className={styles.notificationSectionLabel}>Oferta pendiente</p>
@@ -225,7 +254,9 @@ export default function HomeHeader({
                 {totalNotificationCount === 0 ? (
                   <>
                     <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
-                    <p className={styles.notificationMeta}>Cuando lleguen mensajes pendientes, aparecerán aquí.</p>
+                    <p className={styles.notificationMeta}>
+                      Cuando lleguen mensajes u ofertas de ayuda, aparecerán aquí.
+                    </p>
                   </>
                 ) : null}
 

@@ -35,6 +35,7 @@ export default function TaskReviewPage() {
   const [reviewPublished, setReviewPublished] = useState(false)
   const taskPath = `/task/${taskId}`
   const returnTo = resolveReturnTo(location.state?.returnTo, taskPath)
+  const returnsToTask = returnTo === taskPath
 
   const isRequester = Boolean(task) && user?.id === task.created_by
   const helperProfile = task?.accepted_profile || null
@@ -73,16 +74,16 @@ export default function TaskReviewPage() {
     if (!reviewPublished) return undefined
 
     const timer = window.setTimeout(() => {
-      navigate(taskPath, {
+      navigate(returnTo, {
         replace: true,
-        state: { reviewSaved: true, returnTo },
+        state: returnsToTask ? { reviewSaved: true, returnTo: taskPath } : undefined,
       })
     }, 1400)
 
     return () => {
       window.clearTimeout(timer)
     }
-  }, [navigate, returnTo, reviewPublished, taskPath])
+  }, [navigate, returnTo, returnsToTask, reviewPublished, taskPath])
 
   function toggleTag(tag) {
     setSelectedTags((current) => (
@@ -150,9 +151,14 @@ export default function TaskReviewPage() {
             <button
               type="button"
               className="primary-action"
-              onClick={() => navigate(taskPath, { replace: true, state: { reviewSaved: true, returnTo } })}
+              onClick={() =>
+                navigate(returnTo, {
+                  replace: true,
+                  state: returnsToTask ? { reviewSaved: true, returnTo: taskPath } : undefined,
+                })
+              }
             >
-              Volver al detalle
+              {returnsToTask ? 'Volver al detalle' : 'Continuar'}
             </button>
             <button type="button" className="secondary-action" onClick={() => navigate('/home')}>
               Volver al inicio
