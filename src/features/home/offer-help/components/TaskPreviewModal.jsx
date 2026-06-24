@@ -38,7 +38,8 @@ export default function TaskPreviewModal({
 
   const creator = task.creator_profile || {}
   const creatorName = creator.display_name || creator.full_name || creator.username || 'Vecino'
-  const canContact = task.status === 'open' && task.created_by !== currentUserId
+  const hasActiveOffer = ['pending', 'selected'].includes(task.current_user_application?.status)
+  const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
   const publishedAt = task.published_at || task.created_at
 
   return (
@@ -86,7 +87,9 @@ export default function TaskPreviewModal({
           <p className={styles.description}>{task.description}</p>
 
           <div className={styles.statusNote}>
-            {canContact
+            {hasActiveOffer
+              ? 'Oferta enviada. Puedes abrir el detalle para revisar el estado de tu candidatura.'
+              : canContact
               ? 'Puedes revisar la solicitud, ofrecerte, guardarla o verla en el mapa.'
               : 'Esta tarea ya no está abierta para nuevas ofertas, o pertenece a tu propio perfil. Puedes verla, pero no ofrecerte.'}
           </div>
@@ -100,7 +103,7 @@ export default function TaskPreviewModal({
             {isFavorite ? 'Quitar favorito' : 'Añadir favorito'}
           </button>
           <button type="button" className="secondary-action" onClick={() => onContact?.(task)} disabled={!canContact}>
-            {canContact ? 'Ofrecerme' : 'No disponible'}
+            {hasActiveOffer ? 'Oferta enviada' : canContact ? 'Ofrecerme' : 'No disponible'}
           </button>
           <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
             Ver detalle

@@ -230,6 +230,37 @@ async function attachTaskApplicationCounts(tasks) {
   }))
 }
 
+async function attachCurrentHelperApplications(tasks, helperId) {
+  if (!tasks?.length || !helperId) {
+    return tasks || []
+  }
+
+  const taskIds = tasks.map((task) => task.id).filter(Boolean)
+  if (taskIds.length === 0) {
+    return tasks
+  }
+
+  const { data, error } = await supabase
+    .from('task_applications')
+    .select('id, task_id, status')
+    .eq('helper_id', helperId)
+    .in('task_id', taskIds)
+    .in('status', ['pending', 'selected'])
+
+  if (error) {
+    throw error
+  }
+
+  const applicationsByTaskId = new Map(
+    (data || []).map((application) => [application.task_id, application]),
+  )
+
+  return tasks.map((task) => ({
+    ...task,
+    current_user_application: applicationsByTaskId.get(task.id) || null,
+  }))
+}
+
 // Nota funcion:
 // Crea una tarea en public.tasks usando el usuario autenticado como created_by.
 // Tambien fuerza status='draft' para que la tarea se guarde sin publicar hasta que el usuario lo decida.
@@ -396,8 +427,9 @@ export async function getAvailableTasksForHelper(profile, { category } = {}) {
 
   const tasksWithProfiles = await attachTaskProfiles(data)
   const publicTasks = keepTasksWithAvailableCreators(tasksWithProfiles).filter((task) => hasMatchingCategory(task, category))
+  const tasksWithApplications = await attachCurrentHelperApplications(publicTasks, helperId)
 
-  return sortHelperTasks(publicTasks)
+  return sortHelperTasks(tasksWithApplications)
 }
 
 // Nota funcion:

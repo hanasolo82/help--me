@@ -203,12 +203,15 @@ export default function TaskComplete({
       const completionConfirmed =
         taskCompleted || ['completed', 'closed'].includes(refreshedState.task?.status)
 
-      setStatus(completionConfirmed ? 'release_error' : 'error')
-      setError(
-        completionConfirmed
-          ? 'La tarea se ha marcado como completada, pero no hemos podido confirmar todos los cambios. Puedes volver al detalle o reintentar la confirmación.'
-          : `${err.message || 'No hemos podido confirmar todos los cambios.'} Vuelve al detalle de la tarea o inténtalo de nuevo.`,
-      )
+      if (completionConfirmed) {
+        console.warn('[TaskComplete] post-completion confirmation did not finish', err)
+        setStatus('done')
+        onCompleted?.()
+        return
+      }
+
+      setStatus('error')
+      setError(`${err.message || 'No hemos podido confirmar todos los cambios.'} Vuelve al detalle de la tarea o inténtalo de nuevo.`)
     }
   }
 
@@ -303,24 +306,6 @@ export default function TaskComplete({
             ) : null}
           </div>
         ) : null}
-      </>,
-    )
-  }
-
-  if (status === 'release_error') {
-    return renderSurface(
-      <>
-        <p className="eyebrow">Confirmación pendiente</p>
-        <h1 id="task-completion-title">La tarea ya está completada</h1>
-        <p className="muted">{error}</p>
-        <div className="two-actions">
-          <button className="secondary-action" onClick={handleReturn}>
-            Volver al detalle
-          </button>
-          <button className="primary-action" onClick={handleConfirm}>
-            Reintentar confirmación
-          </button>
-        </div>
       </>,
     )
   }

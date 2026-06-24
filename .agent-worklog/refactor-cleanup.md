@@ -142,6 +142,15 @@
 - Removed requester-facing payment-update language from closure success and recovery states.
 - Added an immediate post-closure review modal with helper identity, stars, optional comment, a safe skip path and a final return to Home.
 - Existing requester reviews remain passive as `Valoración publicada`; no second review action is shown.
+
+## Phase 2B final offer, checkout, closure and dropdown fixes
+- Enriched helper Home tasks with the current user's active application so every helper surface shows passive `Oferta enviada` instead of allowing a duplicate offer.
+- Kept multiple interested helpers in a responsive three-action grid on desktop and a single-column action stack on mobile.
+- Made Checkout feedback immediate, removed the task invalidation before redirect and added development timing logs for session lookup, backend request and redirect readiness.
+- Removed the pre-payment PaymentIntent discovery loop from Checkout Session creation; the webhook remains responsible for recording the PaymentIntent once Stripe creates it.
+- Added development-only backend timing by checkout phase to identify Supabase, Connect or Stripe latency without changing payment architecture.
+- Treats a reliably `completed` task as the closure happy path even if a later refresh/release confirmation call fails, so the requester continues to review/thanks instead of seeing recovery copy.
+- Constrained shared dropdowns to the viewport, flips them above the trigger when needed and enables internal scrolling so `Cerrar sesión` remains reachable.
 - Bounded TaskComplete initial loading, task completion and query invalidation so every blocking overlay has a finite exit.
 - Added explicit recovery screens for both unconfirmed closure and completed-task/payment-pending states, with no hidden retry.
 - Abort timed-out completion/release requests on the client before enabling manual retry, while retaining backend idempotency as the final safeguard.

@@ -3,6 +3,9 @@
   z-index: 10000;
   display: grid;
   gap: 0.45rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-xl);
   background: var(--hm-color-surface);

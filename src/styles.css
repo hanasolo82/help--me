@@ -1626,10 +1626,12 @@ p {
 }
 
 .application-card .two-actions {
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .application-card .two-actions > button {
+  width: 100%;
   max-width: none;
 }
 
@@ -1713,6 +1715,10 @@ p {
 }
 
 @media (max-width: 42rem) {
+  .application-card .two-actions {
+    grid-template-columns: 1fr;
+  }
+
   .decision-gate,
   .applications-gate {
     margin-bottom: var(--hm-space-sticky);

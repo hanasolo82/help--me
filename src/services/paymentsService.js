@@ -54,10 +54,17 @@ export async function getPaymentForTask(taskId, { signal } = {}) {
   return data
 }
 
-export async function startTaskCheckout(taskId) {
+export async function startTaskCheckout(taskId, { onTiming } = {}) {
+  const startedAt = performance.now()
+  const sessionStartedAt = performance.now()
   const accessToken = await getAccessToken()
+  onTiming?.({
+    phase: 'session',
+    durationMs: Math.round(performance.now() - sessionStartedAt),
+  })
 
   let response
+  const requestStartedAt = performance.now()
 
   try {
     response = await fetch(buildBackendUrl('/api/payments/checkout'), {
@@ -76,6 +83,11 @@ export async function startTaskCheckout(taskId) {
     throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
   }
 
+  onTiming?.({
+    phase: 'checkout_request',
+    durationMs: Math.round(performance.now() - requestStartedAt),
+  })
+
   if (!response.ok) {
     throw new Error(await readBackendError(response, 'No pudimos preparar el checkout.'))
   }
@@ -85,6 +97,11 @@ export async function startTaskCheckout(taskId) {
   if (!payload?.checkout_url) {
     throw new Error('Stripe no devolvió una URL válida de checkout.')
   }
+
+  onTiming?.({
+    phase: 'checkout_ready',
+    durationMs: Math.round(performance.now() - startedAt),
+  })
 
   return payload
 }

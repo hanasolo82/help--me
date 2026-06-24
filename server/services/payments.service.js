@@ -312,53 +312,6 @@ async function getOrCreateCheckoutPayment({ task, requesterId, helperId, amounts
   return insertedPayment
 }
 
-function sleep(ms) {
-  return new Promise((resolvePromise) => {
-    setTimeout(resolvePromise, ms)
-  })
-}
-
-async function resolveCheckoutPaymentIntentId(session, payment, attempts = 6, delayMs = 500) {
-  const directId =
-    typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : session.payment_intent?.id || null
-
-  if (directId) {
-    return directId
-  }
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      const listResult = await stripe.paymentIntents.list({
-        limit: 100,
-      })
-
-      const foundId = (listResult?.data || []).find((candidate) => {
-        const metadata = candidate?.metadata || {}
-        return (
-          metadata.payment_id === payment.id ||
-          metadata.paymentId === payment.id ||
-          metadata.task_id === payment.task_id ||
-          metadata.taskId === payment.task_id
-        )
-      })?.id || null
-      if (foundId) {
-        return foundId
-      }
-    } catch {
-      // Listing is a best-effort fallback. The webhook path can still resolve the payment
-      // through metadata if Stripe does not expose the PaymentIntent immediately.
-    }
-
-    if (attempt < attempts - 1) {
-      await sleep(delayMs)
-    }
-  }
-
-  return null
-}
-
 async function createCheckoutSession({ payment, task, requester, helperId }) {
   const successUrl = buildUrl('/stripe/return', {
     flow: 'payment',
@@ -411,24 +364,7 @@ async function createCheckoutSession({ payment, task, requester, helperId }) {
     },
   )
 
-  const resolvedPaymentIntentId = await resolveCheckoutPaymentIntentId(session, payment)
-
-  if (resolvedPaymentIntentId) {
-    return {
-      ...session,
-      payment_intent: resolvedPaymentIntentId,
-    }
-  }
-
-  if (session.payment_intent && typeof session.payment_intent !== 'string') {
-    return session
-  }
-
-  const resolvedSession = await stripe.checkout.sessions.retrieve(session.id, {
-    expand: ['payment_intent'],
-  })
-
-  return resolvedSession
+  return session
 }
 
 function getTransferIdempotencyKey(payment) {
@@ -585,12 +521,16 @@ async function createStripeTransferForPayment({ payment, helperConnectAccount })
 
 export async function createTaskCheckout({ taskId, requester }) {
   ensureSupabaseAdmin()
+  const checkoutStartedAt = performance.now()
+  const timings = {}
 
   if (!requester?.id) {
     throw createPaymentError('Necesitas iniciar sesion.', 401)
   }
 
+  let stepStartedAt = performance.now()
   const task = await getTaskById(taskId)
+  timings.task_lookup_ms = Math.round(performance.now() - stepStartedAt)
 
   if (!task) {
     throw createPaymentError('La tarea no existe.', 404)
@@ -608,27 +548,34 @@ export async function createTaskCheckout({ taskId, requester }) {
     throw createPaymentError('La tarea no tiene helper asignado.', 409)
   }
 
+  stepStartedAt = performance.now()
   await getHelperConnectAccount(task.accepted_by)
+  timings.connect_account_ms = Math.round(performance.now() - stepStartedAt)
 
   const amounts = calculateCheckoutAmounts(task)
+  stepStartedAt = performance.now()
   const payment = await getOrCreateCheckoutPayment({
     task,
     requesterId: requester.id,
     helperId: task.accepted_by,
     amounts,
   })
+  timings.payment_record_ms = Math.round(performance.now() - stepStartedAt)
 
+  stepStartedAt = performance.now()
   const session = await createCheckoutSession({
     payment,
     task,
     requester,
     helperId: task.accepted_by,
   })
+  timings.stripe_session_ms = Math.round(performance.now() - stepStartedAt)
 
   const stripePaymentIntentId = typeof session.payment_intent === 'string'
     ? session.payment_intent
     : session.payment_intent?.id || null
 
+  stepStartedAt = performance.now()
   const { data: updatedPayment, error: updateError } = await supabaseAdmin
     .from('payments')
     .update({
@@ -650,7 +597,9 @@ export async function createTaskCheckout({ taskId, requester }) {
   if (updateError) {
     throw updateError
   }
+  timings.payment_update_ms = Math.round(performance.now() - stepStartedAt)
 
+  stepStartedAt = performance.now()
   await createIdempotentAuditEvent({
     eventType: 'checkout_session_created',
     severity: 'info',
@@ -670,6 +619,16 @@ export async function createTaskCheckout({ taskId, requester }) {
       stripe_checkout_session_id: session.id,
     },
   })
+  timings.audit_ms = Math.round(performance.now() - stepStartedAt)
+  timings.total_ms = Math.round(performance.now() - checkoutStartedAt)
+
+  if (globalThis.process?.env?.NODE_ENV !== 'production') {
+    console.info('[payments.checkout] timing', {
+      task_id: task.id,
+      payment_id: updatedPayment.id,
+      ...timings,
+    })
+  }
 
   return {
     checkout_url: session.url,

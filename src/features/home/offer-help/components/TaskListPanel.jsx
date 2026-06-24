@@ -2,16 +2,28 @@ import HomeEmptyState from '../../components/HomeEmptyState'
 import TaskCard from '../../../../features/tasks/components/TaskCard/TaskCard'
 import styles from '../../need-help/components/NeedHelpMapLayout.module.css'
 
-function buildHelperActions({ task, isFavorite, onContact, onToggleFavorite, onLocateTask, canContact }) {
+function buildHelperActions({
+  task,
+  isFavorite,
+  onContact,
+  onToggleFavorite,
+  onLocateTask,
+  canContact,
+  hasActiveOffer,
+}) {
   const canLocate = Number.isFinite(Number(task.lat)) && Number.isFinite(Number(task.lng))
 
   return [
     {
-      label: canContact ? 'Ofrecerme' : 'No disponible',
-      variant: canContact ? 'primary' : 'secondary',
-      disabled: !canContact,
+      label: hasActiveOffer ? 'Oferta enviada' : canContact ? 'Ofrecerme' : 'No disponible',
+      variant: canContact && !hasActiveOffer ? 'primary' : 'secondary',
+      disabled: !canContact || hasActiveOffer,
       onClick: () => onContact?.(task),
-      title: canContact ? 'Revisar la solicitud y ofrecerte' : 'Solo las tareas abiertas permiten nuevas ofertas',
+      title: hasActiveOffer
+        ? 'Ya te has ofrecido para esta tarea'
+        : canContact
+          ? 'Revisar la solicitud y ofrecerte'
+          : 'Solo las tareas abiertas permiten nuevas ofertas',
     },
     {
       label: isFavorite ? 'Quitar favorito' : 'Favorito',
@@ -85,7 +97,8 @@ export default function TaskListPanel({
 
         {visibleTasks.map(({ task, distance }) => {
           const isFavorite = favoriteTaskIds.includes(task.id)
-          const canContact = task.status === 'open' && task.created_by !== currentUserId
+          const hasActiveOffer = ['pending', 'selected'].includes(task.current_user_application?.status)
+          const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
 
           return (
             <TaskCard
@@ -104,6 +117,7 @@ export default function TaskListPanel({
                 onToggleFavorite,
                 onLocateTask: onSelectTask,
                 canContact,
+                hasActiveOffer,
               })}
             />
           )

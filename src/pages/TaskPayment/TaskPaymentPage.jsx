@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
@@ -70,6 +70,7 @@ export default function TaskPaymentPage() {
     active: false,
     error: '',
   })
+  const checkoutStartedAtRef = useRef(null)
 
   const helperProfile = task?.accepted_profile || null
   const helperName = getHelperName(helperProfile)
@@ -83,10 +84,30 @@ export default function TaskPaymentPage() {
   const returnTo = resolveReturnTo(routeLocation.state?.returnTo, taskPath)
 
   const checkoutMutation = useMutation({
-    mutationFn: () => startTaskCheckout(id),
-    onSuccess: async ({ checkout_url }) => {
-      await queryClient.invalidateQueries({ queryKey: ['task', id] })
-      window.location.href = checkout_url
+    mutationFn: () => {
+      checkoutStartedAtRef.current = performance.now()
+
+      if (import.meta.env.DEV) {
+        console.info('[checkout] click', { taskId: id })
+      }
+
+      return startTaskCheckout(id, {
+        onTiming: (timing) => {
+          if (import.meta.env.DEV) {
+            console.info('[checkout] timing', { taskId: id, ...timing })
+          }
+        },
+      })
+    },
+    onSuccess: ({ checkout_url }) => {
+      if (import.meta.env.DEV && checkoutStartedAtRef.current !== null) {
+        console.info('[checkout] redirect', {
+          taskId: id,
+          durationMs: Math.round(performance.now() - checkoutStartedAtRef.current),
+        })
+      }
+
+      window.location.assign(checkout_url)
     },
   })
 
@@ -236,7 +257,7 @@ export default function TaskPaymentPage() {
                 onClick={() => checkoutMutation.mutate()}
                 disabled={checkoutMutation.isPending}
               >
-                {checkoutMutation.isPending ? 'Redirigiendo a Stripe...' : 'Pagar de forma segura'}
+                {checkoutMutation.isPending ? 'Preparando pago seguro...' : 'Pagar de forma segura'}
               </button>
 
               <section className={styles.premiumCompact}>

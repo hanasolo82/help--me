@@ -163,7 +163,13 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     ? Math.round(mapEntries.reduce((sum, entry) => sum + entry.compatibilityScore, 0) / mapEntries.length)
     : 0
   const mapTasks = mapEntries.map((entry) => entry.task)
-  const canOffer = Boolean(selectedTask && selectedTask.status === 'open' && selectedTask.created_by !== helperHomeProps.currentUserId)
+  const hasActiveOffer = ['pending', 'selected'].includes(selectedTask?.current_user_application?.status)
+  const canOffer = Boolean(
+    selectedTask &&
+    selectedTask.status === 'open' &&
+    selectedTask.created_by !== helperHomeProps.currentUserId &&
+    !hasActiveOffer,
+  )
   const locationSource =
     helperHomeProps.locationSource === 'current'
       ? 'current'
@@ -173,7 +179,9 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const shouldFitTasksOnLoad = locationSource !== 'search'
 
   function handleOffer(task) {
-    if (!task || task.status !== 'open' || task.created_by === helperHomeProps.currentUserId) {
+    const taskHasActiveOffer = ['pending', 'selected'].includes(task?.current_user_application?.status)
+
+    if (!task || task.status !== 'open' || task.created_by === helperHomeProps.currentUserId || taskHasActiveOffer) {
       return
     }
 
@@ -267,7 +275,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     primaryActionLabel="Ver solicitud"
                     primaryActionVariant="primary"
                     onPrimaryAction={() => handleOpenTask(selectedTask)}
-                    secondaryActionLabel="Ofrecerme"
+                    secondaryActionLabel={hasActiveOffer ? 'Oferta enviada' : 'Ofrecerme'}
                     secondaryActionVariant="secondary"
                     secondaryActionDisabled={!canOffer}
                     onSecondaryAction={() => handleOffer(selectedTask)}
