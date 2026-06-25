@@ -1,0 +1,29 @@
+{
+  "mode": "reconcile-processing-to-held",
+  "generatedAt": "2026-06-25T14:43:16.432Z",
+  "dry_run": false,
+  "applied": true,
+  "operator": "User",
+  "confirm_hash": "66c45708efd8b93b3e0d749323b482879bb593fbc1f2e41582e0c8ce5c51b094",
+  "entity": {
+    "payment_id": "6bcd1622-70ef-4a04-93a2-27685e44ec89",
+    "task_id": "515bb723-c076-4c19-bfa3-d3f7df4cfc45"
+  },
+  "cause": "Interrupted checkout/payment_intent race left a captured payment in `processing`. Stripe confirms the charge succeeded, is not refunded/disputed and has no transfer; the local row is reconciled from `processing` to `held`. No money is moved.",
+  "before": {
+    "payment_status": "processing",
+    "held_at": "2026-06-21T07:53:48.553+00:00",
+    "reconciliation_status": "reconciled",
+    "reconciliation_error": null,
+    "updated_at": "2026-06-21T07:53:48.551+00:00"
+  },
+  "after": {
+    "payment_status": "held",
+    "held_at": "2026-06-21T07:53:48.553+00:00",
+    "reconciliation_status": "reconciled",
+    "reconciliation_error": null,
+    "updated_at": "2026-06-25T14:43:16.313+00:00"
+  },
+  "audit_event_id": "72377370-fb98-4ae8-be09-86584218b24d",
+  "money_moved": false
+}

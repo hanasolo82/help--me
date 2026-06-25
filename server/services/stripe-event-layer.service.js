@@ -13,6 +13,23 @@ const PAYMENT_STATUS_BLOCKING = new Set([
   'disputed',
 ])
 
+const CHECKOUT_PROCESSING_ELIGIBLE_STATUSES = [
+  'draft',
+  'pending',
+  'requires_checkout',
+  'requires_action',
+  'processing',
+  'failed',
+]
+
+const CHECKOUT_CONFIRMED_PAYMENT_STATUSES = new Set([
+  'captured',
+  'held',
+  'release_pending',
+  'transferring',
+  'released',
+])
+
 const PAYMENT_STATUS_FAILED_APPLICABLE = new Set([
   'draft',
   'pending',
@@ -660,6 +677,24 @@ async function updatePaymentRow(paymentId, updates) {
   return data
 }
 
+async function updatePaymentRowWhenStatusIn(paymentId, statuses, updates) {
+  ensureSupabaseAdmin()
+
+  const { data, error } = await supabaseAdmin
+    .from('payments')
+    .update({
+      ...updates,
+      updated_at: nowIso(),
+    })
+    .eq('id', paymentId)
+    .in('status', statuses)
+    .select('*')
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
 async function updatePaymentReconciliation(payment, reason, metadata = {}) {
   return updatePaymentRow(payment.id, {
     reconciliation_status: 'needs_review',
@@ -1181,21 +1216,46 @@ async function handleCheckoutSessionCompleted(event, eventRow, object) {
 
   const amountCents = resolveAmountCents(payment, enrichedObject, ['amount_total', 'amount_subtotal', 'amount'])
   const correlationId = getCorrelationIdForPayment(payment, eventRow, enrichedObject)
-  const canAdvance = !PAYMENT_STATUS_BLOCKING.has(normalizeText(payment.status) || '')
-
-  await updatePaymentRow(payment.id, {
+  const checkoutUpdates = {
     stripe_checkout_session_id: getStripeObjectId(enrichedObject),
     stripe_checkout_session_status: normalizeText(enrichedObject.payment_status || enrichedObject.status),
     stripe_payment_intent_id: getStripeObjectId(enrichedObject.payment_intent) || payment.stripe_payment_intent_id,
     correlation_id: payment.correlation_id || correlationId,
-    reconciliation_status: canAdvance ? 'reconciled' : 'needs_review',
-    reconciliation_error: canAdvance ? null : 'Checkout session completed after a later local payment state.',
     last_reconciled_at: nowIso(),
-    status: canAdvance ? 'processing' : payment.status,
-  })
+  }
+  const advancedPayment = await updatePaymentRowWhenStatusIn(
+    payment.id,
+    CHECKOUT_PROCESSING_ELIGIBLE_STATUSES,
+    {
+      ...checkoutUpdates,
+      reconciliation_status: 'reconciled',
+      reconciliation_error: null,
+      status: 'processing',
+    },
+  )
+
+  let currentPayment = advancedPayment
+  let mismatch = false
+
+  if (!currentPayment) {
+    currentPayment = await updatePaymentRow(payment.id, checkoutUpdates)
+    const currentStatus = normalizeText(currentPayment?.status)
+    mismatch = !CHECKOUT_CONFIRMED_PAYMENT_STATUSES.has(currentStatus || '')
+
+    if (mismatch) {
+      currentPayment = await updatePaymentReconciliation(
+        currentPayment || payment,
+        'Checkout session completed after a later local payment state.',
+        {
+          checkout_session_id: getStripeObjectId(enrichedObject),
+          payment_status: currentStatus,
+        },
+      )
+    }
+  }
 
   await maybeCreatePaymentLedgerEntries({
-    payment,
+    payment: currentPayment || payment,
     event,
     eventRow,
     entries: [
@@ -1220,14 +1280,14 @@ async function handleCheckoutSessionCompleted(event, eventRow, object) {
       payment_intent_id: getStripeObjectId(enrichedObject.payment_intent),
       amount_cents: amountCents,
     },
-    severity: canAdvance ? 'info' : 'warning',
+    severity: mismatch ? 'warning' : 'info',
     metadata: {
       payment_id: payment.id,
     },
     correlationId,
   })
 
-  if (!canAdvance) {
+  if (mismatch) {
     await markFinancialMismatch({
       entityType: 'payment',
       entityId: payment.id,
@@ -1235,7 +1295,7 @@ async function handleCheckoutSessionCompleted(event, eventRow, object) {
       metadata: {
         checkout_session_id: getStripeObjectId(enrichedObject),
       },
-      payment,
+      payment: currentPayment || payment,
       eventRow,
       stripeEventId: event.id,
       correlationId,
@@ -1244,7 +1304,7 @@ async function handleCheckoutSessionCompleted(event, eventRow, object) {
 
   return {
     paymentId: payment.id,
-    mismatch: !canAdvance,
+    mismatch,
   }
 }
 

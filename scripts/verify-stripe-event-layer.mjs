@@ -278,6 +278,93 @@ async function testPaymentIntentSucceededIdempotency(payment) {
   }
 }
 
+function buildPaymentIntentSucceededEvent(payment, suffix) {
+  const eventId = `evt_pi_succeeded_${suffix}_${randomUUID().slice(0, 8)}`
+  const paymentIntentId = `pi_${randomUUID().slice(0, 12)}`
+
+  return {
+    eventId,
+    paymentIntentId,
+    event: stripeEvent(eventId, 'payment_intent.succeeded', {
+      id: paymentIntentId,
+      amount: 1234,
+      currency: 'eur',
+      metadata: {
+        payment_id: payment.paymentId,
+        correlation_id: payment.correlationId,
+        task_id: payment.taskId,
+      },
+      latest_charge: {
+        id: `ch_${randomUUID().slice(0, 12)}`,
+        balance_transaction: `txn_${randomUUID().slice(0, 12)}`,
+      },
+    }),
+  }
+}
+
+function buildCheckoutCompletedEvent(payment, paymentIntentId, suffix) {
+  const eventId = `evt_checkout_completed_${suffix}_${randomUUID().slice(0, 8)}`
+
+  return {
+    eventId,
+    event: stripeEvent(eventId, 'checkout.session.completed', {
+      id: `cs_test_${randomUUID().slice(0, 12)}`,
+      amount_total: 1234,
+      currency: 'eur',
+      status: 'complete',
+      payment_status: 'paid',
+      payment_intent: paymentIntentId,
+      metadata: {
+        payment_id: payment.paymentId,
+        correlation_id: payment.correlationId,
+        task_id: payment.taskId,
+      },
+    }),
+  }
+}
+
+async function testCheckoutCannotRegressHeldPayment(payment) {
+  const paymentIntent = buildPaymentIntentSucceededEvent(payment, 'checkout-late')
+  const checkout = buildCheckoutCompletedEvent(payment, paymentIntent.paymentIntentId, 'checkout-late')
+
+  await processStripeWebhookEvent(paymentIntent.event)
+  await processStripeWebhookEvent(checkout.event)
+
+  const paymentRow = await getSingle('payments', 'id', payment.paymentId)
+  const taskRow = await getSingle('tasks', 'id', payment.taskId)
+
+  assert(paymentRow?.status === 'held', 'A late checkout event must not regress a held payment to processing.')
+  assert(paymentRow?.reconciliation_status === 'reconciled', 'A late checkout event should remain reconciled.')
+  assert(taskRow?.status === 'in_progress', 'A late checkout event must not regress the task.')
+
+  return {
+    checkoutEventId: checkout.eventId,
+    paymentIntentEventId: paymentIntent.eventId,
+  }
+}
+
+async function testConcurrentCheckoutAndPaymentIntent(payment) {
+  const paymentIntent = buildPaymentIntentSucceededEvent(payment, 'concurrent')
+  const checkout = buildCheckoutCompletedEvent(payment, paymentIntent.paymentIntentId, 'concurrent')
+
+  await Promise.all([
+    processStripeWebhookEvent(paymentIntent.event),
+    processStripeWebhookEvent(checkout.event),
+  ])
+
+  const paymentRow = await getSingle('payments', 'id', payment.paymentId)
+  const taskRow = await getSingle('tasks', 'id', payment.taskId)
+
+  assert(paymentRow?.status === 'held', 'Concurrent checkout/payment events must converge on held.')
+  assert(paymentRow?.reconciliation_status === 'reconciled', 'Concurrent checkout/payment events should reconcile.')
+  assert(taskRow?.status === 'in_progress', 'Concurrent checkout/payment events must advance the task once.')
+
+  return {
+    checkoutEventId: checkout.eventId,
+    paymentIntentEventId: paymentIntent.eventId,
+  }
+}
+
 async function testPaymentIntentFailed(payment) {
   const eventId = `evt_pi_failed_${randomUUID().slice(0, 8)}`
   const paymentIntentId = `pi_${randomUUID().slice(0, 12)}`
@@ -442,17 +529,29 @@ async function main() {
     const taskSuccess = await createTask(requester.id, helper.id, 'Stripe event layer success task')
     const taskFailed = await createTask(requester.id, helper.id, 'Stripe event layer failed task')
     const taskOutOfOrder = await createTask(requester.id, helper.id, 'Stripe event layer out-of-order task')
+    const taskCheckoutLate = await createTask(requester.id, helper.id, 'Stripe event layer late checkout task')
+    const taskConcurrent = await createTask(requester.id, helper.id, 'Stripe event layer concurrent task')
 
-    ids.taskIds.push(taskSuccess, taskFailed, taskOutOfOrder)
+    ids.taskIds.push(taskSuccess, taskFailed, taskOutOfOrder, taskCheckoutLate, taskConcurrent)
 
     const paymentSuccess = await createPayment(taskSuccess, requester.id, helper.id, 'success')
     const paymentFailed = await createPayment(taskFailed, requester.id, helper.id, 'failed')
     const paymentOutOfOrder = await createPayment(taskOutOfOrder, requester.id, helper.id, 'out-of-order')
+    const paymentCheckoutLate = await createPayment(taskCheckoutLate, requester.id, helper.id, 'checkout-late')
+    const paymentConcurrent = await createPayment(taskConcurrent, requester.id, helper.id, 'concurrent')
 
-    ids.paymentIds.push(paymentSuccess.paymentId, paymentFailed.paymentId, paymentOutOfOrder.paymentId)
+    ids.paymentIds.push(
+      paymentSuccess.paymentId,
+      paymentFailed.paymentId,
+      paymentOutOfOrder.paymentId,
+      paymentCheckoutLate.paymentId,
+      paymentConcurrent.paymentId,
+    )
 
     const connectScenario = await testConnectAccountIdempotency(helper.id)
     const successScenario = await testPaymentIntentSucceededIdempotency(paymentSuccess)
+    const checkoutLateScenario = await testCheckoutCannotRegressHeldPayment(paymentCheckoutLate)
+    const concurrentScenario = await testConcurrentCheckoutAndPaymentIntent(paymentConcurrent)
     const failedScenario = await testPaymentIntentFailed(paymentFailed)
     const outOfOrderScenario = await testOutOfOrderHandling(paymentOutOfOrder)
     const missingPaymentScenario = await testMissingLocalPaymentMismatch()
@@ -460,6 +559,10 @@ async function main() {
     ids.eventIds.push(
       connectScenario.eventId,
       successScenario.eventId,
+      checkoutLateScenario.paymentIntentEventId,
+      checkoutLateScenario.checkoutEventId,
+      concurrentScenario.paymentIntentEventId,
+      concurrentScenario.checkoutEventId,
       failedScenario.eventId,
       outOfOrderScenario.successEventId,
       outOfOrderScenario.failEventId,

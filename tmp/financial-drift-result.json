@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-06-25T14:43:31.901Z",
+  "window": "2026-05-26T14:43:31.901Z..2026-06-25T14:43:31.901Z",
+  "findings": [
+    {
+      "severity": "warning",
+      "code": "PAYMENT_NEEDS_REVIEW",
+      "entity_id": "339a5e9e-c2bb-4d4b-b696-6b46139d0c26",
+      "detail": {
+        "payment_id": "339a5e9e-c2bb-4d4b-b696-6b46139d0c26",
+        "task_id": "369fa470-43fc-4bba-9c08-9d15826d472b",
+        "payment_status": "held",
+        "reconciliation_status": "needs_review"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "PAYMENT_NEEDS_REVIEW",
+      "entity_id": "de224f49-f79a-4c09-af56-b88c96b85a2a",
+      "detail": {
+        "payment_id": "de224f49-f79a-4c09-af56-b88c96b85a2a",
+        "task_id": "aa69ceb5-5633-4198-93ef-98d82455b3e8",
+        "payment_status": "held",
+        "reconciliation_status": "needs_review"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "PAYMENT_NEEDS_REVIEW",
+      "entity_id": "95ab67c9-fd69-4bba-b8ae-6740238ad8b8",
+      "detail": {
+        "payment_id": "95ab67c9-fd69-4bba-b8ae-6740238ad8b8",
+        "task_id": "f540967a-e5e0-44a8-95a4-7e61e05a81ff",
+        "payment_status": "released",
+        "reconciliation_status": "needs_review"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "PAYMENT_NEEDS_REVIEW",
+      "entity_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+      "detail": {
+        "payment_id": "6a1af7d4-dcb5-4d0e-bd06-602f287683a5",
+        "task_id": "ac135cf2-ce49-4556-88a2-0cc419cd9e6e",
+        "payment_status": "released",
+        "reconciliation_status": "needs_review"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "PAYMENT_NEEDS_REVIEW",
+      "entity_id": "c2559ae8-8710-45cb-81c2-1afb66ef321e",
+      "detail": {
+        "payment_id": "c2559ae8-8710-45cb-81c2-1afb66ef321e",
+        "task_id": "865de8b2-0e76-4871-84be-0ac3d7b79d9d",
+        "payment_status": "released",
+        "reconciliation_status": "needs_review"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "WEBHOOK_FAILED",
+      "entity_id": "a6c77301-80ed-4748-9260-082ce4b91dbc",
+      "detail": {
+        "webhook_event_id": "a6c77301-80ed-4748-9260-082ce4b91dbc",
+        "stripe_event_id": "evt_transfer_created_bf473fa8",
+        "type": "transfer.created",
+        "received_at": "2026-05-31T20:07:04.022+00:00",
+        "error_message": "Could not find the 'stripe_transfer_id' column of 'payments' in the schema cache"
+      }
+    }
+  ],
+  "counts": {
+    "critical": 0,
+    "warning": 6
+  }
+}
