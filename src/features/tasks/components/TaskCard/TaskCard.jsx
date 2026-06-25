@@ -111,6 +111,7 @@ export default function TaskCard({
   secondaryActionLabel,
   secondaryActionVariant = 'link',
   secondaryActionDisabled = false,
+  secondaryActionPending = false,
   onSecondaryAction,
   helperActions = [],
 }) {
@@ -236,6 +237,7 @@ export default function TaskCard({
             }
             onClick={onSecondaryAction}
             disabled={secondaryActionDisabled}
+            aria-busy={secondaryActionPending || undefined}
           >
             {secondaryActionLabel}
           </button>
@@ -276,6 +278,7 @@ export default function TaskCard({
               }
               onClick={action.onClick}
               disabled={action.disabled}
+              aria-busy={action.pending || undefined}
               aria-label={action.ariaLabel || action.label}
               title={action.title || action.label}
             >

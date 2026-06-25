@@ -8,6 +8,7 @@ import {
   rejectAssignedHelper,
   rejectTaskApplication,
   selectTaskHelper,
+  withdrawTaskApplication,
 } from '../../services/tasksService'
 import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
@@ -142,10 +143,17 @@ export default function TaskDetail() {
         queryClient.invalidateQueries({ queryKey: ['task-applications', id] }),
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
-      navigate(`/task/${id}`, {
-        replace: true,
-        state: { offeredTask: true },
-      })
+    },
+  })
+
+  const withdrawApplicationMutation = useMutation({
+    mutationFn: (applicationId) => withdrawTaskApplication(applicationId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['task-applications', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+      ])
     },
   })
 
@@ -321,8 +329,17 @@ export default function TaskDetail() {
       : 'Requester · Tú'
     : 'Requester'
 
-  async function handleApply() {
-    applyMutation.mutate()
+  function handleOfferToggle() {
+    if (applyMutation.isPending || withdrawApplicationMutation.isPending) return
+
+    if (currentUserApplication?.status === 'pending') {
+      withdrawApplicationMutation.mutate(currentUserApplication.id)
+      return
+    }
+
+    if (!currentUserApplication) {
+      applyMutation.mutate()
+    }
   }
 
   function handleSelectApplication(application) {
@@ -600,20 +617,20 @@ export default function TaskDetail() {
         </section>
       ) : null}
 
-      {(error || applyMutation.error || selectHelperMutation.error || rejectApplicationMutation.error || rejectHelperMutation.error) && (
+      {(error ||
+        applyMutation.error ||
+        withdrawApplicationMutation.error ||
+        selectHelperMutation.error ||
+        rejectApplicationMutation.error ||
+        rejectHelperMutation.error) && (
         <p className="auth-message error">
           {error ||
             applyMutation.error?.message ||
+            withdrawApplicationMutation.error?.message ||
             selectHelperMutation.error?.message ||
             rejectApplicationMutation.error?.message ||
             rejectHelperMutation.error?.message ||
             'Ha ocurrido un error.'}
-        </p>
-      )}
-
-      {location.state?.offeredTask && !isOwner && task.status === 'open' && (
-        <p className="auth-message">
-          Te has ofrecido para esta tarea. El requester decidirá si te elige.
         </p>
       )}
 
@@ -635,14 +652,17 @@ export default function TaskDetail() {
             <button
               type="button"
               className="primary-action sticky-action"
-              onClick={handleApply}
-              disabled={applyMutation.isPending || Boolean(currentUserApplication)}
+              onClick={handleOfferToggle}
+              disabled={applyMutation.isPending || withdrawApplicationMutation.isPending}
+              aria-busy={applyMutation.isPending || withdrawApplicationMutation.isPending}
             >
-              {currentUserApplication
-                ? 'Ya te ofreciste'
-                : applyMutation.isPending
-                  ? 'Enviando oferta...'
-                  : 'Ofrecerme'}
+              {applyMutation.isPending
+                ? 'Enviando...'
+                : withdrawApplicationMutation.isPending
+                  ? 'Retirando...'
+                  : currentUserApplication?.status === 'pending'
+                    ? 'Retirar oferta'
+                    : 'Ofrecerme'}
             </button>
           )}
 

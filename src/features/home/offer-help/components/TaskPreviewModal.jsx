@@ -31,6 +31,8 @@ export default function TaskPreviewModal({
   onClose,
   onOpenDetail,
   onContact,
+  offerActionPending = false,
+  offerError = '',
   onToggleFavorite,
   onLocateTask,
 }) {
@@ -38,7 +40,10 @@ export default function TaskPreviewModal({
 
   const creator = task.creator_profile || {}
   const creatorName = creator.display_name || creator.full_name || creator.username || 'Vecino'
-  const hasActiveOffer = ['pending', 'selected'].includes(task.current_user_application?.status)
+  const applicationStatus = task.current_user_application?.status
+  const hasPendingOffer = applicationStatus === 'pending'
+  const isSelectedOffer = applicationStatus === 'selected'
+  const hasActiveOffer = hasPendingOffer || isSelectedOffer
   const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
   const publishedAt = task.published_at || task.created_at
 
@@ -86,13 +91,18 @@ export default function TaskPreviewModal({
 
           <p className={styles.description}>{task.description}</p>
 
-          <div className={styles.statusNote}>
-            {hasActiveOffer
-              ? 'Oferta enviada. Puedes abrir el detalle para revisar el estado de tu candidatura.'
-              : canContact
-              ? 'Puedes revisar la solicitud, ofrecerte, guardarla o verla en el mapa.'
-              : 'Esta tarea ya no está abierta para nuevas ofertas, o pertenece a tu propio perfil. Puedes verla, pero no ofrecerte.'}
-          </div>
+          {isSelectedOffer ? (
+            <div className={styles.statusNote}>
+              El requester te ha seleccionado para esta tarea. Abre el detalle para continuar.
+            </div>
+          ) : !hasActiveOffer ? (
+            <div className={styles.statusNote}>
+              {canContact
+                ? 'Puedes revisar la solicitud, ofrecerte, guardarla o verla en el mapa.'
+                : 'Esta tarea ya no está abierta para nuevas ofertas, o pertenece a tu propio perfil. Puedes verla, pero no ofrecerte.'}
+            </div>
+          ) : null}
+          {offerError ? <p className="auth-message error">{offerError}</p> : null}
         </div>
 
         <div className={styles.actions}>
@@ -102,8 +112,23 @@ export default function TaskPreviewModal({
           <button type="button" className="secondary-action" onClick={() => onToggleFavorite?.(task)}>
             {isFavorite ? 'Quitar favorito' : 'Añadir favorito'}
           </button>
-          <button type="button" className="secondary-action" onClick={() => onContact?.(task)} disabled={!canContact}>
-            {hasActiveOffer ? 'Oferta enviada' : canContact ? 'Ofrecerme' : 'No disponible'}
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={() => onContact?.(task)}
+            disabled={offerActionPending || isSelectedOffer || (!canContact && !hasPendingOffer)}
+          >
+            {offerActionPending
+              ? hasPendingOffer
+                ? 'Retirando...'
+                : 'Enviando...'
+              : isSelectedOffer
+                ? 'Seleccionado'
+                : hasPendingOffer
+                  ? 'Retirar oferta'
+                  : canContact
+                    ? 'Ofrecerme'
+                    : 'No disponible'}
           </button>
           <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
             Ver detalle

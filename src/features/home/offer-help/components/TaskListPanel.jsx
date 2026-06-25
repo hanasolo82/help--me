@@ -9,21 +9,36 @@ function buildHelperActions({
   onToggleFavorite,
   onLocateTask,
   canContact,
-  hasActiveOffer,
+  hasPendingOffer,
+  isSelectedOffer,
+  actionPending,
 }) {
   const canLocate = Number.isFinite(Number(task.lat)) && Number.isFinite(Number(task.lng))
 
   return [
     {
-      label: hasActiveOffer ? 'Oferta enviada' : canContact ? 'Ofrecerme' : 'No disponible',
-      variant: canContact && !hasActiveOffer ? 'primary' : 'secondary',
-      disabled: !canContact || hasActiveOffer,
+      label: actionPending
+        ? hasPendingOffer
+          ? 'Retirando...'
+          : 'Enviando...'
+        : isSelectedOffer
+          ? 'Seleccionado'
+          : hasPendingOffer
+            ? 'Retirar oferta'
+            : canContact
+              ? 'Ofrecerme'
+              : 'No disponible',
+      variant: canContact && !hasPendingOffer && !isSelectedOffer ? 'primary' : 'secondary',
+      disabled: actionPending || isSelectedOffer || (!canContact && !hasPendingOffer),
+      pending: actionPending,
       onClick: () => onContact?.(task),
-      title: hasActiveOffer
-        ? 'Ya te has ofrecido para esta tarea'
-        : canContact
-          ? 'Revisar la solicitud y ofrecerte'
-          : 'Solo las tareas abiertas permiten nuevas ofertas',
+      title: isSelectedOffer
+        ? 'El requester te ha seleccionado para esta tarea'
+        : hasPendingOffer
+          ? 'Retirar tu oferta para esta tarea'
+          : canContact
+            ? 'Revisar la solicitud y ofrecerte'
+            : 'Solo las tareas abiertas permiten nuevas ofertas',
     },
     {
       label: isFavorite ? 'Quitar favorito' : 'Favorito',
@@ -53,6 +68,8 @@ export default function TaskListPanel({
   currentUserId = null,
   loading = false,
   error = '',
+  offerError = '',
+  pendingOfferTaskId = null,
   locationLabel = 'Tu zona',
   hasLocation = true,
   onRequestLocation,
@@ -83,6 +100,7 @@ export default function TaskListPanel({
 
       {loading && <p className="muted">Buscando tareas cercanas...</p>}
       {error && <p className="auth-message error">{error}</p>}
+      {offerError && <p className="auth-message error">{offerError}</p>}
 
       <div className={styles.listScroll}>
         {!loading && !error && visibleTasks.length === 0 ? (
@@ -97,8 +115,12 @@ export default function TaskListPanel({
 
         {visibleTasks.map(({ task, distance }) => {
           const isFavorite = favoriteTaskIds.includes(task.id)
-          const hasActiveOffer = ['pending', 'selected'].includes(task.current_user_application?.status)
+          const applicationStatus = task.current_user_application?.status
+          const hasPendingOffer = applicationStatus === 'pending'
+          const isSelectedOffer = applicationStatus === 'selected'
+          const hasActiveOffer = hasPendingOffer || isSelectedOffer
           const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
+          const actionPending = pendingOfferTaskId === task.id
 
           return (
             <TaskCard
@@ -117,7 +139,9 @@ export default function TaskListPanel({
                 onToggleFavorite,
                 onLocateTask: onSelectTask,
                 canContact,
-                hasActiveOffer,
+                hasPendingOffer,
+                isSelectedOffer,
+                actionPending,
               })}
             />
           )

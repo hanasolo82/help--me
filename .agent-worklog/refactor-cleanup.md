@@ -151,6 +151,14 @@
 - Added development-only backend timing by checkout phase to identify Supabase, Connect or Stripe latency without changing payment architecture.
 - Treats a reliably `completed` task as the closure happy path even if a later refresh/release confirmation call fails, so the requester continues to review/thanks instead of seeing recovery copy.
 - Constrained shared dropdowns to the viewport, flips them above the trigger when needed and enables internal scrolling so `Cerrar sesión` remains reachable.
+
+## Phase 2B final interaction closure
+- Replaced passive `Oferta enviada` states with one reversible `Ofrecerme` / `Retirar oferta` action backed by the existing `apply_to_task` and `withdraw_task_application` RPCs.
+- Added local button loading states (`Enviando...` / `Retirando...`) and disabled repeat clicks while each mutation is active.
+- Removed the redundant post-offer confirmation message from TaskDetail and the duplicate offer status message from the task preview.
+- Kept duplicate prevention at both UI and database levels; active applications are read before rendering and the existing RPC/partial uniqueness rule remains authoritative.
+- Normalized interested-helper cards to one full-width column with equal-width desktop actions and a single-column mobile action stack.
+- Revalidated the viewport-aware Home dropdown behavior so the logout action remains reachable through internal scrolling.
 - Bounded TaskComplete initial loading, task completion and query invalidation so every blocking overlay has a finite exit.
 - Added explicit recovery screens for both unconfirmed closure and completed-task/payment-pending states, with no hidden retry.
 - Abort timed-out completion/release requests on the client before enabling manual retry, while retaining backend idempotency as the final safeguard.
@@ -158,3 +166,11 @@
 - Gated `Valorar helper` behind a completed review lookup and replaced it with passive `Valoración publicada` copy after submission.
 - Made completion cache invalidation tolerant of individual query failures while preserving the global timeout.
 - Made the post-review success redirect honor a safe `returnTo`, with `/task/:id` remaining the default.
+
+## Phase 2B closure fixes (A + B + C)
+- Fix A — `selected` state is no longer a false `Retirar oferta` action across helper surfaces. Split the previous `hasActiveOffer` (which conflated `pending` + `selected`) into `hasPendingOffer` and `isSelectedOffer`. Now `Retirar oferta` is offered only for `pending`; `selected` renders a non-actionable, disabled `Seleccionado` state. Applied to `HelperHome.jsx`, `TaskListPanel.jsx` and `TaskPreviewModal.jsx`. `TaskDetail.jsx` was already keyed on `pending` and left unchanged.
+- Fix A copy — TaskPreviewModal now shows an explicit `El requester te ha seleccionado` note for the `selected` state instead of hiding the status note.
+- Fix B — `OfferHelpMapLayout.handleContact` now blocks double-submit with an `offerMutation.isPending || withdrawMutation.isPending` guard, matching `HelperHome.handleOffer`. Backend `apply_to_task` / `withdraw_task_application` RPCs remain the second line of defense, not the only one.
+- Point C — Confirmed resolved in prior commits, not pending: the shared `AnimatedDropdown` constrains `maxHeight` to the available viewport space and the panel has `overflow-y: auto`, so `Cerrar sesión` stays reachable via internal scroll even with all menu groups present.
+- Validation: `npm run lint` (clean) and `npm run build` (green; only the pre-existing chunk-size warning).
+- Scope held to closure adjustments: no refactor of the duplicated offer-toggle logic into a shared hook, no code-splitting, no new features. Phase 3 (payments, webhooks, reconciliation, RLS, financial state) is the next phase.

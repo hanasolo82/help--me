@@ -1606,13 +1606,17 @@ p {
 
 .application-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--hm-space-4);
+  width: 100%;
   margin-top: var(--hm-space-4);
 }
 
 .application-card {
   display: grid;
   gap: var(--hm-space-4);
+  min-width: 0;
+  width: 100%;
   padding: clamp(1rem, 2vw, 1.25rem);
   border: 1px solid var(--hm-card-border);
   border-radius: var(--hm-card-radius);

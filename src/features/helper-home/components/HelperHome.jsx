@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
+import { applyToTask, withdrawTaskApplication } from '../../../services/tasksService'
 import { getLocationLabel } from '../../profile/utils/profileFormatters'
 import styles from '../styles/helperHome.module.css'
 
@@ -123,8 +125,25 @@ function buildMapEntries(entries = [], currentUserId, profile) {
 
 export default function HelperHome({ profile, helperHomeProps = {} }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [mapBounds, setMapBounds] = useState(null)
+  const [pendingOfferTaskId, setPendingOfferTaskId] = useState(null)
+  const [offerError, setOfferError] = useState('')
+
+  const offerMutation = useMutation({
+    mutationFn: (task) => applyToTask(task.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+
+  const withdrawMutation = useMutation({
+    mutationFn: (applicationId) => withdrawTaskApplication(applicationId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
 
   const center = buildCenter(helperHomeProps.mapLocation, profile)
   const allMapEntries = useMemo(
@@ -163,7 +182,10 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     ? Math.round(mapEntries.reduce((sum, entry) => sum + entry.compatibilityScore, 0) / mapEntries.length)
     : 0
   const mapTasks = mapEntries.map((entry) => entry.task)
-  const hasActiveOffer = ['pending', 'selected'].includes(selectedTask?.current_user_application?.status)
+  const selectedApplicationStatus = selectedTask?.current_user_application?.status
+  const hasPendingOffer = selectedApplicationStatus === 'pending'
+  const isSelectedOffer = selectedApplicationStatus === 'selected'
+  const hasActiveOffer = hasPendingOffer || isSelectedOffer
   const canOffer = Boolean(
     selectedTask &&
     selectedTask.status === 'open' &&
@@ -178,19 +200,54 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         : 'profile'
   const shouldFitTasksOnLoad = locationSource !== 'search'
 
-  function handleOffer(task) {
-    const taskHasActiveOffer = ['pending', 'selected'].includes(task?.current_user_application?.status)
+  async function handleOffer(task) {
+    const application = task?.current_user_application || null
+    const hasPendingOffer = application?.status === 'pending'
 
-    if (!task || task.status !== 'open' || task.created_by === helperHomeProps.currentUserId || taskHasActiveOffer) {
+    if (
+      !task ||
+      task.status !== 'open' ||
+      task.created_by === helperHomeProps.currentUserId ||
+      offerMutation.isPending ||
+      withdrawMutation.isPending
+    ) {
       return
     }
 
-    navigate(`/task/${task.id}`)
+    setOfferError('')
+    setPendingOfferTaskId(task.id)
+
+    try {
+      if (hasPendingOffer) {
+        await withdrawMutation.mutateAsync(application.id)
+        return
+      }
+
+      if (!application) {
+        await offerMutation.mutateAsync(task)
+      }
+    } catch (error) {
+      setOfferError(error?.message || 'No hemos podido actualizar tu oferta.')
+    } finally {
+      setPendingOfferTaskId(null)
+    }
   }
 
   function handleOpenTask(task) {
     navigate(`/task/${task.id}`)
   }
+
+  const offerActionPending = pendingOfferTaskId === selectedTask?.id
+  const offerMutationActive = offerMutation.isPending || withdrawMutation.isPending
+  const offerButtonLabel = offerActionPending
+    ? hasPendingOffer
+      ? 'Retirando...'
+      : 'Enviando...'
+    : isSelectedOffer
+      ? 'Seleccionado'
+      : hasPendingOffer
+        ? 'Retirar oferta'
+        : 'Ofrecerme'
 
   return (
     <section className={styles.home}>
@@ -275,11 +332,13 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     primaryActionLabel="Ver solicitud"
                     primaryActionVariant="primary"
                     onPrimaryAction={() => handleOpenTask(selectedTask)}
-                    secondaryActionLabel={hasActiveOffer ? 'Oferta enviada' : 'Ofrecerme'}
+                    secondaryActionLabel={offerButtonLabel}
                     secondaryActionVariant="secondary"
-                    secondaryActionDisabled={!canOffer}
+                    secondaryActionDisabled={offerMutationActive || isSelectedOffer || (!canOffer && !hasPendingOffer)}
+                    secondaryActionPending={offerActionPending}
                     onSecondaryAction={() => handleOffer(selectedTask)}
                   />
+                  {offerError ? <p className="auth-message error">{offerError}</p> : null}
                 </div>
               </>
             ) : (

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { applyToTask, withdrawTaskApplication } from '../../../../services/tasksService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
 import TaskFiltersBar from './TaskFiltersBar'
 import TaskListPanel from './TaskListPanel'
@@ -24,9 +25,12 @@ export default function OfferHelpMapLayout({
   lead = 'Selecciona una solicitud, revisa el detalle y ofrécete solo si sigue abierta.',
 }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [mobileView, setMobileView] = useState('map')
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [favoriteTaskIds, setFavoriteTaskIds] = useState([])
+  const [pendingOfferTaskId, setPendingOfferTaskId] = useState(null)
+  const [offerError, setOfferError] = useState('')
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async (task) => task,
@@ -35,6 +39,12 @@ export default function OfferHelpMapLayout({
         current.includes(task.id) ? current.filter((id) => id !== task.id) : [...current, task.id],
       )
     },
+  })
+  const offerMutation = useMutation({
+    mutationFn: (task) => applyToTask(task.id),
+  })
+  const withdrawMutation = useMutation({
+    mutationFn: (applicationId) => withdrawTaskApplication(applicationId),
   })
 
   const taskMapLocation = useMemo(() => {
@@ -81,12 +91,34 @@ export default function OfferHelpMapLayout({
     setMobileView('map')
   }
 
-  function handleContact(task) {
-    if (!task || task.status !== 'open' || task.created_by === currentUserId) {
+  async function handleContact(task) {
+    if (
+      !task ||
+      task.status !== 'open' ||
+      task.created_by === currentUserId ||
+      offerMutation.isPending ||
+      withdrawMutation.isPending
+    ) {
       return
     }
 
-    navigate(`/task/${task.id}`)
+    const application = task.current_user_application || null
+    setPendingOfferTaskId(task.id)
+    setOfferError('')
+
+    try {
+      if (application?.status === 'pending') {
+        await withdrawMutation.mutateAsync(application.id)
+      } else if (!application) {
+        await offerMutation.mutateAsync(task)
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    } catch (mutationError) {
+      setOfferError(mutationError?.message || 'No hemos podido actualizar tu oferta.')
+    } finally {
+      setPendingOfferTaskId(null)
+    }
   }
 
   async function handleToggleFavorite(task) {
@@ -172,6 +204,8 @@ export default function OfferHelpMapLayout({
             currentUserId={currentUserId}
             loading={isLoading}
             error={error}
+            offerError={offerError}
+            pendingOfferTaskId={pendingOfferTaskId}
             locationLabel={location?.label || profile?.neighborhood || profile?.city || 'Tu zona'}
           />
         </div>
@@ -186,6 +220,8 @@ export default function OfferHelpMapLayout({
         onClose={() => setSelectedTaskId(null)}
         onOpenDetail={(task) => navigate(`/task/${task.id}`)}
         onContact={handleContact}
+        offerActionPending={pendingOfferTaskId === selectedTask?.id}
+        offerError={offerError}
         onToggleFavorite={handleToggleFavorite}
         onLocateTask={handleLocateTask}
       />
