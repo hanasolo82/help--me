@@ -219,8 +219,17 @@ cada fallo y la respuesta operativa (ante `WEBHOOK_FAILED`/`STUCK` → `replay:s
      Redacta esa distinción explícitamente: "estado espejado y reconciliado, ejecución manual/fuera de la app".
 2. Añadir sección "Limitaciones conocidas":
    - **Race TOCTOU en `createIdempotentAuditEvent`** (detectado por `verify:webhook-reliability` Test D):
-     los invariantes de dinero se mantienen (2 ledger entries, 1 payment, 1 webhook row), pero el audit de
-     transición de tarea puede duplicarse en doble-fire concurrente. Aceptado y monitorizado.
+     ~~los invariantes de dinero se mantienen (2 ledger entries, 1 payment, 1 webhook row), pero el audit de
+     transición de tarea puede duplicarse en doble-fire concurrente. Aceptado y monitorizado.~~
+     **CORREGIDO 2026-06-25 (fix inmediato):** la reproducción agresiva demostró que la nota era
+     optimista — bajo doble-fire concurrente NO se mantenían 2 ledger entries: se creaban 2
+     `reconciliation_mismatch` espurias (el 2º run veía el pago ya avanzado). Causa raíz: el claim del
+     inbox era check-then-act y dejaba ejecutar el handler dos veces. Se cerró con un **claim atómico
+     compare-and-swap** sobre `stripe_webhook_events.processing_attempts` en
+     `processStripeWebhookEvent` → solo un worker corre el handler por evento. `verify:webhook-reliability`
+     pasa 10/10 con Test D reforzado a 8 disparos concurrentes. Detalle:
+     `.agent-worklog/phase-3-block2-webhook-concurrency-fix.md`. El patrón TOCTOU del helper de audit
+     deja de tener efecto en este flujo (ejecución única); residual teórico sin impacto financiero.
    - **Premium no cableado en RLS:** `has_active_premium()` y `user_subscriptions` existen (0036) pero no
      gatean el flujo de pago; la verificación de suscripción vive en servicio. Por diseño, no abrir ahora.
 
@@ -243,6 +252,87 @@ re-correr `verify:webhook-reliability` y `verify:stripe-event-layer` y confirmar
 - [ ] Docs financieros alineados con el mirroring real de refund/dispute/payout; race TOCTOU y premium documentados.
 - [ ] Cada bloque: `pnpm run lint` + `pnpm run build` + `git diff --check` verdes; prueba manual del Bloque 2 documentada.
 - [ ] Sin deuda crítica abierta en dinero/confianza; lo diferido (ejecución de refunds, premium gating, TOCTOU fix) registrado, no silenciado.
+
+## 4.bis Cierre Bloque 3 + limpieza pre-Bloque 4 — 2026-06-26
+
+**Bloque 3 cerrado.** Auditoría RLS/RPCs/ownership con fixes aplicados (Codex) y revisados:
+
+- `0041_profiles_column_write_guard.sql`: column-level GRANT en `profiles`; columnas de
+  reputación/moderación/`stripe_*` solo escribibles por backend (triggers SECURITY DEFINER).
+- `0042_block_duplicate_apply_rpc.sql`: `apply_to_task` pasa de upsert-edita-mensaje a
+  `on conflict do nothing` + `raise` → bloqueo duro de re-apply sobre candidatura activa.
+- `0043_tasks_client_transition_guard.sql`: trigger que whitelista transiciones para
+  `auth.uid()` no nulo y cierra el bypass por composición OR de policies (`assigned→completed`
+  saltándose el pago). Rutas de RPCs y backend (`auth.uid()` null) intactas.
+- `payments.service.js`: el `duplicate` de release solo se acepta con
+  `payment ∈ {release_pending,transferring,released}` y `task ∈ {completed,closed}`; transfer
+  inconsistente lanza en vez de devolver falso éxito.
+- `verify-rls-ownership.mjs` (34 casos) y `verify-rls-payment-gate.mjs` (acepta cualquier error
+  de servidor como bloqueo).
+
+**Limpieza de residuo de test (corte limpio antes del Bloque 4):**
+
+- Se confirmó y eliminó la fila huérfana `evt_stuck_b96b1e60` (inbox `processing`, evento
+  sintético de Test A, payment/task ya borrados, sin ledger). Era residuo de la primera corrida
+  fallida de Test D del Bloque 2, no deriva financiera.
+- `verify-webhook-reliability.mjs`: cada test registra su `eventId` en `ids` **al crearlo**
+  (antes de cualquier assert), de modo que un fallo a mitad ya no filtra filas de inbox; el
+  cleanup en `finally` las borra igual.
+
+**Validación final 2026-06-26:**
+
+- `verify:financial-drift`: exit 0, **0 critical, 6 warnings conocidos** (sin `WEBHOOK_STUCK_PROCESSING`
+  residual). Estable tras repetir `verify:webhook-reliability` 3×.
+- `verify:webhook-reliability`: verde (repetido). `verify:rls-payment-gate`: 12/12.
+  `verify:rls-ownership`: 34/34. `lint`/`build`: verdes. `git diff --check`: limpio (solo LF/CRLF).
+
+**Deudas registradas para Bloque 4 (no bloquean):** `helper_status` self-service (beta; RPC de
+activación en GA), `updated_at` self-service (trigger-touch futuro), refresh de `completed_tasks`
+solo en eventos de review, premium no cableado en RLS, TOCTOU residual sin impacto financiero.
+
+## Bloque 4 / Paso 1 — CI gate — 2026-06-26
+
+**Archivo nuevo:** `.github/workflows/ci.yml`. Gate en dos capas, conservador y secret-gated.
+
+- Triggers: `push` a `main`, `pull_request`, `workflow_dispatch`. `concurrency` cancela corridas
+  viejas del mismo ref. `permissions: contents: read`.
+- **Job `quality`** (siempre, sin secrets): `pnpm install --frozen-lockfile` → `pnpm run lint` →
+  `pnpm run build`. pnpm 10.33.0 (de `packageManager`), Node 22, cache pnpm.
+- **Job `financial-verify`** (`needs: quality`):
+  - Guard de fork: `if: github.event_name != 'pull_request' || head.repo.full_name == repository`
+    (push y dispatch siempre; PRs solo del mismo repo).
+  - 5 secrets a nivel de job: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. Las 5 son obligatorias porque `financial-ops.mjs`
+    exige las de Supabase al importarse y `stripe.service.js` hace `new Stripe(STRIPE_SECRET_KEY)` al
+    cargar (sin ella los verificadores crashean al importar, no fallan "de negocio").
+  - Step `preflight` comprueba presencia de los 5 secrets y publica `have_secrets`. Si faltan, emite
+    `::notice` y los steps de verificación quedan **skipped** (no rojos).
+  - Verificadores (todos read-only / test-safe, en orden): `verify:stripe-event-layer`,
+    `verify:webhook-reliability`, `verify:rls-payment-gate`, `verify:rls-ownership`,
+    `verify:financial-drift`.
+
+**Test-safety confirmada:** grep sobre los 5 scripts → ninguno llama `transfers.create` /
+`refunds.create` / `payouts.create` / `accounts.create` / `stripe.transfers|refunds|payouts`. No mueven
+dinero; crean y autolimpian datos de TEST o solo leen. `repair:financial-drift` NO está en CI.
+`financial-drift` falla el job solo con `critical`; los 6 warnings conocidos dejan exit 0.
+
+**Validación local (espejo del CI):**
+
+- YAML parsea con js-yaml; jobs `quality` y `financial-verify` presentes; sin tabs.
+- `pnpm install --frozen-lockfile`: exit 0 (lockfile en sync).
+- `verify:stripe-event-layer`, `verify:webhook-reliability`, `verify:rls-payment-gate`,
+  `verify:rls-ownership`, `verify:financial-drift`: todos exit 0 (drift 0 critical / 6 warnings).
+- `lint` y `build`: verdes (build con el warning conocido de chunk grande).
+
+**Riesgos/limitaciones del gate:**
+
+- Los verificadores escriben en el **Supabase de TEST** (crean/borran usuarios/tareas/pagos sintéticos);
+  el secreto `SUPABASE_SERVICE_ROLE_KEY` debe apuntar a test/staging, nunca a producción.
+- `financial-verify` no corre en forks (sin secrets) → en PRs de fork solo hay señal de `quality`.
+- Concurrencia: los verificadores corren en serie en un runner; si en el futuro hay varias corridas
+  simultáneas contra el mismo proyecto test podría haber contención de fixtures (hoy aceptable).
+- Falta pendiente (Pasos siguientes del Bloque 4): docs de reconciliación, limitaciones conocidas,
+  y dejar claro que refund/dispute/payout se espejan pero no se ejecutan.
 
 ## 5. Lo que NO se debe abrir en esta fase
 
