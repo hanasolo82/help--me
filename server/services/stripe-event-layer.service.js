@@ -517,6 +517,41 @@ async function markWebhookProcessing(eventRow) {
   })
 }
 
+// Atomic compare-and-swap claim of an inbox row for handler execution.
+//
+// The previous flow was check-then-act: two concurrent deliveries of the same
+// event both observed `processing_status = 'received'` and both proceeded to run
+// the handler, which produced spurious `reconciliation_mismatch` ledger entries
+// (the second run saw the payment/task already advanced).
+//
+// Here the claim is decided by Postgres, not by application logic: we only flip
+// the row to `processing` when its `processing_attempts` still equals the value we
+// observed. `processing_attempts` is monotonic and incremented in the same update,
+// so exactly one concurrent worker can win the swap; every other worker matches 0
+// rows and is told to back off. This makes double handler execution impossible,
+// not merely improbable.
+async function claimWebhookForProcessing(eventRow) {
+  ensureSupabaseAdmin()
+
+  const observedAttempts = eventRow.processing_attempts || 0
+
+  const { data, error } = await supabaseAdmin
+    .from('stripe_webhook_events')
+    .update({
+      processing_status: 'processing',
+      processing_attempts: observedAttempts + 1,
+      error_message: null,
+      processed_at: null,
+    })
+    .eq('id', eventRow.id)
+    .eq('processing_attempts', observedAttempts)
+    .select('*')
+    .maybeSingle()
+
+  if (error) throw error
+  return data || null
+}
+
 export async function markWebhookProcessed(eventRow, metadata = {}) {
   return updateWebhookEventRow(eventRow.id, {
     processing_status: 'processed',
@@ -2358,31 +2393,33 @@ export async function processStripeWebhookEvent(event) {
     }
   }
 
-  if (eventRow.processing_status === 'processing') {
-    if (isWebhookProcessingStale(eventRow)) {
-      await markWebhookFailed(
-        eventRow,
-        createDomainError('Webhook processing timed out; retrying event.', 500),
-        {
-          correlationId: eventRow.correlation_id || getWebhookCorrelationId(event),
-        },
-      )
-      eventRow = {
-        ...eventRow,
-        processing_status: 'failed',
-      }
-    } else {
-      return {
-        duplicate: true,
-        processed: false,
-        eventId: eventRow.id,
-        eventType: event.type,
-        processing: true,
-      }
+  // A row still `processing` and NOT stale means another worker holds an active
+  // claim. Do not touch it; signal a retry so Stripe redelivers later.
+  if (eventRow.processing_status === 'processing' && !isWebhookProcessingStale(eventRow)) {
+    return {
+      duplicate: true,
+      processed: false,
+      eventId: eventRow.id,
+      eventType: event.type,
+      processing: true,
     }
   }
 
-  const processingRow = await markWebhookProcessing(eventRow)
+  // Atomically claim the row (received | failed | stale-processing -> processing).
+  // Only the worker that wins the compare-and-swap runs the handler; any concurrent
+  // worker matches 0 rows and backs off, so the handler never runs twice for one event.
+  const processingRow = await claimWebhookForProcessing(eventRow)
+
+  if (!processingRow) {
+    return {
+      duplicate: true,
+      processed: false,
+      eventId: eventRow.id,
+      eventType: event.type,
+      processing: true,
+    }
+  }
+
   const object = getStripeObject(event)
 
   try {

@@ -19,6 +19,7 @@
     "verify:stripe-event-layer": "node scripts/verify-stripe-event-layer.mjs",
     "verify:webhook-reliability": "node scripts/verify-webhook-reliability.mjs",
     "verify:rls-payment-gate": "node scripts/verify-rls-payment-gate.mjs",
+    "verify:rls-ownership": "node scripts/verify-rls-ownership.mjs",
     "verify:financial-drift": "node scripts/verify-financial-drift.mjs",
     "repair:financial-drift": "node scripts/repair-financial-drift.mjs",
     "server": "node server/index.js",

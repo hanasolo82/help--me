@@ -176,6 +176,15 @@ async function countRows(table, column, value) {
   return data?.length || 0
 }
 
+async function getLedgerEntryTypes(paymentId) {
+  const { data, error } = await admin
+    .from('payment_ledger_entries')
+    .select('entry_type, idempotency_key')
+    .eq('payment_id', paymentId)
+  if (error) throw error
+  return data || []
+}
+
 async function countTaskTransitionAudits(taskId) {
   const { data, error } = await admin
     .from('audit_events')
@@ -194,8 +203,11 @@ function assert(condition, message) {
 // --- Tests -------------------------------------------------------------------------
 
 // Test A — Fila en processing fresca: el reenvío devuelve retry y no toca el payment.
-async function testStuckProcessingReturnsRetry(payment) {
+async function testStuckProcessingReturnsRetry(payment, ids) {
   const eventId = `evt_stuck_${randomUUID().slice(0, 8)}`
+  // Register for cleanup BEFORE any seeding/assertion can throw, so a mid-test
+  // failure never leaks the inbox row (root cause of the evt_stuck orphan).
+  ids.eventIds.push(eventId)
   const event = paymentIntentSucceededEvent(eventId, payment)
 
   await seedWebhookRow(event, { status: 'processing', receivedAtMs: Date.now() })
@@ -214,8 +226,9 @@ async function testStuckProcessingReturnsRetry(payment) {
 }
 
 // Test B — Fila atascada en processing (stale): se recupera y completa la transición.
-async function testStaleProcessingRecovers(payment) {
+async function testStaleProcessingRecovers(payment, ids) {
   const eventId = `evt_stale_${randomUUID().slice(0, 8)}`
+  ids.eventIds.push(eventId)
   const event = paymentIntentSucceededEvent(eventId, payment)
 
   await seedWebhookRow(event, { status: 'processing', receivedAtMs: Date.now() - STALE_MS })
@@ -233,8 +246,9 @@ async function testStaleProcessingRecovers(payment) {
 }
 
 // Test C — Fila en failed (tras crash/no-2xx): el reintento de Stripe converge.
-async function testFailedRowRetried(payment) {
+async function testFailedRowRetried(payment, ids) {
   const eventId = `evt_failed_${randomUUID().slice(0, 8)}`
+  ids.eventIds.push(eventId)
   const event = paymentIntentSucceededEvent(eventId, payment)
 
   await seedWebhookRow(event, { status: 'failed', receivedAtMs: Date.now() })
@@ -251,29 +265,57 @@ async function testFailedRowRetried(payment) {
   return { eventId }
 }
 
-// Test D — Doble disparo concurrente: sin duplicar dinero ni transición.
-async function testConcurrentDoubleFire(payment) {
+// Nº de disparos concurrentes del MISMO evento en Test D. Más alto = más presión
+// sobre el claim atómico del inbox. Con 2 el bug original era intermitente; con
+// este fan-out la ventana de carrera se fuerza de forma agresiva en cada corrida.
+const CONCURRENT_FIRES = 8
+
+// Test D — Disparo concurrente agresivo: sin duplicar dinero, ledger ni transición.
+// El claim del inbox debe garantizar que el handler corre EXACTAMENTE una vez aunque
+// N entregas del mismo evento lleguen a la vez. La firma del bug original era la
+// aparición de entradas `reconciliation_mismatch` (el 2º run veía el pago ya avanzado),
+// por eso ahora se asierta explícitamente su ausencia.
+async function testConcurrentDoubleFire(payment, ids) {
   const eventId = `evt_concurrent_${randomUUID().slice(0, 8)}`
+  ids.eventIds.push(eventId)
   const event = paymentIntentSucceededEvent(eventId, payment)
 
-  const results = await Promise.allSettled([
-    processStripeWebhookEvent(event),
-    processStripeWebhookEvent(event),
-  ])
+  const results = await Promise.allSettled(
+    Array.from({ length: CONCURRENT_FIRES }, () => processStripeWebhookEvent(event)),
+  )
 
   const rejected = results.filter((r) => r.status === 'rejected')
   assert(rejected.length === 0, `D: ninguna ejecución concurrente debe lanzar (${rejected.map((r) => r.reason?.message).join('; ')}).`)
 
+  // Exactamente una ejecución debe haber procesado el evento; el resto deben haber
+  // perdido el claim atómico y devuelto retry (processing) o duplicate, sin re-ejecutar.
+  const processedCount = results.filter((r) => r.status === 'fulfilled' && r.value?.processed === true && r.value?.duplicate !== true).length
+  assert(processedCount === 1, `D: el handler debe ejecutarse exactamente una vez, no ${processedCount}.`)
+
   const paymentRow = await getSingle('payments', 'id', payment.paymentId)
   const taskRow = await getSingle('tasks', 'id', payment.taskId)
-  const ledgerCount = await countRows('payment_ledger_entries', 'payment_id', payment.paymentId)
+  const ledgerEntries = await getLedgerEntryTypes(payment.paymentId)
+  const ledgerCount = ledgerEntries.length
+  const ledgerTypes = ledgerEntries.map((row) => row.entry_type).sort()
+  const mismatchEntries = ledgerEntries.filter((row) => row.entry_type === 'reconciliation_mismatch')
   const webhookRows = await countRows('stripe_webhook_events', 'stripe_event_id', eventId)
   const transitionAudits = await countTaskTransitionAudits(payment.taskId)
 
   // Invariantes financieras DURAS:
   assert(paymentRow?.status === 'held', 'D: el payment debe quedar held exactamente una vez.')
   assert(taskRow?.status === 'in_progress', 'D: la tarea debe quedar in_progress.')
-  assert(ledgerCount === 2, `D: deben existir exactamente 2 ledger entries (charge_captured + funds_held), no ${ledgerCount}.`)
+  assert(
+    ledgerCount === 2,
+    `D: deben existir exactamente 2 ledger entries (charge_captured + funds_held), no ${ledgerCount} [${ledgerTypes.join(', ')}].`,
+  )
+  assert(
+    mismatchEntries.length === 0,
+    `D: no debe crearse ninguna entrada reconciliation_mismatch bajo concurrencia (firma del bug), había ${mismatchEntries.length}.`,
+  )
+  assert(
+    ledgerTypes.join(',') === 'charge_captured,funds_held',
+    `D: los dos ledger entries deben ser charge_captured + funds_held, no [${ledgerTypes.join(', ')}].`,
+  )
   assert(webhookRows === 1, `D: el inbox debe tener una sola fila para el evento, no ${webhookRows}.`)
 
   // Invariante BLANDA (se reporta, no rompe): audits de transición.
@@ -332,12 +374,12 @@ async function main() {
       scenarios[name] = payment
     }
 
-    const a = await testStuckProcessingReturnsRetry(scenarios.stuck)
-    const b = await testStaleProcessingRecovers(scenarios.stale)
-    const c = await testFailedRowRetried(scenarios.failed)
-    const d = await testConcurrentDoubleFire(scenarios.concurrent)
-
-    ids.eventIds.push(a.eventId, b.eventId, c.eventId, d.eventId)
+    // Each test registers its own eventId in `ids` at creation time, so a mid-test
+    // failure still gets cleaned up by the finally block (no leaked inbox rows).
+    await testStuckProcessingReturnsRetry(scenarios.stuck, ids)
+    await testStaleProcessingRecovers(scenarios.stale, ids)
+    await testFailedRowRetried(scenarios.failed, ids)
+    await testConcurrentDoubleFire(scenarios.concurrent, ids)
 
     console.log('Webhook reliability checks passed.')
   } catch (error) {

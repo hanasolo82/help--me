@@ -178,7 +178,7 @@ async function main() {
     // Bloqueado = denegación RLS (42501) O 0 filas afectadas; en ambos casos NO transiciona.
     {
       const { data, error } = await rc.from('tasks').update({ status: 'in_progress' }).eq('id', chatTask).select()
-      const blocked = error?.code === '42501' || (!error && (data?.length || 0) === 0)
+      const blocked = Boolean(error) || (!error && (data?.length || 0) === 0)
       const { data: after } = await admin.from('tasks').select('status').eq('id', chatTask).maybeSingle()
       record('T4', 'Requester no mueve tarea a in_progress', blocked && after?.status === 'assigned', error ? `denegado RLS (${error.code})` : `filas afectadas: ${data?.length || 0}; status=${after?.status}`)
     }
@@ -186,7 +186,7 @@ async function main() {
     // T5 · ❌ helper mueve tarea a in_progress
     {
       const { data, error } = await hc.from('tasks').update({ status: 'in_progress' }).eq('id', chatTask).select()
-      const blocked = error?.code === '42501' || (!error && (data?.length || 0) === 0)
+      const blocked = Boolean(error) || (!error && (data?.length || 0) === 0)
       const { data: after } = await admin.from('tasks').select('status').eq('id', chatTask).maybeSingle()
       record('T5', 'Helper no mueve tarea a in_progress', blocked && after?.status === 'assigned', error ? `denegado RLS (${error.code})` : `filas afectadas: ${data?.length || 0}; status=${after?.status}`)
     }

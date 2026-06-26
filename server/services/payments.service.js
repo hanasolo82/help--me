@@ -901,7 +901,12 @@ export async function releasePaymentFunds({ paymentId, requester }) {
   }
 
   const existingTransfer = await getTransferByPaymentId(payment.id)
-  if (existingTransfer && existingTransfer.status !== 'failed') {
+  if (
+    existingTransfer &&
+    existingTransfer.status !== 'failed' &&
+    ['release_pending', 'transferring', 'released'].includes(payment.status) &&
+    ['completed', 'closed'].includes(task.status)
+  ) {
     await createIdempotentAuditEvent({
       eventType: 'release_blocked',
       severity: 'warning',
@@ -944,6 +949,31 @@ export async function releasePaymentFunds({ paymentId, requester }) {
         duplicate: true,
       }
     }
+  }
+
+  if (existingTransfer && existingTransfer.status !== 'failed') {
+    await createIdempotentAuditEvent({
+      eventType: 'release_validation_failed',
+      severity: 'warning',
+      actorType: 'requester',
+      actorProfileId: requester.id,
+      entityType: 'payment',
+      entityId: payment.id,
+      afterState: {
+        reason: 'Existing transfer is inconsistent with the current payment/task state.',
+        transfer_status: existingTransfer.status,
+        payment_status: payment.status,
+        task_status: task.status,
+      },
+      correlationId: payment.correlation_id || getOrCreateCorrelationId(payment),
+      metadata: {
+        payment_id: payment.id,
+        task_id: task.id,
+        transfer_id: existingTransfer.id,
+      },
+    })
+
+    throw new Error('La transferencia existente no coincide con el estado actual del pago.')
   }
 
   if (payment.status !== 'held') {
