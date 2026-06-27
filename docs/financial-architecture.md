@@ -73,17 +73,23 @@ Events that can not be matched to a local payment create `reconciliation_mismatc
 `payment_intent.succeeded` promotes the related task from `assigned` to `in_progress` when the local task and payment still match.
 `transfer.created`, `transfer.paid`, `transfer.failed`, and `transfer.reversed` mirror the local transfer row and keep the payment reconciliation state aligned.
 
-## Release and payout
+## Release, refunds, disputes and payouts — mirror vs. execute
 
-Sprint 3B implements release creation and transfer mirroring, but still does not implement:
+The event layer **mirrors and records** refunds, disputes, transfers and payouts: it updates the
+`refunds` / `disputes` / `transfers` / `payouts` mirror tables, writes append-only ledger entries and
+audit rows, and flags `needs_review` where applicable. What it **does not** do is **execute money
+automatically** for those cases — it never issues a refund, resolves a dispute, or launches a payout
+from application code.
 
-- payouts
-- refunds
-- disputes
-- payout execution
+The only money the app moves is the **release transfer**, created explicitly by the requester through
+the backend and gated by the existing idempotent flow. Capture happens through Stripe Checkout. Transfer
+settlement is a backend-controlled release step, never a client-side money action.
 
-Stripe still handles the actual payment capture UI and confirmation. Transfer settlement remains a backend-controlled release step, not a client-side money action.
+Authoritative, current behavior (auto-updated state, `needs_review` triggers, manual-intervention cases,
+and the classified known warnings): see `docs/financial-reconciliation.md`.
 
-## Sprint 3
+## Next steps
 
-The next sprint should add the remaining money-out flows only if the support and reconciliation path is ready: payouts, refunds, disputes, and operator tooling.
+The remaining work is **execution** of money-out flows (issuing refunds, resolving disputes, launching
+payouts) plus operator tooling — added only when the support and reconciliation path is ready. The
+mirroring/reconciliation foundation for these events already exists.

@@ -15,13 +15,22 @@
 - Transfer release creation from the backend
 - Task closing only after `transfer.paid`
 
-## What it does not cover yet
+## Mirrored/reconciled vs. executed
 
-- transfers
-- payouts
-- refunds
-- disputes
-- real money movement
+The following **are** mirrored and reconciled today (mirror tables + append-only ledger + audit +
+`needs_review`), they are **not** "out of scope":
+
+- transfers (release flow + `transfer.*` mirroring)
+- payouts (`payout.*` mirroring)
+- refunds (`charge.refunded` mirroring)
+- disputes (`charge.dispute.*` mirroring, always `needs_review`)
+
+What is **not** done automatically:
+
+- **executing** money for refunds, disputes and payouts (issuing a refund, resolving a dispute,
+  launching a payout) — these stay manual / operator-driven, outside beta.
+
+Full, current behavior: see `docs/financial-reconciliation.md`.
 
 ## Operational checks
 

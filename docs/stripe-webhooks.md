@@ -53,4 +53,6 @@
 - If an event arrives out of order, the mirror row is not regressed and the event is flagged for review.
 - If the local payment cannot be found, the webhook is still processed safely but the mismatch is recorded.
 - Checkout is now part of the flow, and transfer release mirroring is also live.
-- Payout, refund, and dispute execution are still out of scope.
+- Payout, refund, and dispute **state** is mirrored and reconciled (mirror tables + ledger + audit +
+  `needs_review`). Only their **execution** (issuing a refund, resolving a dispute, launching a payout)
+  is out of scope and stays manual. See `docs/financial-reconciliation.md`.
