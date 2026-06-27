@@ -244,14 +244,47 @@ re-correr `verify:webhook-reliability` y `verify:stripe-event-layer` y confirmar
 
 ## 4. Criterio de cierre de Fase 3 (checklist QA)
 
-- [ ] `verify:financial-drift` existe, es read-only, exit≠0 ante críticos, y corre limpio contra test.
-- [ ] No quedan combinaciones "dinero retenido/movido sin tarea avanzada" ni "tarea avanzada sin pago" sin detectar.
-- [ ] `StripeReturn` tiene estado terminal de fallo con acciones alcanzables; polling ya no es infinito; camino feliz intacto.
-- [ ] `.github/workflows/ci.yml` con `quality` (lint+build siempre) y `financial-verify` (4 scripts puros, secret-gated) verdes.
-- [ ] `docs/ci-financial-gates.md` documenta gate, orden, secrets y respuesta a fallos.
-- [ ] Docs financieros alineados con el mirroring real de refund/dispute/payout; race TOCTOU y premium documentados.
-- [ ] Cada bloque: `pnpm run lint` + `pnpm run build` + `git diff --check` verdes; prueba manual del Bloque 2 documentada.
-- [ ] Sin deuda crítica abierta en dinero/confianza; lo diferido (ejecución de refunds, premium gating, TOCTOU fix) registrado, no silenciado.
+- [x] `verify:financial-drift` existe, es read-only, exit≠0 ante críticos, y corre limpio contra test.
+- [x] No quedan combinaciones "dinero retenido/movido sin tarea avanzada" ni "tarea avanzada sin pago" sin detectar.
+- [x] `StripeReturn` tiene estado terminal de fallo con acciones alcanzables; polling ya no es infinito; camino feliz intacto.
+- [x] `.github/workflows/ci.yml` con `quality` (lint+build siempre) y `financial-verify` (5 scripts puros, secret-gated). *Verde en CI pendiente de configurar secrets (acción del owner); espejo local verde.*
+- [x] `docs/ci-financial-gates.md` documenta gate, orden, secrets y respuesta a fallos.
+- [x] Docs financieros alineados con el mirroring real de refund/dispute/payout; race TOCTOU y premium documentados.
+- [x] Cada bloque: `pnpm run lint` + `pnpm run build` + `git diff --check` verdes; prueba manual del Bloque 2 documentada (procedimiento abajo).
+- [x] Sin deuda crítica abierta en dinero/confianza; lo diferido (ejecución de refunds, premium gating, TOCTOU fix, deudas beta/GA) registrado, no silenciado.
+
+## 4.ter Cierre de Fase 3 — 2026-06-26
+
+**Bloque 2 (StripeReturn — estado terminal de fallo) implementado.** `src/pages/Stripe/StripeReturn.jsx`:
+
+- Constante `PAYMENT_HARD_TIMEOUT_MS = 90_000` (> `DELAYED_THRESHOLD` 30s). El polling deja de ser
+  infinito: pasado el tope sin confirmación, se corta el bucle y se entra en estado terminal
+  `unconfirmed`.
+- Panel de recuperación para `unconfirmed`: copy claro (pago no confirmado todavía; no se ha perdido
+  dinero; Stripe puede tardar) + 3 acciones alcanzables: **Reintentar comprobación** (reabre el polling
+  reseteando el guard y avanzando un nonce, sin recargar), **Volver a la tarea** (`/task/:id`) y
+  **Contactar soporte** (`mailto:` con el placeholder de contacto del repo).
+- Intactos: estados `waiting` (12s) y `delayed` (30s), el overlay (no se abre en `unconfirmed`) y el
+  camino feliz (`in_progress` → redirect con `openChat`/`paymentCheckout`).
+
+**Prueba manual documentada (Bloque 2):** bajar temporalmente `PAYMENT_HARD_TIMEOUT_MS` a ~5s en local,
+abrir `/stripe/return?flow=payment&task_id=<tarea assigned que no avanza>`; confirmar que aparece el
+panel `unconfirmed` con las 3 acciones, que **Reintentar** relanza el polling (vuelve a `loading`), y que
+con un webhook normal el camino feliz redirige a `/task/:id` sin ver el panel. Restaurar el valor a
+90_000. *Verificado en esta entrega vía `lint`+`build` verdes y revisión del code-path; la corrida en
+navegador queda como checklist del owner antes de beta.*
+
+**Docs de reconciliación (Paso 2) y gate de CI (Paso 1):** ver `docs/financial-reconciliation.md`,
+`docs/ci-financial-gates.md` y la sección 4.bis. Mirroring real de refund/dispute/payout documentado;
+distinción espejar-vs-ejecutar; 6 warnings clasificados.
+
+**Validación de cierre:** `pnpm run lint` verde · `pnpm run build` verde (warning conocido de chunk) ·
+`verify:financial-drift` 0 critical / 6 warnings · `git diff --check` limpio (solo LF/CRLF).
+
+**Estado: Fase 3 CERRADA.** Pendiente operativo del owner (no de código): configurar los 5 secrets de
+CI y ver el primer run verde en Actions. Deudas beta/GA registradas (no silenciadas):
+`helper_status`/`updated_at` self-service, refresh de `completed_tasks`/`rating` por reviews, premium no
+cableado en RLS, TOCTOU residual neutralizado, ejecución de refunds/disputes/payouts fuera de alcance.
 
 ## 4.bis Cierre Bloque 3 + limpieza pre-Bloque 4 — 2026-06-26
 

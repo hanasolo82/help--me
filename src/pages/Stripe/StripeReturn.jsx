@@ -13,6 +13,9 @@ const PAYMENT_POLL_FAST_INTERVAL_MS = 1500
 const PAYMENT_POLL_SLOW_INTERVAL_MS = 5000
 const PAYMENT_WAITING_THRESHOLD_MS = 12_000
 const PAYMENT_DELAYED_THRESHOLD_MS = 30_000
+// Corta el polling para que no sea infinito: pasado este tope sin confirmación,
+// mostramos un estado terminal de recuperación en vez de girar para siempre.
+const PAYMENT_HARD_TIMEOUT_MS = 90_000
 
 export default function StripeReturn() {
   const navigate = useNavigate()
@@ -27,6 +30,7 @@ export default function StripeReturn() {
   const isPaymentFlow = flow === 'payment'
   const paymentReturnPath = taskId ? `/task/${taskId}` : '/home'
   const [checkingState, setCheckingState] = useState('loading')
+  const [paymentRetryNonce, setPaymentRetryNonce] = useState(0)
   const [message, setMessage] = useState(
     isPaymentFlow
       ? 'Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.'
@@ -77,6 +81,16 @@ export default function StripeReturn() {
 
           while (!cancelled) {
             const elapsedMs = Date.now() - startedAt
+
+            // Tope duro: el pago no se confirmó a tiempo. Cortamos el polling y
+            // pasamos a un estado terminal con acciones de recuperación.
+            if (elapsedMs >= PAYMENT_HARD_TIMEOUT_MS) {
+              setCheckingState('unconfirmed')
+              setMessage(
+                'No hemos podido confirmar tu pago todavía. No se ha perdido dinero: a veces Stripe tarda más de lo normal. Puedes reintentar la comprobación, volver a la tarea o contactar con soporte.',
+              )
+              return
+            }
 
             if (elapsedMs >= PAYMENT_DELAYED_THRESHOLD_MS) {
               setCheckingState('delayed')
@@ -221,7 +235,27 @@ export default function StripeReturn() {
         window.clearTimeout(redirectTimer)
       }
     }
-  }, [flow, loading, navigate, paymentId, paymentReturnPath, profileLoading, queryClient, refreshProfile, taskId, user, isPaymentFlow])
+  }, [flow, loading, navigate, paymentId, paymentReturnPath, profileLoading, queryClient, refreshProfile, taskId, user, isPaymentFlow, paymentRetryNonce])
+
+  // Reintenta la comprobación desde el estado terminal `unconfirmed`: reabre el
+  // efecto de polling (resetea el guard y avanza el nonce) sin recargar la página.
+  function handleRetryPaymentCheck() {
+    hasResolvedRef.current = false
+    setCheckingState('loading')
+    setMessage('Reintentando la comprobación de tu pago con Stripe...')
+    setPaymentRetryNonce((nonce) => nonce + 1)
+  }
+
+  function handleBackToTask() {
+    navigate(paymentReturnPath, {
+      replace: true,
+      state: {
+        paymentCheckout: true,
+        paymentId: paymentId || null,
+        returnTo: '/home',
+      },
+    })
+  }
 
   return (
     <main className={styles.page}>
@@ -231,14 +265,16 @@ export default function StripeReturn() {
           {isPaymentFlow
             ? checkingState === 'confirmed'
               ? 'Pago confirmado'
-              : checkingState === 'delayed'
-                ? 'Confirmación en curso'
-                : 'Confirmando tu pago'
+              : checkingState === 'unconfirmed'
+                ? 'No pudimos confirmar el pago'
+                : checkingState === 'delayed'
+                  ? 'Confirmación en curso'
+                  : 'Confirmando tu pago'
             : 'Hemos recibido tu información'}
         </h1>
         <p className={styles.lead}>{message}</p>
 
-        <div className={`${styles.statusCard} ${checkingState === 'error' ? styles.errorCard : ''}`}>
+        <div className={`${styles.statusCard} ${checkingState === 'error' || checkingState === 'unconfirmed' ? styles.errorCard : ''}`}>
           <strong>Estado actual</strong>
           <p>
             {isPaymentFlow
@@ -248,6 +284,8 @@ export default function StripeReturn() {
                   ? 'Stripe aún está confirmando el pago de forma segura.'
                   : checkingState === 'delayed'
                     ? 'Seguimos comprobando el estado en segundo plano.'
+                  : checkingState === 'unconfirmed'
+                    ? 'No hemos podido confirmar el pago todavía. No se ha cobrado de más ni se ha perdido dinero.'
                   : checkingState === 'error'
                     ? 'No hemos podido verificar la tarea todavía.'
                     : checkingState === 'confirmed'
@@ -263,22 +301,28 @@ export default function StripeReturn() {
 
         <div className={styles.actions}>
           {isPaymentFlow ? (
-            <button
-              type="button"
-              className="secondary-action"
-              onClick={() =>
-                navigate(paymentReturnPath, {
-                  replace: true,
-                  state: {
-                    paymentCheckout: true,
-                    paymentId: paymentId || null,
-                    returnTo: '/home',
-                  },
-                })
-              }
-            >
-              {taskId ? 'Volver al detalle' : 'Volver al inicio'}
-            </button>
+            checkingState === 'unconfirmed' ? (
+              <>
+                <button type="button" className="primary-action" onClick={handleRetryPaymentCheck}>
+                  Reintentar comprobación
+                </button>
+                <button type="button" className="secondary-action" onClick={handleBackToTask}>
+                  {taskId ? 'Volver a la tarea' : 'Volver al inicio'}
+                </button>
+                <a
+                  className="secondary-action"
+                  href={`mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]?subject=${encodeURIComponent(
+                    `Pago sin confirmar${taskId ? ` (tarea ${taskId})` : ''}`,
+                  )}`}
+                >
+                  Contactar soporte
+                </a>
+              </>
+            ) : (
+              <button type="button" className="secondary-action" onClick={handleBackToTask}>
+                {taskId ? 'Volver al detalle' : 'Volver al inicio'}
+              </button>
+            )
           ) : (
             <>
               <button
