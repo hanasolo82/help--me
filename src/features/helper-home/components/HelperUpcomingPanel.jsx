@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import HelperEmptyState from './HelperEmptyState'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
+import { formatTaskAvailabilityShort } from '../../tasks/availability/taskAvailability'
 import styles from '../styles/helperHome.module.css'
 
 function formatTaskAge(task) {
@@ -52,6 +53,7 @@ export default function HelperUpcomingPanel({ tasks = [], onOpenTask }) {
               <div className={styles.upcomingTaskActivity}>
                 <ActivityBadge category={task.category} compact />
                 <span>{formatTaskAge(task)}</span>
+                <span>{formatTaskAvailabilityShort(task)}</span>
               </div>
               <div className={styles.upcomingRow}>
                 <p className={styles.upcomingMeta}>

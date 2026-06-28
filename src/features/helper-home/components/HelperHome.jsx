@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
+import { formatTaskAvailabilityShort } from '../../tasks/availability/taskAvailability'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
 import { applyToTask, withdrawTaskApplication } from '../../../services/tasksService'
@@ -324,6 +325,8 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     {Number.isFinite(Number(selectedDistance)) ? `${Number(selectedDistance).toFixed(1)} km` : 'Distancia no disponible'}
                     {' · '}
                     {formatTaskAge(selectedTask)}
+                    {' · '}
+                    {formatTaskAvailabilityShort(selectedTask)}
                   </span>
                 </div>
 

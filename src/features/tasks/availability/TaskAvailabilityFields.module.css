@@ -1,0 +1,75 @@
+.block {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-muted-bg);
+  padding: var(--hm-card-padding);
+}
+
+.header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.header span {
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.header p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.segment,
+.segmentSelected {
+  min-height: 2.6rem;
+  border: 1px solid var(--hm-button-secondary-border);
+  border-radius: var(--hm-button-radius);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  transition:
+    border-color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+
+.segment {
+  background: var(--hm-button-secondary-bg);
+  color: var(--hm-button-secondary-fg);
+}
+
+.segmentSelected {
+  background: var(--hm-button-primary-bg);
+  color: var(--hm-button-primary-fg);
+  box-shadow: var(--hm-button-shadow);
+}
+
+.segment:hover,
+.segmentSelected:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--hm-color-border-subtle));
+  box-shadow: var(--hm-button-shadow-hover);
+}
+
+@media (min-width: 620px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { allowedCategories, canEditTask, createTask, updateTask } from '../../services/tasksService'
 import { useTaskById } from '../../hooks/useTaskById'
 import { useUserLocation } from '../../hooks/useUserLocation'
+import TaskAvailabilityFields from '../../features/tasks/availability/TaskAvailabilityFields'
 import TaskLocationPicker from '../../features/tasks/components/TaskLocationPicker'
 
 const priceSuggestions = [3, 5, 10]
@@ -32,6 +33,7 @@ function CreateTaskForm({
   const [description, setDescription] = useState(() => initialValues.description)
   const [category, setCategory] = useState(() => initialValues.category)
   const [priceEuros, setPriceEuros] = useState(() => initialValues.priceEuros)
+  const [availability, setAvailability] = useState(() => initialValues.availability)
   const [selectedLocation, setSelectedLocation] = useState(() => initialValues.location)
   const [submitError, setSubmitError] = useState('')
 
@@ -53,6 +55,9 @@ function CreateTaskForm({
         lat: formLocation.latitude,
         lng: formLocation.longitude,
         location_label: formLocation.label || null,
+        requested_date: availability.requestedDate || null,
+        requested_time_slot: availability.requestedTimeSlot || null,
+        requested_time_note: availability.requestedTimeNote || null,
       }
 
       return isEditing ? updateTask(taskId, payload) : createTask(payload)
@@ -140,6 +145,13 @@ function CreateTaskForm({
             </div>
           </div>
 
+          <TaskAvailabilityFields
+            requestedDate={availability.requestedDate}
+            requestedTimeSlot={availability.requestedTimeSlot}
+            requestedTimeNote={availability.requestedTimeNote}
+            onChange={setAvailability}
+          />
+
           <div className="choice-group">
             <span>Precio sugerido</span>
             <div className="chips">
@@ -206,6 +218,11 @@ export default function CreateTask() {
         description: task.description || '',
         category: task.category || allowedCategories[0],
         priceEuros: Number(task.price ?? 0),
+        availability: {
+          requestedDate: task.requested_date || '',
+          requestedTimeSlot: task.requested_time_slot || 'flexible',
+          requestedTimeNote: task.requested_time_note || '',
+        },
         location: getLocationPayload({
           lat: Number(task.lat),
           lng: Number(task.lng),
@@ -219,6 +236,11 @@ export default function CreateTask() {
       description: '',
       category: allowedCategories[0],
       priceEuros: 5,
+      availability: {
+        requestedDate: '',
+        requestedTimeSlot: 'flexible',
+        requestedTimeNote: '',
+      },
       location: null,
     }
   }, [isEditing, task])

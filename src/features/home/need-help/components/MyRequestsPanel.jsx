@@ -1,4 +1,5 @@
 import styles from './MyRequestsPanel.module.css'
+import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 
 export default function MyRequestsPanel({
@@ -85,6 +86,8 @@ export default function MyRequestsPanel({
               month: 'short',
               year: 'numeric',
             }).format(new Date(latestOpenTask.published_at || latestOpenTask.created_at)) : 'Sin fecha'}
+            {' · '}
+            {formatTaskAvailabilityShort(latestOpenTask)}
           </p>
         </article>
       ) : (

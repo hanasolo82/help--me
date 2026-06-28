@@ -2,6 +2,7 @@ import styles from './TaskCard.module.css'
 import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
 import messageIcon from '../../../../assets/icons/message.svg'
+import { formatTaskAvailabilityShort } from '../../availability/taskAvailability'
 import ActivityBadge from '../../categories/ActivityBadge'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 
@@ -130,6 +131,7 @@ export default function TaskCard({
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
   const metaItems = [
     locationLabel,
+    formatTaskAvailabilityShort(task),
     statusLabels[task.status] || task.status,
     formatPublicationAge(task),
     showDistance ? distanceLabel : null,

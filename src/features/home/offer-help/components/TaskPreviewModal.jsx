@@ -1,4 +1,5 @@
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 import styles from './TaskPreviewModal.module.css'
 
@@ -72,6 +73,7 @@ export default function TaskPreviewModal({
             <ActivityBadge category={task.category} compact />
           </div>
           <span>{task.status}</span>
+          <span>{formatTaskAvailabilityShort(task)}</span>
           <span>{formatPublishedAt(publishedAt)}</span>
           <span>{formatDistance(distanceKm)}</span>
           <span>{Number(task.price ?? 0)} EUR</span>

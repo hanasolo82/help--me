@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
+import TaskAvailabilityFields from '../../../tasks/availability/TaskAvailabilityFields'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
 import TaskLocationSearch from './TaskLocationSearch'
 import styles from './RequestTaskModal.module.css'
@@ -42,6 +43,11 @@ function RequestTaskModalInner({
   const [description, setDescription] = useState(task?.description || '')
   const [category, setCategory] = useState(task?.category || defaultCategories[0])
   const [price, setPrice] = useState(String(task?.price ?? ''))
+  const [availability, setAvailability] = useState({
+    requestedDate: task?.requested_date || '',
+    requestedTimeSlot: task?.requested_time_slot || 'flexible',
+    requestedTimeNote: task?.requested_time_note || '',
+  })
   const [error, setError] = useState('')
 
   const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
@@ -91,6 +97,9 @@ function RequestTaskModalInner({
         lat: taskLocation.lat,
         lng: taskLocation.lng,
         location_label: taskLocation.label || null,
+        requested_date: availability.requestedDate || null,
+        requested_time_slot: availability.requestedTimeSlot || null,
+        requested_time_note: availability.requestedTimeNote || null,
       }
 
       const savedTask = isEditing ? await updateTask(task.id, payload) : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
@@ -150,6 +159,13 @@ function RequestTaskModalInner({
 
           <TaskLocationSearch value={taskLocation} onChange={handleTaskLocationChange} />
 
+          <TaskAvailabilityFields
+            requestedDate={availability.requestedDate}
+            requestedTimeSlot={availability.requestedTimeSlot}
+            requestedTimeNote={availability.requestedTimeNote}
+            onChange={setAvailability}
+          />
+
           <div className={styles.inlineRow}>
             <label className="field">
               <span>Categoría</span>
@@ -203,6 +219,9 @@ export default function RequestTaskModal(props) {
     props.task?.id || 'new',
     props.initialTitle || '',
     props.task?.location_label || '',
+    props.task?.requested_date || '',
+    props.task?.requested_time_slot || '',
+    props.task?.requested_time_note || '',
     props.location?.label || '',
     props.locationStatus || '',
     props.open ? 'open' : 'closed',

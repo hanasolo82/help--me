@@ -1,4 +1,5 @@
 import styles from './MyRequestCard.module.css'
+import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 
 const STATUS_COPY = {
@@ -36,6 +37,7 @@ export default function MyRequestCard({
 }) {
   const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
+  const availabilityLabel = formatTaskAvailabilityShort(task)
   const isPendingConfirmation = task.status === 'assigned'
   const applicationCount = Number(task.application_count || 0)
   const hasInterestedHelpers = task.status === 'open' && applicationCount > 0
@@ -57,6 +59,7 @@ export default function MyRequestCard({
 
       <div className={styles.detailRow}>
         <span>{dateLabel}</span>
+        <span>{availabilityLabel}</span>
         <span>{task.price ? `${Number(task.price)} EUR` : 'Precio libre'}</span>
       </div>
 

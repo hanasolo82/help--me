@@ -4,6 +4,11 @@ import { requireUser } from '../lib/authHelpers'
 import { getCurrentUser } from './authService'
 import { canAcceptTask } from '../features/helper-onboarding/utils/helperPermissions'
 import { getProfileByUserId } from './profilesService'
+import {
+  normalizeApplicationAvailabilityInput,
+  normalizeTaskAvailabilityInput,
+  normalizeTimeSlot,
+} from '../features/tasks/availability/taskAvailability'
 
 // Nota: categorias permitidas por el frontend para crear y filtrar tareas.
 // Si anades una categoria, actualiza tambien el CHECK de public.tasks.category en Supabase.
@@ -28,6 +33,9 @@ const TASK_SELECT = `
   lat,
   lng,
   location_label,
+  requested_date,
+  requested_time_slot,
+  requested_time_note,
   published_at,
   cancelled_at,
   modified_at,
@@ -38,7 +46,19 @@ const TASK_SELECT = `
 
 const BLOCKED_PROFILE_STATUS = 'suspended'
 const CREATOR_PROFILE_SELECT = 'id, username, full_name, avatar_url, rating, account_status'
-const APPLICATION_SELECT = 'id, task_id, helper_id, message, status, created_at, updated_at'
+const APPLICATION_SELECT = `
+  id,
+  task_id,
+  helper_id,
+  message,
+  status,
+  availability_response,
+  proposed_date,
+  proposed_time_slot,
+  proposed_time_note,
+  created_at,
+  updated_at
+`
 
 function isProfileAvailable(profile) {
   return profile?.account_status !== BLOCKED_PROFILE_STATUS
@@ -154,6 +174,8 @@ export function validateTaskInput(input) {
   const lat = Number(input.lat)
   const lng = Number(input.lng)
   const locationLabel = sanitizeText(input.location_label ?? input.locationLabel ?? '', 240)
+  const availability = normalizeTaskAvailabilityInput(input)
+  const requestedTimeNote = sanitizeText(availability.requested_time_note || '', 240)
 
   const errors = []
 
@@ -163,11 +185,25 @@ export function validateTaskInput(input) {
   if (!Number.isFinite(price) || price < 0 || price > 500) errors.push('Precio no valido.')
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) errors.push('Latitud no valida.')
   if (!Number.isFinite(lng) || lng < -180 || lng > 180) errors.push('Longitud no valida.')
+  if ((input.requested_time_slot || input.requestedTimeSlot) && !normalizeTimeSlot(input.requested_time_slot ?? input.requestedTimeSlot)) {
+    errors.push('Franja horaria no valida.')
+  }
 
   return {
     isValid: errors.length === 0,
     errors,
-    value: { title, description, category, price, lat, lng, location_label: locationLabel || null },
+    value: {
+      title,
+      description,
+      category,
+      price,
+      lat,
+      lng,
+      location_label: locationLabel || null,
+      requested_date: availability.requested_date,
+      requested_time_slot: availability.requested_time_slot,
+      requested_time_note: requestedTimeNote || null,
+    },
   }
 }
 
@@ -242,7 +278,7 @@ async function attachCurrentHelperApplications(tasks, helperId) {
 
   const { data, error } = await supabase
     .from('task_applications')
-    .select('id, task_id, status')
+    .select(APPLICATION_SELECT)
     .eq('helper_id', helperId)
     .in('task_id', taskIds)
     .in('status', ['pending', 'selected'])
@@ -578,10 +614,12 @@ export async function getTaskById(taskId, { viewer } = {}) {
 // Nota funcion:
 // Modelo profesional: el helper se ofrece, no asigna la tarea directamente.
 // La seleccion del helper queda en manos del requester mediante selectTaskHelper.
-export async function applyToTask(taskId, message = '') {
+export async function applyToTask(taskId, input = {}) {
   const user = await requireUser('Necesitas iniciar sesion para aceptar una tarea.')
   const helperId = user.id
   const helperProfile = await getProfileByUserId(helperId)
+  const applicationInput = typeof input === 'string' ? { message: input } : input || {}
+  const availability = normalizeApplicationAvailabilityInput(applicationInput)
 
   if (!canAcceptTask(helperProfile)) {
     throw new Error('Completa y activa tu perfil de helper antes de ofrecerte a tareas.')
@@ -600,7 +638,11 @@ export async function applyToTask(taskId, message = '') {
 
   const { data, error } = await supabase.rpc('apply_to_task', {
     p_task_id: taskId,
-    p_message: sanitizeText(message, 600) || null,
+    p_message: sanitizeText(applicationInput.message || '', 600) || null,
+    p_availability_response: availability.availability_response,
+    p_proposed_date: availability.proposed_date,
+    p_proposed_time_slot: availability.proposed_time_slot,
+    p_proposed_time_note: sanitizeText(availability.proposed_time_note || '', 240) || null,
   })
 
   if (error) {

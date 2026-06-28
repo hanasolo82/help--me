@@ -14,6 +14,11 @@ import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
 import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
+import ApplicationAvailabilityFields from '../../features/tasks/availability/ApplicationAvailabilityFields'
+import {
+  formatApplicationAvailability,
+  formatTaskAvailabilityFull,
+} from '../../features/tasks/availability/taskAvailability'
 import ActivityBadge from '../../features/tasks/categories/ActivityBadge'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
@@ -135,9 +140,16 @@ export default function TaskDetail() {
   const [reviewPromptOpen, setReviewPromptOpen] = useState(false)
   const [taskLocationLabel, setTaskLocationLabel] = useState('')
   const [taskLocationStatus, setTaskLocationStatus] = useState('idle')
+  const [offerAvailability, setOfferAvailability] = useState({
+    availabilityResponse: 'matches',
+    proposedDate: '',
+    proposedTimeSlot: 'flexible',
+    proposedTimeNote: '',
+    message: '',
+  })
 
   const applyMutation = useMutation({
-    mutationFn: () => applyToTask(id),
+    mutationFn: () => applyToTask(id, offerAvailability),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['task', id] }),
@@ -454,6 +466,10 @@ export default function TaskDetail() {
               <ActivityBadge category={task.category} />
             </strong>
           </div>
+          <div className="task-fact">
+            <span>Cuándo</span>
+            <strong>{formatTaskAvailabilityFull(task)}</strong>
+          </div>
         </div>
 
         {task.accepted_by ? (
@@ -539,6 +555,7 @@ export default function TaskDetail() {
                   'Helper interesado'
                 const applicationInitial = getAvatarInitial(applicationHelperName)
                 const applicationDate = formatApplicationDate(application.created_at)
+                const applicationAvailability = formatApplicationAvailability(application, task)
 
                 return (
                   <article className="application-card" key={application.id}>
@@ -559,6 +576,7 @@ export default function TaskDetail() {
                             : 'Disponible para ayudarte'}
                         </p>
                         {applicationDate ? <p className="muted">Se ofreció el {applicationDate}</p> : null}
+                        {applicationAvailability ? <p className="muted">{applicationAvailability}</p> : null}
                         {application.message ? <p className="muted">{application.message}</p> : null}
                       </div>
                     </div>
@@ -650,69 +668,89 @@ export default function TaskDetail() {
       )}
 
       {!showDecisionGate && (
-        <div className="two-actions">
-          {canApply && (
-            <button
-              type="button"
-              className="primary-action sticky-action"
-              onClick={handleOfferToggle}
-              disabled={applyMutation.isPending || withdrawApplicationMutation.isPending}
-              aria-busy={applyMutation.isPending || withdrawApplicationMutation.isPending}
-            >
-              {applyMutation.isPending
-                ? 'Enviando...'
-                : withdrawApplicationMutation.isPending
-                  ? 'Retirando...'
-                  : currentUserApplication?.status === 'pending'
-                    ? 'Retirar oferta'
-                    : 'Ofrecerme'}
-            </button>
-          )}
+        <>
+          {canApply && !currentUserApplication ? (
+            <ApplicationAvailabilityFields
+              task={task}
+              availabilityResponse={offerAvailability.availabilityResponse}
+              proposedDate={offerAvailability.proposedDate}
+              proposedTimeSlot={offerAvailability.proposedTimeSlot || task.requested_time_slot || 'flexible'}
+              proposedTimeNote={offerAvailability.proposedTimeNote}
+              message={offerAvailability.message}
+              onChange={setOfferAvailability}
+            />
+          ) : null}
 
-          {canOpenPayment && (
-            <>
+          {canApply && currentUserApplication?.status === 'pending' ? (
+            <p className="muted">
+              {formatApplicationAvailability(currentUserApplication, task) || 'Tu oferta está enviada.'}
+            </p>
+          ) : null}
+
+          <div className="two-actions">
+            {canApply && (
               <button
                 type="button"
                 className="primary-action sticky-action"
-                onClick={() => navigate(`/task/${id}/payment`, { state: { returnTo: taskPath } })}
+                onClick={handleOfferToggle}
+                disabled={applyMutation.isPending || withdrawApplicationMutation.isPending}
+                aria-busy={applyMutation.isPending || withdrawApplicationMutation.isPending}
               >
-                Confirmar y pagar
+                {applyMutation.isPending
+                  ? 'Enviando...'
+                  : withdrawApplicationMutation.isPending
+                    ? 'Retirando...'
+                    : currentUserApplication?.status === 'pending'
+                      ? 'Retirar oferta'
+                      : 'Ofrecerme'}
               </button>
+            )}
+
+            {canOpenPayment && (
+              <>
+                <button
+                  type="button"
+                  className="primary-action sticky-action"
+                  onClick={() => navigate(`/task/${id}/payment`, { state: { returnTo: taskPath } })}
+                >
+                  Confirmar y pagar
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action sticky-action"
+                  onClick={handleRejectHelper}
+                  disabled={rejectHelperMutation.isPending}
+                >
+                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+                </button>
+              </>
+            )}
+
+            {canCloseTask && (
               <button
                 type="button"
                 className="secondary-action sticky-action"
-                onClick={handleRejectHelper}
-                disabled={rejectHelperMutation.isPending}
+                onClick={() => setCompletionOpen(true)}
               >
-                {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+                Confirmar finalización
               </button>
-            </>
-          )}
+            )}
 
-          {canCloseTask && (
-            <button
-              type="button"
-              className="secondary-action sticky-action"
-              onClick={() => setCompletionOpen(true)}
-            >
-              Confirmar finalización
-            </button>
-          )}
-
-          {canReviewHelper && (
-            helperReviewQuery.isLoading ? (
-              <span className="muted" role="status">Comprobando valoración...</span>
-            ) : !helperReviewQuery.data && !helperReviewQuery.error ? (
-              <button
-                type="button"
-                className="primary-action sticky-action"
-                onClick={() => navigate(`/task/${id}/review`, { state: { returnTo: taskPath } })}
-              >
-                Valorar helper
-              </button>
-            ) : null
-          )}
-        </div>
+            {canReviewHelper && (
+              helperReviewQuery.isLoading ? (
+                <span className="muted" role="status">Comprobando valoración...</span>
+              ) : !helperReviewQuery.data && !helperReviewQuery.error ? (
+                <button
+                  type="button"
+                  className="primary-action sticky-action"
+                  onClick={() => navigate(`/task/${id}/review`, { state: { returnTo: taskPath } })}
+                >
+                  Valorar helper
+                </button>
+              ) : null
+            )}
+          </div>
+        </>
       )}
 
       {isOwner && task.status === 'draft' && (
