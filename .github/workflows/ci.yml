@@ -83,20 +83,29 @@ jobs:
       # Las 5 claves son obligatorias: financial-ops.mjs exige las 3 de Supabase al
       # importarse y stripe.service.js construye `new Stripe(STRIPE_SECRET_KEY)` al cargar,
       # por lo que los verificadores crashean (no fallan "de negocio") sin ellas.
-      - name: Check secrets availability
+      - name: Check & normalize secrets
         id: preflight
         run: |
-          if [ -n "$SUPABASE_URL" ] \
-            && [ -n "$SUPABASE_ANON_KEY" ] \
-            && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] \
-            && [ -n "$STRIPE_SECRET_KEY" ] \
-            && [ -n "$STRIPE_WEBHOOK_SECRET" ]; then
-            echo "have_secrets=true" >> "$GITHUB_OUTPUT"
-            echo "::notice title=Financial verifiers::Secrets present — running read-only verifiers."
-          else
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] \
+            || [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_WEBHOOK_SECRET" ]; then
             echo "have_secrets=false" >> "$GITHUB_OUTPUT"
             echo "::notice title=Financial verifiers skipped::Required test secrets are not configured; financial-verify steps are skipped (not failed)."
+            exit 0
           fi
+          # Normaliza SUPABASE_URL a su origin. Un error común es pegar el endpoint REST
+          # (…/rest/v1): supabase-js construye .../rest/v1/auth/v1/... y el gateway responde
+          # "Invalid path specified in request URL". Reducimos a origin para que los
+          # verificadores reciban una base limpia; fallamos claro si no es una URL válida.
+          NORMALIZED_URL="$(node -e 'try{process.stdout.write(new URL(process.env.SUPABASE_URL).origin)}catch(e){process.exit(1)}')" || {
+            echo "::error title=Bad SUPABASE_URL::SUPABASE_URL no es una URL válida. Ponlo como el origin pelado del proyecto, p.ej. https://<ref>.supabase.co (sin /rest/v1 ni ningún path)."
+            exit 1
+          }
+          if [ "$NORMALIZED_URL" != "$SUPABASE_URL" ]; then
+            echo "::warning title=SUPABASE_URL normalizada::SUPABASE_URL traía path/contenido extra; se redujo a su origin. Re-guarda el secret como el origin pelado https://<ref>.supabase.co."
+          fi
+          echo "SUPABASE_URL=$NORMALIZED_URL" >> "$GITHUB_ENV"
+          echo "have_secrets=true" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Financial verifiers::Secrets present — running read-only verifiers."
 
       # Orden: capas puras de Supabase/eventos sintéticos primero; drift (gate por critical) al final.
       # Todos son read-only o test-safe (crean y autolimpian datos de TEST; no tocan Stripe live).
