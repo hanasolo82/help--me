@@ -7,6 +7,7 @@ import EmptyChatState from '../../shared/ui/chat/EmptyChatState'
 import MessageList from '../../shared/ui/chat/MessageList'
 import MessageInput from '../../shared/ui/chat/MessageInput'
 import UserAvatar from '../../shared/ui/UserAvatar'
+import { PRICING_COPY } from '../../config/pricing'
 import {
   createClusterMarkerIcon,
   createHelperMarkerIcon,
@@ -451,16 +452,17 @@ export default function DesignLab() {
                 <span>Precio acordado</span>
                 <strong>24,00 EUR</strong>
               </div>
+              <div>
+                <span>{PRICING_COPY.betaNoCommission}</span>
+                <strong>0,00 EUR</strong>
+              </div>
               <div className={paymentStyles.totalRow}>
                 <span>Total</span>
                 <strong>24,00 EUR</strong>
               </div>
             </div>
-            <button type="button" className="primary-action">Pagar con Stripe</button>
-            <div className={paymentStyles.premiumCompact}>
-              <h3>Pago externo</h3>
-              <p>Opción secundaria visual, sin acción real en el laboratorio.</p>
-            </div>
+            <p className={paymentStyles.notice}>{PRICING_COPY.helperKeepsPrice}</p>
+            <button type="button" className="primary-action">{PRICING_COPY.paymentCta}</button>
           </aside>
         </SpecCard>
       </DesignSection>

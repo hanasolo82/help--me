@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import LegalLayout from './LegalLayout'
 
 // Terminos y condiciones reales para una plataforma de micro-ayuda entre vecinos en Espana.
-// helpMe es intermediario; no presta los servicios ni interviene en el pago entre particulares.
+// helpMe es intermediario; no presta los servicios anunciados.
 export default function Terms() {
   return (
     <LegalLayout title="Terminos y condiciones de uso" lastUpdated="2026-05-13">
@@ -96,14 +96,15 @@ export default function Terms() {
       <section>
         <h2>8. Precios, comisiones y pagos</h2>
         <p>
-          Durante la fase MVP actual, el precio mostrado en cada tarea es <strong>indicativo</strong> y el pago se
-          realiza directamente entre los usuarios fuera de la Plataforma. helpMe no cobra comision en esta fase.
+          Durante la beta cerrada, helpMe no cobra comision de plataforma. El helper ve el 100% del precio acordado
+          para la tarea; cualquier coste de plataforma previsto para una fase posterior se comunicara antes de
+          activarse.
         </p>
         <p>
           Cuando se active el modulo de pagos integrado (previsto via Stripe Connect), se mostrara con claridad: el
-          importe que cobra el helper, la comision de la Plataforma, los impuestos repercutibles y el momento de
-          liberacion del dinero retenido en garantia (escrow). Se publicara un addendum a estos Terminos que sera
-          notificado con la antelacion del apartado 3.
+          importe que cobra el helper, la comision de la Plataforma si estuviera activa, los impuestos repercutibles
+          y el momento de liberacion del pago retenido hasta confirmar. Se publicara un addendum a estos Terminos que
+          sera notificado con la antelacion del apartado 3.
         </p>
       </section>
 

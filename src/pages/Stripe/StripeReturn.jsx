@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/useAuth'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { syncStripeConnectStatus } from '../../features/helper-onboarding/services/stripeConnectService'
 import { helperOnboardingKeys } from '../../features/helper-onboarding/utils/helperOnboardingKeys'
+import { PRICING_COPY } from '../../config/pricing'
 import { getTaskById } from '../../services/tasksService'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import styles from './StripePage.module.css'
@@ -33,7 +34,7 @@ export default function StripeReturn() {
   const [paymentRetryNonce, setPaymentRetryNonce] = useState(0)
   const [message, setMessage] = useState(
     isPaymentFlow
-      ? 'Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.'
+      ? PRICING_COPY.paymentPending
       : 'Hemos recibido tu información. Estamos actualizando tu perfil de ayudante.',
   )
 
@@ -71,7 +72,7 @@ export default function StripeReturn() {
       async function waitForTaskPromotion() {
         const startedAt = Date.now()
         setCheckingState('loading')
-        setMessage('Estamos confirmando tu pago con Stripe. Esto puede tardar unos segundos.')
+        setMessage(PRICING_COPY.paymentPending)
 
         try {
           await Promise.all([
@@ -87,7 +88,7 @@ export default function StripeReturn() {
             if (elapsedMs >= PAYMENT_HARD_TIMEOUT_MS) {
               setCheckingState('unconfirmed')
               setMessage(
-                'No hemos podido confirmar tu pago todavía. No se ha perdido dinero: a veces Stripe tarda más de lo normal. Puedes reintentar la comprobación, volver a la tarea o contactar con soporte.',
+                PRICING_COPY.paymentUnconfirmed,
               )
               return
             }
@@ -95,11 +96,11 @@ export default function StripeReturn() {
             if (elapsedMs >= PAYMENT_DELAYED_THRESHOLD_MS) {
               setCheckingState('delayed')
               setMessage(
-                'Esto está tardando más de lo normal. Puedes volver al detalle; seguiremos comprobándolo.',
+                PRICING_COPY.paymentDelayed,
               )
             } else if (elapsedMs >= PAYMENT_WAITING_THRESHOLD_MS) {
               setCheckingState('waiting')
-              setMessage('Seguimos esperando la confirmación segura de Stripe. No necesitas repetir el pago.')
+              setMessage(PRICING_COPY.paymentWaiting)
             }
 
             const latestTask = taskId
@@ -113,7 +114,7 @@ export default function StripeReturn() {
 
             if (latestTask?.status === 'in_progress') {
               setCheckingState('confirmed')
-              setMessage('Pago confirmado. La tarea ya está en curso. Volvemos al detalle ahora.')
+              setMessage(PRICING_COPY.paymentConfirmed)
               redirectTimer = window.setTimeout(() => {
                 if (cancelled) return
                 navigate(paymentReturnPath, {
@@ -281,11 +282,11 @@ export default function StripeReturn() {
               ? checkingState === 'loading'
                 ? 'Comprobando la tarea...'
                 : checkingState === 'waiting'
-                  ? 'Stripe aún está confirmando el pago de forma segura.'
+                  ? PRICING_COPY.paymentWaiting
                   : checkingState === 'delayed'
                     ? 'Seguimos comprobando el estado en segundo plano.'
                   : checkingState === 'unconfirmed'
-                    ? 'No hemos podido confirmar el pago todavía. No se ha cobrado de más ni se ha perdido dinero.'
+                    ? PRICING_COPY.paymentUnconfirmed
                   : checkingState === 'error'
                     ? 'No hemos podido verificar la tarea todavía.'
                     : checkingState === 'confirmed'

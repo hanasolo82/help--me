@@ -85,7 +85,7 @@ Verifica si estos controles tienen efecto real:
 Si no tienen efecto:
 - elimina el control
 - o conéctalo a persistencia/comportamiento real
-según el menor cambio seguro.
+según el menor cambio prudente.
 
 P0-4: Flujo de cierre de tarea
 Verifica:
@@ -127,7 +127,7 @@ Devuelve un informe ejecutivo en español con:
 Actúa como ingeniero senior y Director de Proyecto Web para HelpMe.
 
 Objetivo:
-Corregir los P0 funcionales confirmados con cambios mínimos, seguros y alineados con el stack actual.
+Corregir los P0 funcionales confirmados con cambios mínimos, prudentes y alineados con el stack actual.
 
 Stack fijo:
 - React

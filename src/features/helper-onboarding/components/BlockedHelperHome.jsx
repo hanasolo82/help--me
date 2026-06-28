@@ -25,7 +25,7 @@ const STATUS_COPY = {
   [HELPER_STATUS.CONTACT_PENDING]:
     'Añadir un medio de contacto ayuda a reforzar la confianza y la recuperación de cuenta.',
   [HELPER_STATUS.IDENTITY_PENDING]:
-    'Completar este paso ayuda a que tu perfil se vea más sólido y seguro.',
+    'Completar este paso ayuda a que tu perfil se vea más sólido y fiable.',
   [HELPER_STATUS.TERMS_PENDING]:
     'Solo falta confirmar las condiciones para poder seguir adelante con tranquilidad.',
   [HELPER_STATUS.REJECTED]:
@@ -76,7 +76,7 @@ export default function BlockedHelperHome({ profile, onContinueHelperOnboarding,
             <p className={styles.copy}>{statusText}</p>
 
             <div className={styles.trustNote}>
-              Estos pasos nos ayudan a mantener una comunidad más segura y a mostrar perfiles claros, útiles y confiables.
+              Estos pasos nos ayudan a mantener una comunidad más cuidada y a mostrar perfiles claros, útiles y confiables.
             </div>
 
             <div className={styles.progressCard} aria-label="Progreso del perfil de ayudante">

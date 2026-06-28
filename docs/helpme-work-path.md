@@ -43,7 +43,7 @@ Trabajar en este orden para no perder el foco:
 
 - Una tarea puede pasar por el flujo de pago en modo de prueba.
 - El ciclo puede completarse sin tocar la arquitectura financiera real.
-- El equipo puede observar y validar el flujo con datos seguros.
+- El equipo puede observar y validar el flujo con datos controlados.
 
 ### Qué hay que verificar
 

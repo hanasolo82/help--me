@@ -24,7 +24,7 @@ export default function IdentityStep({ onNext, onBack, profile }) {
     <StepFrame
       kicker="Confianza"
       title="Prepara tu perfil para la revisión"
-      lead="Antes de aparecer como ayudante, revisaremos que tu perfil sea claro, coherente y seguro para la comunidad."
+      lead="Antes de aparecer como ayudante, revisaremos que tu perfil sea claro, coherente y fiable para la comunidad."
       className={styles.identityFrame}
       footer={
         <p className={styles.footer}>
@@ -57,7 +57,7 @@ export default function IdentityStep({ onNext, onBack, profile }) {
         </div>
 
         <p className={styles.cardLead}>
-          Queremos que tu presencia como ayudante se sienta clara, útil y segura desde el primer momento.
+          Queremos que tu presencia como ayudante se sienta clara, útil y confiable desde el primer momento.
         </p>
 
         <ul className={styles.checklist}>
@@ -85,7 +85,7 @@ export default function IdentityStep({ onNext, onBack, profile }) {
             </span>
             <div>
               <strong>Seguridad de la comunidad</strong>
-              <p>Revisamos algunos detalles para cuidar una experiencia más segura para todos.</p>
+              <p>Revisamos algunos detalles para cuidar una experiencia más fiable para todos.</p>
             </div>
           </li>
         </ul>
@@ -95,13 +95,13 @@ export default function IdentityStep({ onNext, onBack, profile }) {
         <div className={styles.stripeHeader}>
           <div>
             <p className={styles.stripeKicker}>Verificación con Stripe</p>
-            <h3 className={styles.stripeTitle}>Preparación segura para ayudar</h3>
+            <h3 className={styles.stripeTitle}>Preparación con Stripe para ayudar</h3>
           </div>
           <span className={styles.stripeBadge}>{stripeCompleted ? 'Completado' : 'Stripe Connect'}</span>
         </div>
 
         <p className={styles.stripeText}>
-          Stripe gestionará de forma segura la información necesaria para preparar tu perfil como ayudante. HelpMe no
+          Stripe gestionará la información necesaria para preparar tu perfil como ayudante. HelpMe no
           almacena documentos ni datos bancarios sensibles.
         </p>
 

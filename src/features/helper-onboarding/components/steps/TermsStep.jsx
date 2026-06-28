@@ -4,8 +4,8 @@ import { HELPER_TERMS_VERSION } from '../../utils/helperPermissions'
 
 const NORMS = [
   {
-    title: 'Ayuda segura y responsable',
-    text: 'Acepta solo tareas que puedas realizar de forma segura y dentro de tus capacidades.',
+    title: 'Ayuda responsable',
+    text: 'Acepta solo tareas que puedas realizar correctamente y dentro de tus capacidades.',
   },
   {
     title: 'Comunicación clara',
@@ -69,7 +69,7 @@ export default function TermsStep({
     <StepFrame
       kicker="Normas"
       title="Activa tu perfil de ayudante"
-      lead="Ya está todo listo. Antes de aparecer en el mapa, necesitamos que aceptes las normas básicas que mantienen HelpMe claro, seguro y útil para todos."
+      lead="Ya está todo listo. Antes de aparecer en el mapa, necesitamos que aceptes las normas básicas que mantienen HelpMe claro, responsable y útil para todos."
       footer={
         <p className={styles.footerNote}>
           Al activar tu perfil, podrás aparecer en el mapa y recibir solicitudes compatibles.

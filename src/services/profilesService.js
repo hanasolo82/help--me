@@ -194,7 +194,7 @@ export async function getCurrentProfile() {
   return getProfileByUserId(user.id)
 }
 
-// Garantiza que exista un profile para el usuario actual. Si falta, lo crea con valores seguros.
+// Garantiza que exista un profile para el usuario actual. Si falta, lo crea con valores por defecto.
 export async function ensureCurrentProfile() {
   const user = await requireUser('Necesitas una sesion valida para leer o crear tu profile.')
   const existingProfile = await getProfileByUserId(user.id)

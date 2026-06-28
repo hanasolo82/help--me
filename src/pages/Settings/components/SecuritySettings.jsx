@@ -59,7 +59,7 @@ export default function SecuritySettings() {
         <div className={styles.securityNote}>
           <span className={styles.panelKicker}>Contraseña</span>
           <h3>Restablecer contraseña</h3>
-          <p className="muted">Recibirás un enlace seguro en tu correo principal.</p>
+          <p className="muted">Recibirás un enlace de acceso en tu correo principal.</p>
           <button type="button" className="secondary-action" onClick={handlePasswordReset} disabled={!user?.email || resetState === 'loading'}>
             {resetState === 'loading' ? 'Enviando...' : 'Enviar enlace'}
           </button>

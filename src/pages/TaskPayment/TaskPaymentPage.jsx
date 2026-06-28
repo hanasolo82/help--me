@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { useTaskById } from '../../hooks/useTaskById'
-import { supabase } from '../../lib/supabaseClient'
-import { continueWithExternalPayment, startTaskCheckout } from '../../services/paymentsService'
+import { PRICING_COPY } from '../../config/pricing'
+import { startTaskCheckout } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
@@ -49,27 +49,12 @@ function getPaymentState(task, isOwner) {
   return 'not_payable'
 }
 
-function isActivePremiumSubscription(subscription) {
-  if (!subscription) return false
-
-  const status = subscription.subscription_status
-  const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end).getTime() : null
-
-  return ['active', 'trialing'].includes(status) && (!periodEnd || periodEnd > Date.now())
-}
-
 export default function TaskPaymentPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const routeLocation = useLocation()
-  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { task, loading, error } = useTaskById(id)
-  const [premiumState, setPremiumState] = useState({
-    loading: true,
-    active: false,
-    error: '',
-  })
   const checkoutStartedAtRef = useRef(null)
 
   const helperProfile = task?.accepted_profile || null
@@ -110,66 +95,6 @@ export default function TaskPaymentPage() {
       window.location.assign(checkout_url)
     },
   })
-
-  const externalPaymentMutation = useMutation({
-    mutationFn: () => continueWithExternalPayment(id),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['task', id] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-      ])
-      navigate(`/task/${id}`, { replace: true, state: { externalPayment: true } })
-    },
-  })
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadPremiumState() {
-      if (!user?.id || !supabase) {
-        setPremiumState({ loading: false, active: false, error: '' })
-        return
-      }
-
-      setPremiumState((current) => ({ ...current, loading: true, error: '' }))
-
-      try {
-        const { data, error: subscriptionError } = await supabase
-          .from('user_subscriptions')
-          .select('id, subscription_status, provider, current_period_end')
-          .eq('user_id', user.id)
-          .in('subscription_status', ['active', 'trialing'])
-          .order('current_period_end', { ascending: false, nullsFirst: false })
-          .limit(3)
-
-        if (subscriptionError) {
-          throw subscriptionError
-        }
-
-        if (cancelled) return
-
-        setPremiumState({
-          loading: false,
-          active: (data || []).some(isActivePremiumSubscription),
-          error: '',
-        })
-      } catch (subscriptionError) {
-        if (cancelled) return
-
-        setPremiumState({
-          loading: false,
-          active: false,
-          error: subscriptionError?.message || 'No pudimos comprobar Premium.',
-        })
-      }
-    }
-
-    loadPremiumState()
-
-    return () => {
-      cancelled = true
-    }
-  }, [user?.id])
 
   if (loading) {
     return (
@@ -243,11 +168,16 @@ export default function TaskPaymentPage() {
               <span>Precio acordado</span>
               <strong>{formatCurrency(price)}</strong>
             </div>
+            <div>
+              <span>{PRICING_COPY.betaNoCommission}</span>
+              <strong>{formatCurrency(0)}</strong>
+            </div>
             <div className={styles.totalRow}>
               <span>Total</span>
               <strong>{formatCurrency(price)}</strong>
             </div>
           </div>
+          <p className={styles.notice}>{PRICING_COPY.helperKeepsPrice}</p>
 
           {isPayable ? (
             <>
@@ -257,37 +187,8 @@ export default function TaskPaymentPage() {
                 onClick={() => checkoutMutation.mutate()}
                 disabled={checkoutMutation.isPending}
               >
-                {checkoutMutation.isPending ? 'Preparando pago seguro...' : 'Pagar de forma segura'}
+                {checkoutMutation.isPending ? 'Preparando pago...' : PRICING_COPY.paymentCta}
               </button>
-
-              <section className={styles.premiumCompact}>
-                <p>
-                  Opción secundaria: el pago dentro de HelpMe confirma la tarea desde la plataforma. Con Premium también
-                  puedes acordar el pago directamente con el helper.
-                </p>
-
-                {premiumState.active ? (
-                  <button
-                    type="button"
-                    className={styles.premiumAction}
-                    onClick={() => externalPaymentMutation.mutate()}
-                    disabled={externalPaymentMutation.isPending}
-                  >
-                    {externalPaymentMutation.isPending ? 'Confirmando...' : 'Coordinar pago con el helper'}
-                  </button>
-                ) : (
-                  <button type="button" className={styles.upsellButton} onClick={() => navigate('/settings')}>
-                    {premiumState.loading ? 'Comprobando Premium...' : 'Ver Premium'}
-                  </button>
-                )}
-
-                {premiumState.error ? <p className={styles.notice}>{premiumState.error}</p> : null}
-                {externalPaymentMutation.error ? (
-                  <p className={styles.error} role="alert">
-                    {externalPaymentMutation.error?.message || 'No pudimos confirmar el pago externo.'}
-                  </p>
-                ) : null}
-              </section>
             </>
           ) : (
             <>
@@ -318,7 +219,7 @@ export default function TaskPaymentPage() {
       </div>
       <ActionStatusOverlay
         open={checkoutMutation.isPending}
-        title="Preparando pago seguro..."
+        title="Preparando pago..."
         message="Estamos conectando con Stripe. No cierres esta pantalla ni vuelvas a pulsar el botón."
       />
     </main>

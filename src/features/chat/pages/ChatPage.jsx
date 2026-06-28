@@ -40,7 +40,7 @@ export default function ChatPage() {
         <h1>{error ? 'No hemos podido resolver la conversación' : 'Este chat no tiene una tarea asociada'}</h1>
         <p className={error ? 'auth-message error' : 'muted'}>
           {error ||
-            'Esta conversación antigua no puede abrirse fuera de contexto. Vuelve a tus tareas para continuar desde un flujo seguro.'}
+            'Esta conversación antigua no puede abrirse fuera de contexto. Vuelve a tus tareas para continuar desde el flujo de tarea.'}
         </p>
         <div className="two-actions">
           <button
