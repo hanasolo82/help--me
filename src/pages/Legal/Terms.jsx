@@ -13,7 +13,7 @@ export default function Terms() {
           "Plataforma") es <strong>[NOMBRE Y APELLIDOS]</strong>, persona fisica con NIF/NIE{' '}
           <strong>[NIF_O_NIE]</strong>, domicilio en <strong>[DIRECCION POSTAL]</strong> y correo electronico de
           contacto{' '}
-          <a href="mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]">[CORREO_DE_CONTACTO_DEL_RESPONSABLE]</a>.
+          <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a>.
         </p>
       </section>
 
@@ -126,7 +126,7 @@ export default function Terms() {
         </p>
         <p>
           Si consideras que algun contenido vulnera tus derechos puedes notificarlo a{' '}
-          <a href="mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]">[CORREO_DE_CONTACTO_DEL_RESPONSABLE]</a> indicando
+          <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a> indicando
           enlace o id del contenido y la base de tu reclamacion. Lo revisaremos en un plazo razonable y, en caso
           procedente, lo retiraremos.
         </p>
@@ -171,7 +171,7 @@ export default function Terms() {
         <h2>14. Resolucion de conflictos</h2>
         <p>
           Antes de acudir a la via judicial, intenta resolver tu reclamacion contactando con nosotros en{' '}
-          <a href="mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]">[CORREO_DE_CONTACTO_DEL_RESPONSABLE]</a>. Si eres
+          <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a>. Si eres
           consumidor, puedes acudir a la plataforma de resolucion de litigios en linea de la Comision Europea:{' '}
           <a
             href="https://ec.europa.eu/consumers/odr"

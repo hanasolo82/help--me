@@ -281,10 +281,26 @@ distinción espejar-vs-ejecutar; 6 warnings clasificados.
 **Validación de cierre:** `pnpm run lint` verde · `pnpm run build` verde (warning conocido de chunk) ·
 `verify:financial-drift` 0 critical / 6 warnings · `git diff --check` limpio (solo LF/CRLF).
 
-**Estado: Fase 3 CERRADA.** Pendiente operativo del owner (no de código): configurar los 5 secrets de
-CI y ver el primer run verde en Actions. Deudas beta/GA registradas (no silenciadas):
-`helper_status`/`updated_at` self-service, refresh de `completed_tasks`/`rating` por reviews, premium no
-cableado en RLS, TOCTOU residual neutralizado, ejecución de refunds/disputes/payouts fuera de alcance.
+**CI verificado en GitHub Actions — 2026-06-26:** primer run **verde** (≈1'46''), ambos jobs (`quality` y
+`financial-verify`). El job financiero ejecutó los 5 verificadores contra el Supabase de test.
+
+- *Incidencia resuelta:* el primer intento de `financial-verify` falló con `Invalid path specified in
+  request URL`. Causa raíz reproducida: el secret `SUPABASE_URL` traía el endpoint REST con path
+  (`…/rest/v1`) en vez del origin pelado; `supabase-js` construía `…/rest/v1/auth/v1/…` y el gateway de
+  Supabase rechazaba el path (no era falta de inyección de env: el guard exige las claves y no lanzó
+  `Missing env`). `.trim()` no quita un path; trailing slash/espacio/newline sí los tolera el SDK.
+- *Fix:* el preflight del workflow normaliza `SUPABASE_URL` a su origin con `new URL(...).origin` y lo
+  reexporta vía `$GITHUB_ENV`; falla claro si el valor no es URL válida. El owner además re-guardó el
+  secret limpio (en el run verde no apareció el `::warning` de normalización).
+- *Anotaciones no bloqueantes:* aviso de deprecación de Node 20 en los propios actions
+  (`checkout`/`setup-node`/`pnpm/action-setup`), forzados a Node 24 por el runner. Housekeeping opcional:
+  subir esos actions a `@v5`. No afecta al `node-version: 22` de los scripts.
+
+**Estado: Fase 3 CERRADA y verificada end-to-end** (incluido el gate de CI en verde). Deudas beta/GA
+registradas (no silenciadas): `helper_status`/`updated_at` self-service, refresh de
+`completed_tasks`/`rating` por reviews, premium no cableado en RLS, TOCTOU residual neutralizado,
+ejecución de refunds/disputes/payouts fuera de alcance. Pendiente menor opcional: prueba en navegador de
+StripeReturn (procedimiento documentado arriba) y bump de actions a `@v5`.
 
 ## 4.bis Cierre Bloque 3 + limpieza pre-Bloque 4 — 2026-06-26
 

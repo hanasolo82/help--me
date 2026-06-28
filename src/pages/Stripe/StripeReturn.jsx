@@ -311,7 +311,7 @@ export default function StripeReturn() {
                 </button>
                 <a
                   className="secondary-action"
-                  href={`mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]?subject=${encodeURIComponent(
+                  href={`mailto:helpme.app.contact@gmail.com?subject=${encodeURIComponent(
                     `Pago sin confirmar${taskId ? ` (tarea ${taskId})` : ''}`,
                   )}`}
                 >

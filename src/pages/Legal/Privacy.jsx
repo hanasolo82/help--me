@@ -12,7 +12,7 @@ export default function Privacy() {
           El responsable del tratamiento de tus datos personales es <strong>[NOMBRE Y APELLIDOS]</strong>, persona
           fisica con NIF/NIE <strong>[NIF_O_NIE]</strong>, domicilio a efectos de notificaciones en{' '}
           <strong>[DIRECCION POSTAL]</strong> y correo electronico de contacto{' '}
-          <a href="mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]">[CORREO_DE_CONTACTO_DEL_RESPONSABLE]</a>{' '}
+          <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a>{' '}
           (en adelante, <em>helpMe</em>).
         </p>
         <p>
@@ -199,7 +199,7 @@ export default function Privacy() {
         </ul>
         <p>
           Para ejercer estos derechos escribe a{' '}
-          <a href="mailto:[CORREO_DE_CONTACTO_DEL_RESPONSABLE]">[CORREO_DE_CONTACTO_DEL_RESPONSABLE]</a>{' '}
+          <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a>{' '}
           identificandote suficientemente. Si consideras que no atendemos tu solicitud, puedes reclamar ante la{' '}
           <strong>Agencia Espanola de Proteccion de Datos</strong> (
           <a href="https://www.aepd.es" rel="noreferrer noopener" target="_blank">aepd.es</a>
