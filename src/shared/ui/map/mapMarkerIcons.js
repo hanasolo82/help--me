@@ -1,5 +1,6 @@
 import L from 'leaflet'
 import { getAvatarInitial } from '../../../utils/avatar'
+import { createActivityMarkerSvg } from '../../../features/tasks/categories/taskCategories'
 import styles from './MapMarkerSystem.module.css'
 
 const TASK_STATUS_LABELS = {
@@ -27,17 +28,6 @@ function formatPrice(value) {
   return `${Math.round(price)} EUR`
 }
 
-function getCategoryCode(category) {
-  const cleanValue = String(category || 'Ayuda general').trim()
-  const words = cleanValue.split(/\s+/).filter(Boolean)
-
-  if (words.length >= 2) {
-    return words.slice(0, 2).map((word) => word.charAt(0)).join('').toUpperCase()
-  }
-
-  return cleanValue.slice(0, 2).toUpperCase()
-}
-
 export function getTaskStatusLabel(task) {
   return TASK_STATUS_LABELS[task?.status] || task?.status || 'Publicada'
 }
@@ -47,13 +37,13 @@ export function createTaskMarkerIcon({ task, selected = false, requester = false
     requester ? styles.requesterTaskMarker : styles.taskMarker,
     selected ? (requester ? styles.requesterTaskMarkerSelected : styles.taskMarkerSelected) : '',
   ].filter(Boolean).join(' ')
-  const categoryCode = escapeHtml(getCategoryCode(task?.category))
+  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.taskMarkerGlyphSvg })
   const price = escapeHtml(formatPrice(task?.price))
   const status = escapeHtml(getTaskStatusLabel(task))
   const html = requester
     ? `
       <span class="${styles.requesterTaskMarkerInner}">
-        <span class="${styles.requesterTaskMarkerDot}">${categoryCode}</span>
+        <span class="${styles.requesterTaskMarkerDot}">${activityGlyph}</span>
         <span class="${styles.requesterTaskMarkerText}">
           <span class="${styles.requesterTaskMarkerLabel}">Tu tarea</span>
           <span class="${styles.requesterTaskMarkerStatus}">${status}</span>
@@ -62,7 +52,7 @@ export function createTaskMarkerIcon({ task, selected = false, requester = false
     `
     : `
       <span class="${styles.taskMarkerBody}">
-        <span class="${styles.taskMarkerCode}">${categoryCode}</span>
+        <span class="${styles.taskMarkerGlyph}">${activityGlyph}</span>
         <span class="${styles.taskMarkerPrice}">${price}</span>
       </span>
     `

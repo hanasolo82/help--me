@@ -139,6 +139,13 @@
   margin-bottom: 0.35rem;
 }
 
+.activityLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.42rem;
+}
+
 .meta {
   color: var(--color-text-muted);
   font-size: 0.88rem;

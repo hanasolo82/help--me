@@ -200,15 +200,38 @@
   line-height: 1.2;
 }
 
-.selectedTaskSummary p,
-.selectedTaskSummary span {
+.selectedTaskSummary > span {
   color: var(--color-text-muted);
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.selectedTaskSummary span {
+.selectedTaskActivity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.selectedTaskActivity > span {
+  min-width: 0;
+}
+
+.upcomingTaskActivity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.upcomingTaskActivity > span {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.selectedTaskSummary > span {
   font-size: 0.72rem;
 }
 

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import HelperEmptyState from './HelperEmptyState'
+import ActivityBadge from '../../tasks/categories/ActivityBadge'
 import styles from '../styles/helperHome.module.css'
 
 function formatTaskAge(task) {
@@ -48,9 +49,10 @@ export default function HelperUpcomingPanel({ tasks = [], onOpenTask }) {
                 <strong>{task.title}</strong>
                 <span className={styles.statusPill}>{formatTaskStatus(task)}</span>
               </div>
-              <p className={styles.upcomingMeta}>
-                {task.category} · {formatTaskAge(task)}
-              </p>
+              <div className={styles.upcomingTaskActivity}>
+                <ActivityBadge category={task.category} compact />
+                <span>{formatTaskAge(task)}</span>
+              </div>
               <div className={styles.upcomingRow}>
                 <p className={styles.upcomingMeta}>
                   {task.price ? `${Number(task.price)} EUR` : 'Sin precio definido'}

@@ -14,6 +14,7 @@ import { reverseGeocodeLocation } from '../../services/locationService'
 import { getAvatarInitial } from '../../utils/avatar'
 import { useTaskById } from '../../hooks/useTaskById'
 import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
+import ActivityBadge from '../../features/tasks/categories/ActivityBadge'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
@@ -449,7 +450,9 @@ export default function TaskDetail() {
           </div>
           <div className="task-fact">
             <span>Categoría</span>
-            <strong>{task.category}</strong>
+            <strong>
+              <ActivityBadge category={task.category} />
+            </strong>
           </div>
         </div>
 

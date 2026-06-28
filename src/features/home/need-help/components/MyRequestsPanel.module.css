@@ -94,6 +94,13 @@
   font-weight: 700;
 }
 
+.featuredActivity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
 .featuredStatus {
   flex: 0 0 auto;
   border: 1px solid var(--hm-card-border);

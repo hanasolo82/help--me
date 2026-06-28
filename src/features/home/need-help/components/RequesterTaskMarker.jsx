@@ -1,6 +1,7 @@
 import { Marker, Popup } from 'react-leaflet'
 import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
 import { createTaskMarkerIcon } from '../../../../shared/ui/map/mapMarkerIcons'
+import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
 
 const STATUS_COPY = {
   open: 'Activa',
@@ -17,6 +18,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
 
   const publishedAt = task.published_at || task.created_at
   const statusLabel = STATUS_COPY[task.status] || task.status
+  const categoryLabel = getTaskCategoryLabel(task.category)
 
   return (
     <Marker
@@ -37,7 +39,7 @@ export default function RequesterTaskMarker({ task, selected = false, onSelect }
         <MapPopupCard
           kicker="Tu solicitud"
           title={task.title}
-          meta={[task.category, statusLabel]}
+          meta={[categoryLabel, statusLabel]}
         >
           {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
         </MapPopupCard>

@@ -3,6 +3,7 @@ import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
 import { createTaskMarkerIcon, createUserMarkerIcon, getTaskStatusLabel } from '../../../../shared/ui/map/mapMarkerIcons'
+import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
 import { toFiniteNumber } from '../../../../shared/utils/mapHelpers'
 import styles from './TaskMap.module.css'
 
@@ -249,6 +250,7 @@ export default function TaskMap({
           const creatorName = formatCreatorName(task)
           const locationLabel = task.location_label || task.zone || task.location
           const statusLabel = getTaskStatusLabel(task)
+          const categoryLabel = getTaskCategoryLabel(task.category)
           return (
             <Marker
               key={task.id}
@@ -270,7 +272,7 @@ export default function TaskMap({
                   kicker={statusLabel}
                   title={task.title}
                   meta={[
-                    task.category,
+                    categoryLabel,
                     `${priceEuros} EUR`,
                     locationLabel,
                     Number.isFinite(distance) ? `${distance} km` : null,

@@ -2,6 +2,7 @@ import styles from './TaskCard.module.css'
 import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
 import messageIcon from '../../../../assets/icons/message.svg'
+import ActivityBadge from '../../categories/ActivityBadge'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 
 // Card de tarea conectada a Supabase. Las columnas siguen el esquema actual:
@@ -128,7 +129,6 @@ export default function TaskCard({
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
   const metaItems = [
-    task.category,
     locationLabel,
     statusLabels[task.status] || task.status,
     formatPublicationAge(task),
@@ -207,6 +207,10 @@ export default function TaskCard({
           <h2 className={styles.title}>
             {task.title}
           </h2>
+
+          <div className={styles.activityLine}>
+            <ActivityBadge category={task.category} compact />
+          </div>
 
           <p className={styles.meta}>
             {metaItems.join(' · ')}

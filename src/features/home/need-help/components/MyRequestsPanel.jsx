@@ -1,4 +1,5 @@
 import styles from './MyRequestsPanel.module.css'
+import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 
 export default function MyRequestsPanel({
   tasks = [],
@@ -72,7 +73,9 @@ export default function MyRequestsPanel({
             <div>
               <p className="eyebrow">Última activa</p>
               <strong>{latestOpenTask.title}</strong>
-              <p className="muted">{latestOpenTask.category}</p>
+              <div className={styles.featuredActivity}>
+                <ActivityBadge category={latestOpenTask.category} compact />
+              </div>
             </div>
             <span className={styles.featuredStatus}>Activa</span>
           </div>

@@ -63,7 +63,11 @@
   gap: 0.5rem;
 }
 
-.meta span,
+.activityMeta {
+  display: inline-flex;
+}
+
+.meta > span,
 .statusPill {
   display: inline-flex;
   align-items: center;

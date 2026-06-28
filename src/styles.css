@@ -880,7 +880,7 @@ p {
 }
 
 .task-person-card span,
-.task-fact span,
+.task-fact > span,
 .task-review-grid span {
   color: var(--color-text-muted);
   font-size: 0.75rem;

@@ -1,4 +1,5 @@
 import styles from './MyRequestCard.module.css'
+import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 
 const STATUS_COPY = {
   open: 'Activa',
@@ -47,7 +48,9 @@ export default function MyRequestCard({
       <div className={styles.header}>
         <div>
           <p className={styles.title}>{task.title}</p>
-          <p className={styles.meta}>{task.category}</p>
+          <div className={styles.meta}>
+            <ActivityBadge category={task.category} compact />
+          </div>
         </div>
         <span className={styles.status}>{statusLabel}</span>
       </div>

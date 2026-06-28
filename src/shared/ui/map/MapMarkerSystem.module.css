@@ -23,18 +23,25 @@
 
 .taskMarkerBody {
   display: grid;
-  gap: 1px;
+  gap: 0;
+  place-items: center;
   min-width: 0;
   text-align: center;
   line-height: 1;
 }
 
-.taskMarkerCode {
-  color: var(--hm-map-marker-muted);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.taskMarkerGlyph {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  margin-bottom: 1px;
+}
+
+.taskMarkerGlyphSvg {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
 }
 
 .taskMarkerPrice {
@@ -63,10 +70,7 @@
   width: 1.6rem;
   height: 1.6rem;
   border-radius: var(--hm-map-marker-pill-radius);
-  background: var(--hm-map-marker-primary-bg);
-  color: var(--hm-map-marker-primary-fg);
-  font-size: 0.68rem;
-  font-weight: 900;
+  background: color-mix(in srgb, var(--hm-map-marker-primary-bg) 18%, var(--hm-map-marker-task-bg));
 }
 
 .requesterTaskMarkerText {
