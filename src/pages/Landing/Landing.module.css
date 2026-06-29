@@ -636,3 +636,146 @@
     max-width: none;
   }
 }
+
+/* --- Planes y pago retenido (informativo, sin cobros) --- */
+.sectionLead {
+  margin: 0;
+  max-width: 44rem;
+  color: color-mix(in srgb, var(--text) 64%, transparent);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.pricingExplainer {
+  width: min(100%, 52rem);
+  margin: 0 0 1.75rem;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--shadow) 55%, transparent);
+}
+
+.pricingExplainer h3 {
+  margin: 0 0 0.7rem;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.pricingExplainer ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.pricingBetaNote {
+  margin: 0.95rem 0 0;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.pricingGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.pricingCard {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 1.25rem;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--shadow) 45%, transparent);
+}
+
+.pricingCardActive {
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.planBadge {
+  justify-self: start;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: color-mix(in srgb, var(--text) 66%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.62rem;
+}
+
+.planBadgeActive {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  color: var(--accent);
+}
+
+.pricingCard h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+
+.planPrice {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.planPriceNote {
+  margin: -0.25rem 0 0;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.planFeatures {
+  margin: 0.2rem 0 0;
+  padding-left: 1.05rem;
+  display: grid;
+  gap: 0.38rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.planCta {
+  justify-self: stretch;
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--primary, var(--hm-color-primary));
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color var(--motion-fast, 140ms) ease, transform var(--motion-fast, 140ms) ease;
+}
+
+.planCta:hover {
+  background: var(--hm-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.planSoon {
+  justify-self: start;
+  align-self: center;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.pricingDisclaimer {
+  margin: 1.4rem 0 0;
+  max-width: 52rem;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}

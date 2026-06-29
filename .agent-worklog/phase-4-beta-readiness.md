@@ -318,6 +318,26 @@ Tokens existentes (`--hm-map-marker-*`, `--hm-color-primary`, `--hm-radius-pill`
 backend/datos/popup/markers de helper-usuario. lint/build verdes, sin clases huérfanas.
 Pendiente: confirmación visual del owner en el mapa real.
 
+## Fase 5 (inicio) — Landing & Pricing informativo — 2026-06-29
+Objetivo: producto entendible/vendible visualmente SIN activar monetización real. Solo frontend/copy.
+Tocado: `src/pages/Landing/Landing.jsx` (+ `.module.css`).
+- Nueva sección `#planes` "Planes y pago retenido": explainer del pago retenido (4 pasos) +
+  4 tarjetas (Pago retenido = "Disponible ahora"; Protección Plus / Urgente / Helper Pro = "Próximamente"/
+  "Más adelante") + disclaimer de no-contratable.
+- Precios/flags derivados de `src/config/pricing.js` (`PRICING_COPY`, `PRICING_PLANS`): Plus 12% + 2,49 €,
+  Urgente +2,99 €, Helper Pro 7,99 €/mes (GA estimado). `pricing.js` solo se LEE (sigue informativo).
+- CTAs prudentes: solo "Publicar tarea" (acción gratis real) en la card beta; el resto labels no-botón
+  "Próximamente"/"Más adelante". Sin Comprar/Activar/Pagar/Suscribirme/Desbloquear.
+- Nav link "Planes" + FAQ JSON-LD "¿Cuánto cuesta?". Acento cálido (`--accent`) en precios/badges; cards
+  claras; mobile-first (grid auto-fit, CTA 44px); adapta a dark vía alias del tema.
+- TaskPaymentPage **ya** usaba PRICING_COPY (betaNoCommission/helperKeepsPrice/paymentCta) sin upsell
+  (Fase A) → no se tocó.
+Validación: lint verde · build verde · git diff --check limpio · rg de palabras prohibidas
+(seguro/reembolso garantizado/protección total/escrow/soporte 24/7) y de CTAs de compra = 0 en Landing.
+No se activó cobro/checkout/suscripción; flags de `pricing.js` intactos (realFeesEnabled=false).
+Pendiente owner: revisión visual 360×720 + dark. No añadido: sección en el Home de la app (se omitió para
+no distraer el flujo; recomendado como siguiente paso opcional). Sin commit.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

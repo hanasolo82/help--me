@@ -191,15 +191,6 @@ export default function NeedHelpMapLayout({
     return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesSkill(helper, selectedSkillId))
   }, [helpers, mapBounds, selectedSkillId])
 
-  const markerLegend = useMemo(
-    () => [
-      { label: 'Tu ubicación', tone: 'me' },
-      { label: 'Helpers disponibles', tone: 'helper' },
-      { label: 'Mis solicitudes', tone: 'task' },
-    ],
-    [],
-  )
-
   function handleSelectHelper(helper) {
     selectHelper(helper)
     setMobileView('map')
@@ -228,25 +219,6 @@ export default function NeedHelpMapLayout({
       <div className={styles.desktopGrid}>
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
           <div className={styles.mapShell}>
-            <div className={styles.mapLegend} aria-label="Leyenda del mapa">
-              {markerLegend.map((item) => (
-                <span key={item.label} className={styles.legendItem}>
-                  <span
-                    className={
-                      item.tone === 'me'
-                        ? `${styles.legendSwatch} ${styles.legendSwatchMe}`
-                        : item.tone === 'helper'
-                          ? `${styles.legendSwatch} ${styles.legendSwatchHelper}`
-                        : item.tone === 'task'
-                          ? `${styles.legendSwatch} ${styles.legendSwatchTask}`
-                        : `${styles.legendSwatch} ${styles.legendSwatchOpenTask}`
-                    }
-                  />
-                  {item.label}
-                </span>
-              ))}
-            </div>
-
             <MapContainer center={focusCenter} zoom={13} scrollWheelZoom className={styles.map}>
               <RecenterMap center={focusCenter} />
               <ViewportReporter onViewportChange={setMapBounds} />

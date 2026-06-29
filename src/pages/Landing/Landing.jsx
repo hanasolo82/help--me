@@ -6,6 +6,7 @@ import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
+import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
 import { ShineBorder } from '@/components/ui/shine-border'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
@@ -54,6 +55,14 @@ const LANDING_JSONLD = {
             text: 'Empezamos en Zaragoza y ampliamos segun la demanda de cada zona.',
           },
         },
+        {
+          '@type': 'Question',
+          name: '¿Cuanto cuesta usar helpMe?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Publicar una tarea es gratis. En la beta cerrada, el pago retenido hasta confirmar esta incluido sin comision de HelpMe.',
+          },
+        },
       ],
     },
   ],
@@ -63,6 +72,7 @@ const landingLinks = [
   { label: 'Cómo funciona', href: '#como-funciona' },
   { label: 'Confianza', href: '#confianza' },
   { label: 'Categorías', href: '#categorias' },
+  { label: 'Planes', href: '#planes' },
   { label: 'Empieza', href: '#empieza' },
 ]
 
@@ -135,6 +145,68 @@ const categories = [
   {
     title: 'Ayuda técnica',
     text: 'Dudas, ajustes y pequeñas tareas que se resuelven mejor con alguien al lado.',
+  },
+]
+
+// Informativo: deriva precios/visibilidad de src/config/pricing.js. No activa cobros.
+function formatEur(cents) {
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100)
+}
+
+function formatPct(bps) {
+  return `${Number(bps || 0) / 100}%`
+}
+
+const heldPaymentSteps = [
+  'Publicar una tarea es gratis.',
+  'Pagas con pago retenido hasta confirmar que la ayuda está hecha.',
+  'El helper ve el 100% del precio acordado antes de aceptar.',
+  'Al cerrar, liberas el pago y valoras al helper.',
+]
+
+const pricingPlans = [
+  {
+    id: 'held',
+    name: 'Pago retenido',
+    badge: 'Disponible ahora',
+    available: true,
+    price: 'Sin comisión en beta cerrada',
+    priceNote: 'Publicar es gratis',
+    features: [
+      'Publicar tarea gratis',
+      PRICING_COPY.paymentValue,
+      PRICING_COPY.helperKeepsPrice,
+      'Chat disponible tras el pago',
+      'Valoración al cierre',
+    ],
+  },
+  {
+    id: 'plus',
+    name: 'Protección Plus',
+    badge: 'Próximamente',
+    available: false,
+    price: `GA estimado: ${formatPct(PRICING_PLANS.plus.ga.commissionBps)} + ${formatEur(PRICING_PLANS.plus.ga.minimumFeeCents)} mín.`,
+    features: [
+      'Revisión antes de liberar',
+      PRICING_COPY.reportBeforeRelease,
+      'Soporte humano',
+    ],
+  },
+  {
+    id: 'urgent',
+    name: 'Urgente / Destacar',
+    badge: 'Próximamente',
+    available: false,
+    price: `GA estimado: +${formatEur(PRICING_PLANS.urgentBoost.ga.fixedFeeCents)} por tarea`,
+    features: ['Más visibilidad para tu tarea durante un tiempo'],
+  },
+  {
+    id: 'helperPro',
+    name: 'Helper Pro',
+    badge: 'Más adelante',
+    available: false,
+    price: `GA estimado: ${formatEur(PRICING_PLANS.helperPro.ga.monthlyPriceCents)}/mes`,
+    features: ['Badge de helper', 'Más visibilidad', 'Estadísticas de tu actividad'],
   },
 ]
 
@@ -362,6 +434,61 @@ export default function Landing() {
             </ShineBorder>
           ))}
         </div>
+      </section>
+
+      <section id="planes" className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <p className={styles.kicker}>Planes y pago retenido</p>
+          <h2>Claro por dentro: qué usas hoy y qué llegará después</h2>
+          <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
+        </div>
+
+        <div className={styles.pricingExplainer}>
+          <h3>Cómo funciona el pago retenido</h3>
+          <ul>
+            {heldPaymentSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ul>
+          <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
+        </div>
+
+        <div className={styles.pricingGrid}>
+          {pricingPlans.map((plan) => (
+            <article
+              key={plan.id}
+              className={plan.available ? `${styles.pricingCard} ${styles.pricingCardActive}` : styles.pricingCard}
+            >
+              <span
+                className={plan.available ? `${styles.planBadge} ${styles.planBadgeActive}` : styles.planBadge}
+              >
+                {plan.badge}
+              </span>
+              <h3>{plan.name}</h3>
+              <p className={styles.planPrice}>{plan.price}</p>
+              {plan.priceNote ? <p className={styles.planPriceNote}>{plan.priceNote}</p> : null}
+              <ul className={styles.planFeatures}>
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              {plan.available ? (
+                <button type="button" className={styles.planCta} onClick={() => startJourney('need')}>
+                  Publicar tarea
+                </button>
+              ) : (
+                <span className={styles.planSoon} aria-disabled="true">
+                  {plan.badge}
+                </span>
+              )}
+            </article>
+          ))}
+        </div>
+
+        <p className={styles.pricingDisclaimer}>
+          Plus, Urgente y Helper Pro están previstos para más adelante. Aún no están disponibles para
+          contratar: los precios mostrados son estimaciones para cuando se activen.
+        </p>
       </section>
 
       <section id="empieza" className={styles.finalCta}>
