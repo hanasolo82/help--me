@@ -10,26 +10,10 @@ import {
   normalizeTimeSlot,
 } from '../features/tasks/availability/taskAvailability'
 
-// Nota: categorias que el frontend ofrece al crear/filtrar. El CHECK de public.tasks.category
-// solo valida longitud (2-50), no un enum de valores, asi que ampliar esta lista no requiere migracion.
-// Cada etiqueta mapea a su glifo HelpMoji en features/tasks/categories/taskCategories.js.
-export const allowedCategories = [
-  'Limpieza',
-  'Mudanza',
-  'Recados',
-  'Compras',
-  'Reparaciones',
-  'Clases',
-  'Cuidado',
-  'Mascotas',
-  'Tecnología',
-  'Otros',
-]
-
-// Categorias historicas que ya no aparecen en el selector pero siguen siendo validas
-// (tareas antiguas que se editan no deben fallar la validacion).
-const LEGACY_CATEGORIES = ['Ayuda tecnica']
-export const acceptedCategories = [...allowedCategories, ...LEGACY_CATEGORIES]
+// Nota: categorias que el frontend ofrece al crear/filtrar. IMPORTANTE: la BD impone un CHECK
+// (tasks_category_check, ver supabase/schema.sql) que SOLO admite estos valores. Ampliar esta
+// lista requiere ANTES una migracion que actualice el constraint (y schema.sql) — ver 0046.
+export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
 
 // Nota Supabase - public.tasks:
 // Estas son las columnas que este servicio pide cada vez que lee una tarea.
@@ -198,7 +182,7 @@ export function validateTaskInput(input) {
 
   if (title.length < 3) errors.push('El titulo debe tener al menos 3 caracteres.')
   if (description.length < 3) errors.push('La descripcion debe tener al menos 3 caracteres.')
-  if (!acceptedCategories.includes(category)) errors.push('Categoria no permitida.')
+  if (!allowedCategories.includes(category)) errors.push('Categoria no permitida.')
   if (!Number.isFinite(price) || price < 0 || price > 500) errors.push('Precio no valido.')
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) errors.push('Latitud no valida.')
   if (!Number.isFinite(lng) || lng < -180 || lng > 180) errors.push('Longitud no valida.')

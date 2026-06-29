@@ -291,6 +291,33 @@ Validación: lint verde · build verde · runtime check de las 10 etiquetas + le
 backend/RLS/Supabase/migraciones/tokens. Sin commit (lo hace el owner).
 Pendiente: 3D.1c (cards premium) opcional; 3D.3 home/hero; 3D.4 mobile; 3D.5 polish.
 
+### 3D.2 — REGRESIÓN y corrección (2026-06-29)
+**Error en producción:** `new row for relation "tasks" violates check constraint "tasks_category_check"`.
+Causa: di por bueno (grep incompleto) que el CHECK de `tasks.category` era solo de longitud; en realidad
+`supabase/schema.sql:32` impone `check (category in ('Mascotas','Recados','Compras','Ayuda tecnica'))`.
+Al ampliar `allowedCategories` (default pasó a 'Limpieza'), publicar reventaba. **Fallo mío de auditoría.**
+Corrección inmediata: **revertido el frontend de 3D.2** (`allowedCategories` vuelve a las 4; validación
+vuelve a `allowedCategories`; `useHomeFilters` deriva y vuelve solo a 4). App desbloqueada (lint/build
+verdes). Se mantiene `taskCategories.js` con el mapa de alias ampliado (inerte, listo para re-habilitar).
+Entregado para re-habilitar correctamente:
+- `supabase/migrations/0046_expand_task_categories.sql` (drop+recreate del CHECK con las 11 categorías).
+- `supabase/schema.sql:32` actualizado al mismo set.
+**Pendiente owner:** aplicar 0046 al entorno; al confirmarlo, Claude re-habilita `allowedCategories`
+ampliado. Hasta entonces el catálogo queda en 4 (3 glifos).
+
+### 3D.4b — rediseño de marcadores de mapa (2026-06-29)
+Feedback owner: marcador de tarea poco profesional, texto descentrado, tapaba mucho mapa; referencia
+Google Maps. Causa: caja rectangular 56×46 con glifo+precio apilados (y el de requester 84×46 con
+"Tu tarea"+estado, muy ancho).
+Solución (solo `mapMarkerIcons.js` + `MapMarkerSystem.module.css`): **etiqueta-pin tipo Google Maps** —
+pastilla redondeada de una línea (glifo + `precio €`) con **punta inferior** que ancla al punto exacto;
+ancho auto al contenido (precio centrado); altura 28 (antes 46) → tapa mucho menos. Tu propia tarea =
+pastilla en **verde de marca** con glifo en chip blanco (distingue "tuya" por color, sin texto verboso;
+el estado se ve en el popup al pulsar). Cluster = pastilla compacta con el número.
+Tokens existentes (`--hm-map-marker-*`, `--hm-color-primary`, `--hm-radius-pill`). Sin tocar
+backend/datos/popup/markers de helper-usuario. lint/build verdes, sin clases huérfanas.
+Pendiente: confirmación visual del owner en el mapa real.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

@@ -15,8 +15,15 @@ function escapeHtml(value) {
 
 function formatPrice(value) {
   const price = Number(value ?? 0)
-  if (!Number.isFinite(price)) return '0 EUR'
-  return `${Math.round(price)} EUR`
+  if (!Number.isFinite(price)) return '0 €'
+  return `${Math.round(price)} €`
+}
+
+// Ancho aproximado del pin a partir del texto, para que la pastilla se ajuste al contenido
+// (precio centrado) y la punta quede anclada con precisión sobre el punto del mapa.
+function estimatePinWidth(text, { glyph = true } = {}) {
+  const base = glyph ? 34 : 18
+  return Math.max(40, Math.round(base + String(text).length * 7.2))
 }
 
 export function getTaskStatusLabel(task) {
@@ -25,36 +32,24 @@ export function getTaskStatusLabel(task) {
 
 export function createTaskMarkerIcon({ task, selected = false, requester = false } = {}) {
   const className = [
-    requester ? styles.requesterTaskMarker : styles.taskMarker,
-    selected ? (requester ? styles.requesterTaskMarkerSelected : styles.taskMarkerSelected) : '',
+    styles.taskPin,
+    requester ? styles.taskPinOwn : '',
+    selected ? styles.taskPinSelected : '',
   ].filter(Boolean).join(' ')
-  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.taskMarkerGlyphSvg })
+  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.taskPinGlyphSvg })
   const price = escapeHtml(formatPrice(task?.price))
-  const status = escapeHtml(getTaskStatusLabel(task))
-  const html = requester
-    ? `
-      <span class="${styles.requesterTaskMarkerInner}">
-        <span class="${styles.requesterTaskMarkerDot}">${activityGlyph}</span>
-        <span class="${styles.requesterTaskMarkerText}">
-          <span class="${styles.requesterTaskMarkerLabel}">Tu tarea</span>
-          <span class="${styles.requesterTaskMarkerStatus}">${status}</span>
-        </span>
-      </span>
-    `
-    : `
-      <span class="${styles.taskMarkerBody}">
-        <span class="${styles.taskMarkerGlyph}">${activityGlyph}</span>
-        <span class="${styles.taskMarkerPrice}">${price}</span>
-      </span>
-    `
-  const size = requester ? (selected ? [92, 52] : [84, 46]) : (selected ? [62, 52] : [56, 46])
-  const anchor = requester ? [size[0] / 2, size[1] - 4] : [size[0] / 2, size[1] / 2]
-
+  const html = `
+    <span class="${styles.taskPinGlyph}">${activityGlyph}</span>
+    <span class="${styles.taskPinPrice}">${price}</span>
+  `
+  const height = selected ? 32 : 28
+  const width = estimatePinWidth(price)
+  // La punta (::after) cuelga ~6px por debajo de la pastilla; el ancla apunta a su vértice.
   return L.divIcon({
     className,
     html,
-    iconSize: size,
-    iconAnchor: anchor,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height + 6],
   })
 }
 
@@ -96,19 +91,14 @@ export function createUserMarkerIcon({ avatarUrl, initial } = {}) {
 
 export function createClusterMarkerIcon({ count } = {}) {
   const safeCount = Number.isFinite(Number(count)) ? Number(count) : 0
+  const text = escapeHtml(`${safeCount}`)
+  const height = 28
+  const width = estimatePinWidth(text, { glyph: false })
 
   return L.divIcon({
-    className: styles.requesterTaskMarker,
-    html: `
-      <span class="${styles.requesterTaskMarkerInner}">
-        <span class="${styles.requesterTaskMarkerDot}">${safeCount}</span>
-        <span class="${styles.requesterTaskMarkerText}">
-          <span class="${styles.requesterTaskMarkerLabel}">Puntos</span>
-          <span class="${styles.requesterTaskMarkerStatus}">agrupados</span>
-        </span>
-      </span>
-    `,
-    iconSize: [86, 46],
-    iconAnchor: [43, 42],
+    className: [styles.taskPin, styles.taskPinCluster].filter(Boolean).join(' '),
+    html: `<span class="${styles.taskPinPrice}">${text}</span>`,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height + 6],
   })
 }

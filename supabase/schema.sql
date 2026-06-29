@@ -29,7 +29,7 @@ create table if not exists public.tasks (
   accepted_by uuid references auth.users(id) on delete set null,
   title text not null check (char_length(title) between 3 and 90),
   description text not null check (char_length(description) between 3 and 600),
-  category text not null check (category in ('Mascotas', 'Recados', 'Compras', 'Ayuda tecnica')),
+  category text not null check (category in ('Mascotas', 'Recados', 'Compras', 'Ayuda tecnica', 'Limpieza', 'Mudanza', 'Reparaciones', 'Clases', 'Cuidado', 'Tecnología', 'Otros')),
   price numeric(6,2) not null check (price >= 0 and price <= 500),
   status text not null default 'draft'
     check (status in ('draft', 'open', 'assigned', 'in_progress', 'completed', 'cancelled')),

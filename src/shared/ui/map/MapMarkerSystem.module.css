@@ -1,98 +1,93 @@
-.taskMarker,
-.requesterTaskMarker {
-  display: inline-grid;
-  place-items: center;
+/* Pin de tarea: etiqueta compacta tipo Google Maps (pastilla + punta inferior). */
+.taskPin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 9px;
   overflow: visible;
+  white-space: nowrap;
   border: 1px solid var(--hm-map-marker-task-border);
-  border-radius: var(--hm-map-marker-radius);
+  border-radius: var(--hm-radius-pill);
   background: var(--hm-map-marker-task-bg);
   color: var(--hm-map-marker-fg);
   box-shadow: var(--hm-map-marker-shadow);
 }
 
-.taskMarker {
-  width: 56px;
-  height: 46px;
+/* Punta hacia el punto: cuadrado rotado con los dos bordes inferiores del color del pin. */
+.taskPin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -55%) rotate(45deg);
+  background: inherit;
+  border-right: 1px solid var(--hm-map-marker-task-border);
+  border-bottom: 1px solid var(--hm-map-marker-task-border);
+  border-bottom-right-radius: 2px;
 }
 
-.taskMarkerSelected,
-.requesterTaskMarkerSelected,
-.helperMarkerSelected {
+.taskPinGlyph {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.taskPinGlyphSvg {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.taskPinPrice {
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.taskPinSelected {
+  z-index: 1;
   box-shadow: var(--hm-map-marker-selected-ring), var(--hm-map-marker-shadow-active);
 }
 
-.taskMarkerBody {
-  display: grid;
-  gap: 0;
-  place-items: center;
-  min-width: 0;
-  text-align: center;
-  line-height: 1;
+/* Tu propia tarea: pastilla en color de marca para distinguirla del resto. */
+.taskPinOwn {
+  border-color: color-mix(in srgb, var(--hm-color-primary) 55%, #000);
+  background: var(--hm-map-marker-primary-bg, var(--hm-color-primary));
+  color: #fff;
 }
 
-.taskMarkerGlyph {
-  display: grid;
-  place-items: center;
-  width: 1.45rem;
-  height: 1.45rem;
-  margin-bottom: 1px;
+.taskPinOwn::after {
+  border-right-color: color-mix(in srgb, var(--hm-color-primary) 55%, #000);
+  border-bottom-color: color-mix(in srgb, var(--hm-color-primary) 55%, #000);
 }
 
-.taskMarkerGlyphSvg {
-  display: block;
-  width: 1.35rem;
-  height: 1.35rem;
+/* Glifo sobre chip blanco para mantener contraste en la pastilla verde. */
+.taskPinOwn .taskPinGlyph {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: var(--hm-radius-pill);
+  background: #fff;
 }
 
-.taskMarkerPrice {
-  color: var(--hm-map-marker-fg);
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
+.taskPinOwn .taskPinGlyphSvg {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
-.requesterTaskMarker {
-  min-width: 82px;
-  height: 44px;
-  padding: 5px 9px 5px 6px;
-}
-
-.requesterTaskMarkerInner {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.requesterTaskMarkerDot {
-  display: grid;
-  place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border-radius: var(--hm-map-marker-pill-radius);
-  background: color-mix(in srgb, var(--hm-map-marker-primary-bg) 18%, var(--hm-map-marker-task-bg));
-}
-
-.requesterTaskMarkerText {
-  display: grid;
-  gap: 2px;
-  text-align: left;
-}
-
-.requesterTaskMarkerLabel {
-  color: var(--hm-map-marker-fg);
-  font-size: 0.7rem;
-  font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.requesterTaskMarkerStatus {
-  color: var(--hm-map-marker-muted);
-  font-size: 0.58rem;
+.taskPinCluster {
   font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
+}
+
+.helperMarkerSelected {
+  box-shadow: var(--hm-map-marker-selected-ring), var(--hm-map-marker-shadow-active);
 }
 
 .helperMarker,
