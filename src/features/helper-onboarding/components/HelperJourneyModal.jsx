@@ -411,13 +411,13 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
               Ya hemos recuperado parte de tu información para que el proceso sea más rápido.
             </p>
             <div className={styles.statusRow} aria-label="Estado del onboarding">
-              <span className={`${styles.statusPill} ${styles.statusComplete}`}>
+              <span className={`${styles.stateLabel} ${styles.statusComplete}`}>
                 Completado {completedCount}
               </span>
-              <span className={`${styles.statusPill} ${styles.statusReview}`}>
+              <span className={`${styles.stateLabel} ${styles.statusReview}`}>
                 Revisar {reviewCount}
               </span>
-              <span className={`${styles.statusPill} ${styles.statusPending}`}>
+              <span className={`${styles.stateLabel} ${styles.statusPending}`}>
                 Pendiente {pendingCount}
               </span>
             </div>

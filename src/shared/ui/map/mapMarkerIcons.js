@@ -1,17 +1,8 @@
 import L from 'leaflet'
 import { getAvatarInitial } from '../../../utils/avatar'
 import { createActivityMarkerSvg } from '../../../features/tasks/categories/taskCategories'
+import { getTaskStatusLabel as getTaskStatusLabelValue } from '../../../features/tasks/utils/taskStatusLabels'
 import styles from './MapMarkerSystem.module.css'
-
-const TASK_STATUS_LABELS = {
-  draft: 'Borrador',
-  open: 'Publicada',
-  assigned: 'Oferta',
-  in_progress: 'En curso',
-  completed: 'Hecha',
-  closed: 'Cerrada',
-  cancelled: 'Cancelada',
-}
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -29,7 +20,7 @@ function formatPrice(value) {
 }
 
 export function getTaskStatusLabel(task) {
-  return TASK_STATUS_LABELS[task?.status] || task?.status || 'Publicada'
+  return getTaskStatusLabelValue(task?.status || 'open')
 }
 
 export function createTaskMarkerIcon({ task, selected = false, requester = false } = {}) {

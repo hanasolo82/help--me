@@ -1048,9 +1048,9 @@
 
 .topBar :global(.primary-action),
 .topBar :global(.secondary-action) {
-  min-height: 2.1rem;
+  min-height: 2.6rem;
   border-radius: 999rem;
-  padding: 0.48rem 0.82rem;
+  padding: 0.55rem 0.82rem;
   font-size: 0.84rem;
   line-height: 1;
 }
@@ -1389,13 +1389,6 @@
 .helperStatusUnavailable {
   background: color-mix(in srgb, var(--settings-accent) 10%, var(--color-surface));
   color: color-mix(in srgb, var(--color-primary) 76%, var(--color-text));
-}
-
-.helperStatusDot {
-  width: 0.46rem;
-  height: 0.46rem;
-  border-radius: 999rem;
-  background: currentColor;
 }
 
 .verifiedBadge {

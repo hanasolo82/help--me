@@ -154,7 +154,7 @@
   color: var(--color-text);
 }
 
-.statusPill {
+.stateLabel {
   flex: 0 0 auto;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
@@ -303,7 +303,7 @@
     flex-direction: column;
   }
 
-  .statusPill {
+  .stateLabel {
     align-self: start;
   }
 
@@ -328,6 +328,6 @@
 }
 
 .trustNote,
-.statusPill {
+.stateLabel {
   background: var(--hm-color-secondary);
 }

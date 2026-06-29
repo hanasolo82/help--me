@@ -1,6 +1,7 @@
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
+import { getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
 import styles from './TaskPreviewModal.module.css'
 
 function formatDistance(distanceKm) {
@@ -72,7 +73,7 @@ export default function TaskPreviewModal({
           <div className={styles.activityMeta}>
             <ActivityBadge category={task.category} compact />
           </div>
-          <span>{task.status}</span>
+          <span>{getTaskStatusLabel(task.status)}</span>
           <span>{formatTaskAvailabilityShort(task)}</span>
           <span>{formatPublishedAt(publishedAt)}</span>
           <span>{formatDistance(distanceKm)}</span>

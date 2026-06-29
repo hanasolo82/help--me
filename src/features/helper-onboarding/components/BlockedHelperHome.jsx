@@ -70,7 +70,7 @@ export default function BlockedHelperHome({ profile, onContinueHelperOnboarding,
                 </h2>
               </div>
 
-              <span className={styles.statusPill}>{STATUS_LABEL[helperStatus] || 'Pendiente'}</span>
+              <span className={styles.stateLabel}>{STATUS_LABEL[helperStatus] || 'Pendiente'}</span>
             </div>
 
             <p className={styles.copy}>{statusText}</p>

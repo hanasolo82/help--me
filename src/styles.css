@@ -173,7 +173,7 @@ p {
 
 .eyebrow {
   /* tiny label utility: shared/components/AuthPanel/AuthPanel.jsx, app/router/RequireAuth.jsx, pages/* */
-  color: var(--color-text-muted);
+  color: var(--accent-600);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -423,11 +423,11 @@ p {
   border-color: transparent;
   background: var(--hm-button-secondary-bg);
   color: var(--hm-button-secondary-fg);
-  border-color: var(--hm-button-secondary-border);
+  border-color: color-mix(in srgb, var(--hm-color-accent) 24%, var(--color-border));
 }
 
 .secondary-action:hover {
-  border-color: var(--hm-button-secondary-border);
+  border-color: color-mix(in srgb, var(--hm-color-accent) 34%, var(--color-border));
   background: var(--hm-button-secondary-bg-hover);
 }
 
@@ -673,6 +673,16 @@ p {
   line-height: 1.45;
 }
 
+.task-status-action {
+  color: var(--accent-700);
+  font-weight: 800;
+}
+
+.task-status-positive {
+  color: var(--color-success-text);
+  font-weight: 800;
+}
+
 .task-header-copy {
   display: grid;
   gap: 0.2rem;
@@ -719,8 +729,8 @@ p {
 
 .icon-button {
   /* tiny icon button: shared/components/AuthPanel/AuthPanel.jsx, pages/Settings/SettingsPage.jsx, pages/Home/HomeHeader.jsx */
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--hm-button-icon-border);
@@ -975,8 +985,8 @@ p {
   /* icon action button in chat/task detail: shared/ui/chat/MessageBubble.jsx, components/home/TaskChatModal.jsx */
   display: inline-grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--hm-button-icon-border);
   border-radius: var(--hm-radius-md);
   background: var(--hm-button-icon-bg);

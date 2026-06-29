@@ -39,7 +39,7 @@
 
 .segment,
 .segmentSelected {
-  min-height: 2.6rem;
+  min-height: 2.75rem;
   border: 1px solid var(--hm-button-secondary-border);
   border-radius: var(--hm-button-radius);
   cursor: pointer;

@@ -3,7 +3,7 @@ import MyRequestCard from './MyRequestCard'
 import styles from './MyRequestsDrawer.module.css'
 
 const SECTIONS = [
-  { key: 'open', title: 'Activas', statuses: ['open'] },
+  { key: 'open', title: 'Publicadas', statuses: ['open'] },
   { key: 'pending-confirmation', title: 'Ofertas pendientes', statuses: ['assigned'] },
   { key: 'in-progress', title: 'En curso', statuses: ['in_progress'] },
   { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },

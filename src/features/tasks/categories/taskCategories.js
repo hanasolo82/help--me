@@ -76,11 +76,22 @@ export const TASK_ACTIVITY_VISUALS = Object.freeze({
   },
 })
 
-const LEGACY_CATEGORY_TO_ACTIVITY = Object.freeze({
+// Mapa categoría (normalizada) → actividad/glifo. Incluye los valores históricos y las
+// etiquetas de categoría actuales en español, para que cada una resuelva a su HelpMoji.
+const CATEGORY_TO_ACTIVITY = Object.freeze({
+  // valores históricos (tareas creadas antes de ampliar el catálogo)
   mascotas: 'pets',
   recados: 'errands',
   compras: 'errands',
   ayuda_tecnica: 'tech',
+  // etiquetas del catálogo actual
+  limpieza: 'cleaning',
+  mudanza: 'moving',
+  reparaciones: 'repairs',
+  clases: 'classes',
+  cuidado: 'care',
+  tecnologia: 'tech',
+  otros: 'other',
 })
 
 function normalizeCategory(value) {
@@ -96,7 +107,7 @@ function normalizeCategory(value) {
 export function getTaskActivityKey(category) {
   const normalized = normalizeCategory(category)
 
-  return LEGACY_CATEGORY_TO_ACTIVITY[normalized] || TASK_ACTIVITY_VISUALS[normalized]?.key || 'other'
+  return CATEGORY_TO_ACTIVITY[normalized] || TASK_ACTIVITY_VISUALS[normalized]?.key || 'other'
 }
 
 export function getTaskCategoryVisual(category) {

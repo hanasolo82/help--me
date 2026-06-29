@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import HelperEmptyState from './HelperEmptyState'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
 import { formatTaskAvailabilityShort } from '../../tasks/availability/taskAvailability'
+import { getTaskStatusHint, getTaskStatusLabel } from '../../tasks/utils/taskStatusLabels'
 import styles from '../styles/helperHome.module.css'
 
 function formatTaskAge(task) {
@@ -15,12 +16,6 @@ function formatTaskAge(task) {
   if (elapsedHours < 24) return `Hace ${elapsedHours} h`
 
   return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-}
-
-function formatTaskStatus(task) {
-  if (task.status === 'assigned') return 'Asignada'
-  if (task.status === 'in_progress') return 'En curso'
-  return task.status
 }
 
 export default function HelperUpcomingPanel({ tasks = [], onOpenTask }) {
@@ -46,9 +41,10 @@ export default function HelperUpcomingPanel({ tasks = [], onOpenTask }) {
         <div className={styles.upcomingList}>
           {visibleTasks.slice(0, 4).map((task) => (
             <article key={task.id} className={styles.upcomingItem}>
-              <div className={styles.upcomingRow}>
+              <div className={styles.upcomingTaskHeader}>
                 <strong>{task.title}</strong>
-                <span className={styles.statusPill}>{formatTaskStatus(task)}</span>
+                <p>{getTaskStatusLabel(task.status)}</p>
+                <span>{getTaskStatusHint({ status: task.status, viewerRole: 'helper' })}</span>
               </div>
               <div className={styles.upcomingTaskActivity}>
                 <ActivityBadge category={task.category} compact />

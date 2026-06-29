@@ -219,6 +219,98 @@ Importes: Beta 0% · GA base 8% + mín 1,49 € (requester) · Plus 12% + mín 2
 +2,99 € · Helper Pro later. Codex prompt de Fase A actualizado a estos matices (frase pública
 "pago retenido hasta confirmar", lista rg de palabras prohibidas ampliada, IVA solo como nota pendiente).
 
+## Bloque 3D — Revisión visual profunda — 2026-06-29 (solo auditoría)
+
+**Entregable:** [`docs/phase-4-3d-visual-review.md`](../docs/phase-4-3d-visual-review.md).
+
+**Veredicto:** lista para beta interna; para externos no hay bloqueante visual duro salvo P0.1 legal
+(contenido, owner). El "se siente verde" es real pero P1 de pulido, no bloqueo.
+
+**Hallazgos:**
+- P1-A: etiquetas de estado **siguen divergentes/duplicadas** (no se unificó tras 3-UX): `open`=
+  "Publicada" vs "Activa". → `taskStatusLabels.js` único.
+- P1-B: **solo 3 de 9 glifos HelpMoji alcanzables** porque `allowedCategories` sigue en 4 (Mascotas/
+  Recados/Compras/Ayuda técnica → pets/errands/tech). Ampliar lista para que la variedad de 3B aparezca.
+- P1-C: **monocromía verde** en shell/home/cabeceras/CTAs; el acento terracota y neutros cálidos existen
+  en tokens pero no se despliegan. Es el dolor #1 del owner. CSS con tokens, sin rediseño.
+- P1-D: estado de tarea sin badge visual (deuda previa P1.2).
+- P2: glifos duplicados (ActivityGlyph JSX vs markerSvgBody string), CSS global solapado, 2 composers de
+  chat, home sin hero ilustrado.
+
+**Confirmado bien (3B):** HelpMoji sólido (9 actividades, paleta cálida, glifos propios, a11y, mapa sin
+siglas) y consumido ampliamente (cards/detalle/modal/mapa/helper-home). 3C disponibilidad con chip y
+fallback. Pantallas de confianza sólidas.
+
+**Plan:** 3D.1 (estados unificados + badge + despliegue de acento) → 3D.2 (ampliar categorías + forms)
+→ 3D.3 (home/hero) → 3D.4 (mobile) → 3D.5 (polish). Codex primero: paquete **3D.1a** mecánico
+(taskStatusLabels + statusBadge, solo tokens, sin tocar categorías/backend). Acento (3D.1b) va aparte
+con mini-spec. Solo documento (sin cambios de código).
+
+### 3D.1 — Cambio de dirección + spec (2026-06-29)
+**StatusBadge DESCARTADO por el owner** (punto/chip/semáforo se siente genérico/SaaS). Sustituido por
+**estado editorial**: título jerárquico + microcopy contextual humano; acento como apoyo sutil, nunca
+semáforo. Verde=positivo/confianza, terracota=acción.
+Spec autoritativa: [`docs/phase-4-3d1-editorial-accent-spec.md`](../docs/phase-4-3d1-editorial-accent-spec.md)
+(supera la fila P1-D y el prompt de `phase-4-3d-visual-review.md`).
+- **3D.1a estado editorial:** `taskStatusLabels.js` (`getTaskStatusLabel` + `getTaskStatusHint`); `open`
+  unificado a "Publicada"; estado fuera de la línea meta de TaskCard, como bloque título+subtexto.
+- **3D.1b acento cálido:** tokens existentes (`--accent-600/700`, `--hm-color-accent`, `--background-200/300`);
+  acento solo en CTA de acción del hint, hover de `.secondary-action`, hairlines/eyebrows; CTA primario y
+  estados positivos siguen verdes; sin fondos teñidos.
+- **3D.1c (después):** cards premium (menos chips, jerarquía).
+Prompt de Codex (3D.1a+3D.1b conjunto) incluido en la spec. Solo documento aún.
+
+### 3D.1 — implementado por Codex + pulido L1/L2 por Claude (2026-06-29)
+Codex implementó 3D.1a+3D.1b (estado editorial + acento). Revisión: fiel a spec, regla "sin badges"
+respetada (verificado en CSS: `.statusEditorial strong` es texto sin bg/border/radius; acento solo en
+`.statusAction`=`--accent-700` y hairline `::before` de card). Sin bloqueantes.
+**Claude ejecutó los dos Low de la revisión** (diff pequeño, sin tocar backend/categorías/tokens):
+- **L1 viewerRole de helper:** `CompatibleTaskCard` default `viewerRole='helper'`; `HelperHome` pasa
+  `viewerRole="helper"`. Antes daban el hint genérico de `assigned`; ahora el copy afinado de helper.
+- **L2 dedup del acento:** nueva constante `STATUS_HINT_PHRASES` en `taskStatusLabels.js` (action/
+  inProgress/completed); `getTaskStatusHint` construye los hints con ella y los 3 renderers (TaskCard,
+  TaskDetail, MyRequestCard) la consumen → el resalte ya no puede romperse en silencio si cambia el copy.
+Validación: lint verde · build verde (solo warning de chunk) · `git diff --check` solo LF/CRLF ·
+`rg "Confirma y paga"` = 1 sola fuente (la constante). Sin commit (lo hace el owner).
+Pendiente owner: prueba visual en navegador (My Requests assigned con acento, helper-home hint afinado,
+mismo título en card/detalle/mapa). 3D.1c (cards premium) y 3D.2 (ampliar categorías) siguen pendientes.
+
+### 3D.2 — ampliar categorías a las 9 HelpMoji (implementado por Claude, 2026-06-29)
+Owner eligió "las 9 del HelpMoji". **Era frontend-only**: el CHECK de `tasks.category` es solo de longitud
+(2-50), no un enum (comentario antiguo desactualizado, corregido) → **sin migración**.
+Cambios:
+- `allowedCategories` ampliado a 10 etiquetas (Limpieza, Mudanza, Recados, Compras, Reparaciones, Clases,
+  Cuidado, Mascotas, Tecnología, Otros) → 9 glifos distintos (antes 3).
+- `acceptedCategories = allowedCategories + LEGACY_CATEGORIES(['Ayuda tecnica'])` y la validación usa el
+  superconjunto → tareas antiguas siguen válidas al editarse (backward compat).
+- `taskCategories.js`: mapa renombrado `CATEGORY_TO_ACTIVITY` con las etiquetas en español normalizadas
+  → cada una resuelve a su glifo (verificado en runtime: Limpieza→cleaning … Tecnología/Ayuda tecnica→tech).
+- `useHomeFilters` deriva el filtro de `allowedCategories` (sin lista duplicada). CreateTask/RequestTaskModal
+  toman la lista compartida automáticamente.
+Validación: lint verde · build verde · runtime check de las 10 etiquetas + legacy OK. Sin tocar
+backend/RLS/Supabase/migraciones/tokens. Sin commit (lo hace el owner).
+Pendiente: 3D.1c (cards premium) opcional; 3D.3 home/hero; 3D.4 mobile; 3D.5 polish.
+
+### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
+Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
+360×720, CTA alcanzable, sin overflow.
+Hallazgos corregidos (tap targets <44px):
+- `.icon-button` global 42→44px (header Home, Settings, back de pago/crear).
+- `.message-action` global (chat) 42→44px.
+- `.segment/.segmentSelected` de disponibilidad (Mañana/Tarde, Me va bien/Propongo) 2.6→2.75rem.
+- closeButton mobile de RequestTaskModal y HelperPreviewModal 2.1rem(33.6px)→2.75rem.
+- Botones del topBar de Settings 2.1rem(33.6px)→2.6rem (+padding); compacto pero usable.
+Verificado bien (sin tocar): TaskPaymentPage (summaryCard sticky-bottom en mobile → CTA "Pagar" siempre
+alcanzable; price rows apilan), TaskPreviewModal (bottom-sheet, scroll, close 44px), RequestTaskModal
+(max-height 100dvh, scroll interno), TaskCard `.iconButton` ya 44px, `.field` inputs 44px, `.chip`/
+botones base 44px.
+Riesgos residuales (no tocados a propósito): `.message-action-link.icon` de chat 28px (acción secundaria;
+evitar churn de burbuja), upsell premium 42.4px (oculto en beta), markers de mapa 42px (no son botones),
+overflow horizontal no verificado en vivo (guardado por patrones min() en código).
+Viewports razonados: 360×720 (objetivo), y breakpoints del código 42rem/54rem/620px/640px/760px.
+Validación: lint verde · build verde · git diff --check limpio (solo LF/CRLF). Sin commit (lo hace owner).
+Pendiente: revisión visual en navegador (owner), 3D.1c/3D.3/3D.5.
+
 ## Bloque 3A / Fase A ejecutada — pricing copy + constantes seguras — 2026-06-28
 
 **Objetivo:** dejar una base de pricing/copy sin efecto financiero real.

@@ -1,16 +1,7 @@
 import styles from './MyRequestCard.module.css'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
-
-const STATUS_COPY = {
-  open: 'Activa',
-  assigned: 'Oferta pendiente',
-  in_progress: 'En curso',
-  completed: 'Completada',
-  closed: 'Cerrada',
-  cancelled: 'Cancelada',
-  draft: 'Borrador',
-}
+import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../../tasks/utils/taskStatusLabels'
 
 function formatDate(value) {
   if (!value) return 'Sin fecha'
@@ -24,6 +15,21 @@ function formatDate(value) {
   }).format(date)
 }
 
+function renderHintWithAction(hint) {
+  const actionCopy = STATUS_HINT_PHRASES.action
+  const actionIndex = hint.indexOf(actionCopy)
+
+  if (actionIndex < 0) return hint
+
+  return (
+    <>
+      {hint.slice(0, actionIndex)}
+      <span className={styles.statusAction}>{actionCopy}</span>
+      {hint.slice(actionIndex + actionCopy.length)}
+    </>
+  )
+}
+
 export default function MyRequestCard({
   task,
   onFocusMap,
@@ -35,7 +41,6 @@ export default function MyRequestCard({
   onReview,
   reviewedTaskIds = new Set(),
 }) {
-  const statusLabel = STATUS_COPY[task.status] || task.status
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
   const availabilityLabel = formatTaskAvailabilityShort(task)
   const isPendingConfirmation = task.status === 'assigned'
@@ -44,6 +49,14 @@ export default function MyRequestCard({
   const isReviewed = reviewedTaskIds.has(task.id)
   const helperProfile = task.accepted_profile || {}
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Un helper'
+  const statusLabel = getTaskStatusLabel(task.status)
+  const statusHint = getTaskStatusHint({
+    status: task.status,
+    viewerRole: 'requester',
+    applicationCount,
+    helperName,
+    hasReview: isReviewed,
+  })
 
   return (
     <article className={`${styles.card} ${isPendingConfirmation ? styles.pendingConfirmationCard : ''}`.trim()}>
@@ -53,8 +66,11 @@ export default function MyRequestCard({
           <div className={styles.meta}>
             <ActivityBadge category={task.category} compact />
           </div>
+          <div className={styles.statusEditorial}>
+            <strong>{statusLabel}</strong>
+            {statusHint ? <p>{renderHintWithAction(statusHint)}</p> : null}
+          </div>
         </div>
-        <span className={styles.status}>{statusLabel}</span>
       </div>
 
       <div className={styles.detailRow}>

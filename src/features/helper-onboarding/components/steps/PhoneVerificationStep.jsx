@@ -223,11 +223,11 @@ export default function PhoneVerificationStep({ onNext, onBack, journeyDraft, se
           </div>
 
           {isProvided || isVerified ? (
-            <span className={`${styles.statusBadge} ${isVerified ? styles.isVerified : styles.isProvided}`.trim()}>
+            <span className={`${styles.stateLabel} ${isVerified ? styles.isVerified : styles.isProvided}`.trim()}>
               {isVerified ? 'Teléfono verificado' : 'Teléfono añadido · no verificado'}
             </span>
           ) : (
-            <span className={styles.statusBadge}>Opcional</span>
+            <span className={styles.stateLabel}>Opcional</span>
           )}
         </div>
 

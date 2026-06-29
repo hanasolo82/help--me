@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useTaskFiltersStore } from '../../../stores/useTaskFiltersStore'
+import { allowedCategories } from '../../../services/tasksService'
 
-const categories = ['Todas', 'Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
+const categories = ['Todas', ...allowedCategories]
 
 export function useHomeFilters() {
   const { mode, category, setMode, setCategory } = useTaskFiltersStore()

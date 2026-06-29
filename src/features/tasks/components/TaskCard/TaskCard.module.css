@@ -7,6 +7,16 @@
   border-radius: var(--hm-card-radius);
   background: var(--hm-card-bg);
   box-shadow: var(--hm-card-shadow);
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: color-mix(in srgb, var(--hm-color-accent) 24%, var(--color-border));
+  pointer-events: none;
 }
 
 .userRow {
@@ -151,6 +161,33 @@
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.4;
+}
+
+.statusEditorial {
+  display: grid;
+  gap: 0.18rem;
+  margin-top: 0.72rem;
+}
+
+.statusEditorial strong {
+  color: var(--task-card-text, var(--color-text));
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.statusEditorial p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.statusAction {
+  color: var(--accent-700);
+  font-weight: 800;
 }
 
 .descriptionContainer {

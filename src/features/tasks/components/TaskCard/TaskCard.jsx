@@ -4,20 +4,11 @@ import starIcon from '../../../../assets/icons/Orion_star.svg'
 import messageIcon from '../../../../assets/icons/message.svg'
 import { formatTaskAvailabilityShort } from '../../availability/taskAvailability'
 import ActivityBadge from '../../categories/ActivityBadge'
+import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../utils/taskStatusLabels'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 
 // Card de tarea conectada a Supabase. Las columnas siguen el esquema actual:
 // id, title, description, price (numeric en euros), category, lat, lng, status, created_by, accepted_by.
-const statusLabels = {
-  draft: 'Borrador',
-  open: 'Publicada',
-  assigned: 'Oferta pendiente',
-  in_progress: 'En curso',
-  completed: 'Completada',
-  closed: 'Cerrada',
-  cancelled: 'Cancelada',
-}
-
 function formatPublicationAge(task) {
   if (task.status === 'draft') {
     return 'Pendiente de publicar'
@@ -94,6 +85,21 @@ function ChatIcon() {
   )
 }
 
+function renderHintWithAction(hint) {
+  const actionCopy = STATUS_HINT_PHRASES.action
+  const actionIndex = hint.indexOf(actionCopy)
+
+  if (actionIndex < 0) return hint
+
+  return (
+    <>
+      {hint.slice(0, actionIndex)}
+      <span className={styles.statusAction}>{actionCopy}</span>
+      {hint.slice(actionIndex + actionCopy.length)}
+    </>
+  )
+}
+
 export default function TaskCard({
   task,
   distanceKm,
@@ -116,6 +122,8 @@ export default function TaskCard({
   secondaryActionPending = false,
   onSecondaryAction,
   helperActions = [],
+  viewerRole = 'viewer',
+  hasReview = false,
 }) {
   const priceEuros = Number(task.price ?? 0)
   const creator = task.creator_profile
@@ -129,10 +137,17 @@ export default function TaskCard({
   const locationLabel = task.location_label || task.zone || task.location || null
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
+  const statusLabel = getTaskStatusLabel(task.status)
+  const statusHint = getTaskStatusHint({
+    status: task.status,
+    viewerRole,
+    applicationCount: task.application_count,
+    helperName,
+    hasReview,
+  })
   const metaItems = [
     locationLabel,
     formatTaskAvailabilityShort(task),
-    statusLabels[task.status] || task.status,
     formatPublicationAge(task),
     showDistance ? distanceLabel : null,
   ].filter(Boolean)
@@ -217,6 +232,11 @@ export default function TaskCard({
           <p className={styles.meta}>
             {metaItems.join(' · ')}
           </p>
+
+          <div className={styles.statusEditorial}>
+            <strong>{statusLabel}</strong>
+            {statusHint ? <p>{renderHintWithAction(statusHint)}</p> : null}
+          </div>
         </div>
 
         <span className={styles.price}>

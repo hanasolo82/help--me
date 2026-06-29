@@ -1,6 +1,7 @@
 import styles from './MyRequestsPanel.module.css'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
+import { getTaskStatusHint, getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
 
 export default function MyRequestsPanel({
   tasks = [],
@@ -51,7 +52,7 @@ export default function MyRequestsPanel({
 
       <div className={styles.countRow}>
         <article className={styles.countCard}>
-          <span>Activas</span>
+          <span>Publicadas</span>
           <strong>{openTasks.length}</strong>
         </article>
         <article className={styles.countCard}>
@@ -72,13 +73,16 @@ export default function MyRequestsPanel({
         <article className={styles.featuredTask}>
           <div className={styles.featuredHeader}>
             <div>
-              <p className="eyebrow">Última activa</p>
+              <p className="eyebrow">Última publicada</p>
               <strong>{latestOpenTask.title}</strong>
               <div className={styles.featuredActivity}>
                 <ActivityBadge category={latestOpenTask.category} compact />
               </div>
+              <div className={styles.featuredStatusEditorial}>
+                <span>{getTaskStatusLabel(latestOpenTask.status)}</span>
+                <p>{getTaskStatusHint({ status: latestOpenTask.status, applicationCount: latestOpenTask.application_count })}</p>
+              </div>
             </div>
-            <span className={styles.featuredStatus}>Activa</span>
           </div>
           <p className={styles.featuredMeta}>
             {latestOpenTask.published_at || latestOpenTask.created_at ? new Intl.DateTimeFormat('es-ES', {

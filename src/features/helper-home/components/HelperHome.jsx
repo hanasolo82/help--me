@@ -336,6 +336,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     distanceKm={selectedDistance}
                     showDistance
                     expanded
+                    viewerRole="helper"
                     primaryActionLabel="Ver solicitud"
                     primaryActionVariant="primary"
                     onPrimaryAction={() => handleOpenTask(selectedTask)}

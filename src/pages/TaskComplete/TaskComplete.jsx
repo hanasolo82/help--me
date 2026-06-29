@@ -285,7 +285,7 @@ export default function TaskComplete({
     return renderSurface(
       <>
         <p className="eyebrow">Cierre confirmado</p>
-        <h1 id="task-completion-title">La tarea está completada</h1>
+        <h1 id="task-completion-title">Tarea completada</h1>
         <p className="muted">Gracias por confirmar que la ayuda ha terminado.</p>
         {!embedded ? (
           <div className="two-actions">

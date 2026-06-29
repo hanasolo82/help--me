@@ -275,7 +275,7 @@ export default function LocationStep({ onNext, onBack, setJourneyDraft }) {
           </div>
         </div>
 
-        <span className={`${styles.statusPill} ${styles.statusFooter} ${styles[`status${statusTone}`]}`}>
+        <span className={`${styles.stateLabel} ${styles.statusFooter} ${styles[`status${statusTone}`]}`}>
           {statusLabel}
         </span>
       </article>

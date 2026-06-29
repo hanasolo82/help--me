@@ -20,6 +20,7 @@ import {
   formatTaskAvailabilityFull,
 } from '../../features/tasks/availability/taskAvailability'
 import ActivityBadge from '../../features/tasks/categories/ActivityBadge'
+import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../features/tasks/utils/taskStatusLabels'
 import TaskChatModal from '../../components/task/TaskChatModal'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
@@ -27,88 +28,12 @@ import { resolveReturnTo } from '../../shared/utils/navigation'
 import TaskComplete from '../TaskComplete/TaskComplete'
 import TaskReviewPromptModal from './TaskReviewPromptModal'
 
-const TASK_STATUS_LABELS = {
-  draft: 'Borrador',
-  open: 'Activa',
-  assigned: 'Oferta pendiente',
-  in_progress: 'En curso',
-  completed: 'Completada',
-  closed: 'Cerrada',
-  cancelled: 'Cancelada',
-}
-
-function formatTaskStatus(status) {
-  return TASK_STATUS_LABELS[status] || 'Estado no disponible'
-}
-
-function getHumanTaskStatus({ taskStatus, isOwner, isHelper, helperReviewPublished }) {
-  if (taskStatus === 'in_progress') return 'Tarea en curso'
-
-  if (taskStatus === 'completed') {
-    if (isHelper) {
-      return 'Trabajo completado'
-    }
-
-    if (isOwner && !helperReviewPublished) {
-      return 'Tarea completada · valoración pendiente'
-    }
-
-    return 'Tarea completada'
-  }
-
-  if (taskStatus === 'closed') {
-    return isHelper
-      ? 'Tarea cerrada · ingreso confirmado'
-      : 'Tarea cerrada'
-  }
-
-  return formatTaskStatus(taskStatus)
-}
-
 // Eyebrow que identifica quién eres tú en esta tarea (rol + propiedad).
 function getRoleEyebrow({ isOwner, isHelper, canApply, creatorName }) {
   if (isOwner) return 'Tú pediste esta ayuda'
   if (isHelper) return `Estás ayudando a ${creatorName}`
   if (canApply) return 'Puedes ofrecerte para ayudar'
   return 'Detalle de tarea'
-}
-
-// De quién depende la siguiente acción: 'you' (te toca), 'waiting' (en espera) o 'none'.
-function getTurnContext({ status, isOwner, isHelper, canApply, alreadyApplied, hasPendingApplications, helperReviewPublished }) {
-  if (isOwner) {
-    if (status === 'draft') return { tone: 'none', detail: 'Esta tarea sigue en borrador.' }
-    if (status === 'open') {
-      return hasPendingApplications
-        ? { tone: 'you', lead: 'Te toca a ti:', detail: 'elige un helper para continuar.' }
-        : { tone: 'waiting', lead: 'En espera', detail: 'de que algún helper se ofrezca.' }
-    }
-    if (status === 'assigned') return { tone: 'you', lead: 'Te toca a ti:', detail: 'confirma y paga para desbloquear el chat.' }
-    if (status === 'in_progress') return { tone: 'you', lead: 'Te toca a ti:', detail: 'coordina por el chat y cierra la tarea cuando termine.' }
-    if (status === 'completed') {
-      return helperReviewPublished
-        ? { tone: 'none', detail: 'Tarea completada y valorada.' }
-        : { tone: 'you', lead: 'Te toca a ti:', detail: 'valora al helper.' }
-    }
-    if (status === 'closed') return { tone: 'none', detail: 'Tarea cerrada.' }
-    if (status === 'cancelled') return { tone: 'none', detail: 'Tarea cancelada.' }
-    return { tone: 'none', detail: '' }
-  }
-
-  if (isHelper) {
-    if (status === 'assigned') return { tone: 'waiting', lead: 'En espera', detail: 'de que el requester confirme y pague.' }
-    if (status === 'in_progress') return { tone: 'you', lead: 'Te toca a ti:', detail: 'resuelve la tarea y coordina por el chat.' }
-    if (status === 'completed') return { tone: 'waiting', lead: 'Ingreso en proceso', detail: '· en espera del cierre y la liberación.' }
-    if (status === 'closed') return { tone: 'none', detail: 'Ingreso confirmado.' }
-    return { tone: 'none', detail: '' }
-  }
-
-  if (canApply) {
-    return alreadyApplied
-      ? { tone: 'waiting', lead: 'En espera', detail: 'de que el requester elija.' }
-      : { tone: 'you', lead: 'Te toca a ti:', detail: 'ofrécete si quieres ayudar.' }
-  }
-
-  return { tone: 'none', detail: '' }
 }
 
 function formatApplicationDate(value) {
@@ -123,6 +48,40 @@ function formatApplicationDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date)
+}
+
+function renderStatusHint(hint, status) {
+  if (!hint) return null
+
+  const actionCopy = STATUS_HINT_PHRASES.action
+  const actionIndex = hint.indexOf(actionCopy)
+
+  if (actionIndex >= 0) {
+    return (
+      <>
+        {hint.slice(0, actionIndex)}
+        <span className="task-status-action">{actionCopy}</span>
+        {hint.slice(actionIndex + actionCopy.length)}
+      </>
+    )
+  }
+
+  const positiveCopy = status === 'in_progress'
+    ? STATUS_HINT_PHRASES.inProgress
+    : status === 'completed'
+      ? STATUS_HINT_PHRASES.completed
+      : ''
+  const positiveIndex = positiveCopy ? hint.indexOf(positiveCopy) : -1
+
+  if (positiveIndex < 0) return hint
+
+  return (
+    <>
+      {hint.slice(0, positiveIndex)}
+      <span className="task-status-positive">{positiveCopy}</span>
+      {hint.slice(positiveIndex + positiveCopy.length)}
+    </>
+  )
 }
 
 // Detalle de tarea conectado a Supabase. Centraliza oferta, decision, pago y chat.
@@ -295,21 +254,15 @@ export default function TaskDetail() {
     staleTime: 30_000,
   })
 
-  const humanTaskStatus = getHumanTaskStatus({
-    taskStatus: task?.status,
-    isOwner,
-    isHelper,
-    helperReviewPublished: Boolean(helperReviewQuery.data),
-  })
   const roleEyebrow = getRoleEyebrow({ isOwner, isHelper, canApply, creatorName })
-  const turnContext = getTurnContext({
+  const viewerRole = isOwner ? 'requester' : isHelper ? 'helper' : 'viewer'
+  const humanTaskStatus = getTaskStatusLabel(task?.status)
+  const taskStatusHint = getTaskStatusHint({
     status: task?.status,
-    isOwner,
-    isHelper,
-    canApply,
-    alreadyApplied: Boolean(currentUserApplication),
-    hasPendingApplications: pendingApplications.length > 0,
-    helperReviewPublished: Boolean(helperReviewQuery.data),
+    viewerRole,
+    applicationCount: pendingApplications.length,
+    helperName,
+    hasReview: Boolean(helperReviewQuery.data),
   })
   const moneyLabel = isOwner
     ? 'Coste de la tarea'
@@ -433,16 +386,7 @@ export default function TaskDetail() {
             </div>
           </div>
           <p className="task-header-status">{humanTaskStatus}</p>
-          {turnContext.tone === 'none' ? (
-            turnContext.detail ? <p className="task-header-turn">{turnContext.detail}</p> : null
-          ) : (
-            <p className="task-header-turn">
-              <span className={`task-turn-actor${turnContext.tone === 'waiting' ? ' is-waiting' : ''}`}>
-                {turnContext.lead}
-              </span>
-              {turnContext.detail ? ` ${turnContext.detail}` : ''}
-            </p>
-          )}
+          {taskStatusHint ? <p className="task-header-turn">{renderStatusHint(taskStatusHint, task.status)}</p> : null}
         </div>
       </header>
 

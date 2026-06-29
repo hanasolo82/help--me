@@ -3,22 +3,13 @@ import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
 import { createTaskMarkerIcon } from '../../../../shared/ui/map/mapMarkerIcons'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
-
-const STATUS_COPY = {
-  open: 'Activa',
-  assigned: 'Oferta pendiente',
-  in_progress: 'En curso',
-  completed: 'Completada',
-  closed: 'Cerrada',
-  cancelled: 'Cancelada',
-  draft: 'Borrador',
-}
+import { getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
 
 export default function RequesterTaskMarker({ task, selected = false, onSelect }) {
   if (!task) return null
 
   const publishedAt = task.published_at || task.created_at
-  const statusLabel = STATUS_COPY[task.status] || task.status
+  const statusLabel = getTaskStatusLabel(task.status)
   const categoryLabel = getTaskCategoryLabel(task.category)
 
   return (
