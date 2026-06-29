@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import styles from '../SettingsPage.module.css'
 import { startStripeConnectOnboarding } from '../../../features/helper-onboarding/services/stripeConnectService'
+import { PRICING_COPY } from '../../../config/pricing'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
 
@@ -54,6 +55,21 @@ export default function PaymentsSettings() {
       title="Pagos"
       description="Gestiona cobros e ingresos cuando tu perfil de ayudante esté listo."
     >
+      <div className={styles.infoGroup}>
+        <span className={styles.panelKicker}>Beta</span>
+        <h3>Planes y pago retenido</h3>
+        <p>
+          {PRICING_COPY.betaNoCommission} {PRICING_COPY.helperKeepsPrice}
+        </p>
+        <p>
+          Protección Plus, Urgente y Helper Pro están previstos para más adelante; todavía no son
+          contratables.
+        </p>
+        <a className="link-button" href="/#planes">
+          Ver planes y pago retenido
+        </a>
+      </div>
+
       <div className={styles.infoGroup}>
         <span className={styles.panelKicker}>{getPaymentStateLabel(paymentState)}</span>
         <h3>{getPaymentHeroTitle(paymentState)}</h3>

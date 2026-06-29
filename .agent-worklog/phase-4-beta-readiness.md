@@ -338,6 +338,47 @@ No se activó cobro/checkout/suscripción; flags de `pricing.js` intactos (realF
 Pendiente owner: revisión visual 360×720 + dark. No añadido: sección en el Home de la app (se omitió para
 no distraer el flujo; recomendado como siguiente paso opcional). Sin commit.
 
+### Fase 5 — acceso informativo desde Settings › Pagos (2026-06-29)
+Añadido bloque informativo "Planes y pago retenido" al inicio de `PaymentsSettings.jsx` (visible a todos,
+sitio intencional, no distrae el flujo de tareas): copy de beta sin comisión + helper 100% (de
+`PRICING_COPY`), nota de que Plus/Urgente/Helper Pro no son contratables, y enlace de texto
+`<a href="/#planes">` a la sección de la landing. Sin botón de compra. lint/build verdes; rg de palabras
+prohibidas y CTAs de compra = 0. Sin commit.
+
+### Fase 5 — auditoría visual/comercial dura (2026-06-29, solo diagnóstico)
+Owner: lo entregado de Fase 5 es placeholder insuficiente. Auditoría en
+[`docs/phase-5-visual-commercial-audit.md`](../docs/phase-5-visual-commercial-audit.md).
+**Veredicto: Fase 5 NO cerrada.** Hallazgos grounded en código:
+- **P0** landing sin imágenes (`public/` vacío → hero siempre en fallback) · pricing plano (4 cards
+  iguales, sin destacado ni segmentación).
+- **P1** Premium sin producto (solo copy; sin estados/acceso/flujo) · dark mode con fugas de literales
+  (`rgba(28,25,22)`, `#b42318`, `color-mix(... white)`, `#fff`) — la base dark sí funciona por inyección
+  de tokens (`DARK_THEME_BASE` inline), pero no hay QA dark · escala tipográfica landing↔app incoherente ·
+  4 lenguajes de modal.
+- **P2** HelpMoji sin usar en landing/pricing · `styles.css`/`globals.css` solapados · microinteracciones
+  escasas · empty/loading dispares.
+Plan P5.1–P5.6 (paquetes pequeños). Primer paquete Codex: **P5.1 rediseño pricing v2** (plan destacado
+"Disponible ahora" + grupo "Próximamente" atenuado, jerarquía, iconos, dark-safe, solo "Publicar tarea"
+como CTA). Premium NO se considera implementado hasta P5.4 (producto+estados+acceso+flujo). Sin tocar
+backend/pagos. Sin cambios de código en esta auditoría.
+
+### Fase 5 / P5.1 — rediseño pricing v2 (ejecutado por Claude, 2026-06-29)
+Reemplazada la fila plana de 4 cards por jerarquía de dos niveles en `#planes`
+(`Landing.jsx` + `Landing.module.css`):
+- **Plan dominante "Disponible ahora" (Pago retenido):** card grande a 2 columnas (desktop) — izquierda
+  valor + incluidos + único CTA real `Publicar tarea`; derecha panel "Cómo funciona el pago retenido"
+  (pasos numerados) + nota de beta sin comisión. Borde/sombra de acento, nombre en serif.
+- **Bloque "Próximamente":** encabezado propio + 3 cards **atenuadas/locked** (borde dashed, fondo tenue,
+  opacity 0.92, sin botón, badge "Próximamente"/"Más adelante", precio GA en texto secundario) → claramente
+  no contratables.
+- Tipografía contenida (`pricingTitle` clamp ≤2.5rem) para no parecer otra landing distinta a la app.
+- Dark-safe: solo alias del tema + `color-mix` sobre `--text/--accent/--surface`; sin literales nuevos
+  (salvo `#fff` de texto sobre botón de marca, convención existente). `prefers-reduced-motion` respetado.
+- Único CTA real "Publicar tarea"; Plus/Urgente/Helper Pro sin afordancia de compra.
+Validación: lint verde · build verde · git diff --check limpio · rg palabras prohibidas y CTAs de compra
+= 0. pricing.js solo lectura; sin tocar monetización/backend. **No declarado cerrado:** depende de la
+revisión visual del owner (desktop/mobile/dark) por su criterio. Sin commit.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

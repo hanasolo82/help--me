@@ -210,6 +210,9 @@ const pricingPlans = [
   },
 ]
 
+const heldPlan = pricingPlans.find((plan) => plan.available)
+const comingSoonPlans = pricingPlans.filter((plan) => !plan.available)
+
 export default function Landing() {
   useDocumentMeta({
     title: 'La ayuda que necesitas, cerca de ti',
@@ -439,56 +442,64 @@ export default function Landing() {
       <section id="planes" className={styles.section}>
         <div className={styles.sectionHeader}>
           <p className={styles.kicker}>Planes y pago retenido</p>
-          <h2>Claro por dentro: qué usas hoy y qué llegará después</h2>
+          <h2 className={styles.pricingTitle}>Empieza gratis, con el pago protegido por dentro</h2>
           <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
         </div>
 
-        <div className={styles.pricingExplainer}>
-          <h3>Cómo funciona el pago retenido</h3>
-          <ul>
-            {heldPaymentSteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-          <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
+        {heldPlan ? (
+          <article className={styles.pricingHero}>
+            <div className={styles.pricingHeroMain}>
+              <span className={`${styles.planBadge} ${styles.planBadgeActive}`}>{heldPlan.badge}</span>
+              <h3 className={styles.pricingHeroName}>{heldPlan.name}</h3>
+              <p className={styles.pricingHeroPrice}>{heldPlan.price}</p>
+              {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
+              <ul className={styles.pricingHeroFeatures}>
+                {heldPlan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <button type="button" className={styles.planCta} onClick={() => startJourney('need')}>
+                Publicar tarea
+              </button>
+            </div>
+
+            <aside className={styles.pricingHeroAside}>
+              <h4>Cómo funciona el pago retenido</h4>
+              <ol className={styles.pricingSteps}>
+                {heldPaymentSteps.map((step, index) => (
+                  <li key={step}>
+                    <span className={styles.pricingStepNumber}>{index + 1}</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
+            </aside>
+          </article>
+        ) : null}
+
+        <div className={styles.pricingSoonHeader}>
+          <h3>Próximamente</h3>
+          <p>
+            Planes previstos para más adelante. Aún no son contratables; los precios son estimaciones para
+            cuando se activen.
+          </p>
         </div>
 
-        <div className={styles.pricingGrid}>
-          {pricingPlans.map((plan) => (
-            <article
-              key={plan.id}
-              className={plan.available ? `${styles.pricingCard} ${styles.pricingCardActive}` : styles.pricingCard}
-            >
-              <span
-                className={plan.available ? `${styles.planBadge} ${styles.planBadgeActive}` : styles.planBadge}
-              >
-                {plan.badge}
-              </span>
-              <h3>{plan.name}</h3>
+        <div className={styles.pricingSoonGrid}>
+          {comingSoonPlans.map((plan) => (
+            <article key={plan.id} className={styles.pricingSoonCard} aria-disabled="true">
+              <span className={styles.planBadge}>{plan.badge}</span>
+              <h4>{plan.name}</h4>
               <p className={styles.planPrice}>{plan.price}</p>
-              {plan.priceNote ? <p className={styles.planPriceNote}>{plan.priceNote}</p> : null}
               <ul className={styles.planFeatures}>
                 {plan.features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
-              {plan.available ? (
-                <button type="button" className={styles.planCta} onClick={() => startJourney('need')}>
-                  Publicar tarea
-                </button>
-              ) : (
-                <span className={styles.planSoon} aria-disabled="true">
-                  {plan.badge}
-                </span>
-              )}
             </article>
           ))}
         </div>
-
-        <p className={styles.pricingDisclaimer}>
-          Plus, Urgente y Helper Pro están previstos para más adelante. Aún no están disponibles para
-          contratar: los precios mostrados son estimaciones para cuando se activen.
-        </p>
       </section>
 
       <section id="empieza" className={styles.finalCta}>
