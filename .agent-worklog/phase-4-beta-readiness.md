@@ -379,6 +379,26 @@ Validación: lint verde · build verde · git diff --check limpio · rg palabras
 = 0. pricing.js solo lectura; sin tocar monetización/backend. **No declarado cerrado:** depende de la
 revisión visual del owner (desktop/mobile/dark) por su criterio. Sin commit.
 
+P5.1 refinamiento (autorrevisión de Claude): (1) dedup del hero — izquierda "qué incluye" (4 líneas
+cortas) vs derecha "cómo funciona" (3 pasos cortos), sin solaparse → menos texto, columna móvil más corta;
+(2) cards "Próximamente" de discontinuo+opacity (parecían deshabilitadas) a sólido sutil (futuro, no
+contratable = badge + sin botón); (3) fondos aside/soon subidos (8%/6%) para separación en dark.
+lint/build verdes. Sigue pendiente la validación visual del owner.
+
+### Fase 5 / P5.2 — hero imagery (ejecutado por Claude, 2026-06-29)
+Owner añadió 3 PNG (~2 MB c/u, 6.4 MB total) en `public/images`. **Optimizados con Python+Pillow** a WebP
+responsive (no había cwebp/magick/sharp; `convert` era la utilidad de disco de Windows, no IM):
+- `walkdog.webp` 152 KB (1600×900) + `-mobile` 62 KB (800×450) → **hero principal** (eager, fetchpriority
+  high, width/height para CLS, `<picture>` con source móvil).
+- `homeworks.webp` 57 KB + `-mobile` 23 KB → **sección Categorías** (lazy).
+- `helpgrandmom.webp` 67 KB + `-mobile` 32 KB → **sección Confianza** (lazy).
+- Total desplegado de imágenes nuevas: **408 KB** (antes 6.4 MB). PNG originales movidos a `art-src/`
+  (fuera de `public/` → no se despliegan; Vite copia todo `public/`). dist/images = solo webp.
+- Hero ya **no cae al fallback** (las rutas existen); carrusel de 3 slides → 1 slide (guardado el interval).
+- `picture { display: contents }` para no romper el layout del hero; `.sectionImage` responsive 16:9 + lazy.
+- Sin vídeo, sin tocar backend/pagos/RLS/Stripe ni pricing. lint/build verdes.
+**Pendiente owner:** revisión visual desktop/mobile/dark; decidir si `art-src/` se commitea o se gitignorea.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

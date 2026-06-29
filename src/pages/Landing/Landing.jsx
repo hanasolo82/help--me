@@ -78,19 +78,11 @@ const landingLinks = [
 
 const heroSlides = [
   {
-    title: 'Conecta con alguien cercano',
-    text: 'Publica lo que necesitas y encuentra apoyo en tu barrio sin complicarte.',
-    image: '/images/helpme-hero-1.jpg',
-  },
-  {
-    title: 'Ofrece ayuda cuando encaje contigo',
-    text: 'Recados, compras, mascotas o pequeñas tareas que salen mejor entre vecinos.',
-    image: '/images/helpme-hero-2.jpg',
-  },
-  {
-    title: 'Coordina y sigue con tu día',
-    text: 'Elige, conversa y resuelve con una experiencia clara de principio a fin.',
-    image: '/images/helpme-hero-3.jpg',
+    title: 'Una mano cerca, cuando la necesitas',
+    text: 'Vecinos que se echan una mano con lo cotidiano, en tu propio barrio.',
+    image: '/images/walkdog.webp',
+    imageMobile: '/images/walkdog-mobile.webp',
+    imageAlt: 'Persona paseando un perro por una calle de barrio con luz cálida',
   },
 ]
 
@@ -157,11 +149,18 @@ function formatPct(bps) {
   return `${Number(bps || 0) / 100}%`
 }
 
+// Izquierda del plan: qué incluye (valor). Derecha: cómo funciona (flujo). Sin solaparse.
+const heldHeroIncludes = [
+  'Publicar tarea, gratis',
+  'Pago retenido hasta confirmar',
+  'El helper ve el 100% del precio',
+  'Chat y valoración incluidos',
+]
+
 const heldPaymentSteps = [
-  'Publicar una tarea es gratis.',
-  'Pagas con pago retenido hasta confirmar que la ayuda está hecha.',
-  'El helper ve el 100% del precio acordado antes de aceptar.',
-  'Al cerrar, liberas el pago y valoras al helper.',
+  'Publicas y pagas; el dinero queda retenido.',
+  'Coordináis por chat hasta que la ayuda esté hecha.',
+  'Confirmas, liberas el pago y valoras.',
 ]
 
 const pricingPlans = [
@@ -232,6 +231,8 @@ export default function Landing() {
   const currentSlide = heroSlides[slideIndex]
 
   useEffect(() => {
+    if (heroSlides.length <= 1) return undefined
+
     const intervalId = window.setInterval(() => {
       setSlideIndex((current) => (current + 1) % heroSlides.length)
     }, 4000)
@@ -361,11 +362,22 @@ export default function Landing() {
 
         <figure className={styles.heroMedia}>
           {!failedImages[currentSlide.image] ? (
-            <img
-              src={currentSlide.image}
-              alt={currentSlide.title}
-              onError={() => setFailedImages((current) => ({ ...current, [currentSlide.image]: true }))}
-            />
+            <picture>
+              {currentSlide.imageMobile ? (
+                <source media="(max-width: 640px)" srcSet={currentSlide.imageMobile} type="image/webp" />
+              ) : null}
+              <source srcSet={currentSlide.image} type="image/webp" />
+              <img
+                src={currentSlide.image}
+                alt={currentSlide.imageAlt || currentSlide.title}
+                width="1600"
+                height="900"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                onError={() => setFailedImages((current) => ({ ...current, [currentSlide.image]: true }))}
+              />
+            </picture>
           ) : (
             <div className={styles.defaultImage} aria-label="Imagen por defecto de helpMe">
               <BrandLogo size="xl" variant="auto" align="center" className={styles.fallbackLogo} />
@@ -399,6 +411,20 @@ export default function Landing() {
 
       <section id="confianza" className={styles.splitSection}>
         <div className={styles.splitCopy}>
+          <figure className={styles.sectionImage}>
+            <picture>
+              <source media="(max-width: 640px)" srcSet="/images/helpgrandmom-mobile.webp" type="image/webp" />
+              <source srcSet="/images/helpgrandmom.webp" type="image/webp" />
+              <img
+                src="/images/helpgrandmom.webp"
+                alt="Una persona joven ayuda a una persona mayor con el móvil"
+                width="1200"
+                height="675"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          </figure>
           <p className={styles.kicker}>Confianza</p>
           <h2>Diseñado para generar confianza desde el primer minuto</h2>
           <p>
@@ -422,6 +448,21 @@ export default function Landing() {
           <p className={styles.kicker}>Categorías</p>
           <h2>Todo lo cotidiano, mejor resuelto</h2>
         </div>
+
+        <figure className={styles.sectionImage}>
+          <picture>
+            <source media="(max-width: 640px)" srcSet="/images/homeworks-mobile.webp" type="image/webp" />
+            <source srcSet="/images/homeworks.webp" type="image/webp" />
+            <img
+              src="/images/homeworks.webp"
+              alt="Un vecino entrega la compra a otra persona en el portal"
+              width="1200"
+              height="675"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </figure>
 
         <div className={styles.categoryGrid}>
           {categories.map((category) => (
@@ -454,7 +495,7 @@ export default function Landing() {
               <p className={styles.pricingHeroPrice}>{heldPlan.price}</p>
               {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
               <ul className={styles.pricingHeroFeatures}>
-                {heldPlan.features.map((feature) => (
+                {heldHeroIncludes.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>

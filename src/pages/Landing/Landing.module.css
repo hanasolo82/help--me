@@ -708,7 +708,7 @@
   align-content: start;
   gap: 0.55rem;
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--text) 5%, transparent);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
   padding: 1.1rem 1.2rem;
 }
 
@@ -801,16 +801,15 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 }
 
-/* Cards atenuadas/"locked": claramente no contratables. */
+/* Cards de futuro: sólidas y sutiles (no "deshabilitadas"); no contratables = badge + sin botón. */
 .pricingSoonCard {
   display: grid;
   grid-template-rows: auto auto auto 1fr;
   gap: 0.5rem;
-  border: 1px dashed color-mix(in srgb, var(--text) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--text) 4%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
   padding: 1.2rem;
-  opacity: 0.92;
 }
 
 .planBadge {
@@ -875,4 +874,26 @@
   .planCta:hover {
     transform: none;
   }
+}
+
+/* picture no debe afectar al layout del hero: el img conserva las reglas de .heroMedia img */
+.heroMedia picture {
+  display: contents;
+}
+
+/* Imágenes de sección (actividad), lazy y responsive */
+.sectionImage {
+  margin: 0 0 1.25rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--shadow) 50%, transparent);
+}
+
+.sectionImage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
 }
