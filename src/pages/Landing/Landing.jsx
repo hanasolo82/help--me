@@ -7,6 +7,7 @@ import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
+import ActivityIcon from '../../features/tasks/categories/ActivityIcon'
 import { ShineBorder } from '@/components/ui/shine-border'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
@@ -362,23 +363,23 @@ export default function Landing() {
 
         <figure className={styles.heroMedia}>
           {!failedImages[currentSlide.image] ? (
-            <picture>
-              {currentSlide.imageMobile ? (
-                <source media="(max-width: 640px)" srcSet={currentSlide.imageMobile} type="image/webp" />
-              ) : null}
-              <source srcSet={currentSlide.image} type="image/webp" />
-              <img
-                className={styles.heroImageDog}
-                src={currentSlide.image}
-                alt={currentSlide.imageAlt || currentSlide.title}
-                width="1600"
-                height="900"
-                loading="eager"
-                fetchpriority="high"
-                decoding="async"
-                onError={() => setFailedImages((current) => ({ ...current, [currentSlide.image]: true }))}
-              />
-            </picture>
+            <img
+              className={styles.heroImageDog}
+              src={currentSlide.image}
+              srcSet={
+                currentSlide.imageMobile
+                  ? `${currentSlide.imageMobile} 800w, ${currentSlide.image} 1600w`
+                  : undefined
+              }
+              sizes="(max-width: 980px) 92vw, 33rem"
+              alt={currentSlide.imageAlt || currentSlide.title}
+              width="1600"
+              height="900"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              onError={() => setFailedImages((current) => ({ ...current, [currentSlide.image]: true }))}
+            />
           ) : (
             <div className={styles.defaultImage} aria-label="Imagen por defecto de helpMe">
               <BrandLogo size="xl" variant="auto" align="center" className={styles.fallbackLogo} />
@@ -430,19 +431,17 @@ export default function Landing() {
         </div>
 
         <figure className={`${styles.sectionImage} ${styles.sectionImageSpan}`}>
-          <picture>
-            <source media="(max-width: 640px)" srcSet="/images/helpgrandmom-mobile.webp" type="image/webp" />
-            <source srcSet="/images/helpgrandmom.webp" type="image/webp" />
-            <img
-              className={styles.sectionImagePhone}
-              src="/images/helpgrandmom.webp"
-              alt="Una persona joven ayuda a una persona mayor con el móvil"
-              width="1200"
-              height="675"
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
+          <img
+            className={styles.sectionImagePhone}
+            src="/images/helpgrandmom.webp"
+            srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
+            sizes="(max-width: 880px) 92vw, 52rem"
+            alt="Una persona joven ayuda a una persona mayor con el móvil"
+            width="1200"
+            height="675"
+            loading="lazy"
+            decoding="async"
+          />
         </figure>
       </section>
 
@@ -453,19 +452,17 @@ export default function Landing() {
         </div>
 
         <figure className={styles.sectionImage}>
-          <picture>
-            <source media="(max-width: 640px)" srcSet="/images/homeworks-mobile.webp" type="image/webp" />
-            <source srcSet="/images/homeworks.webp" type="image/webp" />
-            <img
-              className={styles.sectionImageGroceries}
-              src="/images/homeworks.webp"
-              alt="Un vecino entrega la compra a otra persona en el portal"
-              width="1200"
-              height="675"
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
+          <img
+            className={styles.sectionImageGroceries}
+            src="/images/homeworks.webp"
+            srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
+            sizes="(max-width: 880px) 92vw, 52rem"
+            alt="Un vecino entrega la compra a otra persona en el portal"
+            width="1200"
+            height="675"
+            loading="lazy"
+            decoding="async"
+          />
         </figure>
 
         <div className={styles.categoryGrid}>
@@ -477,6 +474,9 @@ export default function Landing() {
               contentClassName={styles.categoryCardContent}
               borderRadius="var(--radius-lg)"
             >
+              <span className={styles.categoryIcon}>
+                <ActivityIcon category={category.title} size={30} decorative />
+              </span>
               <h3>{category.title}</h3>
               <p>{category.text}</p>
             </ShineBorder>

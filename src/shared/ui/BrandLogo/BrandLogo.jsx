@@ -1,7 +1,13 @@
 import { useSyncExternalStore } from 'react'
-import blackLogo from '../../../assets/icons/helpme_logo_black.png'
-import whiteLogo from '../../../assets/icons/helme_logo_white.png'
+import blackLogo from '../../../assets/icons/helpme_logo_black.webp'
+import whiteLogo from '../../../assets/icons/helme_logo_white.webp'
 import styles from './BrandLogo.module.css'
+
+// Dimensiones intrínsecas por variante (ratios distintos) para reservar espacio y evitar CLS.
+const LOGO_DIMENSIONS = {
+  light: { width: 578, height: 211 },
+  dark: { width: 579, height: 188 },
+}
 
 const SIZE_CLASSES = {
   sm: styles.sm,
@@ -54,6 +60,7 @@ export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left
   )
 
   const logoSrc = resolvedVariant === 'dark' ? whiteLogo : blackLogo
+  const logoDimensions = LOGO_DIMENSIONS[resolvedVariant] ?? LOGO_DIMENSIONS.light
   const rootClassName = [
     styles.logo,
     ALIGN_CLASSES[align] ?? ALIGN_CLASSES.left,
@@ -68,7 +75,14 @@ export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left
 
   return (
     <span className={rootClassName} data-variant={resolvedVariant}>
-      <img className={imageClassName} src={logoSrc} alt="helpMe" decoding="async" />
+      <img
+        className={imageClassName}
+        src={logoSrc}
+        alt="helpMe"
+        width={logoDimensions.width}
+        height={logoDimensions.height}
+        decoding="async"
+      />
     </span>
   )
 }

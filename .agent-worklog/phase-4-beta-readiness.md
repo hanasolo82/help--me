@@ -414,6 +414,22 @@ columna de texto → pequeña). Arreglos (solo Landing.jsx + .module.css, sin ge
   contenedores y sombras coherentes (tokens). Clases modificadoras dejan fácil afinar el crop por imagen.
 lint/build/diff verdes. Pendiente: confirmación visual del owner (desktop/tablet/360×720/dark).
 
+### Fase 5 / P5.2c — 4 fixes de integración (2026-06-29)
+1. **Hero deformado (object-fit fill):** causa real = el `<picture>` (añadido en P5.2) rompía el selector
+   hijo-directo `.heroMedia > img` → el img caía a `object-fit` por defecto (fill). Fix: **quitar
+   `<picture>`** (hero vuelve a `<img>` hijo directo) → `.heroMedia > img { object-fit: cover; 16/10 }`
+   aplica. (No cambié a `.heroMedia img` porque el fallback tiene un `<img>` (BrandLogo) que se
+   deformaría.)
+2. **Logo:** no había SVG. PNG→**WebP lossless** (negro 103→51 KB, blanco 121→59 KB) + imports
+   actualizados + **`width/height` por variante** (ratios distintos 578×211 / 579×188) → arregla CLS.
+   Logo bundleado ya como webp.
+3. **Categorías sin icono:** añadido **HelpMoji `ActivityIcon`** por tarjeta en chip sutil
+   (Mascotas→pets, Recados/Compras→errands, Ayuda técnica→tech; verificado en runtime).
+4. **Responsive imágenes:** las 3 imágenes pasan de `<picture>` con media-source a
+   **`<img srcSet sizes>`** (mobile 700-800w / desktop 1200-1600w) → el navegador sirve el tamaño
+   adecuado. AVIF descartado (Pillow 10.2 sin soporte fiable; WebP+srcset cubre el objetivo).
+lint/build/diff verdes. Pendiente: confirmación visual del owner.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

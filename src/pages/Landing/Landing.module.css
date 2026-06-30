@@ -878,9 +878,15 @@
   }
 }
 
-/* picture no debe afectar al layout del hero: el img conserva las reglas de .heroMedia img */
-.heroMedia picture {
-  display: contents;
+/* Icono de actividad (HelpMoji) en las tarjetas de Categorías */
+.categoryIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.15rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 /* Imágenes de sección (actividad): contenidas, 16:9 = ratio de origen (sin deformar), lazy. */
