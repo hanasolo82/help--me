@@ -213,6 +213,17 @@ const pricingPlans = [
 const heldPlan = pricingPlans.find((plan) => plan.available)
 const comingSoonPlans = pricingPlans.filter((plan) => !plan.available)
 
+// Carrusel "para qué se usa": solo hay 3 imágenes reales; se reutilizan con etiquetas distintas.
+// Versión -mobile (700-800w) basta de sobra para tarjetas de 230×150.
+const marqueeCards = [
+  { image: '/images/helpgrandmom-mobile.webp', label: 'Acompañar a mayores' },
+  { image: '/images/homeworks-mobile.webp', label: 'Tareas del hogar' },
+  { image: '/images/walkdog-mobile.webp', label: 'Pasear al perro' },
+  { image: '/images/helpgrandmom-mobile.webp', label: 'Ayuda con el móvil' },
+  { image: '/images/homeworks-mobile.webp', label: 'Organizar la casa' },
+  { image: '/images/walkdog-mobile.webp', label: 'Recados y paseos' },
+]
+
 export default function Landing() {
   useDocumentMeta({
     title: 'La ayuda que necesitas, cerca de ti',
@@ -392,6 +403,37 @@ export default function Landing() {
             <span>{currentSlide.text}</span>
           </figcaption>
         </figure>
+      </section>
+
+      <section className={styles.taskMarquee} aria-label="Para qué se usa HelpMe">
+        <div className={styles.mqHead}>
+          <span className={styles.mqEyebrow}>Para qué se usa</span>
+          <span className={styles.mqSub}>Cientos de tareas cotidianas resueltas cerca de ti</span>
+        </div>
+        <div className={styles.mqViewport}>
+          <div className={styles.mqTrack}>
+            {[...marqueeCards, ...marqueeCards].map((card, index) => {
+              const duplicated = index >= marqueeCards.length
+              return (
+                <figure
+                  className={styles.mqCard}
+                  key={`${card.label}-${index}`}
+                  aria-hidden={duplicated || undefined}
+                >
+                  <img
+                    src={card.image}
+                    alt={duplicated ? '' : card.label}
+                    width="230"
+                    height="150"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <figcaption className={styles.mqLabel}>{card.label}</figcaption>
+                </figure>
+              )
+            })}
+          </div>
+        </div>
       </section>
 
       <section id="como-funciona" className={styles.section}>

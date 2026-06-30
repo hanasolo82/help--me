@@ -444,6 +444,20 @@ lint/build/diff verdes. Pendiente: confirmación visual del owner.
    No requiere cambio.
 lint/build verdes.
 
+### Fase 5 / P5.2e — carrusel "para qué se usa" (marquee) (2026-06-29)
+Integrado de forma definitiva (el preview era efímero): sección bajo el hero con título "Para qué se
+usa / Cientos de tareas cotidianas..." + carrusel de tarjetas 230×150 en bucle lateral infinito (60s
+linear), máscara de difuminado en bordes, pausa en hover, zoom 1.06 en hover, `prefers-reduced-motion`.
+Adaptado al proyecto:
+- CSS modules + tokens (no clases globales); `#1f6f43` → `var(--accent)`; sombras con `--shadow`.
+- **Solo las 3 imágenes reales** (walkdog/helpgrandmom/homeworks, variantes `-mobile` por tamaño) con 6
+  etiquetas de caso de uso distintas → NO referencio imágenes inexistentes (groceries/cleaning estaban
+  vacías 0×0).
+- Loop sin saltos: set duplicado + `translateX(-50%)`, y **`margin-right` por tarjeta en vez de `gap`**
+  para que el -50% sea exacto (con `gap` quedaba descuadrado medio gap).
+- A11y: tarjetas no interactivas (`figure`), set duplicado con `aria-hidden`/`alt=""`, sección con aria-label.
+lint/build/diff verdes. Pendiente owner: subir más imágenes reales si quiere foto distinta por tarjeta.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.
