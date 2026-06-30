@@ -399,6 +399,21 @@ responsive (no había cwebp/magick/sharp; `convert` era la utilidad de disco de 
 - Sin vídeo, sin tocar backend/pagos/RLS/Stripe ni pricing. lint/build verdes.
 **Pendiente owner:** revisión visual desktop/mobile/dark; decidir si `art-src/` se commitea o se gitignorea.
 
+### Fase 5 / P5.2b — ajuste fino de integración de imágenes (2026-06-29)
+Diagnóstico en CSS: el hero forzaba la imagen 16:9 a `aspect-ratio: 4/3` (la alargaba/aplastaba); las
+imágenes de sección eran 16:9 sin control (Categorías gigante a ancho completo; Confianza dentro de la
+columna de texto → pequeña). Arreglos (solo Landing.jsx + .module.css, sin generar imágenes):
+- **Hero (walkdog):** `aspect-ratio: 4/3 → 16/10` (dominante, no gigante), modificador `.heroImageDog`
+  con `object-position: center 45%`. `object-position` solo en el modificador para ganar especificidad.
+- **Categorías (homeworks):** imagen contenida `max-width: 52rem` centrada (antes banner full-width
+  gigante), 16:9 = ratio de origen → sin recorte ni deformación; modificador `.sectionImageGroceries`.
+- **Confianza (helpgrandmom):** **movida fuera de la columna de texto** (estaba pequeña) a banda
+  `grid-column: 1 / -1` bajo copy+metrics, contenida a 52rem; modificador `.sectionImagePhone`
+  (`object-position: center 42%`).
+- Nunca se deforma (object-fit cover + ratio = origen); `width/height` se mantienen contra CLS;
+  contenedores y sombras coherentes (tokens). Clases modificadoras dejan fácil afinar el crop por imagen.
+lint/build/diff verdes. Pendiente: confirmación visual del owner (desktop/tablet/360×720/dark).
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

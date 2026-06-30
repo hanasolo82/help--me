@@ -264,12 +264,14 @@
 .heroMedia > img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
-.heroMedia > img {
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
+/* Modificador de recorte del hero (object-position solo aquí para ganar en especificidad). */
+.heroImageDog {
+  object-position: center 45%;
 }
 
 .defaultImage {
@@ -881,19 +883,34 @@
   display: contents;
 }
 
-/* Imágenes de sección (actividad), lazy y responsive */
+/* Imágenes de sección (actividad): contenidas, 16:9 = ratio de origen (sin deformar), lazy. */
 .sectionImage {
-  margin: 0 0 1.25rem;
+  margin: 0 auto 1.25rem;
   width: 100%;
+  max-width: 52rem;
   overflow: hidden;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--shadow) 50%, transparent);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--shadow) 45%, transparent);
 }
 
 .sectionImage img {
   display: block;
   width: 100%;
-  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+}
+
+/* Banda a ancho completo dentro del grid de Confianza (splitSection). */
+.sectionImageSpan {
+  grid-column: 1 / -1;
+  margin-top: 1.75rem;
+}
+
+/* Recortes por imagen (object-position solo aquí para ganar en especificidad). */
+.sectionImageGroceries {
+  object-position: center;
+}
+
+.sectionImagePhone {
+  object-position: center 42%;
 }

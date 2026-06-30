@@ -368,6 +368,7 @@ export default function Landing() {
               ) : null}
               <source srcSet={currentSlide.image} type="image/webp" />
               <img
+                className={styles.heroImageDog}
                 src={currentSlide.image}
                 alt={currentSlide.imageAlt || currentSlide.title}
                 width="1600"
@@ -411,20 +412,6 @@ export default function Landing() {
 
       <section id="confianza" className={styles.splitSection}>
         <div className={styles.splitCopy}>
-          <figure className={styles.sectionImage}>
-            <picture>
-              <source media="(max-width: 640px)" srcSet="/images/helpgrandmom-mobile.webp" type="image/webp" />
-              <source srcSet="/images/helpgrandmom.webp" type="image/webp" />
-              <img
-                src="/images/helpgrandmom.webp"
-                alt="Una persona joven ayuda a una persona mayor con el móvil"
-                width="1200"
-                height="675"
-                loading="lazy"
-                decoding="async"
-              />
-            </picture>
-          </figure>
           <p className={styles.kicker}>Confianza</p>
           <h2>Diseñado para generar confianza desde el primer minuto</h2>
           <p>
@@ -441,6 +428,22 @@ export default function Landing() {
             </article>
           ))}
         </div>
+
+        <figure className={`${styles.sectionImage} ${styles.sectionImageSpan}`}>
+          <picture>
+            <source media="(max-width: 640px)" srcSet="/images/helpgrandmom-mobile.webp" type="image/webp" />
+            <source srcSet="/images/helpgrandmom.webp" type="image/webp" />
+            <img
+              className={styles.sectionImagePhone}
+              src="/images/helpgrandmom.webp"
+              alt="Una persona joven ayuda a una persona mayor con el móvil"
+              width="1200"
+              height="675"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </figure>
       </section>
 
       <section id="categorias" className={styles.section}>
@@ -454,6 +457,7 @@ export default function Landing() {
             <source media="(max-width: 640px)" srcSet="/images/homeworks-mobile.webp" type="image/webp" />
             <source srcSet="/images/homeworks.webp" type="image/webp" />
             <img
+              className={styles.sectionImageGroceries}
               src="/images/homeworks.webp"
               alt="Un vecino entrega la compra a otra persona en el portal"
               width="1200"
