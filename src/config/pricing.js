@@ -12,7 +12,7 @@ export const PRICING_COPY = Object.freeze({
   paymentSummary: 'Pide ayuda gratis. Paga retenido. Libera cuando estes conforme.',
   releaseHelperPayment: 'Libera el pago cuando la tarea este hecha',
   reportBeforeRelease: 'Puedes reportar un problema antes de liberar',
-  betaNoCommission: 'Beta cerrada: sin comision de HelpMe.',
+  betaNoCommission: 'Beta cerrada: sin comisión de HelpMe.',
   helperKeepsPrice: 'El helper ve el 100% del precio acordado.',
 })
 

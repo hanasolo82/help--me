@@ -430,6 +430,20 @@ lint/build/diff verdes. Pendiente: confirmación visual del owner (desktop/table
    adecuado. AVIF descartado (Pillow 10.2 sin soporte fiable; WebP+srcset cubre el objetivo).
 lint/build/diff verdes. Pendiente: confirmación visual del owner.
 
+### Fase 5 / P5.2d — consistencia landing (2026-06-29)
+1. **h2 de planes:** quitado el override `.pricingTitle` (medía ~40px) → ahora hereda `.sectionHeader h2`
+   como el resto de secciones (~62px). Jerarquía unificada.
+2. **CTA primario único:** "Publicar tarea" reusaba `.planCta` (verde, radius 14px, padding 0 24px);
+   ahora usa **`.primaryCta`** (igual que "Necesito ayuda": terracota, radius 12px, padding 0.9rem 1.15rem,
+   min-height 3.15rem). Eliminado `.planCta` y sus media queries huérfanos.
+3. **Errata:** "sin comision" → "sin **comisión**" en `pricing.js` (betaNoCommission, la visible en pago
+   retenido) y en el FAQ JSON-LD de la landing. (Pendiente owner: `Terms.jsx` tiene 3 "comision" más en
+   copy legal, fuera de alcance.)
+4. **Navbar móvil:** verificado — a `max-width: 56rem` (896px) `.links` se oculta y aparece el botón
+   "Menu" con dropdown; los 5 enlaces van al desplegable, no inline → sin overflow por debajo de 640px.
+   No requiere cambio.
+lint/build verdes.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

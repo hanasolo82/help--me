@@ -61,7 +61,7 @@ const LANDING_JSONLD = {
           name: '¿Cuanto cuesta usar helpMe?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Publicar una tarea es gratis. En la beta cerrada, el pago retenido hasta confirmar esta incluido sin comision de HelpMe.',
+            text: 'Publicar una tarea es gratis. En la beta cerrada, el pago retenido hasta confirmar está incluido sin comisión de HelpMe.',
           },
         },
       ],
@@ -487,7 +487,7 @@ export default function Landing() {
       <section id="planes" className={styles.section}>
         <div className={styles.sectionHeader}>
           <p className={styles.kicker}>Planes y pago retenido</p>
-          <h2 className={styles.pricingTitle}>Empieza gratis, con el pago protegido por dentro</h2>
+          <h2>Empieza gratis, con el pago protegido por dentro</h2>
           <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
         </div>
 
@@ -503,7 +503,7 @@ export default function Landing() {
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
-              <button type="button" className={styles.planCta} onClick={() => startJourney('need')}>
+              <button type="button" className={styles.primaryCta} onClick={() => startJourney('need')}>
                 Publicar tarea
               </button>
             </div>

@@ -640,11 +640,6 @@
 }
 
 /* --- Planes y pago retenido (informativo, sin cobros) --- */
-/* Tipografía contenida: que la sección no parezca otra landing distinta a la app. */
-.pricingTitle {
-  font-size: clamp(1.7rem, 3.4vw, 2.5rem) !important;
-}
-
 .sectionLead {
   margin: 0;
   max-width: 44rem;
@@ -758,24 +753,7 @@
   font-weight: 800;
 }
 
-/* ---- Botón único real ---- */
-.planCta {
-  justify-self: start;
-  min-height: 2.75rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  background: var(--primary, var(--hm-color-primary));
-  color: #fff;
-  font-weight: 800;
-  padding: 0 1.5rem;
-  cursor: pointer;
-  transition: background-color var(--motion-fast, 140ms) ease, transform var(--motion-fast, 140ms) ease;
-}
-
-.planCta:hover {
-  background: var(--hm-color-primary-hover);
-  transform: translateY(-1px);
-}
+/* El CTA real "Publicar tarea" reutiliza .primaryCta (estilo único de botón primario). */
 
 /* ---- Bloque secundario: Próximamente ---- */
 .pricingSoonHeader {
@@ -858,23 +836,6 @@
   .pricingHero {
     grid-template-columns: 1fr;
     gap: 1.1rem;
-  }
-}
-
-@media (max-width: 42rem) {
-  .planCta {
-    justify-self: stretch;
-    text-align: center;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .planCta {
-    transition: none;
-  }
-
-  .planCta:hover {
-    transform: none;
   }
 }
 
