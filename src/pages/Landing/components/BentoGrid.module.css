@@ -1,0 +1,206 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  padding: 1.4rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cardWide {
+  grid-column: span 2;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+/* Overlay sutil que aparece al hover */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.card:hover .overlay {
+  opacity: 1;
+}
+
+.top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.iconBox {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary);
+  transition: background-color 0.2s ease;
+}
+
+.card:hover .iconBox {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  transform-origin: center;
+}
+
+.tick {
+  stroke-dasharray: 12;
+}
+
+.badge {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  padding: 0.28rem 0.6rem;
+}
+
+.title {
+  position: relative;
+  z-index: 1;
+  margin: 0.1rem 0 0;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.desc {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.tags {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.tag {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.24rem 0.55rem;
+}
+
+/* Microanimaciones tipo Telegram, solo si el usuario no pide menos movimiento */
+@media (prefers-reduced-motion: no-preference) {
+  .card:hover .icon[data-icon='paw'] {
+    animation: hm-bounce 0.6s ease;
+  }
+
+  .card:hover .icon[data-icon='list'] .tick {
+    animation: hm-draw 0.5s ease;
+  }
+
+  .card:hover .icon[data-icon='cart'] {
+    animation: hm-roll 0.6s ease;
+  }
+
+  .card:hover .icon[data-icon='wrench'] {
+    animation: hm-wrench 0.7s ease;
+  }
+}
+
+@keyframes hm-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px) rotate(-6deg);
+  }
+  60% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
+
+@keyframes hm-draw {
+  from {
+    stroke-dashoffset: 12;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hm-roll {
+  0% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes hm-wrench {
+  0% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-18deg);
+  }
+  70% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardWide {
+    grid-column: auto;
+  }
+}

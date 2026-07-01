@@ -458,6 +458,45 @@ Adaptado al proyecto:
 - A11y: tarjetas no interactivas (`figure`), set duplicado con `aria-hidden`/`alt=""`, sección con aria-label.
 lint/build/diff verdes. Pendiente owner: subir más imágenes reales si quiere foto distinta por tarjeta.
 
+### Fase 5 / P5.3 — rediseño hero full-bleed + BentoGrid + iconos animados (2026-06-29)
+Encargo de 3 tareas (CSS Modules, sin Tailwind, SVG inline + animaciones CSS):
+1. **Hero a pantalla completa:** `#inicio` pasa de imagen lateral a `walkdog.webp` como fondo (capa
+   `.heroFullMedia` `center 30%/cover`), overlay degradado para legibilidad, texto blanco encima
+   (eyebrow #bfe6cd, h1 Lora 56px, sub, 2 botones: primario verde #1f6b3b + ghost blur). Responsive
+   <780px: h1 38px, overlay vertical, bg → `walkdog-mobile.webp`. Eliminada la maquinaria vieja (slides,
+   `failedImages`, pills, fallback).
+2. **BentoGrid** (`src/pages/Landing/components/BentoGrid.{jsx,module.css}`): reemplaza las cards de
+   categorías. Grid 3 col asimétrico (Mascotas y Ayuda técnica span 2; Recados/Compras span 1), datos en
+   array (title/meta/desc/tags/icon/span). Card del sistema (blanco, radio 14, `--shadow-md`), iconBox +
+   badge pill + título Lora + desc + tags `#`. Hover: translateY(-4px), sombra verde, overlay sutil,
+   iconBox intensifica. <780px: 1 col, spans a 1.
+3. **Iconos SVG de línea** (pata/lista/carrito/llave) inline, `stroke currentColor` 1.8, con
+   microanimaciones al hover de la tarjeta (bounce/line-draw/roll/wrench) envueltas en
+   `@media (prefers-reduced-motion: no-preference)`.
+Todo con tokens de tema (`--surface/--text/--primary/--shadow-md/--font-heading`) → dark OK; anclas
+`#inicio`/`#categorias` intactas. lint/build verdes.
+Deuda: quedó CSS muerto del hero/categorías viejos en `Landing.module.css` (`.hero*`, `.categoryCard*`,
+etc.) — inofensivo (clases no aplicadas); pendiente limpieza opcional.
+
+### Fase 5 / P5.4 — reestructuración de layout de la landing (2026-06-29)
+Nuevo orden: Hero → Cómo funciona → Categorías(carrusel+bento) → Planes → Confianza(zig-zag) → Empieza →
+Footer. Solo layout/orden/animación; sin cambiar textos/paleta/tipografía. Solo `Landing.{jsx,module.css}`.
+- **Hero full-bleed con crossfade:** ancho 100%, sin margen/radio, `min-height clamp(520,82vh,760)`.
+  Fondo = 3 imágenes reales (walkdog/helpgrandmom/homeworks) en capas `<img>` con opacidad + transición
+  1s, rotación 4.5s vía `setInterval`; `matchMedia('prefers-reduced-motion: reduce')` → sin rotación,
+  muestra la 1ª. Overlay + texto blanco fijo legible. Imágenes de fondo decorativas = `alt=""` +
+  `aria-hidden` (lo accesible para un fondo rotatorio).
+- **Cómo funciona** subida justo bajo el hero (sin cambios visuales).
+- **Categorías** = su propia sección: header + lead + carrusel (tarjetas 230×150 → **300×200**) + BentoGrid.
+  La imagen homeworks sale de aquí.
+- **Planes** sin cambios internos, ahora en zona media (tras Categorías).
+- **Confianza** movida tras Planes, en **zig-zag**: fila1 helpgrandmom(izq)+texto(dcha), fila2
+  texto/stats(izq)+homeworks(dcha); imágenes contenidas ~media columna (no full-bleed); los 3 stats
+  integrados en el texto; apila en móvil (<820px).
+- **Menú** reordenado a Cómo funciona · Categorías · Planes · Confianza · Empieza; anclas intactas.
+lint/build verdes. Deuda: CSS muerto adicional (marquee head, sectionImageSpan/Phone/Groceries, splitCopy).
+Pendiente owner: revisión visual desktop/móvil/dark.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

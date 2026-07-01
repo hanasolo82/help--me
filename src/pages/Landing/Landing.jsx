@@ -7,8 +7,7 @@ import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
-import ActivityIcon from '../../features/tasks/categories/ActivityIcon'
-import { ShineBorder } from '@/components/ui/shine-border'
+import BentoGrid from './components/BentoGrid'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
 import {
@@ -71,23 +70,18 @@ const LANDING_JSONLD = {
 
 const landingLinks = [
   { label: 'Cómo funciona', href: '#como-funciona' },
-  { label: 'Confianza', href: '#confianza' },
   { label: 'Categorías', href: '#categorias' },
   { label: 'Planes', href: '#planes' },
+  { label: 'Confianza', href: '#confianza' },
   { label: 'Empieza', href: '#empieza' },
 ]
 
-const heroSlides = [
-  {
-    title: 'Una mano cerca, cuando la necesitas',
-    text: 'Vecinos que se echan una mano con lo cotidiano, en tu propio barrio.',
-    image: '/images/walkdog.webp',
-    imageMobile: '/images/walkdog-mobile.webp',
-    imageAlt: 'Persona paseando un perro por una calle de barrio con luz cálida',
-  },
+// Imágenes del hero en crossfade (rotan las 3 reales; se difuminan entre sí).
+const heroImages = [
+  { src: '/images/walkdog.webp', srcMobile: '/images/walkdog-mobile.webp' },
+  { src: '/images/helpgrandmom.webp', srcMobile: '/images/helpgrandmom-mobile.webp' },
+  { src: '/images/homeworks.webp', srcMobile: '/images/homeworks-mobile.webp' },
 ]
-
-const heroPills = ['Ayuda local', 'Respuesta rápida', 'Comunidad verificada', 'Coordinación sencilla']
 
 const steps = [
   {
@@ -119,25 +113,6 @@ const metrics = [
   {
     value: '2 caminos',
     label: 'pedir o ayudar',
-  },
-]
-
-const categories = [
-  {
-    title: 'Mascotas',
-    text: 'Paseos, cuidados puntuales o una mano cuando necesitas salir sin apuro.',
-  },
-  {
-    title: 'Recados',
-    text: 'Pequeños encargos resueltos sin mover toda tu agenda.',
-  },
-  {
-    title: 'Compras',
-    text: 'Lo que falta, comprado cerca y entregado con sencillez.',
-  },
-  {
-    title: 'Ayuda técnica',
-    text: 'Dudas, ajustes y pequeñas tareas que se resuelven mejor con alguien al lado.',
   },
 ]
 
@@ -234,27 +209,26 @@ export default function Landing() {
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
   const [navMenuOpen, setNavMenuOpen] = useState(false)
-  const [slideIndex, setSlideIndex] = useState(0)
-  const [failedImages, setFailedImages] = useState({})
+  const [heroIndex, setHeroIndex] = useState(0)
   const [themePreference, setThemePreference] = useState(() =>
     resolveThemePreference({ isPrivateRoute: false }),
   )
 
-  const currentSlide = heroSlides[slideIndex]
-
-  useEffect(() => {
-    if (heroSlides.length <= 1) return undefined
-
-    const intervalId = window.setInterval(() => {
-      setSlideIndex((current) => (current + 1) % heroSlides.length)
-    }, 4000)
-
-    return () => window.clearInterval(intervalId)
-  }, [])
-
   useEffect(() => {
     applyThemeToDocument(themePreference)
   }, [themePreference])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || heroImages.length <= 1) return undefined
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) return undefined
+
+    const intervalId = window.setInterval(() => {
+      setHeroIndex((current) => (current + 1) % heroImages.length)
+    }, 4500)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   async function startJourney(mode) {
     setHelperHomeIntent(mode)
@@ -344,94 +318,39 @@ export default function Landing() {
         </div>
       </header>
 
-      <section id="inicio" className={styles.hero}>
-        <div className={styles.heroCopy}>
-          <BrandLogo size="lg" variant="auto" className={styles.heroBrandLogo} />
-          <p className={styles.kicker}>Ayuda cercana</p>
-          <h1>La ayuda que necesitas, cerca de ti</h1>
-          <p className={styles.heroLead}>
+      <section id="inicio" className={styles.heroFull}>
+        <div className={styles.heroFullMedia} aria-hidden="true">
+          {heroImages.map((image, index) => (
+            <img
+              key={image.src}
+              className={index === heroIndex ? `${styles.heroLayer} ${styles.heroLayerActive}` : styles.heroLayer}
+              src={image.src}
+              srcSet={`${image.srcMobile} 800w, ${image.src} 1600w`}
+              sizes="100vw"
+              alt=""
+              width="1600"
+              height="900"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+              decoding="async"
+            />
+          ))}
+        </div>
+        <div className={styles.heroFullOverlay} aria-hidden="true" />
+        <div className={styles.heroFullContent}>
+          <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
+          <h1 className={styles.heroFullTitle}>La ayuda que necesitas, cerca de ti</h1>
+          <p className={styles.heroFullSub}>
             Conecta en minutos con personas cercanas listas para ayudarte con lo cotidiano. Simple, claro y sin
             complicaciones.
           </p>
-
-          <div className={styles.heroActions}>
-            <button className={styles.primaryCta} onClick={() => startJourney('need')}>
+          <div className={styles.heroFullActions}>
+            <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>
               Necesito ayuda
             </button>
-            <button className={styles.primaryCtaSecondary} onClick={() => startJourney('help')}>
+            <button type="button" className={styles.heroFullGhost} onClick={() => startJourney('help')}>
               Quiero ayudar
             </button>
-          </div>
-
-          <p className={styles.heroSecondary}>Una forma más simple de resolver el día a día</p>
-
-          <ul className={styles.heroPills} aria-label="Beneficios clave">
-            {heroPills.map((pill) => (
-              <li key={pill}>{pill}</li>
-            ))}
-          </ul>
-        </div>
-
-        <figure className={styles.heroMedia}>
-          {!failedImages[currentSlide.image] ? (
-            <img
-              className={styles.heroImageDog}
-              src={currentSlide.image}
-              srcSet={
-                currentSlide.imageMobile
-                  ? `${currentSlide.imageMobile} 800w, ${currentSlide.image} 1600w`
-                  : undefined
-              }
-              sizes="(max-width: 980px) 92vw, 33rem"
-              alt={currentSlide.imageAlt || currentSlide.title}
-              width="1600"
-              height="900"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              onError={() => setFailedImages((current) => ({ ...current, [currentSlide.image]: true }))}
-            />
-          ) : (
-            <div className={styles.defaultImage} aria-label="Imagen por defecto de helpMe">
-              <BrandLogo size="xl" variant="auto" align="center" className={styles.fallbackLogo} />
-              <strong>{currentSlide.title}</strong>
-              <span>{currentSlide.text}</span>
-            </div>
-          )}
-          <figcaption>
-            <strong>{currentSlide.title}</strong>
-            <span>{currentSlide.text}</span>
-          </figcaption>
-        </figure>
-      </section>
-
-      <section className={styles.taskMarquee} aria-label="Para qué se usa HelpMe">
-        <div className={styles.mqHead}>
-          <span className={styles.mqEyebrow}>Para qué se usa</span>
-          <span className={styles.mqSub}>Cientos de tareas cotidianas resueltas cerca de ti</span>
-        </div>
-        <div className={styles.mqViewport}>
-          <div className={styles.mqTrack}>
-            {[...marqueeCards, ...marqueeCards].map((card, index) => {
-              const duplicated = index >= marqueeCards.length
-              return (
-                <figure
-                  className={styles.mqCard}
-                  key={`${card.label}-${index}`}
-                  aria-hidden={duplicated || undefined}
-                >
-                  <img
-                    src={card.image}
-                    alt={duplicated ? '' : card.label}
-                    width="230"
-                    height="150"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <figcaption className={styles.mqLabel}>{card.label}</figcaption>
-                </figure>
-              )
-            })}
           </div>
         </div>
       </section>
@@ -453,77 +372,39 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="confianza" className={styles.splitSection}>
-        <div className={styles.splitCopy}>
-          <p className={styles.kicker}>Confianza</p>
-          <h2>Diseñado para generar confianza desde el primer minuto</h2>
-          <p>
-            Perfiles claros, estados visibles y una experiencia enfocada en la transparencia para que cada paso se
-            entienda sin esfuerzo.
-          </p>
-        </div>
-
-        <div className={styles.metrics}>
-          {metrics.map((metric) => (
-            <article key={metric.label}>
-              <strong>{metric.value}</strong>
-              <span>{metric.label}</span>
-            </article>
-          ))}
-        </div>
-
-        <figure className={`${styles.sectionImage} ${styles.sectionImageSpan}`}>
-          <img
-            className={styles.sectionImagePhone}
-            src="/images/helpgrandmom.webp"
-            srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
-            sizes="(max-width: 880px) 92vw, 52rem"
-            alt="Una persona joven ayuda a una persona mayor con el móvil"
-            width="1200"
-            height="675"
-            loading="lazy"
-            decoding="async"
-          />
-        </figure>
-      </section>
-
       <section id="categorias" className={styles.section}>
         <div className={styles.sectionHeader}>
           <p className={styles.kicker}>Categorías</p>
           <h2>Todo lo cotidiano, mejor resuelto</h2>
+          <p className={styles.sectionLead}>Cientos de tareas cotidianas resueltas cerca de ti</p>
         </div>
 
-        <figure className={styles.sectionImage}>
-          <img
-            className={styles.sectionImageGroceries}
-            src="/images/homeworks.webp"
-            srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
-            sizes="(max-width: 880px) 92vw, 52rem"
-            alt="Un vecino entrega la compra a otra persona en el portal"
-            width="1200"
-            height="675"
-            loading="lazy"
-            decoding="async"
-          />
-        </figure>
-
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
-            <ShineBorder
-              key={category.title}
-              as="article"
-              className={styles.categoryCard}
-              contentClassName={styles.categoryCardContent}
-              borderRadius="var(--radius-lg)"
-            >
-              <span className={styles.categoryIcon}>
-                <ActivityIcon category={category.title} size={30} decorative />
-              </span>
-              <h3>{category.title}</h3>
-              <p>{category.text}</p>
-            </ShineBorder>
-          ))}
+        <div className={styles.mqViewport} aria-label="Ejemplos de tareas en HelpMe">
+          <div className={styles.mqTrack}>
+            {[...marqueeCards, ...marqueeCards].map((card, index) => {
+              const duplicated = index >= marqueeCards.length
+              return (
+                <figure
+                  className={styles.mqCard}
+                  key={`${card.label}-${index}`}
+                  aria-hidden={duplicated || undefined}
+                >
+                  <img
+                    src={card.image}
+                    alt={duplicated ? '' : card.label}
+                    width="300"
+                    height="200"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <figcaption className={styles.mqLabel}>{card.label}</figcaption>
+                </figure>
+              )
+            })}
+          </div>
         </div>
+
+        <BentoGrid />
       </section>
 
       <section id="planes" className={styles.section}>
@@ -586,6 +467,59 @@ export default function Landing() {
               </ul>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section id="confianza" className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <p className={styles.kicker}>Confianza</p>
+          <h2>Diseñado para generar confianza desde el primer minuto</h2>
+        </div>
+
+        <div className={styles.zigzag}>
+          <figure className={styles.zzImage}>
+            <img
+              src="/images/helpgrandmom.webp"
+              srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
+              sizes="(max-width: 820px) 92vw, 34rem"
+              alt="Una persona joven ayuda a una persona mayor con el móvil"
+              width="1200"
+              height="675"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div className={styles.zzText}>
+            <p>
+              Perfiles claros, estados visibles y una experiencia enfocada en la transparencia para que cada paso se
+              entienda sin esfuerzo.
+            </p>
+          </div>
+        </div>
+
+        <div className={`${styles.zigzag} ${styles.zigzagReverse}`}>
+          <figure className={styles.zzImage}>
+            <img
+              src="/images/homeworks.webp"
+              srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
+              sizes="(max-width: 820px) 92vw, 34rem"
+              alt="Un vecino entrega la compra a otra persona en el portal"
+              width="1200"
+              height="675"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div className={styles.zzText}>
+            <div className={styles.metrics}>
+              {metrics.map((metric) => (
+                <article key={metric.label}>
+                  <strong>{metric.value}</strong>
+                  <span>{metric.label}</span>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
