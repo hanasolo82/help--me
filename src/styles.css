@@ -1957,4 +1957,22 @@ p {
   }
 }
 
+/* Animated Theme Toggler (View Transitions API).
+   Desactivamos la animación por defecto de la instantánea root para que solo se vea el
+   círculo (clip-path) que anima ThemeSwitch; así se evita el doble cross-fade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* La instantánea nueva se revela por encima de la antigua (el círculo crece sobre el tema previo). */
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
 

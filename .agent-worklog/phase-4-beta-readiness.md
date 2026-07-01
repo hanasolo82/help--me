@@ -497,6 +497,21 @@ Footer. Solo layout/orden/animación; sin cambiar textos/paleta/tipografía. Sol
 lint/build verdes. Deuda: CSS muerto adicional (marquee head, sectionImageSpan/Phone/Groceries, splitCopy).
 Pendiente owner: revisión visual desktop/móvil/dark.
 
+### Fase 5 / P5.5 — Animated Theme Toggler (View Transitions API) (2026-06-29)
+`ThemeSwitch.jsx` conserva el markup pill/iconos sol-luna/accesibilidad (role switch, aria-label,
+aria-checked, sr-only) y ahora anima el cambio de tema:
+- Al clic: `getBoundingClientRect()` del botón → centro (x,y) y radio a la esquina más lejana.
+- `document.startViewTransition(() => flushSync(applyChange))` — el cambio de `data-theme` + tokens
+  (via el `onCheckedChange` de cada padre, que llama `applyThemeToDocument`) se aplica síncrono.
+- `transition.ready` → `documentElement.animate(clipPath circle(0)→circle(maxR) at x,y)` sobre
+  `::view-transition-new(root)`.
+- Fallback: sin `startViewTransition` (Firefox/Safari) o `prefers-reduced-motion` → cambio directo sin
+  animación.
+CSS global en `styles.css`: `::view-transition-old/new(root){ animation:none; mix-blend-mode:normal }`
++ z-index (desactiva el cross-fade por defecto para que solo se vea el círculo).
+Heredado por los 2 consumidores (Landing + HomeHeader/HomeContainer) sin duplicar. Sin deps nuevas
+(flushSync de react-dom). No Tailwind. lint/build/diff verdes.
+
 ### 3D.4 — mobile polish (implementado por Claude, 2026-06-29)
 Solo CSS, sin lógica/backend/pagos. Criterio: ≥44px en controles táctiles importantes, modales usables en
 360×720, CTA alcanzable, sin overflow.

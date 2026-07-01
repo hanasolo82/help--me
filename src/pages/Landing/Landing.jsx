@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { PencilLine, Users, CheckCircle2 } from 'lucide-react'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
 import AuthModal from '../../shared/components/AuthModal/AuthModal'
 import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
+import { useInView } from '../../shared/hooks/useInView'
+import { useScrollReveal } from '../../shared/hooks/useScrollReveal'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
 import BentoGrid from './components/BentoGrid'
@@ -86,18 +89,21 @@ const heroImages = [
 const steps = [
   {
     number: '01',
-    title: 'Publica',
-    text: 'Describe lo que necesitas en segundos.',
+    title: 'Publica tu necesidad',
+    text: 'Cuéntanos qué necesitas en una frase. Sin formularios largos ni complicaciones: en segundos tu petición está visible para gente cercana.',
+    Icon: PencilLine,
   },
   {
     number: '02',
-    title: 'Conecta',
-    text: 'Encuentra ayuda cercana y disponible.',
+    title: 'Conecta al instante',
+    text: 'Recibe respuestas de personas verificadas de tu zona, disponibles ahora. Tú eliges con quién quieres coordinar.',
+    Icon: Users,
   },
   {
     number: '03',
-    title: 'Resuelve',
-    text: 'Coordina y sigue con tu día.',
+    title: 'Resuélvelo y sigue',
+    text: 'Poneos de acuerdo en el chat, quedad y listo. Valora la ayuda recibida y sigue con tu día tranquilo.',
+    Icon: CheckCircle2,
   },
 ]
 
@@ -209,7 +215,11 @@ export default function Landing() {
   const navigate = useNavigate()
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' })
   const [navMenuOpen, setNavMenuOpen] = useState(false)
+  const landingRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
+  const [stepsRef, stepsInView] = useInView({ threshold: 0.25 })
+
+  useScrollReveal(landingRef)
   const [themePreference, setThemePreference] = useState(() =>
     resolveThemePreference({ isPrivateRoute: false }),
   )
@@ -274,7 +284,10 @@ export default function Landing() {
   }
 
   return (
-    <main className={themePreference === THEME_DARK ? `${styles.landing} ${styles.dark}` : styles.landing}>
+    <main
+      ref={landingRef}
+      className={themePreference === THEME_DARK ? `${styles.landing} ${styles.dark}` : styles.landing}
+    >
       <header className={styles.navbar}>
         <a className={styles.brand} href="#inicio" aria-label="Inicio">
           <BrandLogo size="md" variant="auto" />
@@ -361,10 +374,22 @@ export default function Landing() {
           <h2>Resolver algo debería ser así de simple</h2>
         </div>
 
-        <div className={styles.steps}>
-          {steps.map((step) => (
-            <article key={step.number}>
-              <span>{step.number}</span>
+        <div
+          ref={stepsRef}
+          className={`${styles.steps} ${stepsInView ? styles.stepsInView : ''}`.trim()}
+        >
+          {steps.map((step, index) => (
+            <article
+              key={step.number}
+              className={styles.stepCard}
+              style={{ '--step-index': index }}
+            >
+              <div className={styles.stepHead}>
+                <span className={styles.stepIconBox} aria-hidden="true">
+                  <step.Icon className={styles.stepIcon} strokeWidth={1.8} />
+                </span>
+                <span className={styles.stepNumber}>{step.number}</span>
+              </div>
               <h3>{step.title}</h3>
               <p>{step.text}</p>
             </article>

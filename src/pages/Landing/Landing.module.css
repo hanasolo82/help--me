@@ -100,6 +100,38 @@
   color: var(--accent);
 }
 
+/* Subrayado animado (crece de izquierda a derecha en hover) */
+.links a {
+  position: relative;
+}
+
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 200ms ease;
+}
+
+.links a:hover::after,
+.links a:focus-visible::after,
+.links a[aria-current='page']::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .links a::after {
+    transition: none;
+  }
+}
+
 .navActions,
 .heroActions {
   display: flex;
@@ -128,6 +160,43 @@
 
 .ghostButton {
   border-radius: var(--radius-md);
+  transition:
+    box-shadow 160ms ease-out,
+    border-color 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+.ghostButton:hover {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 10px rgba(0, 0, 0, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.ghostButton:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.ghostButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghostButton {
+    transition:
+      box-shadow 160ms ease-out,
+      border-color 160ms ease-out;
+  }
+
+  .ghostButton:hover,
+  .ghostButton:active {
+    transform: none;
+  }
 }
 
 .mobileNavButton {
@@ -357,12 +426,15 @@
 
 .steps article,
 .metrics article {
-  min-height: 12rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 90%, transparent);
-  padding: 1.35rem;
   box-shadow: var(--shadow-sm);
+}
+
+.metrics article {
+  min-height: 12rem;
+  padding: 1.35rem;
 }
 
 .categoryCard {
@@ -377,12 +449,151 @@
   padding: 1.35rem;
 }
 
-.steps span,
 .metrics strong {
   color: var(--accent);
   font-size: 2rem;
   font-weight: 900;
   letter-spacing: -0.04em;
+}
+
+/* --- Stepper "Cómo funciona" --- */
+.steps {
+  position: relative;
+}
+
+.stepCard {
+  position: relative;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  padding: 1.5rem;
+  /* Estado inicial oculto: solo se revela al entrar en viewport */
+  opacity: 0;
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out,
+    border-color 180ms ease-out;
+}
+
+/* Blur-fade escalonado al entrar en vista */
+.stepsInView .stepCard {
+  opacity: 1;
+  animation: stepReveal 550ms ease-out backwards;
+  animation-delay: calc(var(--step-index, 0) * 130ms);
+}
+
+@keyframes stepReveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.stepHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.stepIconBox {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary);
+  transition:
+    background-color 180ms ease-out,
+    color 180ms ease-out;
+}
+
+.stepIcon {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.stepNumber {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--text) 34%, transparent);
+  transition: color 180ms ease-out;
+}
+
+/* Conector horizontal entre pasos (desktop): centro del iconBox */
+.stepCard::after {
+  content: '';
+  position: absolute;
+  top: calc(1.5rem + 22px);
+  left: 100%;
+  width: 1rem;
+  height: 2px;
+  background: color-mix(in srgb, var(--primary) 40%, transparent);
+  /* Se dibuja de izquierda a derecha al entrar en vista */
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 400ms ease-out;
+  transition-delay: calc(var(--step-index, 0) * 130ms + 220ms);
+}
+
+.stepsInView .stepCard::after {
+  transform: scaleX(1);
+}
+
+.stepCard:last-child::after {
+  display: none;
+}
+
+/* Hover: elevación + realce en verde */
+.stepCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--primary) 32%, var(--color-border));
+}
+
+.stepCard:hover .stepIconBox {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.stepCard:hover .stepNumber {
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepCard {
+    /* Contenido final visible, sin animación de entrada ni blur */
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: none;
+    transition:
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
+  }
+
+  .stepsInView .stepCard {
+    animation: none;
+  }
+
+  .stepCard:hover {
+    transform: none;
+  }
+
+  /* Conector ya dibujado, sin transición */
+  .stepCard::after,
+  .stepsInView .stepCard::after {
+    transform: none;
+    transition: none;
+  }
 }
 
 .steps h3,
@@ -613,6 +824,21 @@
   .categoryGrid,
   .metrics {
     grid-template-columns: 1fr;
+  }
+
+  /* Conector vertical entre pasos apilados (centro del iconBox) */
+  .stepCard::after {
+    top: 100%;
+    left: calc(1.5rem + 21px);
+    width: 2px;
+    height: 1rem;
+    /* Se dibuja de arriba a abajo en móvil */
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .stepsInView .stepCard::after {
+    transform: scaleY(1);
   }
 
   .navActions {
@@ -1203,5 +1429,50 @@
 
   .zigzagReverse .zzImage {
     order: 0;
+  }
+}
+
+/* --- Scroll reveal de secciones (entrada + atenuación de salida reversible) --- */
+/* El estado lo controla useScrollReveal vía data-reveal + custom properties --sr-*.
+   Solo animamos opacity/transform/filter (compositables); sin animar layout. */
+.landing section[data-reveal] {
+  will-change: opacity, transform, filter;
+  transition:
+    opacity 560ms ease-out,
+    transform 560ms ease-out,
+    filter 560ms ease-out;
+}
+
+/* Aún no ha entrado por scroll: oculto y desplazado hacia abajo con blur. */
+.landing section[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(var(--sr-translate, 24px));
+  filter: blur(var(--sr-blur, 6px));
+}
+
+/* En pantalla: nitidez mapeada a --sr-progress (1 = nítido y centrado, 0 = atenuado). */
+.landing section[data-reveal='in'] {
+  opacity: calc(
+    var(--sr-min-opacity, 0.45) +
+      (1 - var(--sr-min-opacity, 0.45)) * var(--sr-progress, 1)
+  );
+  transform: scale(
+    calc(
+      var(--sr-exit-scale, 0.98) +
+        (1 - var(--sr-exit-scale, 0.98)) * var(--sr-progress, 1)
+    )
+  );
+  filter: blur(calc((1 - var(--sr-progress, 1)) * var(--sr-exit-blur, 2px)));
+}
+
+/* Accesibilidad: sin efectos de scroll. (useScrollReveal ya no marca data-reveal
+   con reduced-motion; esto es una salvaguarda extra si el atributo persistiera.) */
+@media (prefers-reduced-motion: reduce) {
+  .landing section[data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    will-change: auto;
   }
 }
