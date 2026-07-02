@@ -1,6 +1,7 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
   gap: 16px;
   /* Separa la grilla del carrusel (mqViewport) con la MISMA distancia que el
      padding vertical entre secciones. Hereda --section-space desde .landing,
@@ -20,10 +21,11 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  display: grid;
-  align-content: start;
-  gap: 0.6rem;
-  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.85rem;
+  padding: 1.5rem;
   border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   background: var(--surface);
@@ -31,10 +33,6 @@
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-}
-
-.cardWide {
-  grid-column: span 2;
 }
 
 /* Anillo de borde en degradado (máscara, sin deps). Oculto en reposo,
@@ -80,7 +78,7 @@
   }
 }
 
-/* Glow muy tenue detrás del contenido, aparece al hover */
+/* Glow muy tenue detrás del contenido (spotlight), aparece al hover */
 .glow {
   position: absolute;
   inset: 0;
@@ -99,34 +97,49 @@
   opacity: 1;
 }
 
-.top {
+/* Icono protagonista: caja más grande con aura/halo detrás */
+.iconBox {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.iconBox {
+  isolation: isolate;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 16%, transparent),
+    color-mix(in srgb, var(--accent) 10%, transparent)
+  );
   color: var(--primary);
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .card:hover .iconBox {
-  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 24%, transparent),
+    color-mix(in srgb, var(--accent) 16%, transparent)
+  );
+}
+
+/* Halo detrás del icono: late en bucle sincronizado con la microanimación del icono */
+.iconAura {
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  border-radius: 20px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 55%, transparent), transparent 70%);
+  filter: blur(10px);
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .icon {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   overflow: visible;
   transform-origin: center;
 }
@@ -135,23 +148,13 @@
   stroke-dasharray: 12;
 }
 
-.badge {
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-  color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  padding: 0.28rem 0.6rem;
-}
-
 .title {
   position: relative;
   z-index: 1;
-  margin: 0.1rem 0 0;
+  margin: 0;
   font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text);
 }
@@ -163,15 +166,56 @@
   color: color-mix(in srgb, var(--text) 70%, transparent);
   line-height: 1.5;
   font-size: 0.95rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+/* Lista de tareas de ejemplo: la que llena el espacio y aporta valor */
+.taskList {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.taskList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+}
+
+.taskList li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  background-color: var(--primary);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Tags al pie: empujados abajo para alinear todas las cards en la misma línea base */
 .tags {
   position: relative;
   z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-top: 0.15rem;
+  margin-top: auto;
+  padding-top: 0.2rem;
 }
 
 .tag {
@@ -183,71 +227,142 @@
   padding: 0.24rem 0.55rem;
 }
 
-/* Microanimaciones tipo Telegram, solo si el usuario no pide menos movimiento */
+/* Microanimación temática en bucle, cada ~4s, escalonada por tarjeta (0/1/2/3s).
+   Cada keyframe solo "pulsa" en el primer ~25% del ciclo (~1s de 4s) y descansa el resto. */
 @media (prefers-reduced-motion: no-preference) {
-  .card:hover .icon[data-icon='paw'] {
-    animation: hm-bounce 0.6s ease;
+  .iconAura {
+    animation: hm-loop-aura 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
   }
 
-  .card:hover .icon[data-icon='list'] .tick {
-    animation: hm-draw 0.5s ease;
+  .icon[data-icon='paw'] {
+    animation: hm-loop-paw 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
   }
 
-  .card:hover .icon[data-icon='cart'] {
-    animation: hm-roll 0.6s ease;
+  .icon[data-icon='list'] .tick {
+    animation: hm-loop-tick 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
   }
 
-  .card:hover .icon[data-icon='wrench'] {
-    animation: hm-wrench 0.7s ease;
+  .icon[data-icon='cart'] {
+    animation: hm-loop-cart-drive 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
+  }
+
+  .icon[data-icon='cart'] .wheel {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hm-loop-cart-wheel 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
+  }
+
+  .icon[data-icon='wrench'] {
+    animation: hm-loop-wrench 4s ease-in-out infinite;
+    animation-delay: calc(var(--card-index) * 1s);
   }
 }
 
-@keyframes hm-bounce {
+@keyframes hm-loop-aura {
   0%,
   100% {
-    transform: translateY(0);
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  15% {
+    opacity: 0.65;
+    transform: scale(1.14);
   }
   30% {
-    transform: translateY(-4px) rotate(-6deg);
-  }
-  60% {
-    transform: translateY(0) rotate(4deg);
+    opacity: 0.35;
+    transform: scale(1);
   }
 }
 
-@keyframes hm-draw {
-  from {
+@keyframes hm-loop-paw {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  8% {
+    transform: translateY(-5px) rotate(-8deg);
+  }
+  16% {
+    transform: translateY(0) rotate(6deg);
+  }
+  24% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+  30% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* El check se dibuja (dashoffset) y desvanece (opacity); fuera de ese tramo queda
+   con opacity:0, así que no importa que dashoffset "regrese" durante el descanso. */
+@keyframes hm-loop-tick {
+  0%,
+  100% {
+    opacity: 0;
     stroke-dashoffset: 12;
   }
-  to {
+  5% {
+    opacity: 1;
+    stroke-dashoffset: 12;
+  }
+  14% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  19% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  25% {
+    opacity: 0;
     stroke-dashoffset: 0;
   }
 }
 
-@keyframes hm-roll {
-  0% {
+@keyframes hm-loop-cart-drive {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10% {
     transform: translateX(-3px);
   }
-  50% {
-    transform: translateX(2px);
+  22% {
+    transform: translateX(3px);
   }
-  100% {
+  30% {
     transform: translateX(0);
   }
 }
 
-@keyframes hm-wrench {
-  0% {
-    transform: rotate(0);
+@keyframes hm-loop-cart-wheel {
+  0%,
+  100% {
+    transform: rotate(0deg);
   }
-  35% {
+  30% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hm-loop-wrench {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10% {
     transform: rotate(-18deg);
   }
-  70% {
-    transform: rotate(10deg);
+  20% {
+    transform: rotate(14deg);
   }
-  100% {
-    transform: rotate(0);
+  28% {
+    transform: rotate(0deg);
   }
 }
 
@@ -257,12 +372,14 @@
   }
 }
 
-@media (max-width: 780px) {
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
   .grid {
     grid-template-columns: 1fr;
-  }
-
-  .cardWide {
-    grid-column: auto;
   }
 }

@@ -1,7 +1,7 @@
 import styles from './BentoGrid.module.css'
 
 // Iconos SVG de línea (stroke currentColor). El color lo pone el contenedor (.iconBox).
-// El data-icon permite disparar una microanimación distinta por categoría al hover de la tarjeta.
+// El data-icon dispara la microanimación en bucle propia de cada categoría (ver CSS).
 function PawIcon() {
   return (
     <svg
@@ -10,7 +10,7 @@ function PawIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -32,7 +32,7 @@ function ListIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -54,14 +54,14 @@ function CartIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
     >
-      <circle cx="8" cy="21" r="1" />
-      <circle cx="19" cy="21" r="1" />
+      <circle className={styles.wheel} cx="8" cy="21" r="1" />
+      <circle className={styles.wheel} cx="19" cy="21" r="1" />
       <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
     </svg>
   )
@@ -75,7 +75,7 @@ function WrenchIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -96,56 +96,54 @@ const ICONS = {
 const BENTO_ITEMS = [
   {
     title: 'Mascotas',
-    meta: 'Disponible',
     desc: 'Paseos, cuidados puntuales o una mano cuando necesitas salir sin apuro.',
+    tasks: ['Pasear al perro', 'Dar de comer', 'Visita al veterinario', 'Cuidado un finde'],
     tags: ['Paseos', 'Cuidados'],
     icon: 'paw',
-    span: 2,
   },
   {
     title: 'Recados',
-    meta: 'Rápido',
     desc: 'Pequeños encargos resueltos sin mover toda tu agenda.',
+    tasks: ['Recoger un paquete', 'Hacer una gestión', 'Llevar documentos', 'Esperar una entrega'],
     tags: ['Gestiones'],
     icon: 'list',
-    span: 1,
   },
   {
     title: 'Compras',
-    meta: 'Cerca',
     desc: 'Lo que falta, comprado cerca y entregado con sencillez.',
+    tasks: ['Compra del súper', 'Ir a la farmacia', 'Algo que se acabó', 'Mercado del barrio'],
     tags: ['Entrega'],
     icon: 'cart',
-    span: 1,
   },
   {
     title: 'Ayuda técnica',
-    meta: 'Soporte',
     desc: 'Dudas, ajustes y pequeñas tareas que se resuelven mejor con alguien al lado.',
+    tasks: ['Configurar el móvil', 'Videollamada familiar', 'Instalar una app', 'Dudas con el PC'],
     tags: ['Móvil', 'PC'],
     icon: 'wrench',
-    span: 2,
   },
 ]
 
 export default function BentoGrid({ items = BENTO_ITEMS }) {
   return (
     <div className={styles.grid}>
-      {items.map((item) => {
+      {items.map((item, index) => {
         const Icon = ICONS[item.icon] ?? ICONS.list
-        const cardClassName = item.span === 2 ? `${styles.card} ${styles.cardWide}` : styles.card
 
         return (
-          <article key={item.title} className={cardClassName}>
+          <article key={item.title} className={styles.card} style={{ '--card-index': index }}>
             <span className={styles.glow} aria-hidden="true" />
-            <div className={styles.top}>
-              <span className={styles.iconBox}>
-                <Icon />
-              </span>
-              <span className={styles.badge}>{item.meta}</span>
-            </div>
+            <span className={styles.iconBox}>
+              <span className={styles.iconAura} aria-hidden="true" />
+              <Icon />
+            </span>
             <h3 className={styles.title}>{item.title}</h3>
             <p className={styles.desc}>{item.desc}</p>
+            <ul className={styles.taskList}>
+              {item.tasks.map((task) => (
+                <li key={task}>{task}</li>
+              ))}
+            </ul>
             <div className={styles.tags}>
               {item.tags.map((tag) => (
                 <span key={tag} className={styles.tag}>

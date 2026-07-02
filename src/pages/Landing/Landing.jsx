@@ -365,206 +365,216 @@ export default function Landing() {
           ))}
         </div>
         <div className={styles.heroFullOverlay} aria-hidden="true" />
-        <div className={styles.heroFullContent}>
-          <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
-          <h1 className={styles.heroFullTitle}>
-            <span className={styles.heroTitleLead}>{HERO_TITLE_PREFIX}</span>
-            <span className={styles.heroTypeWrap} aria-hidden="true">
-              <span className={styles.heroType}>{heroTitleTail}</span>
-              <span className={styles.heroCaret} />
-            </span>
-            <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
-          </h1>
-          <div className={styles.heroFullActions}>
-            <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>
-              Necesito ayuda
-            </button>
-            <button type="button" className={styles.heroFullGhost} onClick={() => startJourney('help')}>
-              Quiero ayudar
-            </button>
+        <div className={styles.sectionInner}>
+          <div className={styles.heroFullContent}>
+            <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
+            <h1 className={styles.heroFullTitle}>
+              <span className={styles.heroTitleLead}>{HERO_TITLE_PREFIX}</span>
+              <span className={styles.heroTypeWrap} aria-hidden="true">
+                <span className={styles.heroType}>{heroTitleTail}</span>
+                <span className={styles.heroCaret} />
+              </span>
+              <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
+            </h1>
+            <div className={styles.heroFullActions}>
+              <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>
+                Necesito ayuda
+              </button>
+              <button type="button" className={styles.heroFullGhost} onClick={() => startJourney('help')}>
+                Quiero ayudar
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       <section id="como-funciona" className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.kicker}>Cómo funciona</p>
-          <h2>Resolver algo debería ser así de simple</h2>
-        </div>
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.kicker}>Cómo funciona</p>
+            <h2>Resolver algo debería ser así de simple</h2>
+          </div>
 
-        <div
-          ref={stepsRef}
-          className={`${styles.steps} ${stepsInView ? styles.stepsInView : ''}`.trim()}
-        >
-          {steps.map((step, index) => (
-            <article
-              key={step.number}
-              className={styles.stepCard}
-              style={{ '--step-index': index }}
-            >
-              <div className={styles.stepHead}>
-                <span className={styles.stepIconBox} aria-hidden="true">
-                  <step.Icon className={styles.stepIcon} strokeWidth={1.8} />
-                </span>
-                <span className={styles.stepNumber}>{step.number}</span>
-              </div>
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
-            </article>
-          ))}
+          <div
+            ref={stepsRef}
+            className={`${styles.steps} ${stepsInView ? styles.stepsInView : ''}`.trim()}
+          >
+            {steps.map((step, index) => (
+              <article
+                key={step.number}
+                className={styles.stepCard}
+                style={{ '--step-index': index }}
+              >
+                <div className={styles.stepHead}>
+                  <span className={styles.stepIconBox} aria-hidden="true">
+                    <step.Icon className={styles.stepIcon} strokeWidth={1.8} />
+                  </span>
+                  <span className={styles.stepNumber}>{step.number}</span>
+                </div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section id="categorias" className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.kicker}>Categorías</p>
-          <h2 className={styles.categoriesTitle} aria-live="polite">
-            <span key={rotatingPhraseIndex} className={styles.rotatingPhrase}>
-              {HERO_SUBTITLES[rotatingPhraseIndex]}
-            </span>
-          </h2>
-          <p className={styles.sectionLead}>Cientos de tareas cotidianas resueltas cerca de ti</p>
-        </div>
-
-        <div className={styles.mqViewport} aria-label="Ejemplos de tareas en HelpMe">
-          <div className={styles.mqTrack}>
-            {[...marqueeCards, ...marqueeCards].map((card, index) => {
-              const duplicated = index >= marqueeCards.length
-              return (
-                <figure
-                  className={styles.mqCard}
-                  key={`${card.label}-${index}`}
-                  aria-hidden={duplicated || undefined}
-                >
-                  <img
-                    src={card.image}
-                    alt={duplicated ? '' : card.label}
-                    width="300"
-                    height="200"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <figcaption className={styles.mqLabel}>{card.label}</figcaption>
-                </figure>
-              )
-            })}
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.kicker}>Categorías</p>
+            <h2 className={styles.categoriesTitle} aria-live="polite">
+              <span key={rotatingPhraseIndex} className={styles.rotatingPhrase}>
+                {HERO_SUBTITLES[rotatingPhraseIndex]}
+              </span>
+            </h2>
+            <p className={styles.sectionLead}>Cientos de tareas cotidianas resueltas cerca de ti</p>
           </div>
-        </div>
 
-        <BentoGrid />
+          <div className={styles.mqViewport} aria-label="Ejemplos de tareas en HelpMe">
+            <div className={styles.mqTrack}>
+              {[...marqueeCards, ...marqueeCards].map((card, index) => {
+                const duplicated = index >= marqueeCards.length
+                return (
+                  <figure
+                    className={styles.mqCard}
+                    key={`${card.label}-${index}`}
+                    aria-hidden={duplicated || undefined}
+                  >
+                    <img
+                      src={card.image}
+                      alt={duplicated ? '' : card.label}
+                      width="300"
+                      height="200"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <figcaption className={styles.mqLabel}>{card.label}</figcaption>
+                  </figure>
+                )
+              })}
+            </div>
+          </div>
+
+          <BentoGrid />
+        </div>
       </section>
 
       <section id="planes" className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.kicker}>Planes y pago retenido</p>
-          <h2>Empieza gratis, con el pago protegido por dentro</h2>
-          <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
-        </div>
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.kicker}>Planes y pago retenido</p>
+            <h2>Empieza gratis, con el pago protegido por dentro</h2>
+            <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
+          </div>
 
-        {heldPlan ? (
-          <article className={styles.pricingHero}>
-            <div className={styles.pricingHeroMain}>
-              <span className={`${styles.planBadge} ${styles.planBadgeActive}`}>{heldPlan.badge}</span>
-              <h3 className={styles.pricingHeroName}>{heldPlan.name}</h3>
-              <p className={styles.pricingHeroPrice}>{heldPlan.price}</p>
-              {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
-              <ul className={styles.pricingHeroFeatures}>
-                {heldHeroIncludes.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-              <button type="button" className={styles.primaryCta} onClick={() => startJourney('need')}>
-                Publicar tarea
-              </button>
-            </div>
+          {heldPlan ? (
+            <article className={styles.pricingHero}>
+              <div className={styles.pricingHeroMain}>
+                <span className={`${styles.planBadge} ${styles.planBadgeActive}`}>{heldPlan.badge}</span>
+                <h3 className={styles.pricingHeroName}>{heldPlan.name}</h3>
+                <p className={styles.pricingHeroPrice}>{heldPlan.price}</p>
+                {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
+                <ul className={styles.pricingHeroFeatures}>
+                  {heldHeroIncludes.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <button type="button" className={styles.primaryCta} onClick={() => startJourney('need')}>
+                  Publicar tarea
+                </button>
+              </div>
 
-            <aside className={styles.pricingHeroAside}>
-              <h4>Cómo funciona el pago retenido</h4>
-              <ol className={styles.pricingSteps}>
-                {heldPaymentSteps.map((step, index) => (
-                  <li key={step}>
-                    <span className={styles.pricingStepNumber}>{index + 1}</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-              <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
-            </aside>
-          </article>
-        ) : null}
-
-        <div className={styles.pricingSoonHeader}>
-          <h3>Próximamente</h3>
-          <p>
-            Planes previstos para más adelante. Aún no son contratables; los precios son estimaciones para
-            cuando se activen.
-          </p>
-        </div>
-
-        <div className={styles.pricingSoonGrid}>
-          {comingSoonPlans.map((plan) => (
-            <article key={plan.id} className={styles.pricingSoonCard} aria-disabled="true">
-              <span className={styles.planBadge}>{plan.badge}</span>
-              <h4>{plan.name}</h4>
-              <p className={styles.planPrice}>{plan.price}</p>
-              <ul className={styles.planFeatures}>
-                {plan.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
+              <aside className={styles.pricingHeroAside}>
+                <h4>Cómo funciona el pago retenido</h4>
+                <ol className={styles.pricingSteps}>
+                  {heldPaymentSteps.map((step, index) => (
+                    <li key={step}>
+                      <span className={styles.pricingStepNumber}>{index + 1}</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+                <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
+              </aside>
             </article>
-          ))}
+          ) : null}
+
+          <div className={styles.pricingSoonHeader}>
+            <h3>Próximamente</h3>
+            <p>
+              Planes previstos para más adelante. Aún no son contratables; los precios son estimaciones para
+              cuando se activen.
+            </p>
+          </div>
+
+          <div className={styles.pricingSoonGrid}>
+            {comingSoonPlans.map((plan) => (
+              <article key={plan.id} className={styles.pricingSoonCard} aria-disabled="true">
+                <span className={styles.planBadge}>{plan.badge}</span>
+                <h4>{plan.name}</h4>
+                <p className={styles.planPrice}>{plan.price}</p>
+                <ul className={styles.planFeatures}>
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section id="confianza" className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.kicker}>Confianza</p>
-          <h2>Diseñado para generar confianza desde el primer minuto</h2>
-        </div>
-
-        <div className={styles.zigzag}>
-          <figure className={styles.zzImage}>
-            <img
-              src="/images/helpgrandmom.webp"
-              srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
-              sizes="(max-width: 820px) 92vw, 34rem"
-              alt="Una persona joven ayuda a una persona mayor con el móvil"
-              width="1200"
-              height="675"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-          <div className={styles.zzText}>
-            <p>
-              Perfiles claros, estados visibles y una experiencia enfocada en la transparencia para que cada paso se
-              entienda sin esfuerzo.
-            </p>
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.kicker}>Confianza</p>
+            <h2>Diseñado para generar confianza desde el primer minuto</h2>
           </div>
-        </div>
 
-        <div className={`${styles.zigzag} ${styles.zigzagReverse}`}>
-          <figure className={styles.zzImage}>
-            <img
-              src="/images/homeworks.webp"
-              srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
-              sizes="(max-width: 820px) 92vw, 34rem"
-              alt="Un vecino entrega la compra a otra persona en el portal"
-              width="1200"
-              height="675"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-          <div className={styles.zzText}>
-            <div className={styles.metrics}>
-              {metrics.map((metric) => (
-                <article key={metric.label}>
-                  <strong>{metric.value}</strong>
-                  <span>{metric.label}</span>
-                </article>
-              ))}
+          <div className={styles.zigzag}>
+            <figure className={styles.zzImage}>
+              <img
+                src="/images/helpgrandmom.webp"
+                srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
+                sizes="(max-width: 820px) 92vw, 34rem"
+                alt="Una persona joven ayuda a una persona mayor con el móvil"
+                width="1200"
+                height="675"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <div className={styles.zzText}>
+              <p>
+                Perfiles claros, estados visibles y una experiencia enfocada en la transparencia para que cada paso
+                se entienda sin esfuerzo.
+              </p>
+            </div>
+          </div>
+
+          <div className={`${styles.zigzag} ${styles.zigzagReverse}`}>
+            <figure className={styles.zzImage}>
+              <img
+                src="/images/homeworks.webp"
+                srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
+                sizes="(max-width: 820px) 92vw, 34rem"
+                alt="Un vecino entrega la compra a otra persona en el portal"
+                width="1200"
+                height="675"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+            <div className={styles.zzText}>
+              <div className={styles.metrics}>
+                {metrics.map((metric) => (
+                  <article key={metric.label}>
+                    <strong>{metric.value}</strong>
+                    <span>{metric.label}</span>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </div>

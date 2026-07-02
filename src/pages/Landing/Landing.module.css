@@ -55,10 +55,18 @@
 }
 
 .hero,
-.section,
 .splitSection,
-.finalCta,
 .footer {
+  width: min(100% - 2rem, 75rem);
+  margin-inline: auto;
+}
+
+/* #inicio/#como-funciona/#categorias/#planes/#confianza/#empieza (.heroFull/.section/
+   .finalCta) van a ancho completo a propósito: son las que reciben background-color
+   por sección y deben llegar de borde a borde (full-bleed). El contenido se centra
+   con .sectionInner, que usa la MISMA fórmula de ancho que tenían antes las <section>,
+   así el contenido queda exactamente donde estaba, solo que el fondo ya no lo limita. */
+.sectionInner {
   width: min(100% - 2rem, 75rem);
   margin-inline: auto;
 }
@@ -282,6 +290,11 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  /* Separa el kicker del título sin tocar el gap de .sectionHeader (que también
+     espacia el título del sectionLead en secciones como #planes). El margin se SUMA
+     al row-gap del grid (0.8rem, no colapsan): +0.4rem deja ~1.2rem kicker→título,
+     dentro del rango pedido, sin agrandar la relación título→lead. */
+  margin-bottom: 0.4rem;
 }
 
 .hero h1,
@@ -704,6 +717,11 @@
 }
 
 .finalCtaCard {
+  /* .finalCta (la <section>) ya no centra el contenido, ver comentario junto a
+     .sectionInner: aquí se aplica la misma fórmula de ancho directamente porque
+     .finalCtaCard es el único hijo de la sección. */
+  width: min(100% - 2rem, 75rem);
+  margin-inline: auto;
   display: grid;
   gap: 1rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -872,10 +890,13 @@
   }
 
   .hero,
-  .section,
   .splitSection,
-  .finalCta,
   .footer {
+    width: min(100% - 1rem, 75rem);
+  }
+
+  .sectionInner,
+  .finalCtaCard {
     width: min(100% - 1rem, 75rem);
   }
 
@@ -1311,6 +1332,9 @@
   );
 }
 
+/* El wrapper .sectionInner (mismo ancho/centrado que las demás secciones) alinea el
+   borde izquierdo de este bloque con el resto del contenido de la página; aquí solo
+   queda el padding VERTICAL propio del hero. */
 .heroFullContent {
   position: relative;
   z-index: 2;
@@ -1318,7 +1342,7 @@
   align-content: center;
   gap: 1.1rem;
   max-width: 620px;
-  padding: 64px 56px;
+  padding-block: 64px;
   color: #fff;
 }
 
@@ -1483,7 +1507,7 @@
   }
 
   .heroFullContent {
-    padding: 40px 28px;
+    padding-block: 40px;
   }
 }
 
