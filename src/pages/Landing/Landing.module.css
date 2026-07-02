@@ -9,6 +9,10 @@
   /* Espaciado vertical de sección: fuente única para el padding de .section y para
      separaciones que deban igualar la distancia entre secciones (p.ej. carrusel↔grilla). */
   --section-space: clamp(3.75rem, 8vw, 6.5rem);
+  /* Fondos alternos por sección (light). Tokens del design system tal cual. */
+  --section-bg-neutral-a: var(--background-50);
+  --section-bg-neutral-b: var(--background-200);
+  --section-bg-soft-primary: var(--primary-50);
   position: relative;
   isolation: isolate;
   min-height: 100vh;
@@ -38,6 +42,12 @@
   --accent: var(--hm-color-primary);
   --highlight: color-mix(in srgb, var(--hm-color-accent) 12%, transparent);
   --shadow: rgba(28, 25, 22, 0.1);
+  /* Equivalentes reactivos de los fondos de sección: los tokens --background-N y
+     --primary-N de design-tokens.css son estáticos (no cambian con el tema), así que
+     en oscuro se recomponen a partir de --hm-color-*, que sí reacciona al data-theme. */
+  --section-bg-neutral-a: var(--hm-color-surface);
+  --section-bg-neutral-b: var(--hm-color-secondary);
+  --section-bg-soft-primary: color-mix(in srgb, var(--hm-color-primary) 10%, var(--hm-color-bg));
   background:
     radial-gradient(circle at 16% 8%, color-mix(in srgb, var(--hm-color-primary) 10%, transparent), transparent 28%),
     radial-gradient(circle at 80% 6%, color-mix(in srgb, var(--hm-color-accent) 8%, transparent), transparent 24%),
@@ -404,6 +414,52 @@
 .splitSection,
 .finalCta {
   padding-block: var(--section-space);
+}
+
+/* Fondos alternos por sección, para que se distingan entre sí. #inicio (hero) no se
+   toca: mantiene su imagen. Solo background-color y, en #empieza, el color de texto
+   que ese fondo exige; sin cambios de layout/padding.
+   :global() es imprescindible aquí: CSS Modules hashea también los selectores de ID
+   (#como-funciona pasaba a #_como-funciona_xxxxx_1), por lo que sin :global() la regla
+   nunca coincidía con el id="como-funciona" real del DOM y no se aplicaba. */
+:global(#como-funciona),
+:global(#planes) {
+  background-color: var(--section-bg-neutral-a);
+}
+
+:global(#categorias) {
+  background-color: var(--section-bg-neutral-b);
+}
+
+:global(#confianza) {
+  background-color: var(--section-bg-soft-primary);
+}
+
+/* #empieza: verde de marca FIJO (no reactivo al tema), a propósito. En modo oscuro
+   el verde de marca reactivo (--hm-color-primary → #69c38f) es un verde claro pensado
+   para llevar texto OSCURO encima (así se usa ya en --hm-nav-active-*: fondo #69c38f +
+   texto #11140f). Con texto blanco ahí el contraste cae a ~2.1:1 (falla AA). --primary-500
+   (#1f6b48) sí mantiene ~6.4:1 con texto blanco en ambos temas, igual que el hero ya
+   ignora el tema para su imagen: es el mismo tipo de excepción deliberada. */
+:global(#empieza) {
+  background-color: var(--primary-500);
+}
+
+:global(#empieza) .finalCtaCard {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:global(#empieza) .finalCtaCard h2,
+:global(#empieza) .finalCtaCard p {
+  color: var(--text-50);
+}
+
+:global(#empieza) .primaryCtaSecondary {
+  background: var(--background-50);
+  color: var(--primary-500);
+  border-color: transparent;
 }
 
 .sectionHeader {
@@ -1278,26 +1334,26 @@
 .heroFullTitle {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 56px;
+  /* Escala continua: hasta 56px en desktop, se reduce en pantallas estrechas
+     para que ni el texto fijo ni la palabra rotativa salten a una 3ª línea. */
+  font-size: clamp(26px, 4.9vw, 56px);
   line-height: 1.05;
   letter-spacing: -0.02em;
   font-weight: 600;
   color: #fff;
+  /* Reserva SIEMPRE 2 líneas: el bloque nunca cambia de altura al rotar. */
+  min-height: 2.1em;
 }
 
-.heroFullSub {
-  margin: 0;
-  max-width: 30rem;
-  min-height: 1.6em;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.05rem;
-  line-height: 1.6;
+/* Texto fijo en su propia línea (línea 1). */
+.heroTitleLead {
+  display: block;
+  white-space: nowrap;
 }
 
 /* Titular: cola con typewriter + cursor */
 .heroTypeWrap {
-  display: inline-flex;
+  display: flex; /* bloque: la palabra rotativa ocupa siempre la línea 2 */
   align-items: baseline;
   white-space: nowrap;
 }
@@ -1322,13 +1378,14 @@
   }
 }
 
-/* Subtítulo: vertical cut reveal en cada cambio (animación de entrada por key) */
-.heroSubPhrase {
+/* Frase rotativa genérica: vertical cut reveal en cada cambio (entrada por key).
+   Usada en el H2 de Categorías (antes, en el subtítulo del hero ya retirado). */
+.rotatingPhrase {
   display: inline-block;
-  animation: hm-sub-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: hm-phrase-reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes hm-sub-reveal {
+@keyframes hm-phrase-reveal {
   from {
     transform: translateY(0.9em);
     opacity: 0;
@@ -1339,6 +1396,11 @@
     opacity: 1;
     clip-path: inset(0 0 0 0);
   }
+}
+
+/* H2 de Categorías: reserva altura para 2 líneas (frase más larga) y evita reflow */
+.categoriesTitle {
+  min-height: 2.3em;
 }
 
 .srOnly {
@@ -1359,7 +1421,7 @@
     opacity: 0;
   }
 
-  .heroSubPhrase {
+  .rotatingPhrase {
     animation: none;
   }
 }
@@ -1422,10 +1484,6 @@
 
   .heroFullContent {
     padding: 40px 28px;
-  }
-
-  .heroFullTitle {
-    font-size: 38px;
   }
 }
 

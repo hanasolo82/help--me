@@ -225,8 +225,14 @@ export default function Landing() {
   const landingRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
   const [stepsRef, stepsInView] = useInView({ threshold: 0.25 })
-  const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS)
-  const heroSubIndex = useTextRotate(HERO_SUBTITLES.length)
+  const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS, {
+    typeSpeed: 90,
+    deleteSpeed: 55,
+    holdFull: 10000,
+    holdEmpty: 450,
+  })
+  // Mismo array/temporización que el antiguo subtítulo del hero; ahora rota en el H2 de Categorías.
+  const rotatingPhraseIndex = useTextRotate(HERO_SUBTITLES.length, 8000)
 
   useScrollReveal(landingRef)
   const [themePreference, setThemePreference] = useState(() =>
@@ -362,18 +368,13 @@ export default function Landing() {
         <div className={styles.heroFullContent}>
           <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
           <h1 className={styles.heroFullTitle}>
-            {HERO_TITLE_PREFIX}{' '}
+            <span className={styles.heroTitleLead}>{HERO_TITLE_PREFIX}</span>
             <span className={styles.heroTypeWrap} aria-hidden="true">
               <span className={styles.heroType}>{heroTitleTail}</span>
               <span className={styles.heroCaret} />
             </span>
             <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
           </h1>
-          <p className={styles.heroFullSub} aria-live="polite">
-            <span key={heroSubIndex} className={styles.heroSubPhrase}>
-              {HERO_SUBTITLES[heroSubIndex]}
-            </span>
-          </p>
           <div className={styles.heroFullActions}>
             <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>
               Necesito ayuda
@@ -417,7 +418,11 @@ export default function Landing() {
       <section id="categorias" className={styles.section}>
         <div className={styles.sectionHeader}>
           <p className={styles.kicker}>Categorías</p>
-          <h2>Todo lo cotidiano, mejor resuelto</h2>
+          <h2 className={styles.categoriesTitle} aria-live="polite">
+            <span key={rotatingPhraseIndex} className={styles.rotatingPhrase}>
+              {HERO_SUBTITLES[rotatingPhraseIndex]}
+            </span>
+          </h2>
           <p className={styles.sectionLead}>Cientos de tareas cotidianas resueltas cerca de ti</p>
         </div>
 
