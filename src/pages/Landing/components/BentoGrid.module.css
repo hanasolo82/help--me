@@ -78,15 +78,16 @@
   }
 }
 
-/* Glow muy tenue detrás del contenido (spotlight), aparece al hover */
+/* Glow muy tenue detrás del contenido (spotlight), sigue al cursor dentro de la card.
+   --mouse-x/--mouse-y los actualiza BentoGrid.jsx en cada mousemove (vía rAF). */
 .glow {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: radial-gradient(
-    120% 80% at 50% -10%,
-    color-mix(in srgb, var(--primary) 12%, transparent),
-    transparent 60%
+    220px circle at var(--mouse-x, 50%) var(--mouse-y, -10%),
+    color-mix(in srgb, var(--primary) 16%, transparent),
+    transparent 70%
   );
   opacity: 0;
   transition: opacity 0.22s ease;
@@ -95,6 +96,17 @@
 
 .card:hover .glow {
   opacity: 1;
+}
+
+/* Sin seguimiento del cursor: glow estático tenue solo al hover */
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    background: radial-gradient(
+      120% 80% at 50% -10%,
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 60%
+    );
+  }
 }
 
 /* Icono protagonista: caja más grande con aura/halo detrás */

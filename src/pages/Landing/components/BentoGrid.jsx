@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react'
 import styles from './BentoGrid.module.css'
 
 // Iconos SVG de línea (stroke currentColor). El color lo pone el contenedor (.iconBox).
@@ -124,14 +125,51 @@ const BENTO_ITEMS = [
   },
 ]
 
+// Spotlight que sigue al ratón dentro de cada card (efecto "magic card").
+// Se actualiza por style directo + rAF para no forzar un re-render de React en cada mousemove.
+// rafIds guarda un id de frame pendiente por índice de card, así las 4 cards son independientes.
+function useGlowSpotlight() {
+  const rafIds = useRef({})
+
+  const handleMouseMove = useCallback((event, index) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (rafIds.current[index]) return
+
+    const card = event.currentTarget
+    const { clientX, clientY } = event
+
+    rafIds.current[index] = requestAnimationFrame(() => {
+      rafIds.current[index] = null
+      const rect = card.getBoundingClientRect()
+      card.style.setProperty('--mouse-x', `${clientX - rect.left}px`)
+      card.style.setProperty('--mouse-y', `${clientY - rect.top}px`)
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback((event) => {
+    event.currentTarget.style.removeProperty('--mouse-x')
+    event.currentTarget.style.removeProperty('--mouse-y')
+  }, [])
+
+  return { handleMouseMove, handleMouseLeave }
+}
+
 export default function BentoGrid({ items = BENTO_ITEMS }) {
+  const { handleMouseMove, handleMouseLeave } = useGlowSpotlight()
+
   return (
     <div className={styles.grid}>
       {items.map((item, index) => {
         const Icon = ICONS[item.icon] ?? ICONS.list
 
         return (
-          <article key={item.title} className={styles.card} style={{ '--card-index': index }}>
+          <article
+            key={item.title}
+            className={styles.card}
+            style={{ '--card-index': index }}
+            onMouseMove={(event) => handleMouseMove(event, index)}
+            onMouseLeave={handleMouseLeave}
+          >
             <span className={styles.glow} aria-hidden="true" />
             <span className={styles.iconBox}>
               <span className={styles.iconAura} aria-hidden="true" />
