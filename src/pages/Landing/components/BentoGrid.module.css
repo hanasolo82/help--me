@@ -2,10 +2,23 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  /* Separa la grilla del carrusel (mqViewport) con la MISMA distancia que el
+     padding vertical entre secciones. Hereda --section-space desde .landing,
+     así que si ese espaciado global cambia, este también (incluido el clamp responsive). */
+  margin-top: var(--section-space);
+}
+
+/* Ángulo animable para el borde en degradado (giro solo al hover) */
+@property --hm-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
 }
 
 .card {
+  --hm-angle: 0deg; /* fallback estático si @property no está soportado */
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   display: grid;
   align-content: start;
@@ -24,22 +37,65 @@
   grid-column: span 2;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 14%, transparent);
-}
-
-/* Overlay sutil que aparece al hover */
-.overlay {
+/* Anillo de borde en degradado (máscara, sin deps). Oculto en reposo,
+   aparece y gira solo al hover. */
+.card::before {
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent 60%);
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--hm-angle),
+    color-mix(in srgb, var(--primary) 42%, transparent),
+    transparent 25%,
+    transparent 75%,
+    color-mix(in srgb, var(--primary) 42%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.22s ease;
+  animation: hm-border-spin 7s linear infinite;
+  animation-play-state: paused;
   pointer-events: none;
 }
 
-.card:hover .overlay {
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.card:hover::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes hm-border-spin {
+  to {
+    --hm-angle: 360deg;
+  }
+}
+
+/* Glow muy tenue detrás del contenido, aparece al hover */
+.glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 80% at 50% -10%,
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.card:hover .glow {
   opacity: 1;
 }
 
@@ -192,6 +248,12 @@
   }
   100% {
     transform: rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover::before {
+    animation: none; /* borde visible al hover, pero sin giro */
   }
 }
 

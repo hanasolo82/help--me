@@ -8,6 +8,13 @@ import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { useInView } from '../../shared/hooks/useInView'
 import { useScrollReveal } from '../../shared/hooks/useScrollReveal'
+import { useTypewriter } from '../../shared/hooks/useTypewriter'
+import { useTextRotate } from '../../shared/hooks/useTextRotate'
+import {
+  HERO_TITLE_PREFIX,
+  HERO_TITLE_TAILS,
+  HERO_SUBTITLES,
+} from './heroPhrases'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
 import BentoGrid from './components/BentoGrid'
@@ -218,6 +225,8 @@ export default function Landing() {
   const landingRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
   const [stepsRef, stepsInView] = useInView({ threshold: 0.25 })
+  const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS)
+  const heroSubIndex = useTextRotate(HERO_SUBTITLES.length)
 
   useScrollReveal(landingRef)
   const [themePreference, setThemePreference] = useState(() =>
@@ -352,10 +361,18 @@ export default function Landing() {
         <div className={styles.heroFullOverlay} aria-hidden="true" />
         <div className={styles.heroFullContent}>
           <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
-          <h1 className={styles.heroFullTitle}>La ayuda que necesitas, cerca de ti</h1>
-          <p className={styles.heroFullSub}>
-            Conecta en minutos con personas cercanas listas para ayudarte con lo cotidiano. Simple, claro y sin
-            complicaciones.
+          <h1 className={styles.heroFullTitle}>
+            {HERO_TITLE_PREFIX}{' '}
+            <span className={styles.heroTypeWrap} aria-hidden="true">
+              <span className={styles.heroType}>{heroTitleTail}</span>
+              <span className={styles.heroCaret} />
+            </span>
+            <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
+          </h1>
+          <p className={styles.heroFullSub} aria-live="polite">
+            <span key={heroSubIndex} className={styles.heroSubPhrase}>
+              {HERO_SUBTITLES[heroSubIndex]}
+            </span>
           </p>
           <div className={styles.heroFullActions}>
             <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>

@@ -137,7 +137,7 @@ export default function BentoGrid({ items = BENTO_ITEMS }) {
 
         return (
           <article key={item.title} className={cardClassName}>
-            <span className={styles.overlay} aria-hidden="true" />
+            <span className={styles.glow} aria-hidden="true" />
             <div className={styles.top}>
               <span className={styles.iconBox}>
                 <Icon />
