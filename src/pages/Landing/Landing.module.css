@@ -107,8 +107,7 @@
 
 .links a,
 .secondaryCta,
-.mobileNavMenu a,
-.footer nav a {
+.mobileNavMenu a {
   color: var(--text);
   font-size: 0.95rem;
   font-weight: 700;
@@ -116,8 +115,7 @@
 }
 
 .links a:hover,
-.secondaryCta:hover,
-.footer nav a:hover {
+.secondaryCta:hover {
   color: var(--accent);
 }
 
@@ -233,7 +231,9 @@
   width: min(100%, 14rem);
   border: 0;
   background: var(--accent);
-  color: #fff;
+  /* --bg, no blanco fijo: en oscuro el verde reactivo es claro y pide texto oscuro
+     encima (mismo criterio que --hm-nav-active-* y .planBadgeActive). */
+  color: var(--bg);
   padding: 0.9rem 1.15rem;
   box-shadow: var(--shadow-xs);
 }
@@ -469,10 +469,64 @@
   color: var(--text-50);
 }
 
-:global(#empieza) .primaryCtaSecondary {
+/* CTAs sobre el verde de marca. Como el fondo de #empieza es FIJO (--primary-500 en
+   ambos temas, ver nota de arriba), aquí también se usan tokens estáticos a propósito.
+   Antes "Necesito ayuda" era verde sobre verde (invisible); ahora:
+   - Primario: blanco con texto verde y borde inferior definido → resalta sobre el verde.
+   - Secundario: ghost con borde blanco y texto blanco, hover con relleno suave. */
+:global(#empieza) .primaryCta {
   background: var(--background-50);
   color: var(--primary-500);
-  border-color: transparent;
+  border: 1px solid color-mix(in srgb, var(--primary-900) 30%, var(--background-50));
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary-900) 35%, transparent);
+  transition:
+    background-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+:global(#empieza) .primaryCta:hover {
+  background: var(--primary-50);
+  transform: translateY(-2px);
+}
+
+:global(#empieza) .primaryCta:focus-visible {
+  outline: 2px solid var(--text-50);
+  outline-offset: 3px;
+}
+
+:global(#empieza) .primaryCtaSecondary {
+  background: transparent;
+  color: var(--text-50);
+  border: 1.5px solid color-mix(in srgb, var(--text-50) 72%, transparent);
+  box-shadow: none;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+:global(#empieza) .primaryCtaSecondary:hover {
+  background: color-mix(in srgb, var(--text-50) 16%, transparent);
+  border-color: var(--text-50);
+  transform: translateY(-2px);
+}
+
+:global(#empieza) .primaryCtaSecondary:focus-visible {
+  outline: 2px solid var(--text-50);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(#empieza) .primaryCta,
+  :global(#empieza) .primaryCtaSecondary {
+    transition: none;
+  }
+
+  :global(#empieza) .primaryCta:hover,
+  :global(#empieza) .primaryCtaSecondary:hover {
+    transform: none;
+  }
 }
 
 .sectionHeader {
@@ -737,38 +791,135 @@
   margin: 0;
 }
 
+/* --- Footer corporativo multi-columna --- */
 .footer {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 1rem;
-  align-items: center;
-  padding-block: 1.75rem 2rem;
+  padding-block: clamp(2.25rem, 5vw, 3.5rem) 1.5rem;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  font-weight: 700;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
 }
 
 .footerBrand {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.6rem;
   justify-items: start;
 }
 
-.footerBrand p {
+.footerTagline {
   margin: 0;
-  font-size: 0.92rem;
-  color: color-mix(in srgb, var(--text) 76%, var(--accent) 24%);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--text) 84%, var(--accent) 16%);
 }
 
-.footerMeta {
-  color: color-mix(in srgb, var(--text) 68%, var(--accent) 32%);
-  font-size: 0.92rem;
+.footerClaim {
+  margin: 0;
+  max-width: 22rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text) 68%, transparent);
 }
 
-.footer nav {
+.footerSocials {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.footerSocials a {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  border-radius: var(--radius-pill);
+  color: color-mix(in srgb, var(--text) 74%, transparent);
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.footerSocials a:hover,
+.footerSocials a:focus-visible {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.footerSocials a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.footerSocials svg {
+  width: 18px;
+  height: 18px;
+}
+
+.footer .footerCol {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: start;
+  align-content: start;
+}
+
+.footer .footerCol h4 {
+  margin: 0 0 0.3rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footer .footerCol a {
+  color: color-mix(in srgb, var(--text) 74%, transparent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer .footerCol a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer .footerCol a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.footerContactLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.footerContactLink svg {
+  width: 16px;
+  height: 16px;
+}
+
+.footerBottom {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  color: color-mix(in srgb, var(--text) 64%, transparent);
+  font-size: 0.84rem;
+  font-weight: 600;
 }
 
 .mobileNavMenu {
@@ -874,13 +1025,13 @@
     min-height: auto;
   }
 
-  .footer {
-    grid-template-columns: 1fr;
-    justify-items: start;
+  /* Marca a ancho completo arriba; columnas de enlaces en 2 por fila */
+  .footerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .footer nav {
-    justify-content: flex-start;
+  .footerBrand {
+    grid-column: 1 / -1;
   }
 }
 
@@ -904,6 +1055,16 @@
   .categoryGrid,
   .metrics {
     grid-template-columns: 1fr;
+  }
+
+  /* Footer apilado en móvil */
+  .footerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footerBottom {
+    justify-content: center;
+    text-align: center;
   }
 
   /* Conector vertical entre pasos apilados (centro del iconBox) */
@@ -954,17 +1115,20 @@
   line-height: 1.6;
 }
 
-/* ---- Plan principal dominante (Disponible ahora) ---- */
+/* ---- Plan principal dominante (Gratis en beta) ----
+   Tratamiento destacado: fondo con un velo verde muy claro sobre la superficie del
+   tema (reactivo a claro/oscuro), borde verde definido y sombra suave, para que se
+   lea de un vistazo como "el plan disponible ahora". */
 .pricingHero {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 1.5rem;
   align-items: stretch;
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: var(--radius-xl, 16px);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
   padding: clamp(1.25rem, 3vw, 2rem);
-  box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .pricingHeroMain {
@@ -977,41 +1141,69 @@
   margin: 0.2rem 0 0;
   color: var(--text);
   font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.75rem, 3.4vw, 2.4rem);
   font-weight: 600;
   line-height: 1.08;
 }
 
-.pricingHeroPrice {
+/* Subtítulo de valor: explica el pago protegido justo bajo el titular. */
+.pricingHeroTagline {
   margin: 0;
-  color: var(--accent);
-  font-size: 1.1rem;
-  font-weight: 800;
+  max-width: 30rem;
+  color: color-mix(in srgb, var(--text) 86%, transparent);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .pricingHeroPriceNote {
   margin: -0.2rem 0 0;
-  color: color-mix(in srgb, var(--text) 60%, transparent);
-  font-size: 0.86rem;
-  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 800;
 }
 
+/* Beneficios con check verde (mismo recurso visual que las cards de Categorías). */
 .pricingHeroFeatures {
   margin: 0.35rem 0 0.4rem;
-  padding-left: 1.1rem;
+  padding: 0;
+  list-style: none;
   display: grid;
-  gap: 0.45rem;
+  gap: 0.5rem;
   color: var(--text);
   font-size: 0.94rem;
   line-height: 1.45;
 }
 
+.pricingHeroFeatures li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.pricingHeroFeatures li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  background-color: var(--accent);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Panel "Cómo funciona": deja el gris plano por un verde muy suave con borde propio. */
 .pricingHeroAside {
   display: grid;
   align-content: start;
   gap: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
   padding: 1.1rem 1.2rem;
 }
 
@@ -1027,7 +1219,7 @@
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 0.55rem;
+  gap: 0.65rem;
   counter-reset: none;
 }
 
@@ -1035,21 +1227,23 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
-  gap: 0.6rem;
-  color: var(--text);
+  gap: 0.65rem;
+  color: color-mix(in srgb, var(--text) 92%, transparent);
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
+/* Números en círculo verde sólido. El texto usa --bg (no blanco fijo): en oscuro el
+   verde reactivo es claro y pide texto oscuro encima, igual que --hm-nav-active-*. */
 .pricingStepNumber {
   display: grid;
   place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.65rem;
+  height: 1.65rem;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
-  color: var(--accent);
-  font-size: 0.78rem;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.8rem;
   font-weight: 800;
 }
 
@@ -1076,7 +1270,7 @@
 .pricingSoonHeader p {
   margin: 0;
   max-width: 46rem;
-  color: color-mix(in srgb, var(--text) 58%, transparent);
+  color: color-mix(in srgb, var(--text) 72%, transparent);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -1084,17 +1278,20 @@
 .pricingSoonGrid {
   display: grid;
   gap: 1rem;
+  align-items: stretch;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 }
 
-/* Cards de futuro: sólidas y sutiles (no "deshabilitadas"); no contratables = badge + sin botón. */
+/* Cards de futuro: atenuadas a propósito (borde discontinuo + sin sombra ni acento
+   verde) pero con superficie sólida y texto legible, no "rotas/deshabilitadas". */
 .pricingSoonCard {
   display: grid;
   grid-template-rows: auto auto auto 1fr;
-  gap: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  align-content: start;
+  gap: 0.55rem;
+  border: 1px dashed color-mix(in srgb, var(--text) 26%, transparent);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: var(--surface);
   padding: 1.2rem;
 }
 
@@ -1102,16 +1299,18 @@
   justify-self: start;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--text) 9%, transparent);
-  color: color-mix(in srgb, var(--text) 64%, transparent);
+  color: color-mix(in srgb, var(--text) 78%, transparent);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   padding: 0.3rem 0.62rem;
 }
 
+/* Badge del plan activo: verde de marca sólido. Texto en --bg (no blanco fijo):
+   en oscuro el verde reactivo es claro y pide texto oscuro encima. */
 .planBadgeActive {
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
-  color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .pricingSoonCard h4 {
@@ -1123,7 +1322,7 @@
 
 .planPrice {
   margin: 0;
-  color: color-mix(in srgb, var(--text) 70%, transparent);
+  color: color-mix(in srgb, var(--text) 80%, transparent);
   font-size: 0.88rem;
   font-weight: 800;
 }
@@ -1133,7 +1332,7 @@
   padding-left: 1.05rem;
   display: grid;
   gap: 0.38rem;
-  color: color-mix(in srgb, var(--text) 78%, transparent);
+  color: color-mix(in srgb, var(--text) 84%, transparent);
   font-size: 0.88rem;
   line-height: 1.45;
 }
@@ -1577,6 +1776,134 @@
   padding: 1rem 0.75rem;
 }
 
+/* --- Reveal de las imágenes del zigzag (useInView añade .zzRevealed al bloque) ---
+   La imagen del bloque normal entra desde la izquierda; la del invertido, desde la
+   derecha. Solo opacity/transform/filter (compositables), sin animar layout. */
+.zigzag .zzImage {
+  opacity: 0;
+  transform: translateX(-56px) scale(0.985);
+  filter: blur(4px);
+  transition:
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zigzagReverse .zzImage {
+  transform: translateX(56px) scale(0.985);
+}
+
+/* Debe ir DESPUÉS de .zigzagReverse .zzImage: misma especificidad, gana por orden. */
+.zzRevealed .zzImage {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zigzag .zzImage,
+  .zigzagReverse .zzImage {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+/* --- Badges de métricas premium (< 1 min · 100% local · 2 caminos) ---
+   Sobrescriben la base compartida de .steps article/.metrics article: degradado
+   sutil, barra de acento verde, glow radial y sombra con profundidad. Van al final
+   de las reglas de .metrics para ganar por orden con la misma especificidad. */
+.metrics article {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(
+    160deg,
+    var(--surface) 0%,
+    color-mix(in srgb, var(--text) 4%, var(--surface)) 100%
+  );
+  box-shadow:
+    0 1px 2px rgba(28, 25, 22, 0.05),
+    0 10px 26px color-mix(in srgb, var(--shadow) 65%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+/* Glow radial suave en la esquina superior izquierda */
+.metrics article::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    130px circle at 0% 0%,
+    color-mix(in srgb, var(--accent) 12%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Barra de acento vertical en degradado verde */
+.metrics article::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 30%, transparent)
+  );
+  pointer-events: none;
+}
+
+.metrics article:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow:
+    0 2px 4px rgba(28, 25, 22, 0.06),
+    0 16px 36px color-mix(in srgb, var(--shadow) 85%, transparent),
+    0 6px 16px color-mix(in srgb, var(--accent) 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 26%, transparent);
+}
+
+/* Número con degradado verde (background-clip: text) */
+.metrics strong {
+  background: linear-gradient(
+    135deg,
+    var(--accent) 20%,
+    color-mix(in srgb, var(--accent) 55%, var(--text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Etiqueta en gris verdoso suave, no verde sólido */
+.metrics span {
+  color: color-mix(in srgb, var(--text) 66%, var(--accent) 6%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metrics article {
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .metrics article:hover {
+    transform: none;
+  }
+}
+
 @media (max-width: 820px) {
   .zigzag {
     grid-template-columns: 1fr;
@@ -1585,6 +1912,172 @@
 
   .zigzagReverse .zzImage {
     order: 0;
+  }
+}
+
+/* Puntos concretos de confianza (icono + titular + micro-descripción) */
+.trustPoints {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.trustPoints li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.trustPointIcon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.trustPointIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.trustPoints strong {
+  display: block;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.trustPoints p {
+  margin: 0.15rem 0 0;
+  color: color-mix(in srgb, var(--text) 74%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* --- Testimonios (datos PLACEHOLDER en Landing.jsx, ver TESTIMONIALS_PLACEHOLDER) --- */
+.testimonials {
+  margin-top: var(--section-space);
+}
+
+.testimonialsTitle {
+  margin: 0 0 1.25rem;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.testimonialGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.testimonialCard {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.testimonialCard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.starRating {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--accent-500);
+}
+
+.starRating svg {
+  width: 16px;
+  height: 16px;
+}
+
+.starFilled {
+  fill: currentColor;
+}
+
+.starEmpty {
+  fill: none;
+  opacity: 0.45;
+}
+
+.testimonialQuote {
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 88%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.testimonialAuthor {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.testimonialAvatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.testimonialAuthor strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.testimonialAuthor span:not(.testimonialAvatar) {
+  display: block;
+  color: color-mix(in srgb, var(--text) 62%, transparent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+@media (max-width: 60rem) {
+  .testimonialGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 37.5rem) {
+  .testimonialGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonialCard,
+  .testimonialCard:hover {
+    transform: none;
+    transition: none;
   }
 }
 

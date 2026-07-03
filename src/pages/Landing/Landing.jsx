@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PencilLine, Users, CheckCircle2 } from 'lucide-react'
+import {
+  PencilLine,
+  Users,
+  CheckCircle2,
+  BadgeCheck,
+  ShieldCheck,
+  Star,
+  HeartHandshake,
+  Mail,
+} from 'lucide-react'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
 import AuthModal from '../../shared/components/AuthModal/AuthModal'
@@ -155,11 +164,11 @@ const heldPaymentSteps = [
 const pricingPlans = [
   {
     id: 'held',
-    name: 'Pago retenido',
-    badge: 'Disponible ahora',
+    name: 'Publicar es gratis',
+    badge: 'Gratis en beta',
     available: true,
-    price: 'Sin comisión en beta cerrada',
-    priceNote: 'Publicar es gratis',
+    price: 'Tu dinero, protegido: queda retenido y solo se libera cuando confirmas la ayuda.',
+    priceNote: 'Sin comisión en beta cerrada',
     features: [
       'Publicar tarea gratis',
       PRICING_COPY.paymentValue,
@@ -212,6 +221,140 @@ const marqueeCards = [
   { image: '/images/walkdog-mobile.webp', label: 'Recados y paseos' },
 ]
 
+// Motivos concretos de confianza (sección #confianza), junto a las fotos existentes.
+const trustPoints = [
+  {
+    Icon: BadgeCheck,
+    title: 'Perfiles verificados',
+    text: 'Sabes con quién hablas antes de aceptar.',
+  },
+  {
+    Icon: ShieldCheck,
+    title: 'Pago protegido',
+    text: 'El dinero queda retenido y solo se libera cuando confirmas.',
+  },
+  {
+    Icon: Star,
+    title: 'Valoraciones reales',
+    text: 'Cada ayuda se valora al terminar.',
+  },
+  {
+    Icon: HeartHandshake,
+    title: 'Soporte cercano',
+    text: 'Personas detrás si algo no encaja.',
+  },
+]
+
+// PLACEHOLDER: testimonios de ejemplo, hardcodeados. Sustituir por comentarios
+// destacados reales cuando existan valoraciones en producción.
+const TESTIMONIALS_PLACEHOLDER = [
+  {
+    name: 'María G.',
+    role: 'Vecina de barrio',
+    stars: 5,
+    quote:
+      'Necesitaba que pasearan a mi perro esa semana y en una tarde lo tenía resuelto. Todo por el chat, sin líos.',
+  },
+  {
+    name: 'Carlos R.',
+    role: 'Helper de la zona',
+    stars: 5,
+    quote: 'Ayudé a un vecino con el móvil y cobré al confirmar. Súper claro y sin comisiones raras.',
+  },
+  {
+    name: 'Lucía M.',
+    role: 'Vecina de barrio',
+    stars: 4,
+    quote: 'Me hicieron la compra un día que no podía salir. El pago retenido me dio mucha tranquilidad.',
+  },
+  {
+    name: 'Andrés P.',
+    role: 'Vecino de barrio',
+    stars: 5,
+    quote: 'Publicar fue cuestión de un minuto y encontré ayuda cerca enseguida.',
+  },
+]
+
+// Iconos de redes como SVG de línea (esta versión de lucide-react no exporta iconos de marca).
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <line x1="17.5" y1="6.5" x2="17.5" y2="6.5" />
+    </svg>
+  )
+}
+
+function XTwitterIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4 4l16 16" />
+      <path d="M20 4L4 20" />
+    </svg>
+  )
+}
+
+function LinkedinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V8h4v1.5A6 6 0 0 1 16 8z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  )
+}
+
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  )
+}
+
+// PLACEHOLDER: URLs de redes sociales pendientes de crear los perfiles reales.
+const footerSocials = [
+  { label: 'Instagram', href: '#', Icon: InstagramIcon },
+  { label: 'X (Twitter)', href: '#', Icon: XTwitterIcon },
+  { label: 'LinkedIn', href: '#', Icon: LinkedinIcon },
+  { label: 'Facebook', href: '#', Icon: FacebookIcon },
+]
+
+// Anclas reales a las secciones de la landing.
+const footerProductLinks = [
+  { label: 'Cómo funciona', href: '#como-funciona' },
+  { label: 'Categorías', href: '#categorias' },
+  { label: 'Planes', href: '#planes' },
+  { label: 'Confianza', href: '#confianza' },
+]
+
+// PLACEHOLDER: páginas de empresa aún no existen; enlaces pendientes de completar.
+const footerCompanyLinks = [
+  { label: 'Sobre nosotros', href: '#' },
+  { label: 'Blog', href: '#' },
+  { label: 'Trabaja con nosotros', href: '#' },
+  { label: 'Prensa', href: '#' },
+]
+
+// PLACEHOLDER: email de contacto y soporte pendientes de confirmar.
+const FOOTER_CONTACT_EMAIL = 'hola@helpme.app'
+
+function StarRating({ value, max = 5 }) {
+  return (
+    <span className={styles.starRating} role="img" aria-label={`${value} de ${max} estrellas`}>
+      {Array.from({ length: max }, (_, index) => (
+        <Star
+          key={index}
+          className={index < value ? styles.starFilled : styles.starEmpty}
+          aria-hidden="true"
+          focusable="false"
+        />
+      ))}
+    </span>
+  )
+}
+
 export default function Landing() {
   useDocumentMeta({
     title: 'La ayuda que necesitas, cerca de ti',
@@ -225,6 +368,9 @@ export default function Landing() {
   const landingRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
   const [stepsRef, stepsInView] = useInView({ threshold: 0.25 })
+  // Reveal por bloque del zigzag de Confianza: cada imagen desliza desde su lado.
+  const [trustZig1Ref, trustZig1InView] = useInView({ threshold: 0.25 })
+  const [trustZig2Ref, trustZig2InView] = useInView({ threshold: 0.25 })
   const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS, {
     typeSpeed: 90,
     deleteSpeed: 55,
@@ -473,7 +619,7 @@ export default function Landing() {
               <div className={styles.pricingHeroMain}>
                 <span className={`${styles.planBadge} ${styles.planBadgeActive}`}>{heldPlan.badge}</span>
                 <h3 className={styles.pricingHeroName}>{heldPlan.name}</h3>
-                <p className={styles.pricingHeroPrice}>{heldPlan.price}</p>
+                <p className={styles.pricingHeroTagline}>{heldPlan.price}</p>
                 {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
                 <ul className={styles.pricingHeroFeatures}>
                   {heldHeroIncludes.map((feature) => (
@@ -532,7 +678,10 @@ export default function Landing() {
             <h2>Diseñado para generar confianza desde el primer minuto</h2>
           </div>
 
-          <div className={styles.zigzag}>
+          <div
+            ref={trustZig1Ref}
+            className={`${styles.zigzag} ${trustZig1InView ? styles.zzRevealed : ''}`.trim()}
+          >
             <figure className={styles.zzImage}>
               <img
                 src="/images/helpgrandmom.webp"
@@ -546,14 +695,26 @@ export default function Landing() {
               />
             </figure>
             <div className={styles.zzText}>
-              <p>
-                Perfiles claros, estados visibles y una experiencia enfocada en la transparencia para que cada paso
-                se entienda sin esfuerzo.
-              </p>
+              <ul className={styles.trustPoints}>
+                {trustPoints.map((point) => (
+                  <li key={point.title}>
+                    <span className={styles.trustPointIcon} aria-hidden="true">
+                      <point.Icon strokeWidth={1.8} />
+                    </span>
+                    <div>
+                      <strong>{point.title}</strong>
+                      <p>{point.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          <div className={`${styles.zigzag} ${styles.zigzagReverse}`}>
+          <div
+            ref={trustZig2Ref}
+            className={`${styles.zigzag} ${styles.zigzagReverse} ${trustZig2InView ? styles.zzRevealed : ''}`.trim()}
+          >
             <figure className={styles.zzImage}>
               <img
                 src="/images/homeworks.webp"
@@ -577,6 +738,27 @@ export default function Landing() {
               </div>
             </div>
           </div>
+
+          <div className={styles.testimonials}>
+            <h3 className={styles.testimonialsTitle}>Lo que dicen quienes ya la usan</h3>
+            <div className={styles.testimonialGrid}>
+              {TESTIMONIALS_PLACEHOLDER.map((testimonial) => (
+                <article key={testimonial.name} className={styles.testimonialCard}>
+                  <StarRating value={testimonial.stars} />
+                  <blockquote className={styles.testimonialQuote}>{testimonial.quote}</blockquote>
+                  <footer className={styles.testimonialAuthor}>
+                    <span className={styles.testimonialAvatar} aria-hidden="true">
+                      {testimonial.name.charAt(0)}
+                    </span>
+                    <div>
+                      <strong>{testimonial.name}</strong>
+                      <span>{testimonial.role}</span>
+                    </div>
+                  </footer>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -596,20 +778,61 @@ export default function Landing() {
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.footerBrand}>
-          <BrandLogo size="md" variant="auto" />
-          <p>La ayuda que necesitas, cerca de ti</p>
+        <div className={styles.footerGrid}>
+          <div className={styles.footerBrand}>
+            <BrandLogo size="md" variant="auto" />
+            <p className={styles.footerTagline}>La ayuda que necesitas, cerca de ti</p>
+            <p className={styles.footerClaim}>
+              Vecinos que se echan una mano con recados, compras, mascotas y pequeñas gestiones del día a día.
+            </p>
+            <div className={styles.footerSocials}>
+              {footerSocials.map((social) => (
+                <a key={social.label} href={social.href} aria-label={social.label}>
+                  <social.Icon />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <nav className={styles.footerCol} aria-label="Producto">
+            <h4>Producto</h4>
+            {footerProductLinks.map((link) => (
+              <a key={link.label} href={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <nav className={styles.footerCol} aria-label="Empresa">
+            <h4>Empresa</h4>
+            {footerCompanyLinks.map((link) => (
+              <a key={link.label} href={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <nav className={styles.footerCol} aria-label="Contacto">
+            <h4>Contacto</h4>
+            <a href={`mailto:${FOOTER_CONTACT_EMAIL}`} className={styles.footerContactLink}>
+              <Mail aria-hidden="true" focusable="false" />
+              {FOOTER_CONTACT_EMAIL}
+            </a>
+            {/* PLACEHOLDER: enlace de soporte pendiente de definir */}
+            <a href="#">Soporte</a>
+          </nav>
+
+          <nav className={styles.footerCol} aria-label="Legal">
+            <h4>Legal</h4>
+            <Link to="/legal/terms">Términos</Link>
+            <Link to="/legal/privacy">Privacidad</Link>
+            <Link to="/legal/cookies">Cookies</Link>
+          </nav>
         </div>
 
-        <div className={styles.footerMeta}>
-          <span>Zaragoza · Delicias</span>
+        <div className={styles.footerBottom}>
+          <span>© {new Date().getFullYear()} HelpMe. Todos los derechos reservados.</span>
         </div>
-
-        <nav aria-label="Enlaces legales">
-          <Link to="/legal/terms">Términos</Link>
-          <Link to="/legal/privacy">Privacidad</Link>
-          <Link to="/legal/cookies">Cookies</Link>
-        </nav>
       </footer>
 
       <AuthModal open={authModal.open} mode={authModal.mode} onClose={closeAuth} onSuccess={handleAuthSuccess} />
