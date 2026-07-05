@@ -9,6 +9,9 @@ import {
   Star,
   HeartHandshake,
   Mail,
+  MessageCircle,
+  ClipboardCheck,
+  Zap,
 } from 'lucide-react'
 import styles from './Landing.module.css'
 import { getCurrentUser } from '../../services/authService'
@@ -25,7 +28,6 @@ import {
   HERO_SUBTITLES,
 } from './heroPhrases'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
-import { PRICING_COPY, PRICING_PLANS } from '../../config/pricing'
 import BentoGrid from './components/BentoGrid'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
@@ -138,77 +140,28 @@ const metrics = [
   },
 ]
 
-// Informativo: deriva precios/visibilidad de src/config/pricing.js. No activa cobros.
-function formatEur(cents) {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100)
-}
-
-function formatPct(bps) {
-  return `${Number(bps || 0) / 100}%`
-}
-
-// Izquierda del plan: qué incluye (valor). Derecha: cómo funciona (flujo). Sin solaparse.
-const heldHeroIncludes = [
-  'Publicar tarea, gratis',
-  'Pago retenido hasta confirmar',
-  'El helper ve el 100% del precio',
-  'Chat y valoración incluidos',
+// Planes y pago retenido (informativo, sin cobros). Copy fijo: no deriva importes.
+// El requester paga al publicar; el helper aún no cobra hasta que se confirma la ayuda.
+const paymentTimeline = [
+  'Publicas y eliges helper.',
+  'Pagas la tarea, pero el helper no cobra todavía.',
+  'Cuando está hecha, confirmas y liberas el pago. Si algo no va bien, puedes reportarlo antes.',
 ]
 
-const heldPaymentSteps = [
-  'Publicas y pagas; el dinero queda retenido.',
-  'Coordináis por chat hasta que la ayuda esté hecha.',
-  'Confirmas, liberas el pago y valoras.',
+// Sellos de confianza: fila plana de icono + texto, sin caja por item.
+const trustSeals = [
+  { Icon: ShieldCheck, text: 'Pago retenido hasta confirmar' },
+  { Icon: BadgeCheck, text: 'El helper cobra el 100% en beta' },
+  { Icon: MessageCircle, text: 'Chat desbloqueado tras el pago' },
+  { Icon: Mail, text: 'Soporte humano por email' },
 ]
 
-const pricingPlans = [
-  {
-    id: 'held',
-    name: 'Publicar es gratis',
-    badge: 'Gratis en beta',
-    available: true,
-    price: 'Tu dinero, protegido: queda retenido y solo se libera cuando confirmas la ayuda.',
-    priceNote: 'Sin comisión en beta cerrada',
-    features: [
-      'Publicar tarea gratis',
-      PRICING_COPY.paymentValue,
-      PRICING_COPY.helperKeepsPrice,
-      'Chat disponible tras el pago',
-      'Valoración al cierre',
-    ],
-  },
-  {
-    id: 'plus',
-    name: 'Protección Plus',
-    badge: 'Próximamente',
-    available: false,
-    price: `GA estimado: ${formatPct(PRICING_PLANS.plus.ga.commissionBps)} + ${formatEur(PRICING_PLANS.plus.ga.minimumFeeCents)} mín.`,
-    features: [
-      'Revisión antes de liberar',
-      PRICING_COPY.reportBeforeRelease,
-      'Soporte humano',
-    ],
-  },
-  {
-    id: 'urgent',
-    name: 'Urgente / Destacar',
-    badge: 'Próximamente',
-    available: false,
-    price: `GA estimado: +${formatEur(PRICING_PLANS.urgentBoost.ga.fixedFeeCents)} por tarea`,
-    features: ['Más visibilidad para tu tarea durante un tiempo'],
-  },
-  {
-    id: 'helperPro',
-    name: 'Helper Pro',
-    badge: 'Más adelante',
-    available: false,
-    price: `GA estimado: ${formatEur(PRICING_PLANS.helperPro.ga.monthlyPriceCents)}/mes`,
-    features: ['Badge de helper', 'Más visibilidad', 'Estadísticas de tu actividad'],
-  },
+// Roadmap: un único rótulo "Más adelante" para el grupo; sin precios ni badges por card.
+const roadmapItems = [
+  { Icon: ClipboardCheck, title: 'Revisión antes de liberar' },
+  { Icon: Zap, title: 'Destacar tareas urgentes' },
+  { Icon: Star, title: 'Perfil Pro para helpers' },
 ]
-
-const heldPlan = pricingPlans.find((plan) => plan.available)
-const comingSoonPlans = pricingPlans.filter((plan) => !plan.available)
 
 // Carrusel "para qué se usa": solo hay 3 imágenes reales; se reutilizan con etiquetas distintas.
 // Versión -mobile (700-800w) basta de sobra para tarjetas de 230×150.
@@ -610,63 +563,68 @@ export default function Landing() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
             <p className={styles.kicker}>Planes y pago retenido</p>
-            <h2>Empieza gratis, con el pago protegido por dentro</h2>
-            <p className={styles.sectionLead}>{PRICING_COPY.paymentSummary}</p>
+            <h2>Tu dinero no se libera hasta que la ayuda está hecha</h2>
           </div>
 
-          {heldPlan ? (
-            <article className={styles.pricingHero}>
-              <div className={styles.pricingHeroMain}>
-                <span className={`${styles.planBadge} ${styles.planBadgeActive}`}>{heldPlan.badge}</span>
-                <h3 className={styles.pricingHeroName}>{heldPlan.name}</h3>
-                <p className={styles.pricingHeroTagline}>{heldPlan.price}</p>
-                {heldPlan.priceNote ? <p className={styles.pricingHeroPriceNote}>{heldPlan.priceNote}</p> : null}
-                <ul className={styles.pricingHeroFeatures}>
-                  {heldHeroIncludes.map((feature) => (
-                    <li key={feature}>{feature}</li>
-                  ))}
-                </ul>
+          <div className={styles.pricingBody}>
+            <div className={styles.pricingLead}>
+              <p className={styles.sectionLead}>
+                Publica una tarea, elige helper y paga con pago retenido. Durante la beta cerrada, HelpMe no
+                cobra comisión.
+              </p>
+              <div className={styles.heroActions}>
                 <button type="button" className={styles.primaryCta} onClick={() => startJourney('need')}>
                   Publicar tarea
                 </button>
+                <button
+                  type="button"
+                  className={styles.primaryCtaSecondary}
+                  onClick={() => startJourney('help')}
+                >
+                  Quiero ayudar
+                </button>
               </div>
+              <p className={styles.pricingReinforce}>Beta cerrada sin comisión de HelpMe</p>
+            </div>
 
-              <aside className={styles.pricingHeroAside}>
-                <h4>Cómo funciona el pago retenido</h4>
-                <ol className={styles.pricingSteps}>
-                  {heldPaymentSteps.map((step, index) => (
-                    <li key={step}>
-                      <span className={styles.pricingStepNumber}>{index + 1}</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-                <p className={styles.pricingBetaNote}>{PRICING_COPY.betaNoCommission}</p>
-              </aside>
-            </article>
-          ) : null}
-
-          <div className={styles.pricingSoonHeader}>
-            <h3>Próximamente</h3>
-            <p>
-              Planes previstos para más adelante. Aún no son contratables; los precios son estimaciones para
-              cuando se activen.
-            </p>
+            <div className={styles.pricingFlow}>
+              <h4 className={styles.pricingFlowTitle}>Cómo funciona el pago retenido</h4>
+              <ol className={styles.pricingTimeline}>
+                {paymentTimeline.map((step, index) => (
+                  <li key={step}>
+                    <span className={styles.pricingStepNumber}>{index + 1}</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
 
-          <div className={styles.pricingSoonGrid}>
-            {comingSoonPlans.map((plan) => (
-              <article key={plan.id} className={styles.pricingSoonCard} aria-disabled="true">
-                <span className={styles.planBadge}>{plan.badge}</span>
-                <h4>{plan.name}</h4>
-                <p className={styles.planPrice}>{plan.price}</p>
-                <ul className={styles.planFeatures}>
-                  {plan.features.map((feature) => (
-                    <li key={feature}>{feature}</li>
-                  ))}
-                </ul>
-              </article>
+          <ul className={styles.pricingSeals}>
+            {trustSeals.map((seal) => (
+              <li key={seal.text} className={styles.pricingSeal}>
+                <seal.Icon className={styles.pricingSealIcon} aria-hidden="true" strokeWidth={1.8} />
+                <span>{seal.text}</span>
+              </li>
             ))}
+          </ul>
+
+          <div className={styles.pricingRoadmap}>
+            <div className={styles.pricingRoadmapHeader}>
+              <h3>Más adelante</h3>
+              <p>
+                Más adelante añadiremos opciones extra como revisión antes de liberar, destacar tareas urgentes
+                y perfil Pro para helpers.
+              </p>
+            </div>
+            <ul className={styles.pricingRoadmapGrid}>
+              {roadmapItems.map((item) => (
+                <li key={item.title} className={styles.pricingRoadmapCard}>
+                  <item.Icon className={styles.pricingRoadmapIcon} aria-hidden="true" strokeWidth={1.8} />
+                  <span>{item.title}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
