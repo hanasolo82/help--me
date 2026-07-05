@@ -163,15 +163,15 @@ const roadmapItems = [
   { Icon: Star, title: 'Perfil Pro para helpers' },
 ]
 
-// Carrusel "para qué se usa": solo hay 3 imágenes reales; se reutilizan con etiquetas distintas.
-// Versión -mobile (700-800w) basta de sobra para tarjetas de 230×150.
+// Carrusel "para qué se usa": una imagen propia por tarjeta (sin repetir entre sí ni con el hero).
+// Versión -mobile (~760w) basta de sobra para tarjetas de 230×150.
 const marqueeCards = [
-  { image: '/images/helpgrandmom-mobile.webp', label: 'Acompañar a mayores' },
-  { image: '/images/homeworks-mobile.webp', label: 'Tareas del hogar' },
-  { image: '/images/walkdog-mobile.webp', label: 'Pasear al perro' },
-  { image: '/images/helpgrandmom-mobile.webp', label: 'Ayuda con el móvil' },
-  { image: '/images/homeworks-mobile.webp', label: 'Organizar la casa' },
-  { image: '/images/walkdog-mobile.webp', label: 'Recados y paseos' },
+  { image: '/images/helping_old_woman-mobile.webp', label: 'Acompañar a mayores' },
+  { image: '/images/choring-mobile.webp', label: 'Tareas del hogar' },
+  { image: '/images/walk_dog2-mobile.webp', label: 'Pasear al perro' },
+  { image: '/images/grandpa-mobile.webp', label: 'Ayuda con el móvil' },
+  { image: '/images/moving2-mobile.webp', label: 'Organizar la casa' },
+  { image: '/images/shopping2-mobile.webp', label: 'Recados y paseos' },
 ]
 
 // Motivos concretos de confianza (sección #confianza), junto a las fotos existentes.
@@ -642,12 +642,12 @@ export default function Landing() {
           >
             <figure className={styles.zzImage}>
               <img
-                src="/images/helpgrandmom.webp"
-                srcSet="/images/helpgrandmom-mobile.webp 700w, /images/helpgrandmom.webp 1200w"
+                src="/images/grandpa.webp"
+                srcSet="/images/grandpa-mobile.webp 760w, /images/grandpa.webp 1200w"
                 sizes="(max-width: 820px) 92vw, 34rem"
                 alt="Una persona joven ayuda a una persona mayor con el móvil"
                 width="1200"
-                height="675"
+                height="800"
                 loading="lazy"
                 decoding="async"
               />
@@ -675,12 +675,12 @@ export default function Landing() {
           >
             <figure className={styles.zzImage}>
               <img
-                src="/images/homeworks.webp"
-                srcSet="/images/homeworks-mobile.webp 700w, /images/homeworks.webp 1200w"
+                src="/images/shopping2.webp"
+                srcSet="/images/shopping2-mobile.webp 760w, /images/shopping2.webp 1200w"
                 sizes="(max-width: 820px) 92vw, 34rem"
                 alt="Un vecino entrega la compra a otra persona en el portal"
                 width="1200"
-                height="675"
+                height="800"
                 loading="lazy"
                 decoding="async"
               />
