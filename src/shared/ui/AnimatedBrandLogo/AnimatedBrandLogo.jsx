@@ -42,12 +42,25 @@ export default function AnimatedBrandLogo({ size = 'md', className = '', label =
       <g className={styles.motionMark} aria-hidden="true">
         <g className={styles.leftHand}>
           <path className={styles.armLeft} d="M342 158V68c0-31 38-42 60-20l37 38" />
+          {/* Mano abierta durante la aproximación: dedos + pulgar; se cierra al agarrar */}
+          <g className={styles.reach}>
+            <path d="M436 80l15-4" />
+            <path d="M439 86h14" />
+            <path d="M436 92l13 4" />
+            <path d="M421 82l9-11" />
+          </g>
           <path className={styles.clasp} d="M389 93l33-33c5-5 13-5 18 0l13 13-39 39" />
           <path className={styles.cuff} d="M374 80l20 20" />
         </g>
 
         <g className={styles.rightHand}>
           <path className={styles.armRight} d="M480 158V68c0-31-38-42-60-20l-37 38" />
+          <g className={styles.reach}>
+            <path d="M386 80l-15-4" />
+            <path d="M383 86h-14" />
+            <path d="M386 92l-13 4" />
+            <path d="M401 82l-9-11" />
+          </g>
           <path className={styles.clasp} d="M434 93l-33-33c-5-5-13-5-18 0l-13 13 39 39" />
           <path className={styles.cuff} d="M449 80l-20 20" />
         </g>

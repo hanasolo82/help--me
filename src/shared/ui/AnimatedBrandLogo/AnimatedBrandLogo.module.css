@@ -97,6 +97,13 @@
   animation: finger-in 2.4s ease-out forwards;
 }
 
+/* Mano abierta (dedos + pulgar) visible mientras los brazos se acercan;
+   desaparece justo al agarrarse, cuando el clasp toma el relevo. */
+.reach {
+  stroke-width: 7;
+  animation: reach-out 2.4s ease-out forwards;
+}
+
 :global(html[data-theme='dark']) .logoSlice {
   filter: invert(1);
 }
@@ -105,7 +112,7 @@
    una vez agarrados, como un apretón de manos real. */
 @keyframes left-hand-in {
   0% {
-    transform: translate(-64px, 0);
+    transform: translate(-64px, -7px);
   }
   30% {
     transform: translate(0, 0);
@@ -127,7 +134,7 @@
 
 @keyframes right-hand-in {
   0% {
-    transform: translate(64px, 0);
+    transform: translate(64px, 7px);
   }
   30% {
     transform: translate(0, 0);
@@ -171,19 +178,30 @@
   }
 }
 
+@keyframes reach-out {
+  0%,
+  18% {
+    opacity: 1;
+  }
+  24%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes clasp-in {
   0%,
-  30% {
+  20% {
     opacity: 0;
     stroke-dasharray: 1 90;
     stroke-dashoffset: 36;
   }
-  40% {
+  32% {
     opacity: 1;
     stroke-dasharray: 44 90;
     stroke-dashoffset: 0;
   }
-  50%,
+  44%,
   100% {
     opacity: 1;
     stroke-dasharray: 90 90;
@@ -191,21 +209,31 @@
   }
 }
 
+/* Dedos y puño se TRAZAN (stroke-dashoffset) al agarrarse las manos,
+   y se desvanecen cuando entra la M definitiva del asset. */
 @keyframes finger-in {
   0%,
-  42% {
+  30% {
     opacity: 0;
-    transform: translateY(4px);
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 40;
   }
-  50%,
+  32% {
+    opacity: 1;
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 40;
+  }
+  46%,
   72% {
     opacity: 1;
-    transform: translateY(0);
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 0;
   }
   82%,
   100% {
     opacity: 0;
-    transform: translateY(0);
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 0;
   }
 }
 
