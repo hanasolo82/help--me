@@ -1,0 +1,230 @@
+<!doctype html><html><body style="margin:0;background:#2a2a2a">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 180" role="img" aria-labelledby="title desc">
+  <title id="title">HelpMe</title>
+  <desc id="desc">Animated HelpMe logo: two abstract hand strokes meet, settle into the M, then the remaining letters appear.</desc>
+  <style>
+    svg {
+      color: #101010;
+      overflow: visible;
+    }
+
+    .word,
+    .mark,
+    .left-hand,
+    .right-hand {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    /* Letras dibujadas como trazados (no &lt;text&gt;): mismo render en cualquier sistema,
+       sin depender de fuentes instaladas. */
+    .word {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 15;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+
+    .word-left {
+      animation: word-left-in 1.9s cubic-bezier(.2, .72, .18, 1) forwards;
+    }
+
+    .word-right {
+      animation: word-right-in 1.9s cubic-bezier(.2, .72, .18, 1) forwards;
+    }
+
+    .mark {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 13.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .left-hand {
+      animation: left-hand-in 1.9s cubic-bezier(.18, .74, .16, 1) forwards;
+    }
+
+    .right-hand {
+      animation: right-hand-in 1.9s cubic-bezier(.18, .74, .16, 1) forwards;
+    }
+
+    .clasp {
+      stroke-width: 11.5;
+      opacity: 0;
+      animation: clasp-in 1.9s ease-out forwards;
+    }
+
+    .finger {
+      stroke-width: 8;
+      opacity: 0;
+      animation: finger-in 1.9s ease-out forwards;
+    }
+
+    @keyframes left-hand-in {
+      0% {
+        transform: translateX(-46px) rotate(-4deg);
+      }
+      34% {
+        transform: translateX(-13px) rotate(-1deg);
+      }
+      44% {
+        transform: translateX(0) rotate(0);
+      }
+      49% {
+        transform: translateX(-3px) rotate(-.75deg);
+      }
+      54% {
+        transform: translateX(2px) rotate(.45deg);
+      }
+      61%,
+      100% {
+        transform: translateX(0) rotate(0);
+      }
+    }
+
+    @keyframes right-hand-in {
+      0% {
+        transform: translateX(46px) rotate(4deg);
+      }
+      34% {
+        transform: translateX(13px) rotate(1deg);
+      }
+      44% {
+        transform: translateX(0) rotate(0);
+      }
+      49% {
+        transform: translateX(3px) rotate(.75deg);
+      }
+      54% {
+        transform: translateX(-2px) rotate(-.45deg);
+      }
+      61%,
+      100% {
+        transform: translateX(0) rotate(0);
+      }
+    }
+
+    @keyframes clasp-in {
+      0%,
+      34% {
+        opacity: 0;
+        stroke-dasharray: 1 90;
+        stroke-dashoffset: 36;
+      }
+      45% {
+        opacity: 1;
+        stroke-dasharray: 44 90;
+        stroke-dashoffset: 0;
+      }
+      60%,
+      100% {
+        opacity: 1;
+        stroke-dasharray: 90 90;
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes finger-in {
+      0%,
+      47% {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      56%,
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes word-left-in {
+      0%,
+      55% {
+        opacity: 0;
+        transform: translateX(245px);
+      }
+      78% {
+        opacity: 1;
+        transform: translateX(-4px);
+      }
+      88%,
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes word-right-in {
+      0%,
+      62% {
+        opacity: 0;
+        transform: translateX(-86px);
+      }
+      83% {
+        opacity: 1;
+        transform: translateX(3px);
+      }
+      92%,
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      svg {
+        color: #ffffff;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .word,
+      .mark,
+      .clasp,
+      .finger {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        stroke-dasharray: none !important;
+        stroke-dashoffset: 0 !important;
+      }
+    }
+  </style>
+
+  <g class="word word-left" aria-hidden="true">
+    <!-- H -->
+    <path d="M46 38v94M112 38v94M46 88h66" />
+    <!-- e -->
+    <path d="M148 105h52a26 26 0 1 0-7.6 18.4" />
+    <!-- l -->
+    <path d="M239 38v94" />
+    <!-- p -->
+    <path d="M268 78v92" />
+    <circle cx="294" cy="105" r="26" />
+  </g>
+
+  <g class="word word-right" aria-hidden="true">
+    <!-- e -->
+    <path d="M495 105h52a26 26 0 1 0-7.6 18.4" />
+  </g>
+
+  <g class="mark" aria-hidden="true">
+    <g class="left-hand">
+      <path d="M340 132V60c0-26 32-37 51-18l36 36" />
+      <path class="clasp" d="M386 82l28-28 22 22-28 28" />
+    </g>
+
+    <g class="right-hand">
+      <path d="M481 132V60c0-26-32-37-51-18l-36 36" />
+      <path class="clasp" d="M435 82l-28-28-22 22 28 28" />
+    </g>
+
+    <path class="finger" d="M413 96l18 18" />
+    <path class="finger" d="M399 108l18 18" />
+    <path class="finger" d="M428 92l14 14" />
+  </g>
+</svg>
+</body></html>

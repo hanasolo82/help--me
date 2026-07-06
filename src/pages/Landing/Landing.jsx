@@ -31,6 +31,7 @@ import { setHelperHomeIntent } from '../../features/helper-onboarding/services/h
 import BentoGrid from './components/BentoGrid'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
 import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
+import AnimatedBrandLogo from '../../shared/ui/AnimatedBrandLogo/AnimatedBrandLogo'
 import {
   applyThemeToDocument,
   resolveThemePreference,
@@ -125,21 +126,6 @@ const steps = [
   },
 ]
 
-const metrics = [
-  {
-    value: '< 1 min',
-    label: 'para publicar',
-  },
-  {
-    value: '100% local',
-    label: 'ayuda cercana',
-  },
-  {
-    value: '2 caminos',
-    label: 'pedir o ayudar',
-  },
-]
-
 // Planes y pago retenido (informativo, sin cobros). Copy fijo: no deriva importes.
 // El requester paga al publicar; el helper aún no cobra hasta que se confirma la ayuda.
 const paymentTimeline = [
@@ -174,27 +160,28 @@ const marqueeCards = [
   { image: '/images/shopping2-mobile.webp', label: 'Hacer la compra' },
 ]
 
-// Motivos concretos de confianza (sección #confianza), junto a las fotos existentes.
+// Tarjetas de confianza (sección #confianza): mecanismo real de la app en cada una.
+// Sin prometer nada que la app no haga (nada de "verificado", "seguro" ni "protección").
 const trustPoints = [
   {
     Icon: BadgeCheck,
-    title: 'Perfiles verificados',
-    text: 'Sabes con quién hablas antes de aceptar.',
+    title: 'Perfiles con valoraciones',
+    text: 'Ves el perfil y las valoraciones de cada vecino antes de aceptar su ayuda.',
   },
   {
     Icon: ShieldCheck,
-    title: 'Pago protegido',
-    text: 'El dinero queda retenido y solo se libera cuando confirmas.',
+    title: 'Pago retenido',
+    text: 'Tu dinero queda retenido y solo se libera cuando confirmas que la tarea está hecha.',
   },
   {
-    Icon: Star,
-    title: 'Valoraciones reales',
-    text: 'Cada ayuda se valora al terminar.',
+    Icon: MessageCircle,
+    title: 'Chat dentro de la app',
+    text: 'Os coordináis dentro de HelpMe, con todo por escrito y sin compartir tu teléfono.',
   },
   {
     Icon: HeartHandshake,
-    title: 'Soporte cercano',
-    text: 'Personas detrás si algo no encaja.',
+    title: 'Soporte real',
+    text: 'Si algo no encaja, escríbenos y una persona lo revisa contigo.',
   },
 ]
 
@@ -321,7 +308,7 @@ export default function Landing() {
   const landingRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
   const [stepsRef, stepsInView] = useInView({ threshold: 0.25 })
-  // Reveal por bloque del zigzag de Confianza: cada imagen desliza desde su lado.
+  // Reveal de los bloques de Confianza (intro con foto y banda ancha) al entrar en viewport.
   const [trustZig1Ref, trustZig1InView] = useInView({ threshold: 0.25 })
   const [trustZig2Ref, trustZig2InView] = useInView({ threshold: 0.25 })
   const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS, {
@@ -404,7 +391,7 @@ export default function Landing() {
     >
       <header className={styles.navbar}>
         <a className={styles.brand} href="#inicio" aria-label="Inicio">
-          <BrandLogo size="md" variant="auto" />
+          <AnimatedBrandLogo size="md" />
         </a>
 
         <div className={styles.mobileNav}>
@@ -633,69 +620,65 @@ export default function Landing() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
             <p className={styles.kicker}>Confianza</p>
-            <h2>Diseñado para generar confianza desde el primer minuto</h2>
+            <h2>Confianza desde el primer mensaje</h2>
+            <p className={styles.sectionLead}>Así cuidamos cada ayuda entre vecinos, de principio a fin</p>
           </div>
 
           <div
             ref={trustZig1Ref}
-            className={`${styles.zigzag} ${trustZig1InView ? styles.zzRevealed : ''}`.trim()}
+            className={`${styles.trustIntro} ${trustZig1InView ? styles.trustRevealed : ''}`.trim()}
           >
-            <figure className={styles.zzImage}>
+            <div className={styles.trustIntroText}>
+              <p>
+                Pedir ayuda a alguien que aún no conoces impone un poco, y es normal. Por eso en HelpMe
+                siempre sabes con quién hablas, qué habéis acordado y qué pasa con tu dinero en cada momento.
+              </p>
+              <p>
+                Publicar es gratis, la conversación queda por escrito dentro de la app y el pago espera
+                retenido hasta que confirmas que la tarea está hecha.
+              </p>
+            </div>
+            <figure className={styles.trustPhoto}>
               <img
-                src="/images/grandpa.webp"
-                srcSet="/images/grandpa-mobile.webp 760w, /images/grandpa.webp 1200w"
-                sizes="(max-width: 820px) 92vw, 34rem"
-                alt="Una persona joven ayuda a una persona mayor con el móvil"
+                src="/images/confidence-door.webp"
+                srcSet="/images/confidence-door-mobile.webp 760w, /images/confidence-door.webp 1200w"
+                sizes="(max-width: 820px) 92vw, 37rem"
+                alt="Una vecina mayor abre la puerta de casa y recibe sonriendo a la joven que viene a ayudarla"
                 width="1200"
-                height="800"
+                height="750"
                 loading="lazy"
                 decoding="async"
               />
             </figure>
-            <div className={styles.zzText}>
-              <ul className={styles.trustPoints}>
-                {trustPoints.map((point) => (
-                  <li key={point.title}>
-                    <span className={styles.trustPointIcon} aria-hidden="true">
-                      <point.Icon strokeWidth={1.8} />
-                    </span>
-                    <div>
-                      <strong>{point.title}</strong>
-                      <p>{point.text}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
 
-          <div
+          <ul className={styles.trustGrid}>
+            {trustPoints.map((point) => (
+              <li key={point.title} className={styles.trustCard}>
+                <span className={styles.trustPointIcon} aria-hidden="true">
+                  <point.Icon strokeWidth={1.8} />
+                </span>
+                <strong>{point.title}</strong>
+                <p>{point.text}</p>
+              </li>
+            ))}
+          </ul>
+
+          <figure
             ref={trustZig2Ref}
-            className={`${styles.zigzag} ${styles.zigzagReverse} ${trustZig2InView ? styles.zzRevealed : ''}`.trim()}
+            className={`${styles.trustBand} ${trustZig2InView ? styles.trustRevealed : ''}`.trim()}
           >
-            <figure className={styles.zzImage}>
-              <img
-                src="/images/shopping2.webp"
-                srcSet="/images/shopping2-mobile.webp 760w, /images/shopping2.webp 1200w"
-                sizes="(max-width: 820px) 92vw, 34rem"
-                alt="Un vecino entrega la compra a otra persona en el portal"
-                width="1200"
-                height="800"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <div className={styles.zzText}>
-              <div className={styles.metrics}>
-                {metrics.map((metric) => (
-                  <article key={metric.label}>
-                    <strong>{metric.value}</strong>
-                    <span>{metric.label}</span>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
+            <img
+              src="/images/confidence-coffee.webp"
+              srcSet="/images/confidence-coffee-mobile.webp 760w, /images/confidence-coffee.webp 1200w"
+              sizes="(max-width: 820px) 92vw, 64rem"
+              alt="Dos vecinos charlan tomando un café en la cocina después de terminar la compra"
+              width="1200"
+              height="514"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
 
           <div className={styles.testimonials}>
             <h3 className={styles.testimonialsTitle}>Lo que dicen quienes ya la usan</h3>

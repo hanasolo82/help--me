@@ -9,19 +9,48 @@ import styles from './TaskMap.module.css'
 
 // Centro por defecto: Zaragoza/Delicias aproximado si aun no hay ubicacion del usuario.
 const defaultCenter = [41.6523, -0.9019]
+const fallbackZoom = 15
+const minimumMapZoom = 10
 
-function RecenterMap({ center, centerSource = 'profile', zoom = 14 }) {
+function normalizeZoom(zoom, fallback = fallbackZoom) {
+  const nextZoom = Number(zoom)
+  return Number.isFinite(nextZoom) ? nextZoom : fallback
+}
+
+function hasValidCenter(center) {
+  return (
+    Array.isArray(center) &&
+    center.length >= 2 &&
+    Number.isFinite(Number(center[0])) &&
+    Number.isFinite(Number(center[1]))
+  )
+}
+
+function isMapMounted(map) {
+  return Boolean(map?._loaded && map?._mapPane)
+}
+
+function stopMapAnimationIfMounted(map) {
+  try {
+    if (isMapMounted(map)) {
+      map.stop()
+    }
+  } catch {
+    // Leaflet puede haber desmontado sus panes internos durante el cambio de vista.
+  }
+}
+
+function RecenterMap({ center, centerSource = 'profile', zoom = fallbackZoom }) {
   const map = useMap()
   const appliedCenterKeyRef = useRef(null)
 
   useLayoutEffect(() => {
-    if (!Array.isArray(center) || center.length < 2) return
+    if (!hasValidCenter(center)) return
 
     const [lat, lng] = center
-    if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return
 
     const nextCenter = [Number(lat), Number(lng)]
-    const nextZoom = Number.isFinite(Number(zoom)) ? Number(zoom) : 14
+    const nextZoom = normalizeZoom(zoom)
     const nextCenterKey = `${centerSource}:${nextCenter[0].toFixed(5)}:${nextCenter[1].toFixed(5)}:${nextZoom}`
 
     if (appliedCenterKeyRef.current === nextCenterKey) {
@@ -34,8 +63,8 @@ function RecenterMap({ center, centerSource = 'profile', zoom = 14 }) {
     let timeoutId = null
 
     const applyCenter = () => {
-      if (cancelled) return
-      map.stop()
+      if (cancelled || !isMapMounted(map)) return
+      stopMapAnimationIfMounted(map)
       map.invalidateSize({ animate: false })
       map.setView(nextCenter, nextZoom, { animate: false })
     }
@@ -67,7 +96,7 @@ function RecenterMap({ center, centerSource = 'profile', zoom = 14 }) {
   return null
 }
 
-function FitMapOnce({ tasks }) {
+function FitMapOnce({ tasks, around = null }) {
   const map = useMap()
   const fittedRef = useRef(false)
 
@@ -79,14 +108,45 @@ function FitMapOnce({ tasks }) {
     if (fittedRef.current) return
     if (points.length === 0) return
 
-    if (points.length > 1) {
-      map.fitBounds(points, { padding: [42, 42], maxZoom: 14 })
-    } else {
-      map.setView(points[0], 14)
-    }
+    // Solo encuadra tareas razonablemente cerca del usuario (~15 km): encuadrar
+    // TODAS alejaba el zoom inicial hasta ver media España si había una tarea
+    // suelta en otra provincia. Sin tareas cercanas, el mapa se queda donde el
+    // usuario (RecenterMap ya lo centra en su zona).
+    const anchorLat = Number(around?.[0])
+    const anchorLng = Number(around?.[1])
+    const hasAnchor = Number.isFinite(anchorLat) && Number.isFinite(anchorLng)
+    const nearbyPoints = hasAnchor
+      ? points.filter(([lat, lng]) => Math.abs(lat - anchorLat) <= 0.13 && Math.abs(lng - anchorLng) <= 0.17)
+      : points
 
     fittedRef.current = true
-  }, [map, tasks])
+
+    if (nearbyPoints.length === 0) return
+
+    const boundsPoints = hasAnchor ? [...nearbyPoints, [anchorLat, anchorLng]] : nearbyPoints
+    const readableCenter = hasAnchor ? [anchorLat, anchorLng] : boundsPoints[0]
+    let frameId = null
+
+    const keepReadableZoom = () => {
+      if (map.getZoom() < minimumMapZoom) {
+        map.setView(readableCenter, fallbackZoom, { animate: false })
+      }
+    }
+
+    if (boundsPoints.length > 1) {
+      map.fitBounds(boundsPoints, { padding: [42, 42], maxZoom: fallbackZoom, animate: false })
+      keepReadableZoom()
+      frameId = window.requestAnimationFrame(keepReadableZoom)
+    } else {
+      map.setView(boundsPoints[0], fallbackZoom, { animate: false })
+    }
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [around, map, tasks])
 
   return null
 }
@@ -202,13 +262,14 @@ export default function TaskMap({
   showUserWaypoint = true,
   recenterOnCenter = true,
   centerSource = 'profile',
-  recenterZoom = 14,
+  recenterZoom = 15,
   fitTasksOnLoad = false,
   fitTasksKey = 'initial',
 }) {
-  const userLat = toFiniteNumber(userLocation?.latitude)
-  const userLng = toFiniteNumber(userLocation?.longitude)
+  const userLat = toFiniteNumber(userLocation?.latitude ?? userLocation?.lat)
+  const userLng = toFiniteNumber(userLocation?.longitude ?? userLocation?.lng)
   const center = userLat !== null && userLng !== null ? [userLat, userLng] : defaultCenter
+  const initialZoom = normalizeZoom(recenterZoom)
   const userIcon = createUserMarkerIcon({
     avatarUrl: userAvatarUrl,
     initial: userInitial,
@@ -223,11 +284,21 @@ export default function TaskMap({
 
   return (
     <div className={styles.mapShell}>
-      <MapContainer center={center} zoom={14} scrollWheelZoom className={styles.map}>
+      <MapContainer
+        center={center}
+        zoom={initialZoom}
+        minZoom={minimumMapZoom}
+        scrollWheelZoom
+        className={styles.map}
+        whenReady={({ target: map }) => {
+          map.invalidateSize({ animate: false })
+          map.setView(center, initialZoom, { animate: false })
+        }}
+      >
         {recenterOnCenter ? (
           <RecenterMap center={center} centerSource={centerSource} zoom={recenterZoom} />
         ) : null}
-        {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} /> : null}
+        {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} around={center} /> : null}
         <MapViewportReporter onViewportChange={onViewportChange} />
         <MapTileLayer />
 

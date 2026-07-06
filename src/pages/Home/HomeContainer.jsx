@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useTransitionNavigate } from '../../shared/navigation/usePageTransition'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
@@ -116,7 +116,6 @@ function buildNotificationSummary(chats = [], userId, requesterTasks = [], pendi
 export default function HomeContainer() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
-  const transitionNavigate = useTransitionNavigate()
   const routeLocation = useLocation()
 
   const {
@@ -235,7 +234,7 @@ export default function HomeContainer() {
   const handlePublishTask = useCallback(
     async (task) => {
       if (task.status !== 'draft') {
-        transitionNavigate(`/task/${task.id}`)
+        navigate(`/task/${task.id}`)
         return
       }
 
@@ -250,7 +249,7 @@ export default function HomeContainer() {
         clearPublishingTaskId()
       }
     },
-    [clearPublishingTaskId, transitionNavigate, refetchTasks, setPublishingTaskId],
+    [clearPublishingTaskId, navigate, refetchTasks, setPublishingTaskId],
   )
 
   const handleCancelTask = useCallback(
@@ -450,10 +449,23 @@ export default function HomeContainer() {
     const storedMode = readHelperHomeIntent()
     const nextMode = routeMode || storedMode || (profile?.helper_status === 'active' ? 'help' : 'need')
 
-    if (nextMode === 'need' || nextMode === 'help') {
-      setMode(nextMode)
+    if (nextMode !== 'need' && nextMode !== 'help') return
+    if (nextMode === mode) return
+
+    // Cross-fade suave entre home requester y home helper (misma ruta, sin
+    // navegación): View Transitions necesita el DOM actualizado en síncrono.
+    const applyMode = () => flushSync(() => setMode(nextMode))
+
+    if (typeof document !== 'undefined' && typeof document.startViewTransition === 'function') {
+      const transition = document.startViewTransition(applyMode)
+      // Si otra transición la interrumpe, finished rechaza con AbortError: es
+      // esperable (el cambio de modo ya se aplicó), no debe ensuciar la consola.
+      transition.finished?.catch(() => {})
+    } else {
+      applyMode()
     }
   }, [
+    mode,
     profile?.helper_status,
     routeLocation.state?.mode,
     setMode,

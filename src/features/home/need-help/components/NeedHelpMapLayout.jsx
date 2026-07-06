@@ -13,20 +13,54 @@ import Modal from '../../../../shared/ui/Modal/Modal'
 import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery'
 import styles from './NeedHelpMapLayout.module.css'
 
-// Vuelo suave hacia el nuevo centro (nivel barrio); con reduced-motion salta sin animar.
+const defaultMapCenter = [41.6523, -0.9019]
+const fallbackZoom = 15
+const minimumMapZoom = 10
+
+function normalizeZoom(zoom, currentZoom = fallbackZoom) {
+  const nextZoom = Number(zoom)
+
+  if (Number.isFinite(nextZoom)) {
+    return nextZoom
+  }
+
+  const safeCurrentZoom = Number(currentZoom)
+  return Number.isFinite(safeCurrentZoom) && safeCurrentZoom >= minimumMapZoom
+    ? safeCurrentZoom
+    : fallbackZoom
+}
+
+function stopMapAnimationIfMounted(map) {
+  try {
+    if (map?._loaded && map?._mapPane) {
+      map.stop()
+    }
+  } catch {
+    // Leaflet puede haber desmontado sus panes internos durante el cambio de modo.
+  }
+}
+
+// Centra el mapa: el primer centrado salta directo (sin viaje desde el centro
+// por defecto); los siguientes vuelan suave (flyTo). Con reduced-motion, sin animar.
 function RecenterMap({ center, zoom = null }) {
   const map = useMap()
+  const hasCenteredRef = useRef(false)
 
   useEffect(() => {
-    const targetZoom = Number.isFinite(Number(zoom)) ? Number(zoom) : map.getZoom()
+    const targetZoom = normalizeZoom(zoom, map.getZoom())
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
-    if (reduceMotion) {
+    if (!hasCenteredRef.current || reduceMotion) {
+      hasCenteredRef.current = true
       map.setView(center, targetZoom, { animate: false })
-      return
+      return undefined
     }
 
     map.flyTo(center, targetZoom, { duration: 0.75 })
+
+    return () => {
+      stopMapAnimationIfMounted(map)
+    }
   }, [center, map, zoom])
 
   return null
@@ -128,11 +162,26 @@ function toMapCenter(location, profileCenter) {
     return [lat, lng]
   }
 
-  return [41.6523, -0.9019]
+  return defaultMapCenter
 }
 
 function hasMapPosition(entry) {
   return Number.isFinite(Number(entry?.lat)) && Number.isFinite(Number(entry?.lng))
+}
+
+function buildMapCenterKey(center) {
+  if (!Array.isArray(center) || center.length < 2) {
+    return 'fallback'
+  }
+
+  const lat = Number(center[0])
+  const lng = Number(center[1])
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return 'fallback'
+  }
+
+  return `${lat.toFixed(5)}:${lng.toFixed(5)}`
 }
 
 function isInsideBounds(entry, bounds) {
@@ -221,6 +270,7 @@ export default function NeedHelpMapLayout({
   } = useSelectedHelper(helpers)
 
   const searchCenter = useMemo(() => toMapCenter(location, center), [center, location])
+  const mapCenterKey = useMemo(() => buildMapCenterKey(searchCenter), [searchCenter])
   const focusedRequesterTask = useMemo(
     () => requesterTasks.find((task) => task.id === focusRequesterTaskId) || null,
     [focusRequesterTaskId, requesterTasks],
@@ -239,8 +289,8 @@ export default function NeedHelpMapLayout({
     },
     [focusedRequesterTask, searchCenter, selectedHelper],
   )
-  // Al encuadrar una solicitud propia, vuela a nivel de barrio (no un zoom lejano).
-  const focusZoom = hasMapPosition(focusedRequesterTask) ? 15 : null
+  // Vista requester siempre arranca y recentra a nivel barrio.
+  const focusZoom = fallbackZoom
   const viewportHelpers = useMemo(() => {
     return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesSkill(helper, selectedSkillId))
   }, [helpers, mapBounds, selectedSkillId])
@@ -273,7 +323,18 @@ export default function NeedHelpMapLayout({
       <div className={styles.desktopGrid}>
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
           <div className={styles.mapShell}>
-            <MapContainer center={focusCenter} zoom={13} scrollWheelZoom className={styles.map}>
+            <MapContainer
+              key={mapCenterKey}
+              center={focusCenter}
+              zoom={fallbackZoom}
+              minZoom={minimumMapZoom}
+              scrollWheelZoom
+              className={styles.map}
+              whenReady={({ target: map }) => {
+                map.invalidateSize({ animate: false })
+                map.setView(focusCenter, normalizeZoom(focusZoom), { animate: false })
+              }}
+            >
               <RecenterMap center={focusCenter} zoom={focusZoom} />
               <MapRefCapture mapRef={mapRef} />
               <ViewportReporter onViewportChange={setMapBounds} />

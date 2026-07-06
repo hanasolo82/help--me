@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { estimatePasswordStrength, validateEmail } from '../../../lib/security'
 import { clearRememberedEmail, readRememberedEmail } from '../../../lib/consent'
 import Turnstile from '../Turnstile'
-import BrandLogo from '../../ui/BrandLogo/BrandLogo'
+import AnimatedBrandLogo from '../../ui/AnimatedBrandLogo/AnimatedBrandLogo'
 import googleIcon from '../../../assets/icons/goggle.svg'
 import {
   resendSignupConfirmation,
@@ -197,7 +197,7 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
   return (
     <section className="auth-panel">
       <div className="auth-panel-brand" aria-hidden="true">
-        <BrandLogo size="lg" variant="auto" />
+        <AnimatedBrandLogo size="lg" />
       </div>
 
       <h1 id={titleId} className="auth-panel-title">

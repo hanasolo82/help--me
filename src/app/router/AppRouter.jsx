@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 
+import RootLayout from "./RootLayout";
 import Home from "../../pages/Home/Home";
 import Landing from "../../pages/Landing/Landing";
 import AuthCallback from "../../pages/AuthCallback/AuthCallback";
@@ -33,9 +34,11 @@ import RequireAuth from "./RequireAuth";
 const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/DesignLab")) : null;
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
-export default function AppRouter() {
-  return (
-    <Routes>
+// Data router (createBrowserRouter): requerido por las View Transitions de
+// react-router (viewTransition en navigate/Link y useViewTransitionState).
+export const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<RootLayout />}>
       <Route path="/" element={<Landing />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/login" element={<Login />} />
@@ -75,6 +78,6 @@ export default function AppRouter() {
           }
         />
       ) : null}
-    </Routes>
-  );
-}
+    </Route>
+  ),
+);

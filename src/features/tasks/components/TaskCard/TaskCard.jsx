@@ -1,4 +1,3 @@
-import { useViewTransitionState } from 'react-router-dom'
 import styles from './TaskCard.module.css'
 import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
@@ -126,11 +125,6 @@ export default function TaskCard({
   viewerRole = 'viewer',
   hasReview = false,
 }) {
-  // Morph del título hacia el h1 del detalle: el view-transition-name solo se
-  // aplica mientras se navega hacia ESTA tarea (así nunca hay nombres duplicados
-  // entre cards). Ver src/styles/view-transitions.css.
-  const isTransitioningToDetail = useViewTransitionState(`/task/${task.id}`)
-
   const priceEuros = Number(task.price ?? 0)
   const creator = task.creator_profile
   const creatorName = creator?.display_name || creator?.full_name || creator?.username || 'Vecino'
@@ -227,12 +221,7 @@ export default function TaskCard({
 
       <div className={styles.topSection}>
         <div>
-          <h2
-            className={styles.title}
-            style={isTransitioningToDetail ? { viewTransitionName: 'task-title' } : undefined}
-          >
-            {task.title}
-          </h2>
+          <h2 className={styles.title}>{task.title}</h2>
 
           <div className={styles.activityLine}>
             <ActivityBadge category={task.category} compact />

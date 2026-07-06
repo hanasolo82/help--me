@@ -1,0 +1,279 @@
+/* Inline mirror of public/logos/animated-helpme-logo.svg.
+   Motion strokes are temporary; final letters and M are clipped from
+   the original HelpMe logo asset. */
+.logo {
+  display: block;
+  overflow: visible;
+  height: auto;
+  color: var(--text, currentColor);
+}
+
+/* Same sizes as BrandLogo so both components can be swapped without layout work. */
+.sm {
+  width: clamp(5.75rem, 10vw, 9rem);
+}
+
+.md {
+  width: clamp(7rem, 10vw, 8.5rem);
+}
+
+.lg {
+  width: clamp(9rem, 13vw, 11rem);
+}
+
+.xl {
+  width: clamp(10rem, 18vw, 14rem);
+}
+
+.logoSlice,
+.motionMark,
+.leftHand,
+.rightHand {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.logoSlice {
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+.markFinal {
+  animation: mark-final-in 2.4s cubic-bezier(0.2, 0.72, 0.18, 1) forwards;
+}
+
+.wordLeft {
+  animation: word-left-in 2.4s cubic-bezier(0.2, 0.72, 0.18, 1) forwards;
+}
+
+.wordRight {
+  animation: word-right-in 2.4s cubic-bezier(0.2, 0.72, 0.18, 1) forwards;
+}
+
+.motionMark {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: motion-mark-out 2.4s ease-out forwards;
+}
+
+.leftHand {
+  animation: left-hand-in 2.4s cubic-bezier(0.18, 0.74, 0.16, 1) forwards;
+}
+
+.rightHand {
+  animation: right-hand-in 2.4s cubic-bezier(0.18, 0.74, 0.16, 1) forwards;
+}
+
+/* Cada brazo ES media M: empieza recto y horizontal (postura de darse la mano),
+   y tras el shake se dobla (morph de `d`) hasta su mitad de la M. En navegadores
+   sin `d` animable por CSS, el brazo se ve con la forma final desde el inicio. */
+.armLeft {
+  animation: left-arm-morph 2.4s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.armRight {
+  animation: right-arm-morph 2.4s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.clasp {
+  stroke-width: 10.5;
+  opacity: 0;
+  animation: clasp-in 2.4s ease-out forwards;
+}
+
+.finger {
+  stroke-width: 6.6;
+  opacity: 0;
+  animation: finger-in 2.4s ease-out forwards;
+}
+
+.cuff {
+  stroke-width: 7.6;
+  opacity: 0;
+  animation: finger-in 2.4s ease-out forwards;
+}
+
+:global(html[data-theme='dark']) .logoSlice {
+  filter: invert(1);
+}
+
+/* Entrada horizontal (brazos rectos que se buscan) + shake VERTICAL sincronizado
+   una vez agarrados, como un apretón de manos real. */
+@keyframes left-hand-in {
+  0% {
+    transform: translate(-64px, 0);
+  }
+  30% {
+    transform: translate(0, 0);
+  }
+  34% {
+    transform: translate(0, 3px) rotate(0.6deg);
+  }
+  39% {
+    transform: translate(0, -2.5px) rotate(-0.45deg);
+  }
+  43% {
+    transform: translate(0, 1.5px) rotate(0.25deg);
+  }
+  47%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes right-hand-in {
+  0% {
+    transform: translate(64px, 0);
+  }
+  30% {
+    transform: translate(0, 0);
+  }
+  34% {
+    transform: translate(0, 3px) rotate(-0.6deg);
+  }
+  39% {
+    transform: translate(0, -2.5px) rotate(0.45deg);
+  }
+  43% {
+    transform: translate(0, 1.5px) rotate(-0.25deg);
+  }
+  47%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Morph brazo recto → media M. Las puntas (las manos) quedan clavadas en el
+   punto del apretón; solo se dobla el resto del brazo hacia abajo. */
+@keyframes left-arm-morph {
+  0%,
+  50% {
+    d: path('M330 86V86c0 0 45 0 68 0l41 0');
+  }
+  72%,
+  100% {
+    d: path('M342 158V68c0-31 38-42 60-20l37 38');
+  }
+}
+
+@keyframes right-arm-morph {
+  0%,
+  50% {
+    d: path('M492 86V86c0 0-45 0-68 0l-41 0');
+  }
+  72%,
+  100% {
+    d: path('M480 158V68c0-31-38-42-60-20l-37 38');
+  }
+}
+
+@keyframes clasp-in {
+  0%,
+  30% {
+    opacity: 0;
+    stroke-dasharray: 1 90;
+    stroke-dashoffset: 36;
+  }
+  40% {
+    opacity: 1;
+    stroke-dasharray: 44 90;
+    stroke-dashoffset: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+    stroke-dasharray: 90 90;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes finger-in {
+  0%,
+  42% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  50%,
+  72% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  82%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-mark-out {
+  0%,
+  72% {
+    opacity: 1;
+  }
+  86%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes mark-final-in {
+  0%,
+  68% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  80%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes word-left-in {
+  0%,
+  76% {
+    opacity: 0;
+    transform: translateX(228px);
+  }
+  92% {
+    opacity: 1;
+    transform: translateX(-4px);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes word-right-in {
+  0%,
+  80% {
+    opacity: 0;
+    transform: translateX(-74px);
+  }
+  95% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motionMark {
+    display: none;
+  }
+
+  .logoSlice {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
