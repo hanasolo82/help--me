@@ -21,9 +21,11 @@ import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { useInView } from '../../shared/hooks/useInView'
 import { useScrollReveal } from '../../shared/hooks/useScrollReveal'
 import { useTypewriter } from '../../shared/hooks/useTypewriter'
+import { useTextRotate } from '../../shared/hooks/useTextRotate'
 import {
   HERO_TITLE_PREFIX,
   HERO_TITLE_TAILS,
+  CATEGORY_TITLE_PHRASES,
 } from './heroPhrases'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import BentoGrid from './components/BentoGrid'
@@ -328,6 +330,9 @@ export default function Landing() {
     holdFull: 10000,
     holdEmpty: 450,
   })
+  // Rotación del H2 de Categorías (mismo ritmo pausado que tenía: 8s por frase).
+  const rotatingPhraseIndex = useTextRotate(CATEGORY_TITLE_PHRASES.length, 8000)
+
   useScrollReveal(landingRef)
   const [themePreference, setThemePreference] = useState(() =>
     resolveThemePreference({ isPrivateRoute: false }),
@@ -517,7 +522,11 @@ export default function Landing() {
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
             <p className={styles.kicker}>Categorías</p>
-            <h2>¿En qué te pueden echar una mano?</h2>
+            <h2 className={styles.categoriesTitle} aria-live="polite">
+              <span key={rotatingPhraseIndex} className={styles.rotatingPhrase}>
+                {CATEGORY_TITLE_PHRASES[rotatingPhraseIndex]}
+              </span>
+            </h2>
             <p className={styles.sectionLead}>Estas son las tareas que más se piden entre vecinos</p>
           </div>
 

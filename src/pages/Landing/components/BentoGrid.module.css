@@ -178,10 +178,6 @@
   color: color-mix(in srgb, var(--text) 70%, transparent);
   line-height: 1.5;
   font-size: 0.95rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* Lista de tareas de ejemplo: la que llena el espacio y aporta valor */
