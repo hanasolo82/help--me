@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useTransitionNavigate } from '../../../shared/navigation/usePageTransition'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
 import { formatTaskAvailabilityShort } from '../../tasks/availability/taskAvailability'
@@ -126,7 +126,7 @@ function buildMapEntries(entries = [], currentUserId, profile) {
 }
 
 export default function HelperHome({ profile, helperHomeProps = {} }) {
-  const navigate = useNavigate()
+  const transitionNavigate = useTransitionNavigate()
   const queryClient = useQueryClient()
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [mapBounds, setMapBounds] = useState(null)
@@ -236,7 +236,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   }
 
   function handleOpenTask(task) {
-    navigate(`/task/${task.id}`)
+    transitionNavigate(`/task/${task.id}`)
   }
 
   const offerActionPending = pendingOfferTaskId === selectedTask?.id
@@ -346,7 +346,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                     secondaryActionPending={offerActionPending}
                     onSecondaryAction={() => handleOffer(selectedTask)}
                   />
-                  {offerError ? <p className="auth-message error">{offerError}</p> : null}
+                  {offerError ? <p className="auth-message error" role="alert">{offerError}</p> : null}
                 </div>
               </>
             ) : (

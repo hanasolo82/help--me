@@ -1,0 +1,10 @@
+/* Overrides de panel para el chat contextual: el Modal base aporta overlay, a11y y
+   animaciones; aquí solo cambia el layout (scroll interno + composer fijado). */
+.panel {
+  --modal-width: 42rem;
+  max-height: min(90vh, 42rem);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}

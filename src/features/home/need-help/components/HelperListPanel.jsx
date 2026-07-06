@@ -18,6 +18,7 @@ export default function HelperListPanel({
   locationError = '',
   onRequestLocation,
   onPublishRequest,
+  onExpandMap,
 }) {
   return (
     <aside className={styles.panelShell}>
@@ -48,10 +49,12 @@ export default function HelperListPanel({
         {!loading && !error && visibleHelpers.length === 0 ? (
           <HomeEmptyState
             title="No hay personas disponibles en esta parte del mapa"
-            description="Activa tu ubicación, amplía el mapa o publica una solicitud para que la comunidad pueda responder."
-            actionLabel={onPublishRequest ? 'Publicar solicitud' : onRequestLocation ? 'Usar mi ubicación' : null}
-            onAction={onPublishRequest || onRequestLocation}
-            tone="warning"
+            description="Amplía la zona del mapa o publica una solicitud para que la comunidad pueda responder."
+            actionLabel={onExpandMap ? 'Ampliar zona del mapa' : null}
+            onAction={onExpandMap}
+            secondaryActionLabel={onPublishRequest ? 'Publicar solicitud' : onRequestLocation ? 'Usar mi ubicación' : null}
+            onSecondaryAction={onPublishRequest || onRequestLocation}
+            tone="neutral"
           />
         ) : null}
 

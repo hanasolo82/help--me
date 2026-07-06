@@ -659,61 +659,9 @@
   line-height: 1.5;
 }
 
-.mapLayer {
-  position: fixed;
-  inset: 0;
-  z-index: var(--hm-z-modal-backdrop);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(28, 25, 22, 0.28);
-}
-
-.mapModal {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 56rem);
-  max-height: min(92vh, 48rem);
-  overflow: auto;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
-  padding: clamp(1rem, 2.5vw, 1.5rem);
-  box-shadow: var(--hm-shadow-lg);
-}
-
-.mapHeader {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.mapHeader h2 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 700;
-}
-
-.mapHeader button {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: 999px;
-  background: var(--hm-color-secondary);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 1.5rem;
-  font-weight: 700;
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.mapKicker {
-  color: var(--color-primary);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
+/* Modal de chats: solo el ancho; el contenedor vive en el Modal base de shared/ui. */
+.chatsPanel {
+  --modal-width: 56rem;
 }
 
 .permissionPanel {

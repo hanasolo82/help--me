@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import SkillBadge from '../../../skills/components/SkillBadge'
+import Modal, { ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './HelperPreviewModal.module.css'
 
@@ -39,40 +40,31 @@ export default function HelperPreviewModal({
 }) {
   const skills = useMemo(() => buildSkillList(helper), [helper])
 
-  if (!open || !helper) return null
+  if (!helper) return null
 
   const name = helper.display_name || helper.full_name || helper.username || 'Vecino'
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <section
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Vista previa de ${name}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <div className={styles.identity}>
-            <UserAvatar
-              src={helper.avatar_url}
-              name={name}
-              alt={name}
-              size="lg"
-              variant="rounded"
-              className={styles.avatar}
-            />
-            <div className={styles.summary}>
-              <p className="eyebrow">Persona disponible</p>
-              <h2>{name}</h2>
-              <p className="muted">{formatDistance(helper.distance_km)}</p>
-            </div>
+    <Modal open={open} onClose={onClose} size="lg" ariaLabel={`Vista previa de ${name}`}>
+      <ModalHeader closeLabel="Cerrar vista previa">
+        <div className={styles.identity}>
+          <UserAvatar
+            src={helper.avatar_url}
+            name={name}
+            alt={name}
+            size="lg"
+            variant="rounded"
+            className={styles.avatar}
+          />
+          <div className={styles.summary}>
+            <p className="eyebrow">Persona disponible</p>
+            <h2>{name}</h2>
+            <p className="muted">{formatDistance(helper.distance_km)}</p>
           </div>
-          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Cerrar vista previa">
-            ×
-          </button>
         </div>
+      </ModalHeader>
 
+      <ModalBody>
         <div className={styles.meta}>
           <span>{formatRating(helper)}</span>
           <span>{helper.availability_enabled === false ? 'No disponible' : 'Disponible'}</span>
@@ -85,19 +77,19 @@ export default function HelperPreviewModal({
         </div>
 
         <p className={styles.description}>{helper.bio || 'Ayuda general y trato cercano dentro de la comunidad.'}</p>
+      </ModalBody>
 
-        <div className={styles.actions}>
-          <button type="button" className="secondary-action" onClick={() => onViewProfile?.(helper)} disabled={contactPending}>
-            Ver perfil
-          </button>
-          <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
-            {contactPending ? 'Preparando...' : 'Pedir ayuda'}
-          </button>
-          <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
-            Publicar solicitud
-          </button>
-        </div>
-      </section>
-    </div>
+      <div className={styles.actions}>
+        <button type="button" className="secondary-action" onClick={() => onViewProfile?.(helper)} disabled={contactPending}>
+          Ver perfil
+        </button>
+        <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
+          {contactPending ? 'Preparando...' : 'Pedir ayuda'}
+        </button>
+        <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
+          Publicar solicitud
+        </button>
+      </div>
+    </Modal>
   )
 }

@@ -1,0 +1,52 @@
+/* Primitivo Card: superficie estándar de la app. Consume los tokens --hm-card-*
+   (design-tokens.css), que reaccionan al tema claro/oscuro vía themePreferences. */
+.card {
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-card-shadow);
+  color: var(--color-text);
+}
+
+.muted {
+  background: var(--hm-card-muted-bg);
+  box-shadow: none;
+}
+
+.paddingMd {
+  padding: var(--hm-card-padding);
+}
+
+.paddingLg {
+  padding: var(--hm-card-padding-lg);
+}
+
+/* Card clicable/enfocable: eleva en hover sin mover el layout (solo sombra +
+   transform). El focus visible replica el anillo estándar de la app. */
+.interactive {
+  cursor: pointer;
+  transition:
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-spring-soft),
+    border-color var(--motion-fast) var(--ease-out);
+}
+
+.interactive:hover {
+  box-shadow: var(--hm-card-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.interactive:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--hm-card-shadow-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive {
+    transition: none;
+  }
+
+  .interactive:hover {
+    transform: none;
+  }
+}

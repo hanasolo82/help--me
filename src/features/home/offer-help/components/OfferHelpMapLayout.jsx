@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useTransitionNavigate } from '../../../../shared/navigation/usePageTransition'
 import { applyToTask, withdrawTaskApplication } from '../../../../services/tasksService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
 import TaskFiltersBar from './TaskFiltersBar'
@@ -24,7 +24,7 @@ export default function OfferHelpMapLayout({
   title = 'Solicitudes abiertas cerca de ti',
   lead = 'Selecciona una solicitud, revisa el detalle y ofrécete solo si sigue abierta.',
 }) {
-  const navigate = useNavigate()
+  const transitionNavigate = useTransitionNavigate()
   const queryClient = useQueryClient()
   const [mobileView, setMobileView] = useState('map')
   const [selectedTaskId, setSelectedTaskId] = useState(null)
@@ -197,7 +197,7 @@ export default function OfferHelpMapLayout({
             visibleTasks={viewportTasks}
             selectedTaskId={selectedTaskId}
             onSelectTask={handleLocateTask}
-            onOpenDetail={(task) => navigate(`/task/${task.id}`)}
+            onOpenDetail={(task) => transitionNavigate(`/task/${task.id}`)}
             onContact={handleContact}
             onToggleFavorite={handleToggleFavorite}
             favoriteTaskIds={favoriteTaskIds}
@@ -218,7 +218,7 @@ export default function OfferHelpMapLayout({
         isFavorite={selectedTask ? favoriteTaskIds.includes(selectedTask.id) : false}
         currentUserId={currentUserId}
         onClose={() => setSelectedTaskId(null)}
-        onOpenDetail={(task) => navigate(`/task/${task.id}`)}
+        onOpenDetail={(task) => transitionNavigate(`/task/${task.id}`)}
         onContact={handleContact}
         offerActionPending={pendingOfferTaskId === selectedTask?.id}
         offerError={offerError}

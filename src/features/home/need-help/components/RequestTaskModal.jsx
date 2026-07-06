@@ -4,6 +4,7 @@ import { allowedCategories, createTask, publishTask, updateTask } from '../../..
 import { useAuth } from '../../../../contexts/useAuth'
 import TaskAvailabilityFields from '../../../tasks/availability/TaskAvailabilityFields'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
+import Modal, { ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import TaskLocationSearch from './TaskLocationSearch'
 import styles from './RequestTaskModal.module.css'
 
@@ -49,6 +50,8 @@ function RequestTaskModalInner({
     requestedTimeNote: task?.requested_time_note || '',
   })
   const [error, setError] = useState('')
+  // Validación inline: un mensaje junto a cada campo en vez de un único error global.
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
   const [taskLocation, setTaskLocation] = useState(() => resolvedLocation)
@@ -72,19 +75,38 @@ function RequestTaskModalInner({
   function handleTaskLocationChange(nextLocation) {
     setLocationEdited(true)
     setTaskLocation(nextLocation)
+    if (nextLocation) {
+      setFieldErrors((current) => ({ ...current, location: undefined }))
+    }
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
 
+    const nextFieldErrors = {}
+    if (!title.trim()) {
+      nextFieldErrors.title = 'Añade un título corto para tu solicitud.'
+    }
+    if (!description.trim()) {
+      nextFieldErrors.description = 'Cuenta brevemente qué necesitas.'
+    }
     if (!taskLocation) {
-      setError('Selecciona el lugar de la tarea para situarla en el mapa.')
-      return
+      nextFieldErrors.location = 'Selecciona el lugar de la tarea para situarla en el mapa.'
     }
 
-    if (!title.trim() || !description.trim()) {
-      setError('Añade un título y una breve descripción.')
+    setFieldErrors(nextFieldErrors)
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      // Lleva el foco al primer campo con error para usuarios de teclado/lector.
+      const firstInvalidId = nextFieldErrors.title
+        ? 'request-title-input'
+        : nextFieldErrors.description
+          ? 'request-description-input'
+          : null
+      if (firstInvalidId) {
+        document.getElementById(firstInvalidId)?.focus()
+      }
       return
     }
 
@@ -121,43 +143,63 @@ function RequestTaskModalInner({
   }
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <section
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Publicar solicitud"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <div>
-            <p className="eyebrow">{isEditing ? 'Editar solicitud' : 'Publicar solicitud'}</p>
-            <h2>{isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}</h2>
-          </div>
-          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Cerrar solicitud">
-            ×
-          </button>
-        </div>
+    <Modal open onClose={onClose} className={styles.panel}>
+      <ModalHeader
+        eyebrow={isEditing ? 'Editar solicitud' : 'Publicar solicitud'}
+        title={isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}
+        closeLabel="Cerrar solicitud"
+      />
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+      <form className={styles.form} onSubmit={handleSubmit}>
           <label className="field">
             <span>Título</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Sacar al perro 30 min" maxLength={90} required />
+            <input
+              id="request-title-input"
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value)
+                setFieldErrors((current) => ({ ...current, title: undefined }))
+              }}
+              placeholder="Sacar al perro 30 min"
+              maxLength={90}
+              aria-invalid={fieldErrors.title ? 'true' : undefined}
+              aria-describedby={fieldErrors.title ? 'request-title-error' : undefined}
+            />
+            {fieldErrors.title ? (
+              <p className={styles.fieldError} id="request-title-error" role="alert">
+                {fieldErrors.title}
+              </p>
+            ) : null}
           </label>
 
           <label className="field">
             <span>Descripción</span>
             <textarea
+              id="request-description-input"
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(event) => {
+                setDescription(event.target.value)
+                setFieldErrors((current) => ({ ...current, description: undefined }))
+              }}
               placeholder="Cuenta brevemente qué necesitas y en qué zona."
               maxLength={600}
               rows={3}
-              required
+              aria-invalid={fieldErrors.description ? 'true' : undefined}
+              aria-describedby={fieldErrors.description ? 'request-description-error' : undefined}
             />
+            {fieldErrors.description ? (
+              <p className={styles.fieldError} id="request-description-error" role="alert">
+                {fieldErrors.description}
+              </p>
+            ) : null}
           </label>
 
           <TaskLocationSearch value={taskLocation} onChange={handleTaskLocationChange} />
+          {fieldErrors.location ? (
+            <p className={styles.fieldError} role="alert">
+              {fieldErrors.location}
+            </p>
+          ) : null}
 
           <TaskAvailabilityFields
             requestedDate={availability.requestedDate}
@@ -184,7 +226,7 @@ function RequestTaskModalInner({
             </label>
           </div>
 
-          {error ? <p className="auth-message error">{error}</p> : null}
+          {error ? <p className="auth-message error" role="alert">{error}</p> : null}
 
           {!taskLocation && locationStatus !== 'loading' ? (
             <section className={styles.locationHint}>
@@ -207,8 +249,7 @@ function RequestTaskModalInner({
             </GlitchSoftButton>
           </div>
         </form>
-      </section>
-    </div>
+    </Modal>
   )
 }
 

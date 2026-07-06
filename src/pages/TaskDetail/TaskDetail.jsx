@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useTransitionNavigate } from '../../shared/navigation/usePageTransition'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import {
@@ -88,6 +89,7 @@ function renderStatusHint(hint, status) {
 export default function TaskDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const transitionNavigate = useTransitionNavigate()
   const location = useLocation()
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -354,7 +356,7 @@ export default function TaskDetail() {
     return (
       <main className="app-screen">
         <header className="page-header">
-          <button className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
+          <button className="icon-button" onClick={() => transitionNavigate(returnTo, { direction: 'back' })} aria-label="Volver">
             ←
           </button>
           <h1>Tarea no disponible</h1>
@@ -367,12 +369,13 @@ export default function TaskDetail() {
   return (
     <main className="app-screen">
       <header className="page-header">
-        <button className="icon-button" onClick={() => navigate(returnTo)} aria-label="Volver">
+        <button className="icon-button" onClick={() => transitionNavigate(returnTo, { direction: 'back' })} aria-label="Volver">
           ←
         </button>
         <div className="task-header-copy">
           <p className="eyebrow">{roleEyebrow}</p>
-          <h1>{task.title}</h1>
+          {/* Pareja del morph: el h2 de TaskCard se transforma en este h1 al navegar. */}
+          <h1 style={{ viewTransitionName: 'task-title' }}>{task.title}</h1>
           <div className="task-header-person">
             <UserAvatar
               src={contextualProfile.avatar_url}

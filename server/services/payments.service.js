@@ -1210,3 +1210,157 @@ export async function releasePaymentFunds({ paymentId, requester }) {
     throw error
   }
 }
+
+// Estados desde los que un pago retenido admite devolución total. Nunca tras
+// iniciar la liberación al helper: a partir de ahí el dinero ya está comprometido.
+const REFUNDABLE_PAYMENT_STATUSES = new Set(['captured', 'held'])
+
+/**
+ * Devolución total, automática, solo mientras el pago sigue retenido.
+ * Política acordada: el requester puede recuperar el importe íntegro antes de
+ * liberar; una vez existe transferencia al helper ya no hay devolución.
+ * El estado final (`refunded`, tabla refunds, ledger) lo consolida el webhook
+ * `charge.refunded`, que ya está implementado e idempotente.
+ */
+export async function refundHeldPayment({ paymentId, requester }) {
+  ensureSupabaseAdmin()
+
+  if (!requester?.id) {
+    throw createPaymentError('Necesitas iniciar sesion.', 401)
+  }
+
+  const payment = await getPaymentById(paymentId)
+
+  if (!payment) {
+    throw createPaymentError('El pago no existe.', 404)
+  }
+
+  async function auditRefundBlocked(reason) {
+    await createIdempotentAuditEvent({
+      eventType: 'refund_validation_failed',
+      severity: 'warning',
+      actorType: 'requester',
+      actorProfileId: requester.id,
+      entityType: 'payment',
+      entityId: payment.id,
+      afterState: { reason, payment_status: payment.status },
+      correlationId: payment.correlation_id || getOrCreateCorrelationId(payment),
+      metadata: {
+        payment_id: payment.id,
+        task_id: payment.task_id,
+      },
+    })
+  }
+
+  if (payment.requester_profile_id !== requester.id) {
+    await auditRefundBlocked('No puedes devolver un pago ajeno.')
+    throw createPaymentError('No puedes devolver un pago ajeno.', 403)
+  }
+
+  if (payment.provider === 'external' || payment.status === 'external_agreed') {
+    await auditRefundBlocked('Los acuerdos de pago externo no mueven dinero en HelpMe.')
+    throw createPaymentError('Este acuerdo de pago se coordina fuera de HelpMe y no admite devolución aquí.', 409)
+  }
+
+  if (payment.status === 'refunded') {
+    return {
+      payment_id: payment.id,
+      task_id: payment.task_id,
+      payment_status: 'refunded',
+      duplicate: true,
+    }
+  }
+
+  if (!REFUNDABLE_PAYMENT_STATUSES.has(payment.status)) {
+    await auditRefundBlocked('El pago no está en un estado retenido devolvible.')
+    throw createPaymentError(
+      payment.status === 'processing'
+        ? 'El pago aún se está confirmando con Stripe. Inténtalo de nuevo en unos segundos.'
+        : 'Este pago ya no admite devolución: la liberación al helper está en marcha o completada.',
+      409,
+    )
+  }
+
+  const existingTransfer = await getTransferByPaymentId(payment.id)
+  if (existingTransfer && existingTransfer.status !== 'failed') {
+    await auditRefundBlocked('Ya existe una transferencia al helper.')
+    throw createPaymentError('Este pago ya no admite devolución: la liberación al helper está en marcha.', 409)
+  }
+
+  if (!payment.stripe_payment_intent_id) {
+    await auditRefundBlocked('El pago no tiene payment intent de Stripe asociado.')
+    throw createPaymentError('No podemos localizar el cobro original en Stripe.', 409)
+  }
+
+  const correlationId = payment.correlation_id || getOrCreateCorrelationId(payment)
+
+  const refund = await stripe.refunds.create(
+    {
+      payment_intent: payment.stripe_payment_intent_id,
+      reason: 'requested_by_customer',
+      metadata: {
+        helpme_payment_id: payment.id,
+        helpme_task_id: payment.task_id || '',
+        requested_by: requester.id,
+      },
+    },
+    {
+      // Idempotencia dura: reintentos del cliente no generan segundas devoluciones.
+      idempotencyKey: ensureIdempotencyKey(`refund:payment:${payment.id}`, 'refund'),
+    },
+  )
+
+  await createIdempotentAuditEvent({
+    eventType: 'refund_requested',
+    severity: 'info',
+    actorType: 'requester',
+    actorProfileId: requester.id,
+    entityType: 'payment',
+    entityId: payment.id,
+    afterState: {
+      stripe_refund_id: refund.id,
+      refund_status: refund.status,
+      amount_cents: refund.amount,
+    },
+    correlationId,
+    metadata: {
+      payment_id: payment.id,
+      task_id: payment.task_id,
+      stripe_refund_id: refund.id,
+    },
+  })
+
+  // La tarea vuelve a cancelada: la ayuda ya no va a ocurrir con este pago.
+  if (payment.task_id) {
+    const { error: taskError } = await supabaseAdmin
+      .from('tasks')
+      .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+      .eq('id', payment.task_id)
+      .in('status', ['assigned', 'in_progress'])
+
+    if (taskError) {
+      // No revertimos la devolución (el dinero del usuario manda); queda auditado
+      // para reconciliación manual.
+      await createIdempotentAuditEvent({
+        eventType: 'refund_task_cancel_failed',
+        severity: 'error',
+        actorType: 'system',
+        entityType: 'task',
+        entityId: payment.task_id,
+        afterState: { error: normalizeText(taskError.message) || 'Task cancel failed after refund.' },
+        correlationId,
+        metadata: { payment_id: payment.id, stripe_refund_id: refund.id },
+      })
+    }
+  }
+
+  return {
+    payment_id: payment.id,
+    task_id: payment.task_id,
+    stripe_refund_id: refund.id,
+    refund_status: refund.status,
+    amount_cents: refund.amount,
+    payment_status: payment.status,
+    duplicate: false,
+  }
+}

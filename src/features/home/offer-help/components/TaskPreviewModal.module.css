@@ -1,62 +1,5 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--hm-z-modal-backdrop);
-  display: grid;
-  place-items: end center;
-  padding: 1rem;
-  background: var(--hm-panel-scrim);
-}
-
-.modal {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 40rem);
-  max-height: min(92vh, 50rem);
-  overflow: auto;
-  border: 1px solid var(--hm-panel-border);
-  border-radius: var(--hm-panel-radius);
-  background: var(--hm-panel-bg);
-  padding: var(--hm-panel-padding-lg);
-  box-shadow: var(--hm-panel-shadow);
-}
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.eyebrow {
-  color: var(--color-text-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.title {
-  font-family: var(--font-heading);
-  font-size: 1.55rem;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: 0;
-}
-
-.closeButton {
-  width: var(--hm-button-min-height);
-  height: var(--hm-button-min-height);
-  border: 1px solid var(--hm-button-icon-border);
-  border-radius: var(--hm-button-radius-pill);
-  background: var(--hm-button-icon-bg);
-  color: var(--hm-button-oauth-fg);
-  cursor: pointer;
-  font-size: 1.35rem;
-  font-weight: 700;
-  box-shadow: var(--hm-button-shadow);
-}
-
+/* Contenido del modal de vista previa de tarea. El contenedor (overlay, panel,
+   header, cierre, a11y y animaciones) vive en el Modal base de shared/ui. */
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -78,11 +21,6 @@
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.45rem 0.75rem;
-}
-
-.body {
-  display: grid;
-  gap: 1rem;
 }
 
 .description {
@@ -111,16 +49,6 @@
 }
 
 @media (max-width: 42rem) {
-  .overlay {
-    padding: 0.75rem;
-    place-items: end stretch;
-  }
-
-  .modal {
-    width: 100%;
-    border-radius: var(--hm-radius-xl) var(--hm-radius-xl) 0 0;
-  }
-
   .actions :global(.secondary-action),
   .actions :global(.primary-action) {
     width: 100%;

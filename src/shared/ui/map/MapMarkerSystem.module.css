@@ -86,6 +86,144 @@
   font-weight: 800;
 }
 
+/* ---- Pin de solicitud propia: gota con glifo de categoría y badge de respuestas ----
+   El div raíz lo posiciona Leaflet; los visuales viven en .ownPinBody para que
+   transform (hover/selección/drop) no luche con el posicionado del mapa. */
+.ownPin {
+  overflow: visible !important;
+  /* La elevación al pasar el ratón se aplica al cuerpo, no al raíz. */
+}
+
+.ownPinBody {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid color-mix(in srgb, var(--hm-color-primary) 60%, #000);
+  border-radius: 50% 50% 50% 4px;
+  /* Gota: círculo con una esquina "afilada" rotada hacia abajo. */
+  transform: rotate(-45deg);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--hm-color-primary) 88%, #fff),
+    var(--hm-color-primary)
+  );
+  box-shadow:
+    0 2px 4px rgba(28, 25, 22, 0.18),
+    0 10px 22px color-mix(in srgb, var(--hm-color-primary) 26%, transparent);
+  /* Rotación sobre el centro: la esquina "afilada" (border-radius 4px) queda
+     apuntando hacia abajo, ~9px por debajo del cuerpo → la punta del pin. */
+  transition:
+    transform var(--motion-fast) var(--ease-spring-soft),
+    box-shadow var(--motion-fast) var(--ease-out);
+  animation: ownPinDrop 0.45s var(--ease-spring-soft) both;
+}
+
+@keyframes ownPinDrop {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) translate(8px, -8px) scale(0.6);
+  }
+}
+
+/* Chip interior blanco: garantiza contraste del glifo sobre mapa claro u oscuro. */
+.ownPinGlyph {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  background: #fff;
+  /* Deshace la rotación de la gota para que el glifo quede recto. */
+  transform: rotate(45deg);
+}
+
+.ownPinGlyphSvg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+/* Badge de respuestas: solo se pinta cuando hay > 0 (el JS lo omite en 0). */
+.ownPinBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border: 2px solid var(--hm-color-surface);
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-accent);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  /* Deshace la rotación de la gota. */
+  transform: rotate(45deg);
+}
+
+.ownPin:hover .ownPinBody,
+.ownPinSelected .ownPinBody {
+  transform: rotate(-45deg) scale(1.08);
+  box-shadow:
+    0 3px 6px rgba(28, 25, 22, 0.2),
+    0 14px 30px color-mix(in srgb, var(--hm-color-primary) 34%, transparent);
+}
+
+.ownPinSelected {
+  z-index: 2 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ownPinBody {
+    animation: none;
+    transition: none;
+  }
+
+  .ownPin:hover .ownPinBody,
+  .ownPinSelected .ownPinBody {
+    transform: rotate(-45deg);
+  }
+}
+
+/* ---- Tooltip rápido (hover) del pin propio ---- */
+.pinTooltip {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.pinTooltipTitle {
+  font-family: var(--font-heading);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--hm-map-popup-fg);
+}
+
+.pinTooltipMeta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--hm-map-popup-muted);
+}
+
+:global(.leaflet-tooltip).pinTooltipShell {
+  border: 1px solid var(--hm-map-popup-border);
+  border-radius: 12px;
+  background: var(--hm-map-popup-bg);
+  color: var(--hm-map-popup-fg);
+  box-shadow: var(--hm-map-popup-shadow);
+  padding: 0.5rem 0.65rem;
+}
+
+:global(.leaflet-tooltip).pinTooltipShell::before {
+  display: none;
+}
+
 .helperMarkerSelected {
   box-shadow: var(--hm-map-marker-selected-ring), var(--hm-map-marker-shadow-active);
 }
@@ -185,6 +323,176 @@
   color: var(--hm-map-popup-muted);
   font-size: 0.78rem;
   line-height: 1.38;
+}
+
+/* ---- Popup mini-tarjeta de la solicitud propia (clic en el pin) ----
+   La misma pieza se reutiliza en el bottom-sheet móvil, donde ocupa todo el
+   ancho; las restricciones de ancho solo aplican dentro del popup de Leaflet. */
+.taskPopup {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.taskPopupShell .taskPopup {
+  min-width: 15rem;
+  max-width: 17.5rem;
+}
+
+.taskPopupEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--hm-color-primary);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.taskPopupDot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--hm-color-primary);
+}
+
+.taskPopupTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--hm-map-popup-fg);
+}
+
+.taskPopupMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.taskPopupDescription {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--hm-map-popup-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.taskPopupFacts {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--hm-map-popup-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--hm-map-popup-bg) 78%, var(--hm-color-secondary));
+}
+
+.taskPopupFacts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.taskPopupFacts dt {
+  color: var(--hm-map-popup-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.taskPopupFacts dd {
+  margin: 0;
+  color: var(--hm-map-popup-fg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.taskPopupActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.taskPopupPrimary,
+.taskPopupSecondary {
+  border-radius: var(--hm-radius-pill);
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+.taskPopupPrimary {
+  flex: 1 1 auto;
+  border: 0;
+  background: var(--hm-color-primary);
+  color: #fff;
+}
+
+.taskPopupPrimary:hover {
+  background: var(--hm-color-primary-hover);
+}
+
+.taskPopupSecondary {
+  border: 1px solid var(--hm-map-popup-border);
+  background: var(--hm-map-popup-bg);
+  color: var(--hm-map-popup-fg);
+}
+
+.taskPopupSecondary:hover {
+  background: color-mix(in srgb, var(--hm-color-primary) 6%, var(--hm-map-popup-bg));
+}
+
+.taskPopupDanger {
+  color: var(--hm-color-danger);
+}
+
+.taskPopupDanger:hover {
+  background: color-mix(in srgb, var(--hm-color-danger) 7%, var(--hm-map-popup-bg));
+}
+
+.taskPopupDanger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.taskPopupPrimary:focus-visible,
+.taskPopupSecondary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Cierre (X) del popup de Leaflet: más grande, accesible y alineado con el sistema. */
+.taskPopupShell :global(a.leaflet-popup-close-button) {
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--hm-radius-pill);
+  background: color-mix(in srgb, var(--hm-map-popup-fg) 6%, transparent);
+  color: var(--hm-map-popup-muted);
+  font-size: 16px;
+  line-height: 26px;
+  text-align: center;
+}
+
+.taskPopupShell :global(a.leaflet-popup-close-button:hover) {
+  color: var(--hm-map-popup-fg);
+  background: color-mix(in srgb, var(--hm-map-popup-fg) 12%, transparent);
+}
+
+.taskPopupShell :global(a.leaflet-popup-close-button:focus-visible) {
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
 
 :global(.leaflet-popup-content-wrapper) {

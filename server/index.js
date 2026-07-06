@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import billingRoutes from './routes/billing.routes.js'
 import paymentsRoutes from './routes/payments.routes.js'
 import stripeRoutes from './routes/stripe.routes.js'
 import { loadServerEnv } from './config/env.js'
@@ -46,6 +47,7 @@ app.use(
 
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }))
 app.use('/api/payments', express.json())
+app.use('/api/billing', express.json())
 
 app.get('/health', (_req, res) => {
   res.status(200).json({
@@ -56,6 +58,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/stripe', stripeRoutes)
 app.use('/api/payments', paymentsRoutes)
+app.use('/api/billing', billingRoutes)
 
 app.use((_req, res) => {
   res.status(404).json({

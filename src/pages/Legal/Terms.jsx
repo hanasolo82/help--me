@@ -96,9 +96,15 @@ export default function Terms() {
       <section>
         <h2>8. Precios, comisiones y pagos</h2>
         <p>
-          Durante la beta cerrada, helpMe no cobra comision de plataforma. El helper ve el 100% del precio acordado
-          para la tarea; cualquier coste de plataforma previsto para una fase posterior se comunicara antes de
-          activarse.
+          Publicar una tarea es gratuito. helpMe ofrece una suscripcion opcional (HelpMe Premium) que desbloquea
+          funciones avanzadas; su precio y condiciones se muestran antes de contratar y puede cancelarse en
+          cualquier momento desde el portal de facturacion. Si se aplicara una comision de plataforma sobre las
+          tareas, se comunicara y mostrara con claridad antes de activarse.
+        </p>
+        <p>
+          Devoluciones: mientras el pago de una tarea permanezca retenido (antes de liberar el importe al helper),
+          el solicitante puede pedir la devolucion total desde la propia tarea; una vez liberado el pago, la
+          devolucion ya no esta disponible por esta via.
         </p>
         <p>
           Cuando se active el modulo de pagos integrado (previsto via Stripe Connect), se mostrara con claridad: el

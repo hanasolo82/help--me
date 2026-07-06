@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
@@ -7,6 +6,7 @@ import {
   createTaskReview,
   getMyReviewForTask,
 } from '../../features/reviews/api/reviewsApi'
+import Modal from '../../shared/ui/Modal/Modal'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import styles from './TaskReviewPromptModal.module.css'
@@ -71,16 +71,18 @@ export default function TaskReviewPromptModal({ task }) {
   const reviewAlreadyPublished = Boolean(existingReviewQuery.data)
   const showThanks = outcome || reviewAlreadyPublished
 
-  return createPortal(
+  // Cerrar (Esc/fondo) equivale a "Ahora no": registra el skip y vuelve al inicio.
+  function handleDismiss() {
+    if (!outcome && !reviewAlreadyPublished) {
+      setOutcome('skipped')
+      return
+    }
+    navigate('/home', { replace: true })
+  }
+
+  return (
     <>
-      <div className={styles.backdrop}>
-        <section
-          className={styles.modal}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          aria-describedby={descriptionId}
-        >
+      <Modal open onClose={handleDismiss} size="md" labelledBy={titleId} describedBy={descriptionId}>
           {showThanks ? (
             <div className={styles.thanks} aria-live="polite">
               <p className="eyebrow">
@@ -157,7 +159,7 @@ export default function TaskReviewPromptModal({ task }) {
               </label>
 
               {existingReviewQuery.error || reviewMutation.error ? (
-                <p className="auth-message error">
+                <p className="auth-message error" role="alert">
                   {reviewMutation.error?.message ||
                     existingReviewQuery.error?.message ||
                     'No pudimos comprobar o guardar la valoración.'}
@@ -179,14 +181,12 @@ export default function TaskReviewPromptModal({ task }) {
               </div>
             </>
           )}
-        </section>
-      </div>
+      </Modal>
       <ActionStatusOverlay
         open={reviewMutation.isPending}
         title="Publicando valoración..."
         message="Estamos guardando tu opinión en el perfil del helper."
       />
-    </>,
-    document.body,
+    </>
   )
 }

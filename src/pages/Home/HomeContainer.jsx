@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTransitionNavigate } from '../../shared/navigation/usePageTransition'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { signOut } from '../../services/authService'
@@ -115,6 +116,7 @@ function buildNotificationSummary(chats = [], userId, requesterTasks = [], pendi
 export default function HomeContainer() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
+  const transitionNavigate = useTransitionNavigate()
   const routeLocation = useLocation()
 
   const {
@@ -233,7 +235,7 @@ export default function HomeContainer() {
   const handlePublishTask = useCallback(
     async (task) => {
       if (task.status !== 'draft') {
-        navigate(`/task/${task.id}`)
+        transitionNavigate(`/task/${task.id}`)
         return
       }
 
@@ -248,7 +250,7 @@ export default function HomeContainer() {
         clearPublishingTaskId()
       }
     },
-    [clearPublishingTaskId, navigate, refetchTasks, setPublishingTaskId],
+    [clearPublishingTaskId, transitionNavigate, refetchTasks, setPublishingTaskId],
   )
 
   const handleCancelTask = useCallback(

@@ -1,13 +1,14 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
 import { useTaskById } from '../../hooks/useTaskById'
 import { PRICING_COPY } from '../../config/pricing'
-import { startTaskCheckout } from '../../services/paymentsService'
+import { refundTaskPayment, startTaskCheckout } from '../../services/paymentsService'
 import { getAvatarInitial } from '../../utils/avatar'
 import UserAvatar from '../../shared/ui/UserAvatar'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
+import Modal, { ModalActions, ModalBody, ModalHeader } from '../../shared/ui/Modal/Modal'
 import { resolveReturnTo } from '../../shared/utils/navigation'
 import styles from './TaskPaymentPage.module.css'
 
@@ -56,6 +57,8 @@ export default function TaskPaymentPage() {
   const { user } = useAuth()
   const { task, loading, error } = useTaskById(id)
   const checkoutStartedAtRef = useRef(null)
+  const queryClient = useQueryClient()
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
 
   const helperProfile = task?.accepted_profile || null
   const helperName = getHelperName(helperProfile)
@@ -96,9 +99,22 @@ export default function TaskPaymentPage() {
     },
   })
 
+  const refundMutation = useMutation({
+    mutationFn: () => refundTaskPayment(id),
+    onSuccess: async () => {
+      setRefundModalOpen(false)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+      ])
+      navigate(returnTo)
+    },
+  })
+
   if (loading) {
     return (
-      <main className={styles.page}>
+      <main className={styles.page} aria-busy="true">
         <section className={styles.emptyCard}>
           <p className={styles.eyebrow}>Pago</p>
           <h1>Cargando resumen...</h1>
@@ -169,15 +185,15 @@ export default function TaskPaymentPage() {
               <strong>{formatCurrency(price)}</strong>
             </div>
             <div>
-              <span>{PRICING_COPY.betaNoCommission}</span>
-              <strong>{formatCurrency(0)}</strong>
+              <span>{PRICING_COPY.paymentValue}</span>
+              <strong>Incluido</strong>
             </div>
             <div className={styles.totalRow}>
               <span>Total</span>
               <strong>{formatCurrency(price)}</strong>
             </div>
           </div>
-          <p className={styles.notice}>{PRICING_COPY.helperKeepsPrice}</p>
+          <p className={styles.notice}>{PRICING_COPY.heldUntilConfirm}</p>
 
           {isPayable ? (
             <>
@@ -194,7 +210,7 @@ export default function TaskPaymentPage() {
             <>
               <p className={styles.notice}>
                 {paymentState === 'confirmed'
-                  ? 'La tarea ya está en curso. Vuelve al detalle para revisar el estado.'
+                  ? 'La tarea ya está en curso con el pago retenido. Puedes volver al detalle o pedir la devolución total mientras no liberes el pago.'
                   : paymentState === 'final'
                     ? 'Esta tarea ya se cerró.'
                   : paymentState === 'waiting_helper'
@@ -208,6 +224,16 @@ export default function TaskPaymentPage() {
               <button type="button" className="secondary-action" onClick={() => navigate(returnTo)}>
                 Volver al detalle
               </button>
+              {paymentState === 'confirmed' && isOwner ? (
+                <button
+                  type="button"
+                  className="secondary-action"
+                  onClick={() => setRefundModalOpen(true)}
+                  disabled={refundMutation.isPending}
+                >
+                  Solicitar devolución
+                </button>
+              ) : null}
             </>
           )}
           {checkoutMutation.error ? (
@@ -215,12 +241,54 @@ export default function TaskPaymentPage() {
               {checkoutMutation.error?.message || 'No hemos podido preparar el pago.'}
             </p>
           ) : null}
+          {refundMutation.error ? (
+            <p className={styles.error} role="alert">
+              {refundMutation.error?.message || 'No hemos podido procesar la devolución.'}
+            </p>
+          ) : null}
         </aside>
       </div>
+
+      <Modal open={refundModalOpen} onClose={() => setRefundModalOpen(false)} size="sm">
+        <ModalHeader eyebrow="Devolución" title="¿Devolver el pago completo?" />
+        <ModalBody>
+          <p>
+            Te devolveremos <strong>{formatCurrency(price)}</strong> al método de pago original y la tarea quedará
+            cancelada. El helper dejará de verla como activa.
+          </p>
+          <p className="muted">
+            Solo es posible mientras el pago siga retenido; una vez liberado al helper ya no hay devolución.
+          </p>
+        </ModalBody>
+        <ModalActions>
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={() => setRefundModalOpen(false)}
+            disabled={refundMutation.isPending}
+          >
+            Mantener el pago
+          </button>
+          <button
+            type="button"
+            className="primary-action"
+            onClick={() => refundMutation.mutate()}
+            disabled={refundMutation.isPending}
+            data-autofocus
+          >
+            {refundMutation.isPending ? 'Procesando…' : 'Devolver el pago'}
+          </button>
+        </ModalActions>
+      </Modal>
       <ActionStatusOverlay
         open={checkoutMutation.isPending}
         title="Preparando pago..."
         message="Estamos conectando con Stripe. No cierres esta pantalla ni vuelvas a pulsar el botón."
+      />
+      <ActionStatusOverlay
+        open={refundMutation.isPending}
+        title="Procesando devolución..."
+        message="Estamos pidiendo a Stripe la devolución total. No cierres esta pantalla."
       />
     </main>
   )

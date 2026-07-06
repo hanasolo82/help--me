@@ -137,6 +137,44 @@ export async function continueWithExternalPayment(taskId) {
   return payload
 }
 
+/**
+ * Devolución total del pago retenido de una tarea. Solo es posible mientras el
+ * dinero sigue retenido (nunca tras liberar al helper); el backend valida la
+ * política y Stripe ejecuta el reembolso al momento.
+ */
+export async function refundTaskPayment(taskId, { signal } = {}) {
+  const payment = await getPaymentForTask(taskId, { signal })
+  const accessToken = await getAccessToken()
+
+  let response
+
+  try {
+    response = await fetch(buildBackendUrl(`/api/payments/${payment.id}/refund`), {
+      method: 'POST',
+      signal,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    })
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
+  }
+
+  if (!response.ok) {
+    throw new Error(await readBackendError(response, 'No pudimos procesar la devolución.'))
+  }
+
+  const payload = await response.json().catch(() => ({}))
+
+  return payload
+}
+
 export async function releaseTaskPayment(taskId, { signal } = {}) {
   const payment = await getPaymentForTask(taskId, { signal })
 

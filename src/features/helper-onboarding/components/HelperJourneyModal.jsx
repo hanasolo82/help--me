@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
+import Modal from '../../../shared/ui/Modal/Modal'
 import { clearHelperJourneyProgress, readHelperJourneyProgress, writeHelperJourneyProgress } from '../services/helperJourneyStorage'
 import {
   HELPER_STATUS,
@@ -122,7 +123,6 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
   const [journeyDraft, setJourneyDraft] = useState({})
   const [savingState, setSavingState] = useState('idle')
   const [error, setError] = useState('')
-  const previouslyFocusedRef = useRef(null)
 
   const profileId = profile?.id
 
@@ -197,31 +197,7 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
     if (onClose) onClose()
   }, [onClose])
 
-  useEffect(() => {
-    if (!open) return
-
-    previouslyFocusedRef.current = document.activeElement
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    function handleKey(event) {
-      if (event.key === 'Escape') {
-        handleClose()
-      }
-    }
-
-    document.addEventListener('keydown', handleKey)
-
-    return () => {
-      document.removeEventListener('keydown', handleKey)
-      document.body.style.overflow = previousOverflow
-      const previous = previouslyFocusedRef.current
-      if (previous && typeof previous.focus === 'function') {
-        previous.focus()
-      }
-    }
-  }, [open, handleClose])
-
+  // Esc, scroll lock, focus trap y restauración de foco los gestiona el Modal base.
   const stepPlan = useMemo(
     () =>
       STEPS.map((step) => {
@@ -302,12 +278,6 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
     })
   }, [journeyDraft, open, stepIndex])
 
-  function handleBackdropClick(event) {
-    if (event.target === event.currentTarget) {
-      handleClose()
-    }
-  }
-
   function goNext() {
     if (isLastStep) {
       handleComplete()
@@ -377,17 +347,8 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
     }
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className={styles.backdrop}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="helper-journey-modal-title"
-      onMouseDown={handleBackdropClick}
-    >
-      <div className={styles.modal}>
+    <Modal open={open} onClose={handleClose} labelledBy="helper-journey-modal-title" className={styles.panel}>
         <button
           type="button"
           className={styles.closeButton}
@@ -448,7 +409,6 @@ export default function HelperJourneyModal({ open, onClose, onFinish, preferredS
             Guardando tu perfil de ayudante...
           </p>
         ) : null}
-      </div>
-    </div>
+    </Modal>
   )
 }

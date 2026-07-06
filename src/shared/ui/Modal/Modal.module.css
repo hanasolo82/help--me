@@ -1,0 +1,186 @@
+/* Modal base de la app. Visual: tokens --hm-panel-* (mismos que usaban los modales
+   existentes), así la migración no cambia el aspecto. Movimiento: --motion-modal. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--hm-z-modal-backdrop);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--hm-panel-scrim);
+  animation: overlayIn var(--motion-modal) var(--ease-out);
+}
+
+.panel {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  width: min(100%, var(--modal-width, 40rem));
+  max-height: min(92dvh, 50rem);
+  overflow: auto;
+  border: 1px solid var(--hm-panel-border);
+  border-radius: var(--hm-panel-radius);
+  background: var(--hm-panel-bg);
+  padding: var(--hm-panel-padding-lg);
+  box-shadow: var(--hm-panel-shadow);
+  outline: none;
+  animation: panelIn var(--motion-modal) var(--ease-out);
+}
+
+.sm {
+  --modal-width: 26rem;
+}
+
+.md {
+  --modal-width: 34rem;
+}
+
+.lg {
+  --modal-width: 40rem;
+}
+
+/* Salida: mismas curvas a la inversa. El JSX espera al animationend para desmontar. */
+.overlay[data-state='closing'] {
+  animation: overlayOut var(--motion-modal) var(--ease-in-out) forwards;
+}
+
+.overlay[data-state='closing'] .panel {
+  animation: panelOut var(--motion-modal) var(--ease-in-out) forwards;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.headerText {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.closeButton {
+  flex: 0 0 auto;
+  width: var(--hm-button-min-height);
+  height: var(--hm-button-min-height);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hm-button-icon-border);
+  border-radius: var(--hm-button-radius-pill);
+  background: var(--hm-button-icon-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.35rem;
+  font-weight: 700;
+  box-shadow: var(--hm-button-shadow);
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+.closeButton:hover {
+  background: var(--hm-button-icon-bg-hover);
+}
+
+.closeButton:focus-visible {
+  outline: none;
+  box-shadow: var(--hm-button-focus-shadow);
+}
+
+.body {
+  display: grid;
+  gap: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes overlayOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+@keyframes panelOut {
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+/* Variante bottom-sheet en pantallas pequeñas: entra deslizando desde abajo. */
+@media (max-width: 640px) {
+  .overlay {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .panel {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--hm-panel-radius) var(--hm-panel-radius) 0 0;
+    border-bottom: 0;
+    animation-name: sheetIn;
+  }
+
+  .overlay[data-state='closing'] .panel {
+    animation-name: sheetOut;
+  }
+
+  @keyframes sheetIn {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheetOut {
+    to {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel,
+  .overlay[data-state='closing'],
+  .overlay[data-state='closing'] .panel {
+    animation-duration: 1ms;
+  }
+}

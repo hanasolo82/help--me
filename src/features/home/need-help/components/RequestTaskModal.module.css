@@ -1,67 +1,31 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--hm-z-modal-backdrop);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: var(--hm-panel-scrim);
-}
-
-.modal {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 42rem);
+/* El contenedor (overlay, panel, header, cierre, a11y y animaciones) vive en el
+   Modal base de shared/ui; aquí quedan el ancho propio y el contenido del form. */
+.panel {
+  --modal-width: 42rem;
   max-height: min(96vh, 52rem);
-  overflow: auto;
-  border: 1px solid var(--hm-panel-border);
-  border-radius: var(--hm-panel-radius);
-  background: var(--hm-panel-bg);
-  padding: var(--hm-panel-padding-lg);
-  box-shadow: var(--hm-panel-shadow);
   scrollbar-gutter: stable;
 }
 
-.header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
+/* Header fijo mientras el formulario hace scroll: el primer hijo del panel es el
+   ModalHeader del base; se compensa el padding del panel con márgenes negativos
+   para que el fondo llegue de borde a borde y el contenido pase por debajo. */
+.panel > :first-child {
+  position: sticky;
+  top: calc(-1 * var(--hm-panel-padding-lg));
+  z-index: 2;
+  margin: calc(-1 * var(--hm-panel-padding-lg)) calc(-1 * var(--hm-panel-padding-lg)) 0;
+  padding: var(--hm-panel-padding-lg) var(--hm-panel-padding-lg) 0.7rem;
+  background: var(--hm-panel-bg);
+  border-bottom: 1px solid var(--hm-color-border-subtle);
 }
 
-.header h2 {
+/* Mensaje de validación junto a su campo. */
+.fieldError {
   margin: 0;
-  margin-bottom: 0.35rem;
-  font-family: var(--font-heading);
-  font-size: 1.55rem;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-.closeButton {
-  width: var(--hm-button-min-height);
-  height: var(--hm-button-min-height);
-  border: 1px solid var(--hm-button-icon-border);
-  border-radius: var(--hm-button-radius-pill);
-  background: var(--hm-button-icon-bg);
-  color: var(--hm-button-oauth-fg);
-  cursor: pointer;
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: var(--hm-button-shadow);
-  transition:
-    transform 0.16s ease,
-    background-color 0.16s ease,
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-
-.closeButton:hover {
-  transform: translateY(-1px);
-  background: var(--hm-button-icon-bg-hover);
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-color-border-subtle));
-  box-shadow: var(--hm-button-shadow-hover);
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.35;
 }
 
 .helperHint,
@@ -192,11 +156,25 @@
   font-weight: 700;
 }
 
-.visibility,
-.actions {
+.visibility {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+/* Pie de acciones fijo: el formulario hace scroll por debajo mientras Cancelar y
+   Publicar quedan siempre visibles (mismo truco de márgenes negativos que el header). */
+.actions {
+  position: sticky;
+  bottom: calc(-1 * var(--hm-panel-padding-lg));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 calc(-1 * var(--hm-panel-padding-lg)) calc(-1 * var(--hm-panel-padding-lg));
+  padding: 0.8rem var(--hm-panel-padding-lg) var(--hm-panel-padding-lg);
+  background: var(--hm-panel-bg);
+  border-top: 1px solid var(--hm-color-border-subtle);
 }
 
 .visibility :global(.chip) {

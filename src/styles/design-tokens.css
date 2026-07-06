@@ -274,7 +274,12 @@
   --motion-fast: 140ms;
   --motion-normal: 180ms;
   --motion-slow: 240ms;
+  /* Duraciones con nombre por contexto: única fuente de verdad para el movimiento
+     de la app (modales, transiciones de ruta). No usar valores sueltos en ms. */
+  --motion-modal: var(--motion-slow);
+  --motion-page: 320ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
   --app-border: rgba(28, 25, 22, 0.12);

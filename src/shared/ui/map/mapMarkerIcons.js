@@ -53,6 +53,35 @@ export function createTaskMarkerIcon({ task, selected = false, requester = false
   })
 }
 
+/**
+ * Pin de solicitud propia: gota con punta hacia la coordenada exacta, glifo de
+ * categoría grande y legible, y badge de respuestas solo cuando hay alguna
+ * (nunca "0"). Estados: propio (acento de marca), seleccionado y hover con
+ * elevación sutil; aparece con una animación de drop suave.
+ */
+export function createOwnTaskPinIcon({ task, selected = false, responses = 0 } = {}) {
+  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.ownPinGlyphSvg })
+  const count = Number(responses)
+  const badge = Number.isFinite(count) && count > 0
+    ? `<span class="${styles.ownPinBadge}">${escapeHtml(count > 99 ? '99+' : String(count))}</span>`
+    : ''
+  const html = `
+    <span class="${styles.ownPinBody}">
+      <span class="${styles.ownPinGlyph}">${activityGlyph}</span>
+      ${badge}
+    </span>
+  `
+  // Cuerpo 44px + punta 10px: el ancla cae en el vértice de la punta, sobre la coordenada.
+  return L.divIcon({
+    className: [styles.ownPin, selected ? styles.ownPinSelected : ''].filter(Boolean).join(' '),
+    html,
+    iconSize: [44, 54],
+    iconAnchor: [22, 54],
+    popupAnchor: [0, -50],
+    tooltipAnchor: [0, -50],
+  })
+}
+
 export function createHelperMarkerIcon({ helper, selected = false, compact = false } = {}) {
   const avatarUrl = helper?.map_avatar_url || helper?.avatar_url
   const name = helper?.display_name || helper?.full_name || helper?.username || 'Vecino'

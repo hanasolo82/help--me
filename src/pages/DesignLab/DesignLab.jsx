@@ -453,15 +453,15 @@ export default function DesignLab() {
                 <strong>24,00 EUR</strong>
               </div>
               <div>
-                <span>{PRICING_COPY.betaNoCommission}</span>
-                <strong>0,00 EUR</strong>
+                <span>{PRICING_COPY.paymentValue}</span>
+                <strong>Incluido</strong>
               </div>
               <div className={paymentStyles.totalRow}>
                 <span>Total</span>
                 <strong>24,00 EUR</strong>
               </div>
             </div>
-            <p className={paymentStyles.notice}>{PRICING_COPY.helperKeepsPrice}</p>
+            <p className={paymentStyles.notice}>{PRICING_COPY.heldUntilConfirm}</p>
             <button type="button" className="primary-action">{PRICING_COPY.paymentCta}</button>
           </aside>
         </SpecCard>

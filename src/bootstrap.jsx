@@ -11,6 +11,7 @@ import 'leaflet/dist/leaflet.css'
 import './styles/design-tokens.css'
 import './styles/theme-live.css'
 import './styles/globals.css'
+import './styles/view-transitions.css'
 import './styles.css'
 
 // Montaje real de React. main.jsx carga herramientas dev antes de importar este modulo.

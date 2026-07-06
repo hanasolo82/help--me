@@ -1,27 +1,4 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--hm-z-modal);
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 1rem;
-  background: var(--hm-panel-scrim);
-}
-
-.modal {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 34rem);
-  max-height: calc(100dvh - 2rem);
-  overflow-y: auto;
-  padding: clamp(1rem, 3vw, 1.4rem);
-  border: 1px solid var(--hm-panel-border);
-  border-radius: var(--hm-panel-radius);
-  background: var(--hm-panel-bg);
-  box-shadow: var(--hm-panel-shadow);
-}
-
+/* El contenedor (overlay, panel, a11y y animaciones) vive en el Modal base de shared/ui. */
 .header,
 .thanks {
   display: grid;

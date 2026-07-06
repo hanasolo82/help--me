@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/requireAuth.js'
 import {
   createExternalPaymentAgreement,
   createTaskCheckout,
+  refundHeldPayment,
   releasePaymentFunds,
 } from '../services/payments.service.js'
 
@@ -52,6 +53,30 @@ router.post(
 
     const result = await createExternalPaymentAgreement({
       taskId,
+      requester: {
+        id: req.user.id,
+        email: req.user.email || null,
+      },
+    })
+
+    return res.status(200).json(result)
+  }),
+)
+
+router.post(
+  '/:paymentId/refund',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const paymentId = typeof req.params?.paymentId === 'string' ? req.params.paymentId.trim() : ''
+
+    if (!paymentId) {
+      return res.status(400).json({
+        error: 'Missing paymentId.',
+      })
+    }
+
+    const result = await refundHeldPayment({
+      paymentId,
       requester: {
         id: req.user.id,
         email: req.user.email || null,

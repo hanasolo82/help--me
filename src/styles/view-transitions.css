@@ -1,0 +1,67 @@
+/* Transiciones de página (View Transitions API).
+   Solo se activan en navegaciones que pasan viewTransition: true — ver
+   src/shared/navigation/usePageTransition.js. Duraciones y curvas: design-tokens.
+   Los pares con view-transition-name (p. ej. título de tarea) generan morphs
+   automáticos entre lista y detalle. */
+
+/* Base: la página saliente se desvanece elevándose un poco; la entrante llega
+   desde abajo. Solo transform/opacity. */
+::view-transition-old(root) {
+  animation: page-out var(--motion-page) var(--ease-in-out) both;
+}
+
+::view-transition-new(root) {
+  animation: page-in var(--motion-page) var(--ease-out) both;
+}
+
+/* Dirección "volver": invierte el sentido (la entrante llega desde arriba). */
+:root[data-page-direction='back']::view-transition-old(root) {
+  animation-name: page-out-back;
+}
+
+:root[data-page-direction='back']::view-transition-new(root) {
+  animation-name: page-in-back;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes page-in-back {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes page-out-back {
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* El morph del título de tarea (lista → detalle) usa la animación de grupo que
+   genera el navegador; solo ajustamos su ritmo al del resto de la página. */
+::view-transition-group(task-title) {
+  animation-duration: var(--motion-page);
+  animation-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}

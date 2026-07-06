@@ -21,10 +21,30 @@ export default function AuthModal({ open, mode = 'login', onClose, onSuccess }) 
     previouslyFocusedRef.current = document.activeElement
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    dialogRef.current?.focus()
 
     function handleKey(event) {
       if (event.key === 'Escape') {
         handleClose()
+        return
+      }
+
+      // Focus trap: Tab circula solo dentro del modal.
+      if (event.key === 'Tab' && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
+        if (!focusables.length) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        const active = document.activeElement
+        if (event.shiftKey && (active === first || active === dialogRef.current)) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault()
+          first.focus()
+        }
       }
     }
 
@@ -67,7 +87,7 @@ export default function AuthModal({ open, mode = 'login', onClose, onSuccess }) 
       aria-labelledby="auth-modal-title"
       onMouseDown={handleBackdropClick}
     >
-      <div className={styles.modal} ref={dialogRef}>
+      <div className={styles.modal} ref={dialogRef} tabIndex={-1}>
         <button
           type="button"
           className={styles.closeButton}

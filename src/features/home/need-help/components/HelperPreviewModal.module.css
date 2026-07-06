@@ -1,227 +1,61 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--hm-z-modal-backdrop);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(28, 25, 22, 0.3);
-}
-
-.modal {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 42rem);
-  max-height: min(96vh, 52rem);
-  overflow: auto;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-xl);
-  background: var(--color-surface);
-  padding: 1.15rem;
-  box-shadow: var(--hm-shadow-lg);
-  scrollbar-gutter: stable;
-}
-
-.header {
+/* Contenido del modal de vista previa de helper. El contenedor (overlay, panel,
+   cierre, a11y y animaciones) vive en el Modal base de shared/ui.
+   Nota: antes este archivo tenía reglas muertas (form/location de otro modal) y
+   faltaban las clases que el JSX sí usa; se redefine solo lo necesario. */
+.identity {
   display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.9rem;
 }
 
-.header h2 {
+.summary {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.summary h2 {
   margin: 0;
-  margin-bottom: 0.35rem;
   font-family: var(--font-heading);
   font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-.closeButton {
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: 999px;
-  background: var(--hm-color-secondary);
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-card-muted-bg);
   color: var(--color-text);
-  cursor: pointer;
-  font-size: 1.35rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  line-height: 1;
-  box-shadow: var(--hm-shadow-sm);
-  transition:
-    transform 0.16s ease,
-    background-color 0.16s ease,
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
+  padding: 0.45rem 0.75rem;
 }
 
-.closeButton:hover {
-  transform: translateY(-1px);
-  background: color-mix(in srgb, var(--hm-color-secondary) 84%, var(--color-surface));
-  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--hm-color-border-subtle));
-  box-shadow: var(--hm-shadow-md);
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.helperHint,
-.locationHint {
-  display: grid;
-  gap: 0.45rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-lg);
-  background: var(--hm-color-secondary);
-  padding: 0.9rem;
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.form {
-  display: grid;
-  gap: 0.78rem;
-}
-
-.form :global(.field) {
-  gap: 0.45rem;
-}
-
-.form :global(.field span) {
+.description {
+  margin: 0;
+  line-height: 1.55;
   color: var(--color-text);
 }
 
-.form :global(.field input),
-.form :global(.field textarea),
-.form :global(.field select) {
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.form :global(.field textarea) {
-  resize: none;
-}
-
-.form :global(.field input::placeholder),
-.form :global(.field textarea::placeholder) {
-  color: var(--color-text-muted);
-}
-
-.form :global(.field input:focus),
-.form :global(.field textarea:focus),
-.form :global(.field select:focus) {
-  outline: none;
-  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--hm-color-border-subtle));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 16%, transparent), var(--hm-shadow-sm);
-}
-
-.form :global(.field select) {
-  appearance: none;
-}
-
-.inlineRow {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.locationSearch {
-  position: relative;
-  display: grid;
-  gap: 0.32rem;
-}
-
-.locationResults {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% - 0.1rem);
-  z-index: 8;
-  display: grid;
-  gap: 0.38rem;
-  max-height: min(15rem, 42vh);
-  overflow-y: auto;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  background: var(--color-surface);
-  padding: 0.48rem;
-  box-shadow: var(--hm-shadow-lg);
-}
-
-.locationResult {
-  display: grid;
-  gap: 0.16rem;
-  width: 100%;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-  padding: 0.56rem 0.64rem;
-  text-align: left;
-}
-
-.locationResult:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 36%, var(--hm-color-border-subtle));
-  background: color-mix(in srgb, var(--hm-color-secondary) 80%, var(--color-surface));
-}
-
-.locationResult strong {
-  font-size: 0.86rem;
-}
-
-.locationResult span,
-.locationStatus,
-.locationSelected,
-.locationError {
-  font-size: 0.78rem;
-  line-height: 1.3;
-}
-
-.locationResult span,
-.locationStatus {
-  color: var(--color-text-muted);
-}
-
-.locationSelected {
-  color: var(--color-text);
-  font-weight: 750;
-}
-
-.locationError {
-  color: var(--color-danger);
-  font-weight: 800;
-}
-
-.visibility,
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-}
-
-.visibility :global(.chip) {
-  width: auto;
-  flex: 0 0 auto;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.visibility :global(.chip.selected) {
-  background: var(--color-primary);
-  color: #ffffff;
-}
-
-.visibility :global(.chip:hover) {
-  transform: translateY(-1px);
-  box-shadow: var(--hm-shadow-md);
-}
-
-.visibility :global(.chip:disabled) {
-  opacity: 0.55;
-  cursor: not-allowed;
 }
 
 .actions :global(.secondary-action),
@@ -241,37 +75,7 @@
   color: var(--color-text);
 }
 
-@media (min-width: 760px) {
-  .inlineRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 42rem) {
-  .overlay {
-    padding: 0.75rem;
-  }
-
-  .modal {
-    gap: 0.78rem;
-    max-height: calc(100dvh - 1.5rem);
-    padding: 1rem;
-    border-radius: var(--hm-radius-lg);
-  }
-
-  .header {
-    gap: 0.75rem;
-  }
-
-  .header h2 {
-    font-size: clamp(1.18rem, 6vw, 1.55rem);
-  }
-
-  .closeButton {
-    width: 2.75rem;
-    height: 2.75rem;
-  }
-
   .actions {
     gap: 0.55rem;
   }

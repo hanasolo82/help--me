@@ -1,41 +1,60 @@
-import { Marker, Popup } from 'react-leaflet'
-import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
-import { createTaskMarkerIcon } from '../../../../shared/ui/map/mapMarkerIcons'
+import { Marker, Popup, Tooltip } from 'react-leaflet'
+import { createOwnTaskPinIcon } from '../../../../shared/ui/map/mapMarkerIcons'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
-import { getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
+import RequesterTaskSummary from './RequesterTaskSummary'
+import markerStyles from '../../../../shared/ui/map/MapMarkerSystem.module.css'
 
-export default function RequesterTaskMarker({ task, selected = false, onSelect }) {
+/**
+ * Marcador de solicitud propia: pin-gota con glifo de categoría y badge de
+ * respuestas. Hover → tooltip compacto; clic → popup mini-tarjeta con CTAs.
+ * Con `detailMode="sheet"` (móvil) el clic delega en el padre, que abre la
+ * misma mini-tarjeta como bottom-sheet en lugar del popup.
+ */
+export default function RequesterTaskMarker({
+  task,
+  selected = false,
+  onSelect,
+  onEdit,
+  onRetire,
+  onOpenDetail,
+  retirePending = false,
+  detailMode = 'popup',
+}) {
   if (!task) return null
 
-  const publishedAt = task.published_at || task.created_at
-  const statusLabel = getTaskStatusLabel(task.status)
+  const responses = Number(task.application_count ?? 0)
   const categoryLabel = getTaskCategoryLabel(task.category)
+  const availabilityLabel = formatTaskAvailabilityShort(task)
 
   return (
     <Marker
       position={[task.lat, task.lng]}
-      icon={createTaskMarkerIcon({ task, selected, requester: true })}
+      icon={createOwnTaskPinIcon({ task, selected, responses })}
       eventHandlers={{
-        click: (e) => {
-          try {
-            e?.target?.closePopup?.()
-          } catch {
-            // noop
-          }
-          onSelect?.(task)
-        },
+        click: () => onSelect?.(task),
       }}
     >
-      <Popup>
-        <MapPopupCard
-          kicker="Tu solicitud"
-          title={task.title}
-          meta={[categoryLabel, statusLabel, formatTaskAvailabilityShort(task)]}
-        >
-          {publishedAt ? `Publicada ${new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(publishedAt))}` : 'Sin fecha'}
-        </MapPopupCard>
-      </Popup>
+      <Tooltip direction="top" className={markerStyles.pinTooltipShell} opacity={1}>
+        <span className={markerStyles.pinTooltip}>
+          <span className={markerStyles.pinTooltipTitle}>{task.title}</span>
+          <span className={markerStyles.pinTooltipMeta}>
+            {categoryLabel} · {availabilityLabel}
+          </span>
+        </span>
+      </Tooltip>
+
+      {detailMode === 'popup' ? (
+        <Popup maxWidth={300} className={markerStyles.taskPopupShell}>
+          <RequesterTaskSummary
+            task={task}
+            onEdit={onEdit}
+            onRetire={onRetire}
+            onOpenDetail={onOpenDetail}
+            retirePending={retirePending}
+          />
+        </Popup>
+      ) : null}
     </Marker>
   )
 }

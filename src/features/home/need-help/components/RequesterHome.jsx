@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { useTransitionNavigate } from '../../../../shared/navigation/usePageTransition'
 import NeedHelpMapLayout from './NeedHelpMapLayout'
 import HelperPreviewModal from './HelperPreviewModal'
 import RequestTaskModal from './RequestTaskModal'
@@ -20,6 +21,7 @@ export default function RequesterHome({
   onCloseRequestsDrawer,
 }) {
   const navigate = useNavigate()
+  const transitionNavigate = useTransitionNavigate()
   const queryClient = useQueryClient()
   const [heroQuery, setHeroQuery] = useState('')
   const [preferredView, setPreferredView] = useState('map')
@@ -28,7 +30,6 @@ export default function RequesterHome({
   const [editingTask, setEditingTask] = useState(null)
   const [selectedRequesterTaskId, setSelectedRequesterTaskId] = useState(null)
   const [focusRequesterTaskId, setFocusRequesterTaskId] = useState(null)
-  const [mapViewEpoch, setMapViewEpoch] = useState(0)
   const [publishNotice, setPublishNotice] = useState('')
   const [contactError, setContactError] = useState('')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
@@ -94,10 +95,11 @@ export default function RequesterHome({
     setRequestTaskOpen(true)
   }
 
+  // Sin remontar el mapa: RecenterMap vuela (flyTo) al nuevo foco y los popups
+  // del marcador sobreviven al clic (antes el remount los cerraba al instante).
   function handleFocusTask(task) {
     if (!task) return
     setPreferredView('map')
-    setMapViewEpoch((value) => value + 1)
     setSelectedRequesterTaskId(task.id)
     setFocusRequesterTaskId(task.id)
   }
@@ -129,15 +131,15 @@ export default function RequesterHome({
   }
 
   function handleOpenChat(task) {
-    navigate(`/task/${task.id}`, { state: { openChat: true } })
+    transitionNavigate(`/task/${task.id}`, { state: { openChat: true } })
   }
 
   function handleOpenDetail(task) {
-    navigate(`/task/${task.id}`)
+    transitionNavigate(`/task/${task.id}`)
   }
 
   function handleOpenSummary(task) {
-    navigate(`/task/${task.id}`)
+    transitionNavigate(`/task/${task.id}`)
   }
 
   function handleReview(task) {
@@ -155,7 +157,6 @@ export default function RequesterHome({
       />
 
       <NeedHelpMapLayout
-        key={mapViewEpoch}
         profile={profile}
         location={location}
         locationStatus={locationStatus}
@@ -171,6 +172,11 @@ export default function RequesterHome({
         onSelectRequesterTask={handleFocusTask}
         focusRequesterTaskId={focusRequesterTaskId}
         onContact={handleContactHelper}
+        onEditRequesterTask={handleEditTask}
+        onRetireRequesterTask={handleRetireTask}
+        onOpenRequesterTaskDetail={handleOpenDetail}
+        onDismissPublishNotice={() => setPublishNotice('')}
+        retirePending={retireTaskMutation.isPending}
       />
 
       <MyRequestsDrawer

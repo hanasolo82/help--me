@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { stripe, syncStripeAccountFromWebhook } from './stripe.service.js'
 import { supabaseAdmin } from './supabase.service.js'
+import { syncSubscriptionFromStripe } from './billing.service.js'
 
 const PAYMENT_STATUS_BLOCKING = new Set([
   'captured',
@@ -1227,6 +1228,15 @@ async function handleConnectAccountUpdated(event, eventRow, object) {
 }
 
 async function handleCheckoutSessionCompleted(event, eventRow, object) {
+  // Las sesiones de suscripción (Premium) no tienen payment local: su estado
+  // canónico llega por customer.subscription.* → handleSubscriptionEvent.
+  if (object?.mode === 'subscription') {
+    return {
+      skipped: true,
+      reason: 'Subscription checkout session; handled via customer.subscription events.',
+    }
+  }
+
   const enrichedObject = await maybeRefreshStripeObject(event, object)
   const payment = await resolvePaymentFromEvent(event, enrichedObject)
 
@@ -2338,9 +2348,43 @@ async function handleUnhandledStripeEvent(event, eventRow, object) {
   }
 }
 
+/**
+ * Suscripción Premium: sincroniza user_subscriptions desde el objeto de Stripe.
+ * Cubre alta (created), renovaciones/cambios (updated) y cancelación (deleted);
+ * el upsert de billing.service es idempotente por user_id.
+ */
+async function handleSubscriptionEvent(event, eventRow, object) {
+  const result = await syncSubscriptionFromStripe(object)
+
+  await createIdempotentAuditEvent({
+    eventType: 'premium_subscription_synced',
+    severity: 'info',
+    actorType: 'stripe',
+    entityType: 'user_subscription',
+    entityId: result.user_id || object?.id || event.id,
+    afterState: {
+      stripe_event_type: event.type,
+      subscription_status: result.subscription_status || null,
+      skipped: Boolean(result.skipped),
+      reason: result.reason || null,
+    },
+    correlationId: eventRow.correlation_id,
+    stripeEventId: event.id,
+    metadata: {
+      stripe_subscription_id: object?.id || null,
+    },
+  })
+
+  return result
+}
+
 function getEventHandler(eventType) {
   if (eventType === 'account.updated') {
     return handleConnectAccountUpdated
+  }
+
+  if (eventType.startsWith('customer.subscription.')) {
+    return handleSubscriptionEvent
   }
 
   if (eventType === 'checkout.session.completed') {

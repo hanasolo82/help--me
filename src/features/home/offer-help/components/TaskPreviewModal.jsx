@@ -1,3 +1,4 @@
+import Modal, { ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
@@ -39,7 +40,7 @@ export default function TaskPreviewModal({
   onToggleFavorite,
   onLocateTask,
 }) {
-  if (!open || !task) return null
+  if (!task) return null
 
   const creator = task.creator_profile || {}
   const creatorName = creator.display_name || creator.full_name || creator.username || 'Vecino'
@@ -51,25 +52,10 @@ export default function TaskPreviewModal({
   const publishedAt = task.published_at || task.created_at
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <section
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Vista previa de ${task.title}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <div>
-            <p className={styles.eyebrow}>Solicitud cerca de ti</p>
-            <h2 className={styles.title}>{task.title}</h2>
-          </div>
-          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Cerrar vista previa">
-            ×
-          </button>
-        </div>
+    <Modal open={open} onClose={onClose} size="lg">
+      <ModalHeader eyebrow="Solicitud cerca de ti" title={task.title} closeLabel="Cerrar vista previa" />
 
-        <div className={styles.meta}>
+      <div className={styles.meta}>
           <div className={styles.activityMeta}>
             <ActivityBadge category={task.category} compact />
           </div>
@@ -80,7 +66,7 @@ export default function TaskPreviewModal({
           <span>{Number(task.price ?? 0)} EUR</span>
         </div>
 
-        <div className={styles.body}>
+        <ModalBody>
           <div className="user-strip">
             <UserAvatar
               src={creator.avatar_url}
@@ -108,8 +94,8 @@ export default function TaskPreviewModal({
                 : 'Esta tarea ya no está abierta para nuevas ofertas, o pertenece a tu propio perfil. Puedes verla, pero no ofrecerte.'}
             </div>
           ) : null}
-          {offerError ? <p className="auth-message error">{offerError}</p> : null}
-        </div>
+          {offerError ? <p className="auth-message error" role="alert">{offerError}</p> : null}
+        </ModalBody>
 
         <div className={styles.actions}>
           <button type="button" className="secondary-action" onClick={() => onLocateTask?.(task)}>
@@ -140,7 +126,6 @@ export default function TaskPreviewModal({
             Ver detalle
           </button>
         </div>
-      </section>
-    </div>
+    </Modal>
   )
 }

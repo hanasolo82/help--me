@@ -81,7 +81,7 @@ const LANDING_JSONLD = {
           name: '¿Cuanto cuesta usar helpMe?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Publicar una tarea es gratis. En la beta cerrada, el pago retenido hasta confirmar está incluido sin comisión de HelpMe.',
+            text: 'Publicar una tarea es gratis y el pago retenido hasta confirmar está incluido. HelpMe Premium es una suscripción opcional con funciones avanzadas.',
           },
         },
       ],
@@ -151,7 +151,7 @@ const paymentTimeline = [
 // Sellos de confianza: fila plana de icono + texto, sin caja por item.
 const trustSeals = [
   { Icon: ShieldCheck, text: 'Pago retenido hasta confirmar' },
-  { Icon: BadgeCheck, text: 'El helper cobra el 100% en beta' },
+  { Icon: BadgeCheck, text: 'Devolución total antes de liberar' },
   { Icon: MessageCircle, text: 'Chat desbloqueado tras el pago' },
   { Icon: Mail, text: 'Soporte humano por email' },
 ]
@@ -569,8 +569,8 @@ export default function Landing() {
           <div className={styles.pricingBody}>
             <div className={styles.pricingLead}>
               <p className={styles.sectionLead}>
-                Publica una tarea, elige helper y paga con pago retenido. Durante la beta cerrada, HelpMe no
-                cobra comisión.
+                Publica una tarea, elige helper y paga con pago retenido: el dinero solo se libera cuando
+                confirmas la ayuda, y puedes pedir devolución total antes de liberarlo.
               </p>
               <div className={styles.heroActions}>
                 <button type="button" className={styles.primaryCta} onClick={() => startJourney('need')}>
@@ -584,7 +584,7 @@ export default function Landing() {
                   Quiero ayudar
                 </button>
               </div>
-              <p className={styles.pricingReinforce}>Beta cerrada sin comisión de HelpMe</p>
+              <p className={styles.pricingReinforce}>Publicar es gratis · Premium opcional</p>
             </div>
 
             <div className={styles.pricingFlow}>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Modal, { ModalBody, ModalHeader } from '../../shared/ui/Modal/Modal'
 import styles from '../../pages/Home/Home.module.css'
 
 function getChatName(chat, currentUserId) {
@@ -26,35 +27,13 @@ export default function ChatsModal({ open, chats, loading, error, currentUserId,
     [chats],
   )
 
-  if (!open) {
-    return null
-  }
-
   return (
-    <div
-      className={styles.mapLayer}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="messages-title"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
-    >
-      <section className={styles.mapModal}>
-        <header className={styles.mapHeader}>
-          <div>
-            <p className={styles.mapKicker}>Conversaciones</p>
-            <h2 id="messages-title">Tus chats</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Cerrar mensajes">
-            ×
-          </button>
-        </header>
+    <Modal open={open} onClose={onClose} className={styles.chatsPanel}>
+      <ModalHeader eyebrow="Conversaciones" title="Tus chats" closeLabel="Cerrar mensajes" />
 
+      <ModalBody>
         {loading && <p className="muted">Cargando...</p>}
-        {error && <p className="auth-message error">{error}</p>}
+        {error && <p className="auth-message error" role="alert">{error}</p>}
 
         {!loading && !error && sortedChats.length === 0 && (
           <article className="empty-state">
@@ -102,7 +81,7 @@ export default function ChatsModal({ open, chats, loading, error, currentUserId,
             )
           })}
         </ul>
-      </section>
-    </div>
+      </ModalBody>
+    </Modal>
   )
 }

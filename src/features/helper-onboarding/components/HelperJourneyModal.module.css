@@ -1,28 +1,8 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(28, 25, 22, 0.38);
-  overflow: auto;
-}
-
-.modal {
-  position: relative;
-  width: min(100%, 54rem);
+/* El contenedor (overlay, a11y, animaciones) vive en el Modal base de shared/ui;
+   aquí solo quedan el ancho del wizard y su botón de cierre flotante. */
+.panel {
+  --modal-width: 54rem;
   max-height: min(calc(100vh - 2rem), 56rem);
-  overflow: auto;
-  background: var(--hm-color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-xl);
-  box-shadow: var(--hm-shadow-lg);
-  padding: clamp(1rem, 3vw, 1.4rem);
-  display: grid;
-  gap: 1rem;
 }
 
 .closeButton {

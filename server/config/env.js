@@ -29,6 +29,9 @@ export function loadServerEnv() {
     CLIENT_URL: optionalUrl(envSource.CLIENT_URL, 'http://localhost:5173'),
     STRIPE_SECRET_KEY: envSource.STRIPE_SECRET_KEY?.trim() || '',
     STRIPE_WEBHOOK_SECRET: envSource.STRIPE_WEBHOOK_SECRET?.trim() || '',
+    // Price recurrente de "HelpMe Premium" en Stripe. Opcional en arranque:
+    // los endpoints de billing fallan con mensaje claro si falta.
+    STRIPE_PREMIUM_PRICE_ID: envSource.STRIPE_PREMIUM_PRICE_ID?.trim() || '',
     SUPABASE_URL: envSource.SUPABASE_URL?.trim() || '',
     SUPABASE_SERVICE_ROLE_KEY: envSource.SUPABASE_SERVICE_ROLE_KEY?.trim() || '',
     SUPABASE_ANON_KEY: envSource.SUPABASE_ANON_KEY?.trim() || '',

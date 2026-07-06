@@ -12,8 +12,25 @@ export const PRICING_COPY = Object.freeze({
   paymentSummary: 'Pide ayuda gratis. Paga retenido. Libera cuando estes conforme.',
   releaseHelperPayment: 'Libera el pago cuando la tarea este hecha',
   reportBeforeRelease: 'Puedes reportar un problema antes de liberar',
-  betaNoCommission: 'Beta cerrada: sin comisión de HelpMe.',
-  helperKeepsPrice: 'El helper ve el 100% del precio acordado.',
+  refundBeforeRelease: 'Devolución total disponible mientras el pago siga retenido.',
+  heldUntilConfirm: 'El dinero queda retenido y solo se libera cuando confirmas la ayuda.',
+})
+
+/**
+ * Plan de suscripción "HelpMe Premium" (único plan contratable).
+ * El precio REAL vive en el Price de Stripe (STRIPE_PREMIUM_PRICE_ID, server);
+ * este bloque es solo copy y debe mantenerse en sincronía con ese Price.
+ */
+export const PREMIUM_PLAN = Object.freeze({
+  id: 'premium',
+  name: 'HelpMe Premium',
+  tagline: 'Desbloquea las opciones avanzadas de coordinación y visibilidad.',
+  priceLabel: '7,99 €/mes',
+  features: [
+    'Pago externo: coordina el pago fuera de HelpMe cuando os convenga',
+    'Acceso prioritario a las funciones premium que vayamos activando',
+    'Soporte con prioridad',
+  ],
 })
 
 export const FORBIDDEN_PRICING_COPY = Object.freeze([
@@ -28,8 +45,9 @@ export const PRICING_FLAGS = Object.freeze({
   betaCommissionBps: 0,
   feePaidBy: 'requester',
   realFeesEnabled: false,
-  subscriptionsEnabled: false,
-  premiumExternalPaymentVisibleInBeta: false,
+  // Premium contratable en beta: suscripción única gestionada por Stripe.
+  subscriptionsEnabled: true,
+  premiumExternalPaymentVisibleInBeta: true,
   plusVisibleInBeta: false,
   urgentVisibleInBeta: false,
   helperProVisibleInBeta: false,
