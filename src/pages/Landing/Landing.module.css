@@ -1564,31 +1564,6 @@
   }
 }
 
-/* Frase rotativa genérica: vertical cut reveal en cada cambio (entrada por key).
-   Usada en el H2 de Categorías (antes, en el subtítulo del hero ya retirado). */
-.rotatingPhrase {
-  display: inline-block;
-  animation: hm-phrase-reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes hm-phrase-reveal {
-  from {
-    transform: translateY(0.9em);
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-/* H2 de Categorías: reserva altura para 2 líneas (frase más larga) y evita reflow */
-.categoriesTitle {
-  min-height: 2.3em;
-}
-
 .srOnly {
   position: absolute;
   width: 1px;
@@ -1605,10 +1580,6 @@
   .heroCaret {
     animation: none;
     opacity: 0;
-  }
-
-  .rotatingPhrase {
-    animation: none;
   }
 }
 
