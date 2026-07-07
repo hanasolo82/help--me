@@ -8,6 +8,7 @@ import {
   getConversationById,
   getMessages as getConversationMessages,
   getMyConversations,
+  getTasksSummaryByIds,
   markConversationAsRead,
   normalizeMessageRow,
   sendMessage as sendConversationMessage,
@@ -37,8 +38,10 @@ function mapLegacyConversation(conversation, task = null) {
 
   return {
     ...conversation,
-    task_id: task?.id || null,
-    task,
+    // Conserva el task_id de la fila cuando no viene la tarea cargada
+    // (antes se machacaba a null y la lista de chats perdia el contexto).
+    task_id: task?.id ?? conversation.task_id ?? null,
+    task: task || null,
     user1_id: user1,
     user2_id: user2,
   }
@@ -132,6 +135,7 @@ export async function getMyChats() {
 }
 
 export {
+  getTasksSummaryByIds,
   createOrGetDirectConversation,
   createOrGetTaskConversation,
   getConversationById,

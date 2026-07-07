@@ -90,17 +90,23 @@ export default function PaymentsSettings() {
       title="Pagos"
       description="Tu plan, el pago retenido y los cobros de ayudante, en un solo sitio."
     >
-      <div className={styles.infoGroup}>
-        <span className={styles.panelKicker}>{isPremium ? 'Premium activo' : 'Plan'}</span>
-        <h3>{PREMIUM_PLAN.name}</h3>
-        <p>{PREMIUM_PLAN.tagline}</p>
-        <ul>
-          {PREMIUM_PLAN.features.map((feature) => (
-            <li key={feature}>{feature}</li>
-          ))}
-        </ul>
-        <p>
-          <strong>{PREMIUM_PLAN.priceLabel}</strong> · cancela cuando quieras desde el portal.
+      {/* Bloque Premium estilo "YouTube Premium": hero + precio + un CTA,
+          beneficios con ✓ y comparativa Free vs Premium. El CTA solo lanza el
+          checkout/portal de Stripe ya existentes: aquí no se tocan tarjetas. */}
+      <section className={styles.premiumShell} aria-label="Plan helpMe Premium">
+        <header className={styles.premiumHead}>
+          <p className={styles.premiumBrand}>
+            helpMe <span className={styles.premiumBrandBadge}>Premium</span>
+          </p>
+          {isPremium ? <span className={styles.premiumCurrentPill}>Plan actual</span> : null}
+        </header>
+
+        <h3 className={styles.premiumTitle}>Saca más partido a tu barrio</h3>
+        <p className={styles.premiumSubtitle}>{PREMIUM_PLAN.tagline}</p>
+
+        <p className={styles.premiumPrice}>
+          <strong>{PREMIUM_PLAN.priceLabel}</strong>
+          <span> · cancela cuando quieras</span>
         </p>
 
         {premiumReturn === 'success' ? (
@@ -117,7 +123,7 @@ export default function PaymentsSettings() {
         {isPremium ? (
           <button
             type="button"
-            className="secondary-action"
+            className={`secondary-action ${styles.premiumCta}`}
             onClick={handleManage}
             disabled={premiumStatus === 'loading'}
           >
@@ -126,7 +132,7 @@ export default function PaymentsSettings() {
         ) : (
           <button
             type="button"
-            className="primary-action"
+            className={`primary-action ${styles.premiumCta}`}
             onClick={handleSubscribe}
             disabled={premiumStatus === 'loading' || premiumLoading}
           >
@@ -138,7 +144,49 @@ export default function PaymentsSettings() {
             {premiumError}
           </p>
         ) : null}
-      </div>
+
+        <ul className={styles.premiumChecklist}>
+          {PREMIUM_PLAN.features.map((feature) => (
+            <li key={feature}>
+              <span className={styles.premiumCheck} aria-hidden="true">
+                ✓
+              </span>
+              {feature}
+            </li>
+          ))}
+        </ul>
+
+        <div className={styles.premiumCompare} role="table" aria-label="Comparativa Free frente a Premium">
+          <div className={`${styles.premiumCompareRow} ${styles.premiumCompareHead}`} role="row">
+            <span role="columnheader">Qué incluye</span>
+            <span role="columnheader">Free</span>
+            <span role="columnheader" className={styles.premiumCompareBrandCol}>
+              Premium
+            </span>
+          </div>
+          {[
+            { label: 'Publicar solicitudes y recibir ayuda', free: true },
+            { label: 'Chat y pago retenido hasta confirmar', free: true },
+            { label: 'Pago externo: coordinar el pago fuera de HelpMe', free: false },
+            { label: 'Acceso prioritario a nuevas funciones', free: false },
+            { label: 'Soporte con prioridad', free: false },
+          ].map((row) => (
+            <div key={row.label} className={styles.premiumCompareRow} role="row">
+              <span role="cell">{row.label}</span>
+              <span role="cell" aria-label={row.free ? 'Incluido en Free' : 'No incluido en Free'}>
+                {row.free ? '✓' : '—'}
+              </span>
+              <span role="cell" className={styles.premiumCompareBrandCol} aria-label="Incluido en Premium">
+                ✓
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <p className={styles.premiumLegal}>
+          Facturación periódica gestionada por Stripe · cancela cuando quieras desde el portal.
+        </p>
+      </section>
 
       <div className={styles.infoGroup}>
         <span className={styles.panelKicker}>{getPaymentStateLabel(paymentState)}</span>

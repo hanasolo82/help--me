@@ -1,15 +1,9 @@
 import styles from '../SettingsPage.module.css'
 import SettingsSidebar from './SettingsSidebar'
 
-export default function SettingsLayout({ items = [], onBack, children, busy = false }) {
+export default function SettingsLayout({ items = [], children }) {
   return (
     <div className={styles.shell}>
-      <div className={styles.topBar}>
-        <button type="button" className="secondary-action" onClick={onBack} disabled={busy}>
-          Volver
-        </button>
-      </div>
-
       <div className={styles.shellGrid}>
         <SettingsSidebar items={items} />
         <main className={styles.content}>{children}</main>

@@ -16,7 +16,15 @@
 .headerIdentity {
   display: grid;
   gap: 0.18rem;
-  min-width: 0;
+  /* Puede encoger, pero nunca menos que el ancho del logo (mismo clamp que
+     .logo) para que la búsqueda no se le monte encima. */
+  min-width: clamp(5.8rem, 9vw, 7.6rem);
+}
+
+.headerIdentity p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .headerSearch {
@@ -24,6 +32,9 @@
   gap: 0.35rem;
   position: relative;
   width: min(100%, 32rem);
+  /* Puede encoger por debajo de su min-content: es quien cede espacio
+     para que los botones circulares mantengan su tamaño. */
+  min-width: 0;
 }
 
 .headerSearchForm {
@@ -114,6 +125,13 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  /* El bloque de acciones nunca cede ancho: si falta sitio, encoge la búsqueda.
+     Sin esto, flex-shrink aplasta los botones redondos y quedan ovalados. */
+  flex-shrink: 0;
+}
+
+.headerActions > * {
+  flex: 0 0 auto;
 }
 
 @media (min-width: 72rem) {
@@ -129,7 +147,9 @@
 
   .headerWithSearch {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 40%) minmax(0, 1fr);
+    /* La columna de acciones nunca baja de su contenido (max-content); si el
+       viewport aprieta, cede primero la columna de identidad. */
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 40%) minmax(max-content, 1fr);
     align-items: center;
   }
 

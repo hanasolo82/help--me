@@ -284,18 +284,22 @@ export default function SettingsPage() {
       <main className={`${styles.page} ${isDarkTheme ? styles.dark : ''} with-nav`}>
         <header className={styles.hero}>
           <div className={styles.heroCopy}>
-            <p className="eyebrow">Configuración</p>
             <h1>Ajustes</h1>
             <p>Gestiona cómo te presentas, cómo usas HelpMe y qué queda preparado para crecer contigo.</p>
           </div>
+          <button
+            type="button"
+            className={`icon-button ${styles.heroBack}`}
+            onClick={handleBack}
+            disabled={saveState === 'saving'}
+            aria-label={saveState === 'saving' ? 'Guardando ajustes' : 'Volver'}
+          >
+            ←
+          </button>
         </header>
 
         <form className={styles.form} onSubmit={(event) => event.preventDefault()}>
-          <SettingsLayout
-            items={sidebarItems}
-            onBack={handleBack}
-            busy={saveState === 'saving'}
-          >
+          <SettingsLayout items={sidebarItems}>
             {bootStatus === 'loading' && (
               <section className={styles.stateCard}>
                 <p className="eyebrow">Cargando</p>

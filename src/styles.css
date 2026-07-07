@@ -1957,6 +1957,78 @@ p {
   }
 }
 
+.create-task-hint {
+  /* aviso de ubicación obligatoria: pages/CreateTask/CreateTask.jsx */
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--hm-color-accent) 32%, var(--color-border));
+  border-radius: var(--hm-card-radius);
+  background: color-mix(in srgb, var(--hm-color-accent) 8%, var(--hm-card-bg));
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.create-task-toast {
+  /* confirmación al publicar: pages/CreateTask/CreateTask.jsx */
+  position: fixed;
+  left: 50%;
+  bottom: clamp(1.25rem, 4vh, 2.5rem);
+  transform: translateX(-50%);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: min(26rem, calc(100vw - 2rem));
+  padding: 0.85rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, var(--color-border));
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-bg);
+  box-shadow: var(--hm-panel-shadow-soft);
+  animation: create-task-toast-in var(--motion-normal) var(--ease-out);
+}
+
+.create-task-toast strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.create-task-toast p {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.create-task-toast-check {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--hm-button-success-bg);
+  color: var(--hm-button-success-fg);
+  font-weight: 900;
+}
+
+@keyframes create-task-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-task-toast {
+    animation: none;
+  }
+}
+
 /* Animated Theme Toggler (View Transitions API).
    Desactivamos la animación por defecto de la instantánea root para que solo se vea el
    círculo (clip-path) que anima ThemeSwitch; así se evita el doble cross-fade. */

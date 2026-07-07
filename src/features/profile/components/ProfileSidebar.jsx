@@ -35,7 +35,7 @@ export default function ProfileSidebar({
           name={displayName}
           alt={displayName}
           size="xl"
-          variant="rounded"
+          variant="circle"
           className={styles.sidebarAvatar}
         />
 

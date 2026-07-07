@@ -66,6 +66,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.3.0)
+      '@playwright/test':
+        specifier: ^1.61.1
+        version: 1.61.1
       '@rolldown/plugin-babel':
         specifier: ^0.2.3
         version: 0.2.3(@babel/core@7.29.0)(rolldown@1.0.0)(vite@8.0.12(esbuild@0.27.0)(tsx@4.21.0)(yaml@2.9.0))
@@ -607,6 +610,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@playwright/test@1.61.1':
+    resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@preact/signals-core@1.14.2':
     resolution: {integrity: sha512-RZHdBj9ZF4n40Rp4jS052EHHjBWf96P9oNdXPfhQTovCuWY9iQn3Gq+gOTJSgBO9A/JBuPfMOWsSX/lIU9Pc/A==}
 
@@ -615,8 +623,8 @@ packages:
     peerDependencies:
       preact: 10.x
 
-  '@react-grab/cli@0.1.47':
-    resolution: {integrity: sha512-Cc7d8mSwvoV8gpeTQbE8dMPdeXIyO6w+yIhzgi3jY06i03WLNhb/6jIxNBNF1cVRI7ujnFQXZA66BbnBNTpBSw==}
+  '@react-grab/cli@0.1.48':
+    resolution: {integrity: sha512-KXRZFN0b78BeVa4Tq1FC9kiXPpC5lS4pQp/mvQ1azy9dZUJ3zfc7Ei84+yvGh+WoYdceMCFxXfBp6qhU/G056g==}
     hasBin: true
 
   '@react-leaflet/core@3.0.0':
@@ -1156,6 +1164,11 @@ packages:
     peerDependencies:
       react: '>=17.0.1'
 
+  bippy@0.5.43:
+    resolution: {integrity: sha512-Tvu7b1M7+d8b9/YHaCeODEsi2CgbuoBql+dWSBrNnCuqJ1gMUeY3i0r+319hvjjl5GVBP6FFWxrKnq3fhZER0w==}
+    peerDependencies:
+      react: '>=17.0.1'
+
   body-parser@2.2.2:
     resolution: {integrity: sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==}
     engines: {node: '>=18'}
@@ -1601,6 +1614,11 @@ packages:
   fs-extra@11.1.1:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
     engines: {node: '>=14.14'}
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2236,6 +2254,16 @@ packages:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
+  playwright-core@1.61.1:
+    resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.61.1:
+    resolution: {integrity: sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   postcss@8.5.14:
     resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -2306,8 +2334,8 @@ packages:
       react: '>=16.4.0'
       react-dom: '>=16.4.0'
 
-  react-grab@0.1.47:
-    resolution: {integrity: sha512-1GNy24KMJ4CY1IxorYO9mydItGi0L1HkQB19uYU3t0BMsJB0K+D/QYiaBz+rugRynyY8LzmXIuOcon1TykLlCg==}
+  react-grab@0.1.48:
+    resolution: {integrity: sha512-p3WnmK9LLvXE/c4ITPLlXcP1fkXo2VFEQqK94tIfcHIWKNdqdhYYFyNVioO50HR+uyHIwT63Z4txZDqJlVcD/Q==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -3269,6 +3297,10 @@ snapshots:
   '@oxc-transform/binding-win32-x64-msvc@0.111.0':
     optional: true
 
+  '@playwright/test@1.61.1':
+    dependencies:
+      playwright: 1.61.1
+
   '@preact/signals-core@1.14.2': {}
 
   '@preact/signals@1.3.4(preact@10.29.2)':
@@ -3276,7 +3308,7 @@ snapshots:
       '@preact/signals-core': 1.14.2
       preact: 10.29.2
 
-  '@react-grab/cli@0.1.47':
+  '@react-grab/cli@0.1.48':
     dependencies:
       agent-install: 0.0.6
       commander: 14.0.3
@@ -3894,6 +3926,10 @@ snapshots:
     dependencies:
       react: 19.2.6
 
+  bippy@0.5.43(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+
   body-parser@2.2.2:
     dependencies:
       bytes: 3.1.2
@@ -4402,6 +4438,9 @@ snapshots:
       graceful-fs: 4.2.11
       jsonfile: 6.2.1
       universalify: 2.0.1
+
+  fsevents@2.3.2:
+    optional: true
 
   fsevents@2.3.3:
     optional: true
@@ -4936,6 +4975,14 @@ snapshots:
 
   picomatch@4.0.4: {}
 
+  playwright-core@1.61.1: {}
+
+  playwright@1.61.1:
+    dependencies:
+      playwright-core: 1.61.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
   postcss@8.5.14:
     dependencies:
       nanoid: 3.3.12
@@ -5018,10 +5065,10 @@ snapshots:
       react-dom: 19.2.6(react@19.2.6)
       tslib: 2.8.1
 
-  react-grab@0.1.47(react@19.2.6):
+  react-grab@0.1.48(react@19.2.6):
     dependencies:
-      '@react-grab/cli': 0.1.47
-      bippy: 0.5.41(react@19.2.6)
+      '@react-grab/cli': 0.1.48
+      bippy: 0.5.43(react@19.2.6)
     optionalDependencies:
       react: 19.2.6
 
@@ -5059,7 +5106,7 @@ snapshots:
       prompts: 2.4.2
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      react-grab: 0.1.47(react@19.2.6)
+      react-grab: 0.1.48(react@19.2.6)
     optionalDependencies:
       esbuild: 0.27.0
       unplugin: 2.1.0

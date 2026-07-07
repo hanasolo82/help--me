@@ -44,7 +44,7 @@ function buildLabel(point) {
   return point.label || 'Punto seleccionado'
 }
 
-export default function TaskLocationPicker({ value, onChange, center, centerLabel, onRequestCenter }) {
+export default function TaskLocationPicker({ value, onChange, center, centerLabel, onRequestCenter, missing = false }) {
   const [open, setOpen] = useState(false)
   const [draftPoint, setDraftPoint] = useState(value || null)
   const [addressLabel, setAddressLabel] = useState(value?.label || '')
@@ -124,9 +124,9 @@ export default function TaskLocationPicker({ value, onChange, center, centerLabe
 
   return (
     <div className={styles.shell}>
-      <div className={styles.summary}>
+      <div className={missing ? `${styles.summary} ${styles.summaryMissing}` : styles.summary}>
         <div>
-          <span className={styles.label}>Ubicacion de la tarea</span>
+          <span className={styles.label}>Ubicación de la tarea {missing ? <em className={styles.requiredTag}>obligatoria</em> : null}</span>
           <strong>{value?.label || buildLabel(value)}</strong>
         </div>
         <button type="button" className="secondary-action" onClick={openPicker}>
@@ -163,7 +163,7 @@ export default function TaskLocationPicker({ value, onChange, center, centerLabe
 
           <div className={styles.footer}>
             <div className={styles.coordsBox}>
-              <span>{addressStatus === 'loading' ? 'Buscando calle...' : 'Direccion exacta'}</span>
+              <span>{addressStatus === 'loading' ? 'Buscando calle...' : 'Dirección exacta'}</span>
               <strong>{displayLabel || 'Selecciona un punto en el mapa'}</strong>
               {addressError ? <p className="muted">No pudimos resolver la calle exacta, pero el punto queda guardado.</p> : null}
             </div>
@@ -178,7 +178,7 @@ export default function TaskLocationPicker({ value, onChange, center, centerLabe
                 Limpiar punto
               </button>
               <button type="button" className="primary-action" onClick={handleSave} disabled={!draftPoint}>
-                Guardar ubicacion
+                Guardar ubicación
               </button>
             </div>
           </div>

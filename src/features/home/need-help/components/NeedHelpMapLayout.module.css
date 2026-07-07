@@ -227,6 +227,9 @@
 }
 
 .helperCardHeading strong {
+  /* Color explícito: en dark mode el nombre podía heredar un color oscuro
+     ilegible sobre la superficie oscura de la tarjeta (QA). */
+  color: var(--color-text);
   font-weight: 700;
 }
 

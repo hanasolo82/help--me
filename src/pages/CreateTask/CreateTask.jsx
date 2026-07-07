@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../contexts/useAuth'
 import { allowedCategories, canEditTask, createTask, updateTask } from '../../services/tasksService'
 import { useTaskById } from '../../hooks/useTaskById'
 import { useUserLocation } from '../../hooks/useUserLocation'
@@ -8,6 +9,14 @@ import TaskAvailabilityFields from '../../features/tasks/availability/TaskAvaila
 import TaskLocationPicker from '../../features/tasks/components/TaskLocationPicker'
 
 const priceSuggestions = [3, 5, 10]
+
+// Etiquetas visibles con tildes; el value guardado en DB no cambia.
+const CATEGORY_LABELS = {
+  'Mascotas': 'Mascotas',
+  'Recados': 'Recados',
+  'Compras': 'Compras',
+  'Ayuda tecnica': 'Ayuda técnica',
+}
 
 function getLocationPayload(location) {
   if (!location) return null
@@ -36,20 +45,26 @@ function CreateTaskForm({
   const [availability, setAvailability] = useState(() => initialValues.availability)
   const [selectedLocation, setSelectedLocation] = useState(() => initialValues.location)
   const [submitError, setSubmitError] = useState('')
+  const [saved, setSaved] = useState(false)
+  const redirectTimerRef = useRef(null)
 
   const formLocation = selectedLocation
   const locationReady = Boolean(formLocation)
   const canSubmitEdit = !isEditing || canEditTask(task)
 
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        window.clearTimeout(redirectTimerRef.current)
+      }
+    }
+  }, [])
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!formLocation) {
-        throw new Error('Necesitamos que elijas un punto en el mapa para publicar la tarea.')
-      }
-
       const payload = {
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         category,
         price: Number(priceEuros),
         lat: formLocation.latitude,
@@ -68,7 +83,12 @@ function CreateTaskForm({
         queryClient.invalidateQueries({ queryKey: ['task', savedTask.id] }),
       ])
 
-      navigate('/home', { replace: true, state: { mode: 'need', taskId: savedTask.id } })
+      // Confirmación visible antes del redirect: sin esto el usuario no sabía
+      // si su solicitud se había enviado (hallazgo de QA).
+      setSaved(true)
+      redirectTimerRef.current = window.setTimeout(() => {
+        navigate('/home', { replace: true, state: { mode: 'need', taskId: savedTask.id } })
+      }, 1300)
     },
     onError: (err) => {
       setSubmitError(err?.message || 'No se pudo guardar la tarea.')
@@ -76,22 +96,38 @@ function CreateTaskForm({
   })
 
   const blockingError =
-    (isEditing && task && !canEditTask(task) ? 'Esta tarea ya no se puede editar porque ya fue aceptada o esta en curso.' : '') ||
+    (isEditing && task && !canEditTask(task) ? 'Esta tarea ya no se puede editar porque ya fue aceptada o está en curso.' : '') ||
     submitError ||
     saveMutation.error?.message ||
     ''
+
+  // Validación propia en español (noValidate): los mensajes nativos del
+  // navegador salían en inglés, p. ej. en el campo de precio (QA).
+  function validateForm() {
+    if (!title.trim()) return 'Ponle un título a tu solicitud.'
+    if (!description.trim()) return 'Cuéntanos brevemente qué necesitas.'
+
+    const price = Number(priceEuros)
+    if (!Number.isFinite(price) || price < 0) return 'El precio no puede ser negativo.'
+    if (price > 500) return 'El precio máximo es 500 €.'
+
+    if (!formLocation) return 'Selecciona un punto en el mapa para continuar.'
+
+    return ''
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
     setSubmitError('')
 
-    if (!formLocation) {
-      setSubmitError('Necesitamos que elijas un punto en el mapa para publicar la tarea.')
+    const validationError = validateForm()
+    if (validationError) {
+      setSubmitError(validationError)
       return
     }
 
     if (isEditing && !canSubmitEdit) {
-      setSubmitError('Esta tarea ya no se puede editar porque ya fue aceptada o esta en curso.')
+      setSubmitError('Esta tarea ya no se puede editar porque ya fue aceptada o está en curso.')
       return
     }
 
@@ -104,10 +140,10 @@ function CreateTaskForm({
 
   return (
     <>
-      <form className="create-task-form" onSubmit={handleSubmit}>
+      <form className="create-task-form" onSubmit={handleSubmit} noValidate>
         <div className="create-task-main">
           <label className="field">
-            <span>Titulo</span>
+            <span>Título</span>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -118,7 +154,7 @@ function CreateTaskForm({
           </label>
 
           <label className="field">
-            <span>Descripcion</span>
+            <span>Descripción</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -130,7 +166,7 @@ function CreateTaskForm({
           </label>
 
           <div className="choice-group">
-            <span>Categoria</span>
+            <span>Categoría</span>
             <div className="chips">
               {allowedCategories.map((item) => (
                 <button
@@ -139,7 +175,7 @@ function CreateTaskForm({
                   className={category === item ? 'chip selected' : 'chip'}
                   onClick={() => setCategory(item)}
                 >
-                  {item}
+                  {CATEGORY_LABELS[item] || item}
                 </button>
               ))}
             </div>
@@ -183,22 +219,43 @@ function CreateTaskForm({
           <TaskLocationPicker
             value={selectedLocation}
             onChange={setSelectedLocation}
+            missing={!locationReady}
             center={location ? { latitude: location.lat, longitude: location.lng } : null}
             centerLabel={location?.label || 'Mapa centrado en tu zona aproximada'}
             onRequestCenter={requestLocation}
           />
+
+          {!locationReady && !blockingError ? (
+            <p className="create-task-hint" role="status">
+              📍 Selecciona un punto en el mapa para continuar.
+            </p>
+          ) : null}
 
           {blockingError && <p className="auth-message error">{blockingError}</p>}
 
           <button
             className="success-action"
             type="submit"
-            disabled={saveMutation.isPending || !locationReady || !canSubmitEdit}
+            disabled={saveMutation.isPending || saved || !locationReady || !canSubmitEdit}
           >
-            {saveMutation.isPending ? (isEditing ? 'Guardando cambios...' : 'Guardando...') : isEditing ? 'Guardar cambios' : 'Guardar'}
+            {saveMutation.isPending
+              ? (isEditing ? 'Guardando cambios...' : 'Publicando...')
+              : isEditing
+                ? 'Guardar cambios'
+                : 'Publicar solicitud'}
           </button>
         </div>
       </form>
+
+      {saved ? (
+        <div className="create-task-toast" role="status" aria-live="polite">
+          <span className="create-task-toast-check" aria-hidden="true">✓</span>
+          <div>
+            <strong>{isEditing ? 'Cambios guardados' : 'Solicitud publicada'}</strong>
+            <p>{isEditing ? 'Te llevamos de vuelta al mapa.' : 'Los vecinos de tu zona ya pueden verla. Te llevamos al mapa.'}</p>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }
@@ -207,10 +264,36 @@ function CreateTaskForm({
 export default function CreateTask() {
   const navigate = useNavigate()
   const routeLocation = useLocation()
+  const { profile } = useAuth()
   const taskId = new URLSearchParams(routeLocation.search).get('taskId')
   const isEditing = Boolean(taskId)
   const { task, loading: loadingTask, error: taskError } = useTaskById(taskId)
-  const { location, requestLocation } = useUserLocation()
+  const { location, status: locationStatus, requestLocation } = useUserLocation()
+
+  // Igual que /home: pide la geolocalización al entrar para centrar el mapa.
+  useEffect(() => {
+    if (location || locationStatus !== 'idle') return
+    requestLocation()
+  }, [location, locationStatus, requestLocation])
+
+  // Ubicación efectiva para centrar el mini-mapa: geolocalización si la hay,
+  // y si no, la zona del perfil (antes caía al centro por defecto: Zaragoza).
+  const effectiveLocation = useMemo(() => {
+    if (location) return location
+
+    const lat = Number(profile?.lat)
+    const lng = Number(profile?.lng)
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      return {
+        lat,
+        lng,
+        label: profile?.visible_zone_name || profile?.neighborhood || profile?.city || 'Tu zona',
+      }
+    }
+
+    return null
+  }, [location, profile?.city, profile?.lat, profile?.lng, profile?.neighborhood, profile?.visible_zone_name])
+
   const initialValues = useMemo(() => {
     if (isEditing && task) {
       return {
@@ -226,7 +309,7 @@ export default function CreateTask() {
         location: getLocationPayload({
           lat: Number(task.lat),
           lng: Number(task.lng),
-          label: task.location_label || 'Ubicacion guardada',
+          label: task.location_label || 'Ubicación guardada',
         }),
       }
     }
@@ -245,8 +328,8 @@ export default function CreateTask() {
     }
   }, [isEditing, task])
 
-  const pageTitle = isEditing ? 'Editar tarea' : 'Nueva tarea'
-  const pageHeading = isEditing ? 'Guardar cambios' : 'Guardar ayuda'
+  const pageTitle = isEditing ? 'Editar solicitud' : 'Pedir ayuda'
+  const pageHeading = isEditing ? 'Edita tu solicitud' : 'Nueva solicitud'
 
   if (loadingTask) {
     return (
@@ -291,7 +374,7 @@ export default function CreateTask() {
         isEditing={isEditing}
         initialValues={initialValues}
         task={task}
-        location={location}
+        location={effectiveLocation}
         requestLocation={requestLocation}
       />
     </main>

@@ -83,6 +83,9 @@ const LIGHT_THEME_BASE = {
   '--hm-task-card-shadow': 'rgba(28, 25, 22, 0.08)',
   '--hm-task-card-accent': '#1f6b48',
   '--hm-task-card-highlight': 'rgba(31, 107, 72, 0.1)',
+  // Texto de los botones primarios/success: blanco sobre verde oscuro.
+  '--hm-button-primary-fg': '#ffffff',
+  '--hm-button-success-fg': '#ffffff',
 }
 
 const DARK_THEME_BASE = {
@@ -118,6 +121,10 @@ const DARK_THEME_BASE = {
   '--hm-task-card-shadow': 'rgba(0, 0, 0, 0.24)',
   '--hm-task-card-accent': '#69c38f',
   '--hm-task-card-highlight': 'rgba(105, 195, 143, 0.14)',
+  // En dark el primario es verde CLARO: el texto blanco fijo dejaba los CTA
+  // (p. ej. "Enviar" del chat) lavados y con pinta de deshabilitados (QA).
+  '--hm-button-primary-fg': '#11140f',
+  '--hm-button-success-fg': '#11140f',
 }
 
 function buildThemeTokens(baseTokens) {

@@ -570,6 +570,12 @@ export default function Landing() {
                 >
                   Quiero ayudar
                 </button>
+                <Link
+                  to="/planes"
+                  className={`${styles.primaryCtaSecondary} ${styles.plansPageLink}`}
+                >
+                  Ver planes y precios
+                </Link>
               </div>
               <p className={styles.pricingReinforce}>Publicar es gratis · Premium opcional</p>
             </div>

@@ -508,4 +508,25 @@ export function subscribeToConversationMessages(conversationId, callbacks = {}) 
   }
 }
 
+// Resumen ligero de tareas para contextualizar conversaciones (titulo + roles).
+export async function getTasksSummaryByIds(taskIds = []) {
+  assertSupabaseReady()
+  const ids = [...new Set((taskIds || []).filter(Boolean))]
+
+  if (ids.length === 0) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('id, title, status, created_by, accepted_by')
+    .in('id', ids)
+
+  if (error) {
+    throw error
+  }
+
+  return data || []
+}
+
 export { MESSAGE_SELECT, PARTICIPANT_SELECT, PROFILE_SELECT, normalizeMessageRow }

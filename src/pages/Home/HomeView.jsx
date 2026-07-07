@@ -1,5 +1,4 @@
 import HomeHeader from '../../components/home/HomeHeader'
-import ChatsModal from '../../components/home/ChatsModal'
 import TaskChatModal from '../../components/home/TaskChatModal'
 import HomeLayout from '../../shared/ui/layouts/HomeLayout'
 import NeedHomeMode from './modes/NeedHomeMode'
@@ -57,10 +56,6 @@ export default function HomeView({
   helperMapLocation,
   userAvatarUrl,
   chats,
-  isChatsLoading,
-  chatsError,
-  showChatsModal,
-  onCloseChatsModal,
   showTaskChatModal,
   activeTaskChat,
   onCloseTaskChat,
@@ -158,15 +153,6 @@ export default function HomeView({
           onCloseRequestsDrawer={onCloseRequestsDrawer}
         />
       )}
-
-      <ChatsModal
-        open={showChatsModal}
-        chats={chats}
-        loading={isChatsLoading}
-        error={chatsError}
-        currentUserId={currentUserId}
-        onClose={onCloseChatsModal}
-      />
 
       <TaskChatModal
         key={showTaskChatModal ? activeTaskChat?.id || 'task-chat' : 'task-chat-closed'}

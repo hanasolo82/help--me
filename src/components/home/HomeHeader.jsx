@@ -23,7 +23,6 @@ export default function HomeHeader({
   onOpenSettings,
   onOpenNotifications,
   notificationSummary,
-  onReviewAcceptedTask,
   onOpenPrivacy,
   onOpenHelp,
   onOpenProfile,
@@ -34,7 +33,6 @@ export default function HomeHeader({
   isHelperActive = false,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
 
   function handleAction(action) {
@@ -61,15 +59,8 @@ export default function HomeHeader({
   const modeAction = isHelperMode ? onOpenNeedHelp : onOpenHelper
   const showZoneSearch = Boolean(onZoneSearchChange || onZoneSearchSubmit)
   const unreadMessageCount = notificationSummary?.unreadMessageCount || 0
-  const unreadConversationCount = notificationSummary?.unreadConversationCount || 0
-  const unreadConversations = notificationSummary?.unreadConversations || []
-  const firstUnreadConversation = unreadConversations[0] || null
   const interestedHelperCount = notificationSummary?.interestedHelperCount || 0
-  const interestedTasks = notificationSummary?.interestedTasks || []
-  const firstInterestedTask = interestedTasks[0] || null
   const pendingConfirmationCount = notificationSummary?.pendingConfirmationCount || 0
-  const pendingConfirmationTasks = notificationSummary?.pendingConfirmationTasks || []
-  const firstPendingConfirmationTask = pendingConfirmationTasks[0] || null
   const totalNotificationCount = unreadMessageCount + interestedHelperCount + pendingConfirmationCount
   const notificationBadge = totalNotificationCount > 99 ? '99+' : String(totalNotificationCount)
 
@@ -147,134 +138,25 @@ export default function HomeHeader({
             </button>
           ) : null}
 
-          <AnimatedDropdown
-            isOpen={notificationsOpen}
-            onOpenChange={setNotificationsOpen}
-            align="end"
-            width={320}
-            portal
-            trigger={
-              <button type="button" className={styles.notificationButton} aria-label="Notificaciones">
-                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                  <path
-                    d="M12 3a5 5 0 0 0-5 5v2.65c0 .76-.23 1.5-.66 2.12L5.1 14.55A1.55 1.55 0 0 0 6.38 17h11.24a1.55 1.55 0 0 0 1.28-2.43l-1.24-1.8A3.72 3.72 0 0 1 17 10.65V8a5 5 0 0 0-5-5Zm0 19a3 3 0 0 0 2.83-2h-5.66A3 3 0 0 0 12 22Z"
-                    fill="currentColor"
-                  />
-                </svg>
-                {totalNotificationCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
-              </button>
+          {/* La campana abre el feed real de /notifications (antes, un dropdown resumen). */}
+          <button
+            type="button"
+            className={styles.notificationButton}
+            onClick={onOpenNotifications}
+            aria-label={
+              totalNotificationCount > 0
+                ? `Notificaciones (${notificationBadge} nuevas)`
+                : 'Notificaciones'
             }
           >
-            <AnimatedDropdown.Group title="Notificaciones">
-              <div className={styles.notificationPanel}>
-                {unreadMessageCount > 0 ? (
-                  <section className={styles.notificationSection}>
-                    <p className={styles.notificationSectionLabel}>Mensajes</p>
-                    <p className={styles.notificationTitle}>
-                      {firstUnreadConversation
-                        ? `Nuevo mensaje de ${firstUnreadConversation.senderName}`
-                        : unreadMessageCount === 1
-                          ? 'Tienes 1 mensaje sin leer'
-                          : `Tienes ${unreadMessageCount} mensajes sin leer`}
-                    </p>
-                    <p className={styles.notificationMeta}>
-                      {firstUnreadConversation?.preview || (
-                        unreadConversationCount === 1
-                          ? 'En 1 conversación pendiente.'
-                          : `En ${unreadConversationCount} conversaciones pendientes.`
-                      )}
-                    </p>
-                    <button
-                      type="button"
-                      className={styles.notificationCta}
-                      onClick={() => {
-                        setNotificationsOpen(false)
-                        if (firstUnreadConversation?.id) {
-                          onOpenChats?.(firstUnreadConversation.id, firstUnreadConversation.taskId)
-                          return
-                        }
-                        onOpenChats?.()
-                      }}
-                    >
-                      Abrir chat
-                    </button>
-                  </section>
-                ) : null}
-
-                {interestedHelperCount > 0 ? (
-                  <section className={styles.notificationSection}>
-                    <p className={styles.notificationSectionLabel}>Helper interesado</p>
-                    <p className={styles.notificationTitle}>
-                      {firstInterestedTask
-                        ? `${firstInterestedTask.helperName} se ha ofrecido para ayudarte.`
-                        : 'Un helper se ha ofrecido para ayudarte.'}
-                    </p>
-                    <p className={styles.notificationMeta}>
-                      {firstInterestedTask?.title
-                        ? `Revisa las personas interesadas en “${firstInterestedTask.title}”.`
-                        : 'Revisa su perfil antes de elegir.'}
-                    </p>
-                    <button
-                      type="button"
-                      className={styles.notificationCta}
-                      onClick={() => {
-                        setNotificationsOpen(false)
-                        onReviewAcceptedTask?.(firstInterestedTask?.id)
-                      }}
-                    >
-                      Ver interesados
-                    </button>
-                  </section>
-                ) : null}
-
-                {pendingConfirmationCount > 0 ? (
-                  <section className={styles.notificationSection}>
-                    <p className={styles.notificationSectionLabel}>Oferta pendiente</p>
-                    <p className={styles.notificationTitle}>
-                      {firstPendingConfirmationTask
-                        ? `${firstPendingConfirmationTask.helperName} está listo para ayudarte con “${firstPendingConfirmationTask.title}”.`
-                        : pendingConfirmationCount === 1
-                          ? 'Tienes una oferta pendiente.'
-                          : `Tienes ${pendingConfirmationCount} ofertas pendientes.`}
-                    </p>
-                    <p className={styles.notificationMeta}>Decide si quieres confirmar y pagar o rechazar esta oferta.</p>
-                    <button
-                      type="button"
-                      className={styles.notificationCta}
-                      onClick={() => {
-                        setNotificationsOpen(false)
-                        onReviewAcceptedTask?.(firstPendingConfirmationTask?.id)
-                      }}
-                    >
-                      Decidir ahora
-                    </button>
-                  </section>
-                ) : null}
-
-                {totalNotificationCount === 0 ? (
-                  <>
-                    <p className={styles.notificationTitle}>No tienes notificaciones nuevas</p>
-                    <p className={styles.notificationMeta}>
-                      Cuando lleguen mensajes u ofertas de ayuda, aparecerán aquí.
-                    </p>
-                  </>
-                ) : null}
-
-                {totalNotificationCount === 0 ? (
-                  <button
-                    type="button"
-                    className={styles.notificationCta}
-                    onClick={() => {
-                      setNotificationsOpen(false)
-                      onOpenChats?.()
-                    }}
-                  >
-                    Ver mensajes
-                  </button>
-                ) : null}
-              </div>
-            </AnimatedDropdown.Group>
-          </AnimatedDropdown>
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+              <path
+                d="M12 3a5 5 0 0 0-5 5v2.65c0 .76-.23 1.5-.66 2.12L5.1 14.55A1.55 1.55 0 0 0 6.38 17h11.24a1.55 1.55 0 0 0 1.28-2.43l-1.24-1.8A3.72 3.72 0 0 1 17 10.65V8a5 5 0 0 0-5-5Zm0 19a3 3 0 0 0 2.83-2h-5.66A3 3 0 0 0 12 22Z"
+                fill="currentColor"
+              />
+            </svg>
+            {totalNotificationCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
+          </button>
 
           <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
             <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="sm" />

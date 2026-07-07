@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
+import MapAutoResize from '../../../../shared/ui/map/MapAutoResize'
 import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
 import { createTaskMarkerIcon, createUserMarkerIcon, getTaskStatusLabel } from '../../../../shared/ui/map/mapMarkerIcons'
 import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
@@ -300,6 +301,7 @@ export default function TaskMap({
         ) : null}
         {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} around={center} /> : null}
         <MapViewportReporter onViewportChange={onViewportChange} />
+        <MapAutoResize />
         <MapTileLayer />
 
         {showUserWaypoint ? (

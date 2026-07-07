@@ -31,18 +31,34 @@
 }
 
 .backButton {
-  min-width: 7rem;
+  min-width: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  line-height: 1;
 }
 
 .sidebar {
   display: grid;
-  gap: 1rem;
-  padding: 1.1rem;
+  gap: 0.85rem;
+  min-width: 0;
+  padding: 0.95rem;
   border: 1px solid var(--hm-shell-sidebar-border);
   border-radius: var(--hm-shell-card-radius);
   background: var(--hm-shell-sidebar-gradient);
   box-shadow: var(--hm-shell-sidebar-shadow);
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* En escritorio la sidebar (avatar, valoración, estado, Editar perfil)
+   queda fija mientras la sección activa hace scroll. Deja hueco a la
+   barra de navegación sticky de arriba. */
+@media (min-width: 900px) {
+  .sidebar {
+    align-self: start;
+    position: sticky;
+    top: calc(var(--hm-shell-sticky-top) + 5.25rem);
+  }
 }
 
 .sidebarOwn {}
@@ -51,22 +67,23 @@
 
 .sidebarHero {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.9rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
   align-items: start;
+  min-width: 0;
 }
 
 .sidebarAvatar {
-  width: 5rem;
-  height: 5rem;
+  width: clamp(4rem, 9vw, 4.5rem);
+  height: clamp(4rem, 9vw, 4.5rem);
   display: grid;
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 1.4rem;
+  border-radius: 999px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(99, 102, 241, 0.95));
   color: var(--color-surface);
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 900;
   box-shadow: var(--shadow-sm);
 }
@@ -79,33 +96,39 @@
 
 .sidebarIdentity {
   display: grid;
-  gap: 0.3rem;
+  gap: 0.24rem;
+  min-width: 0;
 }
 
 .sidebarEyebrow {
   color: var(--color-primary);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .sidebarName {
   margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  line-height: 1.05;
+  color: var(--color-text);
+  font-size: clamp(1.28rem, 2.2vw, 1.65rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .sidebarHandle,
 .sidebarLocation {
   color: var(--color-text-muted);
-  font-size: 0.95rem;
+  font-size: 0.86rem;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
 }
 
 .sidebarStatus {
   display: grid;
-  gap: 0.3rem;
-  padding: 0.95rem;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.78rem;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   border: 1px solid var(--hm-shell-card-border);
@@ -113,24 +136,30 @@
 }
 
 .sidebarStatus strong {
-  font-size: 0.95rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.25;
 }
 
 .sidebarStatus p {
   color: var(--color-text-muted);
-  line-height: 1.45;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .sidebarStats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .sidebarStat {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.85rem;
+  gap: 0.18rem;
+  min-width: 0;
+  padding: 0.7rem;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   border: 1px solid var(--hm-shell-card-border);
@@ -139,14 +168,18 @@
 
 .sidebarStat span {
   color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
 }
 
 .sidebarStat strong {
-  font-size: 1.05rem;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .sectionStepper {
@@ -206,7 +239,8 @@
 
 .sidebarActions {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .sidebarActions > button {
@@ -258,19 +292,16 @@
 
 .sectionRows {
   display: grid;
-  gap: 0.6rem;
+  gap: 1.15rem;
 }
 
+/* Lista de datos limpia (label + valor): separación por espaciado,
+   sin una card blanca por dato (QA: exceso de containers). */
 .editableRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.9rem 0.95rem;
-  border: 1px solid var(--hm-shell-card-border);
-  border-radius: var(--radius-lg);
-  background: var(--hm-shell-card-bg);
-  box-shadow: var(--hm-shell-card-shadow);
 }
 
 .editableRowCopy {
@@ -425,7 +456,7 @@
 
 @media (min-width: 900px) {
   .layout {
-    grid-template-columns: minmax(20rem, var(--hm-shell-sidebar-width)) minmax(0, 1fr);
+    grid-template-columns: minmax(18rem, var(--hm-shell-sidebar-width)) minmax(0, 1fr);
     align-items: start;
   }
 
@@ -488,23 +519,23 @@
 
   .sidebar {
     gap: 0.85rem;
-    padding: 0.85rem;
+    padding: 0.78rem;
     border-radius: var(--radius-lg);
   }
 
   .sidebarHero {
     grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.75rem;
+    gap: 0.65rem;
   }
 
   .sidebarAvatar {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 1rem;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 999px;
   }
 
   .sidebarName {
-    font-size: clamp(1.25rem, 8vw, 1.65rem);
+    font-size: clamp(1.18rem, 7vw, 1.5rem);
     overflow-wrap: anywhere;
   }
 
@@ -521,12 +552,12 @@
 
   .profileNavigation {
     top: 0.5rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     padding: 0.6rem;
   }
 
   .backButton {
-    width: 100%;
+    width: 44px;
   }
 
   .sectionStepper {
@@ -575,7 +606,7 @@
   }
 
   .layout {
-    grid-template-columns: minmax(22rem, var(--hm-shell-sidebar-width-wide)) minmax(0, 1fr);
+    grid-template-columns: minmax(20rem, var(--hm-shell-sidebar-width-wide)) minmax(0, 1fr);
     gap: var(--hm-shell-gap);
   }
 }
@@ -599,6 +630,7 @@
 
 .sidebarAvatar {
   border-color: var(--hm-color-border-subtle);
+  border-radius: 999px;
   background: var(--hm-color-primary);
   color: #ffffff;
   box-shadow: var(--hm-shadow-xs);

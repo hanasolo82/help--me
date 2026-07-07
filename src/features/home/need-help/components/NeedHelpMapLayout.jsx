@@ -9,6 +9,7 @@ import PublishedRequestCard from './PublishedRequestCard'
 import RequesterTaskMarker from './RequesterTaskMarker'
 import RequesterTaskSummary from './RequesterTaskSummary'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
+import MapAutoResize from '../../../../shared/ui/map/MapAutoResize'
 import Modal from '../../../../shared/ui/Modal/Modal'
 import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery'
 import styles from './NeedHelpMapLayout.module.css'
@@ -338,6 +339,7 @@ export default function NeedHelpMapLayout({
               <RecenterMap center={focusCenter} zoom={focusZoom} />
               <MapRefCapture mapRef={mapRef} />
               <ViewportReporter onViewportChange={setMapBounds} />
+              <MapAutoResize />
               <MapTileLayer />
 
               {helpers.filter(hasMapPosition).map((helper) => (

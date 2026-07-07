@@ -251,6 +251,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* La CTA hacia /planes es un enlace con la piel de primaryCtaSecondary. */
+.plansPageLink {
+  text-decoration: none;
+}
+
 .secondaryCta {
   display: inline-flex;
   align-items: center;

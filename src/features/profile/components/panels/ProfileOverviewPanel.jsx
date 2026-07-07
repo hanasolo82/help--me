@@ -3,13 +3,13 @@ import ProfileTrustMetrics from '../ProfileTrustMetrics'
 import ProfileContentSection from '../ProfileContentSection'
 import ProfileEditableRow from '../ProfileEditableRow'
 import {
-  formatHourlyRate,
-  formatResponseTime,
   getLocationLabel,
   getProfileName,
   summarizeReviews,
 } from '../../utils/profileFormatters'
 
+// Respuesta y Tarifa viven SOLO en la fila de stats (ProfileTrustMetrics):
+// antes aparecían duplicadas también como filas individuales (QA).
 export default function ProfileOverviewPanel({ profile, reviews = [] }) {
   const displayName = getProfileName(profile)
   const locationLabel = getLocationLabel(profile)
@@ -32,16 +32,6 @@ export default function ProfileOverviewPanel({ profile, reviews = [] }) {
           label="Ubicación"
           value={locationLabel}
           meta="Zona visible aproximada para proteger la privacidad."
-        />
-        <ProfileEditableRow
-          label="Respuesta"
-          value={formatResponseTime(profile?.response_time_minutes)}
-          meta="Media de respuesta orientativa."
-        />
-        <ProfileEditableRow
-          label="Tarifa"
-          value={formatHourlyRate(profile?.hourly_rate)}
-          meta="Referencia pública estimada."
         />
       </div>
 

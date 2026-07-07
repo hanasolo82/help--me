@@ -16,23 +16,43 @@ export default function NotificationSettings() {
       <div className={styles.notificationGroups}>
         <div className={styles.notificationGroup}>
           <span className={styles.panelKicker}>Como cliente</span>
-          <label className={styles.checkField}>
-            <input type="checkbox" checked={form.notifyMessages} onChange={(event) => setField('notifyMessages', event.target.checked)} />
-            <span>Respuestas a mis solicitudes</span>
-          </label>
+          <div className={styles.notificationSwitchRow}>
+            <div className={styles.notificationSwitchCopy}>
+              <strong>Respuestas a mis solicitudes</strong>
+              <p>Te avisamos cuando alguien responda o te escriba sobre una solicitud.</p>
+            </div>
+            <button
+              type="button"
+              className={form.notifyMessages ? `${styles.settingsSwitch} ${styles.settingsSwitchOn}` : styles.settingsSwitch}
+              onClick={() => setField('notifyMessages', !form.notifyMessages)}
+              role="switch"
+              aria-checked={form.notifyMessages}
+              aria-label="Respuestas a mis solicitudes"
+            >
+              <span className={styles.settingsSwitchThumb} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {helperCompleted ? (
           <div className={styles.notificationGroup}>
             <span className={styles.panelKicker}>Como ayudante</span>
-            <label className={styles.checkField}>
-              <input
-                type="checkbox"
-                checked={form.notifyNearbyTasks}
-                onChange={(event) => setField('notifyNearbyTasks', event.target.checked)}
-              />
-              <span>Nuevas solicitudes cercanas</span>
-            </label>
+            <div className={styles.notificationSwitchRow}>
+              <div className={styles.notificationSwitchCopy}>
+                <strong>Nuevas solicitudes cercanas</strong>
+                <p>Recibe avisos cuando aparezcan tareas compatibles cerca de tu zona.</p>
+              </div>
+              <button
+                type="button"
+                className={form.notifyNearbyTasks ? `${styles.settingsSwitch} ${styles.settingsSwitchOn}` : styles.settingsSwitch}
+                onClick={() => setField('notifyNearbyTasks', !form.notifyNearbyTasks)}
+                role="switch"
+                aria-checked={form.notifyNearbyTasks}
+                aria-label="Nuevas solicitudes cercanas"
+              >
+                <span className={styles.settingsSwitchThumb} aria-hidden="true" />
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

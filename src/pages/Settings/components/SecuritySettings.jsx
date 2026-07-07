@@ -1,8 +1,38 @@
 import { useState } from 'react'
 import { requestPasswordReset, signOut } from '../../../services/authService'
+import Modal, { ModalActions, ModalBody, ModalHeader } from '../../../shared/ui/Modal/Modal'
 import styles from '../SettingsPage.module.css'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
+
+// Descripción legible del dispositivo actual a partir del user agent.
+function describeCurrentDevice() {
+  if (typeof navigator === 'undefined') return 'Este dispositivo'
+
+  const ua = navigator.userAgent
+  const browser = /edg\//i.test(ua)
+    ? 'Edge'
+    : /firefox/i.test(ua)
+      ? 'Firefox'
+      : /chrome/i.test(ua)
+        ? 'Chrome'
+        : /safari/i.test(ua)
+          ? 'Safari'
+          : 'Navegador'
+  const os = /windows/i.test(ua)
+    ? 'Windows'
+    : /mac os/i.test(ua)
+      ? 'macOS'
+      : /android/i.test(ua)
+        ? 'Android'
+        : /iphone|ipad|ios/i.test(ua)
+          ? 'iOS'
+          : /linux/i.test(ua)
+            ? 'Linux'
+            : ''
+
+  return os ? `${browser} · ${os}` : browser
+}
 
 export default function SecuritySettings() {
   const { user } = useSettings()
@@ -10,7 +40,14 @@ export default function SecuritySettings() {
   const [signOutState, setSignOutState] = useState('idle')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleteRequested, setDeleteRequested] = useState(false)
   const emailVerified = Boolean(user?.email_confirmed_at || user?.confirmed_at)
+  const currentDevice = describeCurrentDevice()
+  const sessionSince = user?.last_sign_in_at
+    ? new Date(user.last_sign_in_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null
 
   async function handlePasswordReset() {
     if (!user?.email) return
@@ -42,6 +79,19 @@ export default function SecuritySettings() {
     }
   }
 
+  // MAQUETA: la eliminación definitiva no se ejecuta desde aquí todavía.
+  // TODO(backend): endpoint de borrado de cuenta (auth + datos + retención legal).
+  function handleConfirmDelete() {
+    setDeleteModalOpen(false)
+    setDeleteConfirmText('')
+    setDeleteRequested(true)
+  }
+
+  function closeDeleteModal() {
+    setDeleteModalOpen(false)
+    setDeleteConfirmText('')
+  }
+
   return (
     <SettingsCard
       id="seguridad"
@@ -66,26 +116,92 @@ export default function SecuritySettings() {
         </div>
 
         <div className={styles.securityNote}>
-          <span className={styles.panelKicker}>Sesión</span>
-          <h3>Cerrar sesión</h3>
-          <p className="muted">Termina la sesión en este dispositivo.</p>
-          <button type="button" className="danger-action" onClick={handleSignOut} disabled={signOutState === 'loading'}>
-            {signOutState === 'loading' ? 'Cerrando...' : 'Cerrar sesión'}
-          </button>
+          <span className={styles.panelKicker}>Verificación en dos pasos</span>
+          <h3>
+            2FA <span className={styles.comingSoonPill}>Próximamente</span>
+          </h3>
+          <p className="muted">
+            Un código adicional al iniciar sesión. Estamos preparándolo; se activará desde aquí.
+          </p>
         </div>
 
-        <div className={`${styles.securityNote} ${styles.dangerNote}`}>
+        <div className={`${styles.securityNote} ${styles.spanTwo}`}>
+          <span className={styles.panelKicker}>Sesiones activas</span>
+          <div className={styles.sessionRow}>
+            <div className={styles.sessionCopy}>
+              <h3>
+                {currentDevice} <span className={styles.sessionCurrentBadge}>Este dispositivo</span>
+              </h3>
+              <p className="muted">
+                {sessionSince ? `Sesión iniciada el ${sessionSince}.` : 'Sesión activa ahora mismo.'}
+              </p>
+            </div>
+            <button type="button" className="danger-action" onClick={handleSignOut} disabled={signOutState === 'loading'}>
+              {signOutState === 'loading' ? 'Cerrando...' : 'Cerrar sesión'}
+            </button>
+          </div>
+          {/* TODO(backend): listar el resto de sesiones/dispositivos y permitir
+              cerrarlas requiere registrar sesiones en servidor; sin eso solo
+              podemos mostrar la sesión actual. */}
+          <p className={`muted ${styles.sessionFootnote}`}>
+            El historial de otros dispositivos llegará con el próximo backend de seguridad.
+          </p>
+        </div>
+
+        <div className={`${styles.securityNote} ${styles.dangerNote} ${styles.spanTwo}`}>
           <span className={styles.panelKicker}>Eliminar cuenta</span>
           <h3>Eliminar cuenta permanentemente</h3>
-          <p className="muted">Para continuar, el flujo pedirá escribir DELETE como confirmación.</p>
-          <button type="button" className={styles.disabledPill} disabled>
-            No disponible desde esta pantalla
-          </button>
+          <p className="muted">
+            Borra tu perfil, tus solicitudes y tus conversaciones. Esta acción no se puede deshacer.
+          </p>
+          {deleteRequested ? (
+            <p className={`${styles.securityFeedback} auth-message success`} role="status">
+              Hemos registrado tu solicitud. Te escribiremos a {user?.email || 'tu correo'} para confirmar la
+              eliminación en las próximas 72 horas.
+            </p>
+          ) : (
+            <button type="button" className="danger-action" onClick={() => setDeleteModalOpen(true)}>
+              Quiero eliminar mi cuenta
+            </button>
+          )}
         </div>
 
         {message ? <p className={`${styles.securityFeedback} auth-message success`}>{message}</p> : null}
         {error ? <p className={`${styles.securityFeedback} auth-message error`}>{error}</p> : null}
       </div>
+
+      <Modal open={deleteModalOpen} onClose={closeDeleteModal} size="sm">
+        <ModalHeader eyebrow="Eliminar cuenta" title="¿Seguro que quieres irte?" />
+        <ModalBody>
+          <p>
+            Se eliminarán tu perfil, tus solicitudes y tus conversaciones. Para confirmar, escribe{' '}
+            <strong>ELIMINAR</strong> en el campo.
+          </p>
+          <input
+            className={styles.deleteConfirmInput}
+            value={deleteConfirmText}
+            onChange={(event) => setDeleteConfirmText(event.target.value)}
+            placeholder="ELIMINAR"
+            aria-label="Escribe ELIMINAR para confirmar"
+            autoComplete="off"
+            spellCheck="false"
+            data-autofocus
+          />
+        </ModalBody>
+        <ModalActions>
+          <button type="button" className="secondary-action" onClick={closeDeleteModal}>
+            Conservar mi cuenta
+          </button>
+          <button
+            type="button"
+            className="danger-action"
+            onClick={handleConfirmDelete}
+            disabled={deleteConfirmText.trim().toUpperCase() !== 'ELIMINAR'}
+          >
+            Solicitar eliminación
+          </button>
+        </ModalActions>
+      </Modal>
     </SettingsCard>
   )
 }

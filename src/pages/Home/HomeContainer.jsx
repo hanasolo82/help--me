@@ -119,13 +119,10 @@ export default function HomeContainer() {
   const routeLocation = useLocation()
 
   const {
-    showChatsModal,
     showTaskChatModal,
     activeTaskChat,
     expandedTaskIds,
     publishingTaskId,
-    openChatsModal,
-    closeChatsModal,
     openTaskChat,
     closeTaskChat,
     setPublishingTaskId,
@@ -188,11 +185,7 @@ export default function HomeContainer() {
     category,
     location: activeLocation,
   })
-  const {
-    chats,
-    isLoading: isChatsLoading,
-    error: chatsError,
-  } = useChats()
+  const { chats } = useChats()
   const requesterTasksQuery = useQuery({
     queryKey: ['my-tasks', profile?.id],
     queryFn: () => getMyTasks(profile?.id),
@@ -290,31 +283,11 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenChats = useCallback(
-    (conversationId = null, taskId = null) => {
-      const conversation = conversationId
-        ? chats.find((chat) => chat.id === conversationId)
-        : null
-      const resolvedTaskId = taskId || conversation?.task_id || null
-
-      if (resolvedTaskId) {
-        navigate(`/task/${resolvedTaskId}`, {
-          state: {
-            openChat: true,
-            conversationId,
-            returnTo: '/home',
-          },
-        })
-        return
-      }
-
-      if (conversationId) {
-        navigate(`/chat/${conversationId}`, { state: { returnTo: '/chats' } })
-        return
-      }
-
-      openChatsModal()
+    (conversationId = null) => {
+      // Mensajes ya no es un modal: es la página /messages con lista + hilo.
+      navigate('/messages', conversationId ? { state: { conversationId } } : undefined)
     },
-    [chats, navigate, openChatsModal],
+    [navigate],
   )
 
   const handleOpenSettings = useCallback(() => {
@@ -322,7 +295,7 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenNotifications = useCallback(() => {
-    navigate('/settings#notificaciones')
+    navigate('/notifications')
   }, [navigate])
 
   const handleOpenPrivacy = useCallback(() => {
@@ -547,10 +520,6 @@ export default function HomeContainer() {
         helperMapLocation={helperMapLocation}
         userAvatarUrl={userAvatarUrl}
         chats={chats}
-        isChatsLoading={isChatsLoading}
-        chatsError={chatsError}
-        showChatsModal={showChatsModal}
-        onCloseChatsModal={closeChatsModal}
         showTaskChatModal={showTaskChatModal}
         activeTaskChat={activeTaskChat}
         onCloseTaskChat={closeTaskChat}

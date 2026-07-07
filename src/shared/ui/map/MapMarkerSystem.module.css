@@ -499,6 +499,9 @@
   border: 1px solid var(--hm-map-popup-border);
   border-radius: var(--hm-map-popup-radius);
   background: var(--hm-map-popup-bg);
+  /* Leaflet fija color #333 por defecto: sin esto, cualquier texto sin color
+     propio quedaba oscuro sobre superficies oscuras en dark mode. */
+  color: var(--hm-map-popup-fg);
   box-shadow: var(--hm-map-popup-shadow);
 }
 

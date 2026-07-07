@@ -123,9 +123,10 @@
   --hm-button-danger-bg: var(--hm-color-danger);
   --hm-button-danger-bg-hover: color-mix(in srgb, var(--hm-color-danger) 88%, #000 12%);
   --hm-button-danger-fg: #ffffff;
-  --hm-button-success-bg: color-mix(in srgb, var(--hm-color-success-bg) 58%, var(--hm-color-surface));
-  --hm-button-success-bg-hover: color-mix(in srgb, var(--hm-color-success-bg) 70%, var(--hm-color-surface));
-  --hm-button-success-fg: var(--hm-color-success-text);
+  /* Verde sólido: el mint pálido anterior parecía un botón deshabilitado (QA). */
+  --hm-button-success-bg: var(--hm-color-primary);
+  --hm-button-success-bg-hover: var(--hm-color-primary-hover);
+  --hm-button-success-fg: #ffffff;
   --hm-button-oauth-bg: color-mix(in srgb, var(--hm-color-surface-strong) 96%, transparent);
   --hm-button-oauth-bg-hover: color-mix(in srgb, var(--hm-color-primary) 6%, var(--hm-color-surface-strong));
   --hm-button-oauth-border: color-mix(in srgb, var(--hm-color-border) 82%, transparent);

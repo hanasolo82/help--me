@@ -1,11 +1,12 @@
 .home {
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
   gap: 0.78rem;
   position: relative;
   isolation: isolate;
-  height: calc(100dvh - 13.5rem);
+  flex: 1;
+  height: 100%;
   min-height: 0;
-  max-height: calc(100dvh - 13.5rem);
   overflow: hidden;
 }
 
@@ -55,7 +56,7 @@
   grid-template-columns: minmax(22rem, 45%) minmax(18rem, 1fr);
   gap: 0.78rem;
   align-items: stretch;
-  height: 100%;
+  height: auto;
   min-height: 0;
   overflow: hidden;
 }
@@ -367,6 +368,8 @@
 
 @media (max-width: 72rem) {
   .home {
+    grid-template-rows: auto;
+    flex: 0 0 auto;
     height: auto;
     overflow: visible;
   }

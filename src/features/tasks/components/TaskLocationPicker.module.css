@@ -32,7 +32,20 @@
 
 .summary strong {
   font-weight: 900;
-  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Campo obligatorio sin rellenar: borde ámbar suave para guiar la mirada. */
+.summaryMissing {
+  border-color: color-mix(in srgb, var(--hm-color-accent) 55%, var(--hm-card-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hm-color-accent) 14%, transparent);
+}
+
+.requiredTag {
+  font-style: normal;
+  font-weight: 800;
+  text-transform: none;
+  color: var(--hm-color-accent);
 }
 
 .panel {
@@ -75,6 +88,9 @@
 .coordsBox {
   display: grid;
   gap: 0.2rem;
+  /* Ancho mínimo real: sin él, los botones de al lado (width:100% global)
+     aplastaban la tarjeta y "DIRECCIÓN EXACTA" se partía letra a letra. */
+  min-width: min(15rem, 100%);
   padding: var(--hm-card-padding);
   border: 1px solid var(--hm-card-border);
   border-radius: var(--hm-card-radius);
@@ -87,17 +103,25 @@
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .coordsBox strong {
   font-weight: 900;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .footerActions {
   display: flex;
   gap: 0.65rem;
   flex-wrap: wrap;
+}
+
+/* Los CTA globales traen width:100%; aquí deben ocupar solo su contenido
+   para no robarle el ancho a la tarjeta de dirección. */
+.footerActions > button {
+  width: auto;
+  flex: 0 0 auto;
 }
 
 .pointMarker {

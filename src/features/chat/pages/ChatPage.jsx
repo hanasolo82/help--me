@@ -8,7 +8,7 @@ export default function ChatPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { conversation, loading, error } = useConversation(conversationId)
-  const returnTo = resolveReturnTo(location.state?.returnTo, '/chats')
+  const returnTo = resolveReturnTo(location.state?.returnTo, '/messages')
 
   useEffect(() => {
     if (!conversation?.task_id) return

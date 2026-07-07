@@ -5,6 +5,8 @@ import ProfileTrustPanel from './panels/ProfileTrustPanel'
 import ProfileReviewsPanel from './panels/ProfileReviewsPanel'
 import ProfileAvailabilityPanel from './panels/ProfileAvailabilityPanel'
 
+// Navegación real por secciones: solo se monta el panel activo (los ids deben
+// coincidir con `sections` en ProfilePage). Sin id, se muestran todos.
 export default function ProfileMain({
   profile,
   reviews = [],
@@ -14,19 +16,42 @@ export default function ProfileMain({
   availability = [],
   activeSkillId,
   onSkillChange,
+  activeSectionId = null,
 }) {
-  return (
-    <main className={styles.main}>
-      <ProfileOverviewPanel profile={profile} reviews={reviews} />
-      <ProfileSkillsPanel
-        skills={skills}
-        activeSkillId={activeSkillId}
-        onSkillChange={onSkillChange}
-        filteredSkills={filteredSkills}
-      />
-      <ProfileTrustPanel profile={profile} verifications={verifications} />
-      <ProfileReviewsPanel profile={profile} reviews={reviews} />
-      <ProfileAvailabilityPanel profile={profile} availability={availability} />
-    </main>
-  )
+  const panels = [
+    {
+      id: 'resumen',
+      element: <ProfileOverviewPanel key="resumen" profile={profile} reviews={reviews} />,
+    },
+    {
+      id: 'habilidades',
+      element: (
+        <ProfileSkillsPanel
+          key="habilidades"
+          skills={skills}
+          activeSkillId={activeSkillId}
+          onSkillChange={onSkillChange}
+          filteredSkills={filteredSkills}
+        />
+      ),
+    },
+    {
+      id: 'confianza',
+      element: <ProfileTrustPanel key="confianza" profile={profile} verifications={verifications} />,
+    },
+    {
+      id: 'opiniones',
+      element: <ProfileReviewsPanel key="opiniones" profile={profile} reviews={reviews} />,
+    },
+    {
+      id: 'disponibilidad',
+      element: <ProfileAvailabilityPanel key="disponibilidad" profile={profile} availability={availability} />,
+    },
+  ]
+
+  const visiblePanels = activeSectionId
+    ? panels.filter((panel) => panel.id === activeSectionId)
+    : panels
+
+  return <main className={styles.main}>{visiblePanels.map((panel) => panel.element)}</main>
 }

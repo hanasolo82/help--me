@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route } from "react-router-dom";
 
 import RootLayout from "./RootLayout";
 import Home from "../../pages/Home/Home";
@@ -18,7 +18,8 @@ import TaskDetail from "../../pages/TaskDetail/TaskDetail";
 import TaskPaymentPage from "../../pages/TaskPayment/TaskPaymentPage";
 import CreateTask from "../../pages/CreateTask/CreateTask";
 import Chat from "../../pages/Chat/Chat";
-import Chats from "../../pages/Chats/Chats";
+import MessagesPage from "../../pages/Messages/MessagesPage";
+import NotificationsPage from "../../pages/Notifications/NotificationsPage";
 import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
 import TaskReviewPage from "../../pages/TaskReview/TaskReviewPage";
@@ -29,9 +30,15 @@ import Privacy from "../../pages/Legal/Privacy";
 import Terms from "../../pages/Legal/Terms";
 import StripeReturn from "../../pages/Stripe/StripeReturn";
 import StripeRefresh from "../../pages/Stripe/StripeRefresh";
+import BillingPage from "../../pages/Billing/BillingPage";
+import PlansPage from "../../pages/Billing/PlansPage";
+import CheckoutPage from "../../pages/Billing/CheckoutPage";
 import RequireAuth from "./RequireAuth";
 
 const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/DesignLab")) : null;
+const HeaderLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/HeaderLab")) : null;
+const NotificationsLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/NotificationsLab")) : null;
+const HomeHeightLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/HomeHeightLab")) : null;
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
 // Data router (createBrowserRouter): requerido por las View Transitions de
@@ -48,6 +55,11 @@ export const router = createBrowserRouter(
       <Route path="/legal/community-guidelines" element={<CommunityGuidelines />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cookies" element={<Cookies />} />
+      {/* Flujo de suscripción (maqueta navegable, sin cobros reales):
+          Facturación -> Pricing -> Pago. Público para poder enlazarlo desde la landing. */}
+      <Route path="/facturacion" element={<BillingPage />} />
+      <Route path="/planes" element={<PlansPage />} />
+      <Route path="/pago" element={<CheckoutPage />} />
       <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>}>
         <Route index element={<OnboardingBasicsStep />} />
         <Route path="skills" element={<OnboardingSkillsStep />} />
@@ -61,7 +73,10 @@ export const router = createBrowserRouter(
       <Route path="/task/:id/review" element={<RequireAuth><TaskReviewPage /></RequireAuth>} />
       <Route path="/create" element={<RequireAuth><CreateTask /></RequireAuth>} />
       <Route path="/chat/:id" element={<RequireAuth><Chat /></RequireAuth>} />
-      <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />
+      {/* /chats era la antigua lista modal/página: ahora vive en /messages */}
+      <Route path="/chats" element={<Navigate to="/messages" replace />} />
+      <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
+      <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
       <Route path="/complete/:id" element={<RequireAuth><TaskComplete /></RequireAuth>} />
       <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
@@ -74,6 +89,36 @@ export const router = createBrowserRouter(
           element={
             <Suspense fallback={<main className="app-screen"><p className="muted">Cargando laboratorio visual...</p></main>}>
               <DesignLab />
+            </Suspense>
+          }
+        />
+      ) : null}
+      {HeaderLab ? (
+        <Route
+          path="/header-lab"
+          element={
+            <Suspense fallback={<main className="app-screen"><p className="muted">Cargando...</p></main>}>
+              <HeaderLab />
+            </Suspense>
+          }
+        />
+      ) : null}
+      {NotificationsLab ? (
+        <Route
+          path="/notifications-lab"
+          element={
+            <Suspense fallback={<main className="app-screen"><p className="muted">Cargando...</p></main>}>
+              <NotificationsLab />
+            </Suspense>
+          }
+        />
+      ) : null}
+      {HomeHeightLab ? (
+        <Route
+          path="/home-height-lab"
+          element={
+            <Suspense fallback={<main className="app-screen"><p className="muted">Cargando...</p></main>}>
+              <HomeHeightLab />
             </Suspense>
           }
         />
