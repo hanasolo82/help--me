@@ -33,15 +33,17 @@ function setCanonical(href) {
 // canonical y OG. La SPA queda indexable por buscadores y previsualizable en redes.
 export function useDocumentMeta({ title, description, path, noindex = false } = {}) {
   useEffect(() => {
-    const fullTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} · Micro-ayuda local entre vecinos`
-    if (document.title !== fullTitle) {
-      document.title = fullTitle
+    // La pestaña muestra solo la marca: "helpMe". El texto descriptivo se
+    // reserva para og/twitter (tarjetas al compartir), sin ensuciar el title.
+    if (document.title !== SITE_NAME) {
+      document.title = SITE_NAME
     }
 
+    const socialTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} · Micro-ayuda local entre vecinos`
     upsertMeta('name', 'description', description)
-    upsertMeta('property', 'og:title', fullTitle)
+    upsertMeta('property', 'og:title', socialTitle)
     upsertMeta('property', 'og:description', description)
-    upsertMeta('name', 'twitter:title', fullTitle)
+    upsertMeta('name', 'twitter:title', socialTitle)
     upsertMeta('name', 'twitter:description', description)
 
     const canonical = path ? `${SITE_ORIGIN}${path}` : SITE_ORIGIN
