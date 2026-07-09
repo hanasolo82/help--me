@@ -136,13 +136,17 @@
 
 @media (min-width: 72rem) {
   .header {
+    /* Sin efecto tarjeta: el header se apoya directo sobre el fondo del main.
+       Padding 0 arriba (se quita el respiro superior de tarjeta), 1rem a los
+       lados para alinear con el contenido y 0.75rem abajo. Válido en claro y
+       oscuro porque ya no pinta fondo ni borde. */
     position: sticky;
     top: 0.75rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--hm-color-border-subtle);
-    border-radius: var(--radius-xl);
-    background: var(--color-surface);
-    box-shadow: var(--hm-shadow-sm);
+    padding: 0 1rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .headerWithSearch {
