@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { X } from 'lucide-react'
 import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
 import TaskAvailabilityFields from '../../../tasks/availability/TaskAvailabilityFields'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
-import Modal, { ModalHeader } from '../../../../shared/ui/Modal/Modal'
+import Modal from '../../../../shared/ui/Modal/Modal'
 import TaskLocationSearch from './TaskLocationSearch'
 import styles from './RequestTaskModal.module.css'
 
@@ -40,6 +41,7 @@ function RequestTaskModalInner({
   const queryClient = useQueryClient()
   const { profile } = useAuth()
   const isEditing = Boolean(task?.id)
+  const titleId = useId()
   const [title, setTitle] = useState(task?.title || initialTitle || '')
   const [description, setDescription] = useState(task?.description || '')
   const [category, setCategory] = useState(task?.category || defaultCategories[0])
@@ -52,6 +54,21 @@ function RequestTaskModalInner({
   const [error, setError] = useState('')
   // Validación inline: un mensaje junto a cada campo en vez de un único error global.
   const [fieldErrors, setFieldErrors] = useState({})
+  // Confirmación de descarte al cerrar con cambios sin guardar.
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
+
+  // Snapshot de los valores iniciales para detectar cambios del usuario. Se fija
+  // una sola vez (inicializador perezoso; el componente se remonta con key al
+  // reabrir, ver export) y nunca se actualiza.
+  const [initialValues] = useState(() => ({
+    title: task?.title || initialTitle || '',
+    description: task?.description || '',
+    category: task?.category || defaultCategories[0],
+    price: String(task?.price ?? ''),
+    requestedDate: task?.requested_date || '',
+    requestedTimeSlot: task?.requested_time_slot || 'flexible',
+    requestedTimeNote: task?.requested_time_note || '',
+  }))
 
   const resolvedLocation = useMemo(() => getTaskLocation(location, profile, task), [location, profile, task])
   const [taskLocation, setTaskLocation] = useState(() => resolvedLocation)
@@ -78,6 +95,49 @@ function RequestTaskModalInner({
     if (nextLocation) {
       setFieldErrors((current) => ({ ...current, location: undefined }))
     }
+  }
+
+  const initial = initialValues
+  const isDirty =
+    title !== initial.title ||
+    description !== initial.description ||
+    category !== initial.category ||
+    price !== initial.price ||
+    availability.requestedDate !== initial.requestedDate ||
+    availability.requestedTimeSlot !== initial.requestedTimeSlot ||
+    availability.requestedTimeNote !== initial.requestedTimeNote ||
+    locationEdited
+
+  // Espejo de los valores cambiantes: permite que requestClose tenga identidad
+  // estable (useCallback []). Es clave porque el Modal base re-ejecuta su efecto
+  // de foco/scroll-lock cuando cambia `onClose`; con una función nueva por render
+  // reenfocaría el panel en cada pulsación de tecla.
+  const closeStateRef = useRef({ isDirty, confirmDiscardOpen, onClose })
+  useEffect(() => {
+    closeStateRef.current = { isDirty, confirmDiscardOpen, onClose }
+  })
+
+  // Cierre guardado: si la confirmación está abierta, Escape/onClose la cancela
+  // (= "Seguir editando"); con cambios sin guardar pide confirmación; si no,
+  // cierra directamente. La X, Escape y el backdrop desactivado pasan por aquí.
+  const requestClose = useCallback(() => {
+    const { isDirty: dirty, confirmDiscardOpen: confirming, onClose: close } = closeStateRef.current
+    if (confirming) {
+      setConfirmDiscardOpen(false)
+      return
+    }
+    if (dirty) {
+      setConfirmDiscardOpen(true)
+      return
+    }
+    close?.()
+  }, [])
+
+  const cancelDiscard = useCallback(() => setConfirmDiscardOpen(false), [])
+
+  function handleConfirmDiscard() {
+    setConfirmDiscardOpen(false)
+    onClose?.()
   }
 
   async function handleSubmit(event) {
@@ -143,12 +203,24 @@ function RequestTaskModalInner({
   }
 
   return (
-    <Modal open onClose={onClose} className={styles.panel}>
-      <ModalHeader
-        eyebrow={isEditing ? 'Editar solicitud' : 'Publicar solicitud'}
-        title={isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}
-        closeLabel="Cerrar solicitud"
-      />
+    <Modal open onClose={requestClose} closeOnBackdrop={false} labelledBy={titleId} className={styles.panel}>
+      {/* Header propio (no ModalHeader) para una X limpia sin contenedor visible. */}
+      <div className={styles.modalHeader}>
+        <div className={styles.modalHeaderText}>
+          <p className={styles.modalEyebrow}>{isEditing ? 'Editar solicitud' : 'Publicar solicitud'}</p>
+          <h2 className={styles.modalTitle} id={titleId}>
+            {isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}
+          </h2>
+        </div>
+        <button
+          type="button"
+          className={styles.closeX}
+          onClick={requestClose}
+          aria-label="Cerrar publicación de solicitud"
+        >
+          <X strokeWidth={2} aria-hidden="true" />
+        </button>
+      </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
           <label className="field">
@@ -241,7 +313,7 @@ function RequestTaskModalInner({
           ) : null}
 
           <div className={styles.actions}>
-            <button type="button" className="secondary-action" onClick={onClose}>
+            <button type="button" className="secondary-action" onClick={requestClose}>
               Cancelar
             </button>
             <GlitchSoftButton type="submit" variant="primary">
@@ -249,6 +321,28 @@ function RequestTaskModalInner({
             </GlitchSoftButton>
           </div>
         </form>
+
+      {/* Confirmación de descarte: modal anidado (reutiliza foco/trap del base).
+          Foco inicial en "Seguir editando" vía data-autofocus. */}
+      <Modal
+        open={confirmDiscardOpen}
+        onClose={cancelDiscard}
+        size="sm"
+        ariaLabel="¿Descartar solicitud?"
+      >
+        <div className={styles.confirmDiscard}>
+          <h2 className={styles.confirmTitle}>¿Descartar solicitud?</h2>
+          <p className={styles.confirmText}>Perderás los cambios que has hecho.</p>
+          <div className={styles.confirmActions}>
+            <button type="button" className="primary-action" data-autofocus onClick={cancelDiscard}>
+              Seguir editando
+            </button>
+            <button type="button" className="danger-action" onClick={handleConfirmDiscard}>
+              Descartar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </Modal>
   )
 }

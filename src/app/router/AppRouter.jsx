@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, createRoutesFromElements, Navigate, Route } from "react-router-dom";
 
@@ -39,6 +40,7 @@ const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab
 const HeaderLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/HeaderLab")) : null;
 const NotificationsLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/NotificationsLab")) : null;
 const HomeHeightLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/HomeHeightLab")) : null;
+const RequestModalLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/RequestModalLab")) : null;
 
 // Mapa central de rutas. Las pantallas privadas van envueltas en RequireAuth.
 // Data router (createBrowserRouter): requerido por las View Transitions de
@@ -119,6 +121,16 @@ export const router = createBrowserRouter(
           element={
             <Suspense fallback={<main className="app-screen"><p className="muted">Cargando...</p></main>}>
               <HomeHeightLab />
+            </Suspense>
+          }
+        />
+      ) : null}
+      {RequestModalLab ? (
+        <Route
+          path="/request-modal-lab"
+          element={
+            <Suspense fallback={<main className="app-screen"><p className="muted">Cargando...</p></main>}>
+              <RequestModalLab />
             </Suspense>
           }
         />

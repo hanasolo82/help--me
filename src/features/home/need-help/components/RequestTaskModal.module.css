@@ -28,6 +28,105 @@
   line-height: 1.35;
 }
 
+/* Header propio: título a la izquierda y X limpia (sin contenedor) a la derecha.
+   El fondo/sticky lo aporta `.panel > :first-child`. */
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modalHeaderText {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.modalEyebrow {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modalTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.closeX {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  /* Área táctil real de 44x44 aunque el glifo sea pequeño; márgenes negativos
+     para alinear la X a la esquina sin agrandar el header. */
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -0.5rem -0.6rem 0 0;
+  padding: 0;
+  border: 0;
+  background: none; /* sin círculo/píldora/contenedor visible */
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--hm-button-radius);
+  transition: color var(--motion-fast) var(--ease-out);
+}
+
+.closeX svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.closeX:hover {
+  color: var(--color-text);
+}
+
+.closeX:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  color: var(--color-text);
+}
+
+/* Confirmación de descarte (modal anidado, size sm). */
+.confirmDiscard {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.confirmTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--color-text);
+}
+
+.confirmText {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.confirmActions :global(.primary-action),
+.confirmActions :global(.danger-action) {
+  width: auto;
+  max-width: none;
+  flex: 1 1 10rem;
+}
+
 .helperHint,
 .locationHint {
   display: grid;
@@ -237,17 +336,12 @@
     border-radius: var(--hm-radius-lg);
   }
 
-  .header {
+  .modalHeader {
     gap: 0.75rem;
   }
 
-  .header h2 {
+  .modalTitle {
     font-size: 1.35rem;
-  }
-
-  .closeButton {
-    width: 2.75rem;
-    height: 2.75rem;
   }
 
   .actions {

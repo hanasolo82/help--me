@@ -37,6 +37,11 @@ export default function Modal({
   labelledBy,
   describedBy,
   className = '',
+  // Cierre al pulsar el fondo. true por defecto (comportamiento histórico);
+  // ponerlo a false evita cierres accidentales (p. ej. formularios con datos).
+  // Solo afecta al backdrop: Escape sigue llamando onClose para que quien lo use
+  // pueda decidir su propia lógica (confirmar descarte, etc.).
+  closeOnBackdrop = true,
   children,
 }) {
   const titleId = useId()
@@ -96,6 +101,7 @@ export default function Modal({
   if (!mounted) return null
 
   function handleBackdropMouseDown(event) {
+    if (!closeOnBackdrop) return
     if (event.target === event.currentTarget) {
       onClose?.()
     }
