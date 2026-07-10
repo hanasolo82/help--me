@@ -56,6 +56,92 @@
   box-shadow: var(--hm-shadow-sm);
 }
 
+.mapCategoryOverlay {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  z-index: 650;
+  width: min(42rem, calc(100% - 7rem));
+  max-width: calc(100% - 7rem);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.mapCategoryScroller {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow-x: auto;
+  padding: 0.15rem 0.2rem 0.35rem;
+  pointer-events: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mapCategoryScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.mapCategoryChip,
+.mapCategoryMore {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.38rem 0.875rem;
+  pointer-events: auto;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-text) 12%, transparent);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.mapCategoryChip {
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+  color: var(--color-text);
+}
+
+.mapCategoryChip:hover,
+.mapCategoryMore:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+
+.mapCategoryChipActive {
+  border-color: transparent;
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 26%, transparent);
+}
+
+.mapCategorySeparator {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.45rem;
+  margin-inline: 0.05rem;
+  background: color-mix(in srgb, var(--color-border) 78%, transparent);
+  pointer-events: none;
+}
+
+.mapCategoryMore {
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 58%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  color: var(--color-primary);
+}
+
 .map {
   width: 100%;
   min-height: clamp(24rem, 58vw, 40rem);
@@ -73,6 +159,26 @@
   border-radius: var(--hm-radius-xl);
   background: var(--color-surface);
   box-shadow: var(--hm-shadow-sm);
+}
+
+.helperListHeader {
+  display: grid;
+  gap: 0.28rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+}
+
+.helperListHeader h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.helperListHeader p {
+  margin: 0;
 }
 
 .panelNotice {
@@ -403,6 +509,18 @@
   .mapShell,
   .map {
     min-height: clamp(18rem, 62dvh, 24rem);
+  }
+
+  .mapCategoryOverlay {
+    top: 0.65rem;
+    width: calc(100% - 4.75rem);
+    max-width: calc(100% - 4.75rem);
+  }
+
+  .mapCategoryChip,
+  .mapCategoryMore {
+    min-height: 2rem;
+    padding-inline: 0.82rem;
   }
 
   .panelShell {

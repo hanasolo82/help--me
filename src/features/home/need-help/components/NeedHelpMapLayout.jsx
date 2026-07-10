@@ -4,6 +4,7 @@ import { MapContainer, useMap, useMapEvents } from 'react-leaflet'
 import { useAvailableHelpers } from '../hooks/useAvailableHelpers'
 import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
+import MapCategoryChips from './MapCategoryChips'
 import HelperMapMarker from './HelperMapMarker'
 import PublishedRequestCard from './PublishedRequestCard'
 import RequesterTaskMarker from './RequesterTaskMarker'
@@ -324,6 +325,12 @@ export default function NeedHelpMapLayout({
       <div className={styles.desktopGrid}>
         <section className={mobileView === 'list' ? `${styles.mapPane} ${styles.hiddenOnMobile}` : styles.mapPane}>
           <div className={styles.mapShell}>
+            <MapCategoryChips
+              filters={skillFilters}
+              selectedSkillId={selectedSkillId}
+              onSkillChange={setSelectedSkillId}
+            />
+
             <MapContainer
               key={mapCenterKey}
               center={focusCenter}
@@ -401,9 +408,6 @@ export default function NeedHelpMapLayout({
             onSelectHelper={handleSelectHelper}
             onOpenProfile={(helper) => navigate(`/profile/${helper.id}`)}
             onContact={onContact}
-            skillFilters={skillFilters}
-            selectedSkillId={selectedSkillId}
-            onSkillChange={setSelectedSkillId}
             loading={isLoading}
             error={error}
             hasLocation={hasLocation}

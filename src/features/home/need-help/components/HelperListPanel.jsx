@@ -1,5 +1,4 @@
 import HelperCard from './HelperCard'
-import HelperFiltersBar from './HelperFiltersBar'
 import HomeEmptyState from '../../components/HomeEmptyState'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -9,9 +8,6 @@ export default function HelperListPanel({
   onSelectHelper,
   onOpenProfile,
   onContact,
-  skillFilters = [],
-  selectedSkillId = 'all',
-  onSkillChange,
   loading = false,
   error = '',
   hasLocation = false,
@@ -22,11 +18,11 @@ export default function HelperListPanel({
 }) {
   return (
     <aside className={styles.panelShell}>
-      <HelperFiltersBar
-        skillFilters={skillFilters}
-        selectedSkillId={selectedSkillId}
-        onSkillChange={onSkillChange}
-      />
+      <header className={styles.helperListHeader}>
+        <p className="eyebrow">Helpers disponibles</p>
+        <h2>Ayuda cercana</h2>
+        <p className="muted">La lista se actualiza con los chips de categoría del mapa.</p>
+      </header>
 
       {!hasLocation && (
         <section className={styles.locationBanner}>
