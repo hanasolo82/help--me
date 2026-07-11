@@ -54,6 +54,84 @@ export async function getPaymentForTask(taskId, { signal } = {}) {
   return data
 }
 
+/**
+ * Todos los pagos donde el usuario actual participa, como solicitante (gasto)
+ * o como helper (cobro). La RLS ("Payments readable by participants") ya
+ * restringe las filas a las que involucran al usuario autenticado.
+ */
+export async function getMyPayments({ signal } = {}) {
+  if (!supabase) {
+    throw new Error('No hay una sesión de Supabase configurada.')
+  }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+
+  if (sessionError) {
+    throw new Error(sessionError.message || 'No pudimos leer tu sesión.')
+  }
+
+  const uid = sessionData?.session?.user?.id
+
+  if (!uid) {
+    throw new Error('Necesitas iniciar sesión para ver tus pagos.')
+  }
+
+  let query = supabase
+    .from('payments')
+    .select(
+      'id, task_id, status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title)',
+    )
+    .or(`requester_profile_id.eq.${uid},helper_profile_id.eq.${uid}`)
+    .order('created_at', { ascending: false })
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    throw error
+  }
+
+  return { payments: data ?? [], userId: uid }
+}
+
+/**
+ * Un pago concreto por id, con los mismos campos que getMyPayments. La RLS
+ * ("Payments readable by participants") solo devuelve la fila si el usuario
+ * actual participa, así que un id ajeno resuelve a "no encontrado".
+ */
+export async function getPaymentById(paymentId, { signal } = {}) {
+  if (!supabase) {
+    throw new Error('No hay una sesión de Supabase configurada.')
+  }
+
+  let query = supabase
+    .from('payments')
+    .select(
+      'id, task_id, status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title)',
+    )
+    .eq('id', paymentId)
+    .maybeSingle()
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    throw error
+  }
+
+  if (!data?.id) {
+    throw new Error('No encontramos este pago o no tienes acceso a él.')
+  }
+
+  return data
+}
+
 export async function startTaskCheckout(taskId, { onTiming } = {}) {
   const startedAt = performance.now()
   const sessionStartedAt = performance.now()

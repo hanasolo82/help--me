@@ -31,9 +31,8 @@ import Privacy from "../../pages/Legal/Privacy";
 import Terms from "../../pages/Legal/Terms";
 import StripeReturn from "../../pages/Stripe/StripeReturn";
 import StripeRefresh from "../../pages/Stripe/StripeRefresh";
-import BillingPage from "../../pages/Billing/BillingPage";
-import PlansPage from "../../pages/Billing/PlansPage";
-import CheckoutPage from "../../pages/Billing/CheckoutPage";
+import PaymentsPage from "../../pages/Payments/PaymentsPage";
+import PaymentReceiptPage from "../../pages/Payments/PaymentReceiptPage";
 import RequireAuth from "./RequireAuth";
 
 const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/DesignLab")) : null;
@@ -57,11 +56,11 @@ export const router = createBrowserRouter(
       <Route path="/legal/community-guidelines" element={<CommunityGuidelines />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cookies" element={<Cookies />} />
-      {/* Flujo de suscripción (maqueta navegable, sin cobros reales):
-          Facturación -> Pricing -> Pago. Público para poder enlazarlo desde la landing. */}
-      <Route path="/facturacion" element={<BillingPage />} />
-      <Route path="/planes" element={<PlansPage />} />
-      <Route path="/pago" element={<CheckoutPage />} />
+      {/* Las antiguas /facturacion /planes /pago (maqueta de suscripción) se retiraron
+          con el pivote de monetización: sin premium al uso, el dinero vive en /pagos. */}
+      <Route path="/facturacion" element={<Navigate to="/pagos" replace />} />
+      <Route path="/planes" element={<Navigate to="/" replace />} />
+      <Route path="/pago" element={<Navigate to="/pagos" replace />} />
       <Route path="/onboarding" element={<RequireAuth requireProfile={false}><Onboarding /></RequireAuth>}>
         <Route index element={<OnboardingBasicsStep />} />
         <Route path="skills" element={<OnboardingSkillsStep />} />
@@ -83,6 +82,8 @@ export const router = createBrowserRouter(
       <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth requireProfile={false}><SettingsPage /></RequireAuth>} />
+      <Route path="/pagos" element={<RequireAuth><PaymentsPage /></RequireAuth>} />
+      <Route path="/pagos/justificante/:paymentId" element={<RequireAuth><PaymentReceiptPage /></RequireAuth>} />
       <Route path="/stripe/return" element={<StripeReturn />} />
       <Route path="/stripe/refresh" element={<RequireAuth><StripeRefresh /></RequireAuth>} />
       {DesignLab ? (

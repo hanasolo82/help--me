@@ -294,6 +294,10 @@ export default function HomeContainer() {
     navigate('/settings')
   }, [navigate])
 
+  const handleOpenPayments = useCallback(() => {
+    navigate('/pagos')
+  }, [navigate])
+
   const handleOpenNotifications = useCallback(() => {
     navigate('/notifications')
   }, [navigate])
@@ -480,6 +484,7 @@ export default function HomeContainer() {
         onOpenFavorites={handleOpenFavorites}
         onOpenMyRequests={isHelperMode ? undefined : handleOpenMyRequests}
         onOpenSettings={handleOpenSettings}
+        onOpenPayments={handleOpenPayments}
         onOpenNotifications={handleOpenNotifications}
         notificationSummary={notificationSummary}
         onReviewAcceptedTask={handleReviewAcceptedTask}

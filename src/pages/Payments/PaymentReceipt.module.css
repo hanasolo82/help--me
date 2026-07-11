@@ -1,0 +1,257 @@
+/* Justificante de pago/cobro (/pagos/justificante/:paymentId).
+   En pantalla usa tokens del design system (tema claro/oscuro); al imprimir se
+   fuerza documento blanco con texto negro y sin botones (.noPrint). */
+
+.page {
+  min-height: 100dvh;
+  width: min(100%, 46rem);
+  margin: 0 auto;
+  padding: clamp(1.75rem, 5vw, 3rem) clamp(1rem, 3vw, 2rem) 4rem;
+  color: var(--color-text);
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.actions > button,
+.actions > a {
+  width: auto;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* ---------- Documento ---------- */
+
+.document {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl, 1.25rem);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.docHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.brand {
+  margin: 0 0 0.3rem;
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.docTitle {
+  margin: 0;
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.docMeta {
+  text-align: right;
+}
+
+.receiptNumber {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.docDate {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ---------- Bloques ---------- */
+
+.block {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.blockTitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.fiscalData {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.fiscalData p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.fiscalName {
+  font-weight: 800;
+}
+
+.fiscalWarning {
+  margin: 0;
+  color: var(--color-warning-text);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.inlineLink {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  border-radius: 4px;
+}
+
+.inlineLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.detailList {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.detailRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+.detailRow dt {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.detailRow dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.totalRow {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 1.05rem;
+}
+
+.totalRow dd {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.docFooter {
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.docFooter p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ---------- Pago no accesible ---------- */
+
+.notFound {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl, 1.25rem);
+  background: var(--color-surface);
+}
+
+.notFound h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.notFound p {
+  margin: 0;
+}
+
+.notFound a {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* ---------- Impresión ---------- */
+
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+
+  .page {
+    min-height: auto;
+    width: 100%;
+    padding: 0;
+    color: #000;
+    background: #fff;
+  }
+
+  .document {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+    padding: 0;
+  }
+
+  .brand,
+  .inlineLink {
+    color: #000;
+  }
+
+  .docDate,
+  .blockTitle,
+  .detailRow dt,
+  .docFooter p,
+  .fiscalWarning {
+    color: #333;
+  }
+
+  .docHeader,
+  .totalRow,
+  .docFooter {
+    border-color: #000;
+  }
+}

@@ -14,6 +14,7 @@ export default function HomeView({
   onOpenFavorites,
   onOpenMyRequests,
   onOpenSettings,
+  onOpenPayments,
   onOpenNotifications,
   notificationSummary,
   onReviewAcceptedTask,
@@ -80,6 +81,7 @@ export default function HomeView({
           onOpenFavorites={onOpenFavorites}
           onOpenMyRequests={onOpenMyRequests}
           onOpenSettings={onOpenSettings}
+          onOpenPayments={onOpenPayments}
           onOpenNotifications={onOpenNotifications}
           notificationSummary={notificationSummary}
           onReviewAcceptedTask={onReviewAcceptedTask}

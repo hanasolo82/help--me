@@ -82,7 +82,7 @@ const LANDING_JSONLD = {
           name: '¿Cuanto cuesta usar helpMe?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Publicar una tarea es gratis y el pago retenido hasta confirmar está incluido. HelpMe Premium es una suscripción opcional con funciones avanzadas.',
+            text: 'Publicar una tarea es gratis y el pago retenido hasta confirmar está incluido. Solo pagas el precio acordado de cada tarea.',
           },
         },
       ],
@@ -570,14 +570,10 @@ export default function Landing() {
                 >
                   Quiero ayudar
                 </button>
-                <Link
-                  to="/planes"
-                  className={`${styles.primaryCtaSecondary} ${styles.plansPageLink}`}
-                >
-                  Ver planes y precios
-                </Link>
+                {/* Sin enlace a /planes a propósito: los planes están desactivados como
+                    oferta comercial (pivote: comisión por tarea, sin premium al uso). */}
               </div>
-              <p className={styles.pricingReinforce}>Publicar es gratis · Premium opcional</p>
+              <p className={styles.pricingReinforce}>Publicar es gratis · Pagas solo cuando aceptas un precio</p>
             </div>
 
             <div className={styles.pricingFlow}>

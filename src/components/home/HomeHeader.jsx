@@ -21,6 +21,7 @@ export default function HomeHeader({
   onOpenFavorites,
   onOpenMyRequests,
   onOpenSettings,
+  onOpenPayments,
   onOpenNotifications,
   notificationSummary,
   onOpenPrivacy,
@@ -74,6 +75,7 @@ export default function HomeHeader({
 
   const accountItems = [
     { label: 'Ajustes', action: onOpenSettings },
+    { label: 'Pagos', action: onOpenPayments },
     { label: 'Notificaciones', action: onOpenNotifications },
     { label: 'Mapa y ubicación', action: onOpenPrivacy },
     { label: 'Ayuda', action: onOpenHelp },
