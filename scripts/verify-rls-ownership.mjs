@@ -582,6 +582,26 @@ async function main() {
         'Tercero no puede responder una solicitud directa',
       )
 
+      {
+        const { data, error } = await hc
+          .from('tasks')
+          .update({ status: 'assigned', accepted_by: helper.id, direct_request_response: 'accepted' })
+          .eq('id', directTask)
+          .select('id')
+        const { data: after, error: afterError } = await admin
+          .from('tasks')
+          .select('status, accepted_by, direct_request_response')
+          .eq('id', directTask)
+          .maybeSingle()
+        if (afterError) throw afterError
+        record(
+          'D-direct-update-blocked',
+          'Helper invitado no fuerza aceptación por UPDATE directo',
+          isBlocked(error, data) && after?.status === 'open' && after?.accepted_by === null && after?.direct_request_response === null,
+          error ? `bloqueado (${error.code})` : `filas=${rowCount(data)} status=${after?.status}`,
+        )
+      }
+
       const { data, error } = await hc.rpc('respond_to_direct_task', {
         p_task_id: directTask,
         p_response: 'accept',

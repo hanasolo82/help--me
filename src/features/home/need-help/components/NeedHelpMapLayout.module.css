@@ -109,6 +109,10 @@
 }
 
 .mapCategoryChip {
+  /* Icono de categoría + texto alineados (CategoryIcon de src/design) */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
   background: color-mix(in srgb, var(--color-surface) 86%, transparent);
   color: var(--color-text);
@@ -552,6 +556,7 @@
 .helperSkills span {
   display: inline-flex;
   align-items: center;
+  gap: 5px; /* icono de categoría + texto (CategoryIcon de src/design) */
   min-height: 1.72rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
   border-radius: 999px;

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Modal, { ModalActions, ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
+import { CategoryIcon, style as designStyle } from '../../../../design'
 import {
   ALL_HELPER_CATEGORY_ID,
   buildMapCategoryFilters,
@@ -131,6 +132,11 @@ export default function MapCategoryChips({
                 onClick={() => toggleCategory(option.id)}
                 onKeyDown={handleKeyDown}
               >
+                <CategoryIcon
+                  category={option.id}
+                  size={designStyle.iconSize.chip}
+                  tone={isActive ? 'dark' : 'light'}
+                />
                 {option.label}
               </button>
             )

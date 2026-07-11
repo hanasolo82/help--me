@@ -1,5 +1,6 @@
 import { BadgeCheck, ChevronRight, MapPin, ShieldCheck, Star } from 'lucide-react'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import { CategoryIcon, style as designStyle } from '../../../../design'
 import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -141,7 +142,10 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
 
           <div className={styles.helperSkills} aria-label="Tareas que realiza">
             {visibleSkills.map((skill) => (
-              <span key={skill}>{skill}</span>
+              <span key={skill}>
+                <CategoryIcon category={skill} size={designStyle.iconSize.tag} tone="light" />
+                {skill}
+              </span>
             ))}
             {extraCount > 0 ? <span className={styles.helperSkillMore}>+{extraCount}</span> : null}
           </div>

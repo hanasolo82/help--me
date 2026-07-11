@@ -2048,3 +2048,25 @@ p {
 }
 
 
+
+/* --- Pin de mapa por categoría (src/design/leafletCategoryPin.js) ---
+   Clases globales porque Leaflet inyecta el HTML del divIcon fuera de React.
+   El color de marca va en el fondo del círculo; el icono, siempre en blanco. */
+.category-pin__bubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.category-pin__stem {
+  width: 0;
+  height: 0;
+  margin: -2px auto 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid;
+}
