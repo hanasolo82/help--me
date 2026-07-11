@@ -5,6 +5,7 @@ import MapAutoResize from '../../../../shared/ui/map/MapAutoResize'
 import MapPopupCard from '../../../../shared/ui/map/MapPopupCard'
 import { createTaskMarkerIcon, createUserMarkerIcon, getTaskStatusLabel } from '../../../../shared/ui/map/mapMarkerIcons'
 import { getTaskCategoryLabel } from '../../../tasks/categories/taskCategories'
+import { getTaskUrgency } from '../../../tasks/urgency/taskUrgency'
 import { toFiniteNumber } from '../../../../shared/utils/mapHelpers'
 import styles from './TaskMap.module.css'
 
@@ -324,6 +325,7 @@ export default function TaskMap({
           const locationLabel = task.location_label || task.zone || task.location
           const statusLabel = getTaskStatusLabel(task)
           const categoryLabel = getTaskCategoryLabel(task.category)
+          const urgency = getTaskUrgency(task)
           return (
             <Marker
               key={task.id}
@@ -342,13 +344,14 @@ export default function TaskMap({
             >
               <Popup>
                 <MapPopupCard
-                  kicker={statusLabel}
+                  kicker={urgency?.label || statusLabel}
                   title={task.title}
                   meta={[
                     categoryLabel,
                     `${priceEuros} EUR`,
                     locationLabel,
                     Number.isFinite(distance) ? `${distance} km` : null,
+                    urgency?.detail || null,
                   ]}
                 >
                   {`Publicada ${formatTaskDate(publishedAt)}. Creador: ${creatorName}.`}

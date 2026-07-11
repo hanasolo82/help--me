@@ -4,6 +4,7 @@ import { useTransitionNavigate } from '../../../shared/navigation/usePageTransit
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
 import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
+import { getTaskUrgency } from '../../tasks/urgency/taskUrgency'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
 import { applyToTask, respondToDirectTask, withdrawTaskApplication } from '../../../services/tasksService'
@@ -109,6 +110,16 @@ function buildMapEntries(entries = [], currentUserId, profile) {
     .sort((left, right) => {
       if (left.task.is_direct_request !== right.task.is_direct_request) {
         return left.task.is_direct_request ? -1 : 1
+      }
+
+      const leftUrgency = getTaskUrgency(left.task)
+      const rightUrgency = getTaskUrgency(right.task)
+      if (Boolean(leftUrgency) !== Boolean(rightUrgency)) {
+        return leftUrgency ? -1 : 1
+      }
+
+      if (leftUrgency && rightUrgency && leftUrgency.minutesUntilStart !== rightUrgency.minutesUntilStart) {
+        return leftUrgency.minutesUntilStart - rightUrgency.minutesUntilStart
       }
 
       const leftDistance = Number(left.distance)

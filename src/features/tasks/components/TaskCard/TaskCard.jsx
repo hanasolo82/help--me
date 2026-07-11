@@ -3,6 +3,7 @@ import editIcon from '../../../../assets/icons/svgviewer-output.svg'
 import starIcon from '../../../../assets/icons/Orion_star.svg'
 import messageIcon from '../../../../assets/icons/message.svg'
 import { formatTaskAvailabilityShort } from '../../availability/taskAvailability'
+import { getTaskUrgency } from '../../urgency/taskUrgency'
 import ActivityBadge from '../../categories/ActivityBadge'
 import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../utils/taskStatusLabels'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
@@ -135,6 +136,7 @@ export default function TaskCard({
   const helperName = helper?.display_name || helper?.full_name || helper?.username || 'Ayudante'
   const isDirectRequest = task.is_direct_request === true && task.status === 'open'
   const isDirectDeclined = task.is_direct_request === true && task.direct_request_response === 'declined'
+  const urgency = getTaskUrgency(task)
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
   const locationLabel = task.location_label || task.zone || task.location || null
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
@@ -242,6 +244,13 @@ export default function TaskCard({
           <p className={styles.meta}>
             {metaItems.join(' · ')}
           </p>
+
+          {urgency ? (
+            <div className={styles.urgencyEditorial}>
+              <strong>{urgency.label}</strong>
+              <p>{urgency.detail}</p>
+            </div>
+          ) : null}
 
           <div className={styles.statusEditorial}>
             <strong>{statusLabel}</strong>

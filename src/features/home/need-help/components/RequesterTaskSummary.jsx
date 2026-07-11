@@ -1,5 +1,6 @@
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
+import { getTaskUrgency } from '../../../tasks/urgency/taskUrgency'
 import markerStyles from '../../../../shared/ui/map/MapMarkerSystem.module.css'
 
 function getReadableLocation(task) {
@@ -23,6 +24,7 @@ export default function RequesterTaskSummary({
 
   const responses = Number(task.application_count ?? 0)
   const availabilityLabel = formatTaskAvailabilityShort(task)
+  const urgency = getTaskUrgency(task)
 
   return (
     <article className={markerStyles.taskPopup}>
@@ -49,6 +51,12 @@ export default function RequesterTaskSummary({
           <dt>Cuándo</dt>
           <dd>{availabilityLabel}</dd>
         </div>
+        {urgency ? (
+          <div>
+            <dt>Prioridad</dt>
+            <dd>{urgency.label} · {urgency.detail}</dd>
+          </div>
+        ) : null}
         <div>
           <dt>Respuestas</dt>
           <dd>{responses > 0 ? responses : 'Aún sin respuestas'}</dd>

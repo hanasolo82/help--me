@@ -1,4 +1,5 @@
 import { TASK_MINIMUM_LEAD_MINUTES } from './taskAvailability'
+import { getTaskUrgency } from '../urgency/taskUrgency'
 import styles from './TaskAvailabilityFields.module.css'
 
 export default function TaskAvailabilityFields({
@@ -9,6 +10,8 @@ export default function TaskAvailabilityFields({
   onChange,
   error = '',
 }) {
+  const urgency = getTaskUrgency({ starts_at: startsAt })
+
   function updateField(field, value) {
     onChange?.({ startsAt, endsAt, timezone, requestedTimeNote, [field]: value })
   }
@@ -45,6 +48,14 @@ export default function TaskAvailabilityFields({
       </div>
 
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
+
+      {urgency ? (
+        <p className={styles.urgencyNotice} role="status">
+          <strong>{urgency.label}</strong>
+          {' · '}
+          {urgency.detail}. La tarea se mostrará con esta prioridad de plazo, sin recargo durante la beta.
+        </p>
+      ) : null}
 
       <label className="field">
         <span>Nota opcional</span>

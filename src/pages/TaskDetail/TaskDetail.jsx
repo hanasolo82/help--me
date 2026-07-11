@@ -22,6 +22,7 @@ import {
   formatTaskAvailabilityFull,
   isTaskTimeWindowExpired,
 } from '../../features/tasks/availability/taskAvailability'
+import { getTaskUrgency } from '../../features/tasks/urgency/taskUrgency'
 import ActivityBadge from '../../features/tasks/categories/ActivityBadge'
 import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../features/tasks/utils/taskStatusLabels'
 import TaskChatModal from '../../components/task/TaskChatModal'
@@ -189,6 +190,7 @@ export default function TaskDetail() {
   const creatorName = creatorProfile.display_name || creatorProfile.full_name || creatorProfile.username || 'Vecino'
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Ayudante'
   const priceEuros = Number(task?.price ?? 0)
+  const taskUrgency = getTaskUrgency(task)
   const hasCoordinates = Number.isFinite(Number(task?.lat)) && Number.isFinite(Number(task?.lng))
 
   useEffect(() => {
@@ -453,6 +455,12 @@ export default function TaskDetail() {
             <span>Cuándo</span>
             <strong>{formatTaskAvailabilityFull(task)}</strong>
           </div>
+          {taskUrgency ? (
+            <div className="task-fact">
+              <span>Prioridad de plazo</span>
+              <strong>{taskUrgency.label} · {taskUrgency.detail}</strong>
+            </div>
+          ) : null}
         </div>
 
         {task.accepted_by ? (
