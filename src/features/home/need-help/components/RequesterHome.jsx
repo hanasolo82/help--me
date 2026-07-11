@@ -30,7 +30,6 @@ export default function RequesterHome({
   const [editingTask, setEditingTask] = useState(null)
   const [selectedRequesterTaskId, setSelectedRequesterTaskId] = useState(null)
   const [focusRequesterTaskId, setFocusRequesterTaskId] = useState(null)
-  const [publishNotice, setPublishNotice] = useState('')
   const [contactError, setContactError] = useState('')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
   const myTasksQuery = useQuery({
@@ -121,7 +120,6 @@ export default function RequesterHome({
   function handleSavedTask(task) {
     setRequestTaskOpen(false)
     setEditingTask(null)
-    setPublishNotice('Solicitud publicada')
     setFocusRequesterTaskId(task?.id || null)
     setSelectedRequesterTaskId(task?.id || null)
     setPreferredView('map')
@@ -162,7 +160,6 @@ export default function RequesterHome({
         locationStatus={locationStatus}
         locationError={locationError}
         onRequestLocation={onRequestLocation}
-        publishNotice={publishNotice}
         contactError={contactError}
         preferredMobileView={preferredView}
         onPreviewHelper={handlePreviewHelper}
@@ -175,7 +172,6 @@ export default function RequesterHome({
         onEditRequesterTask={handleEditTask}
         onRetireRequesterTask={handleRetireTask}
         onOpenRequesterTaskDetail={handleOpenDetail}
-        onDismissPublishNotice={() => setPublishNotice('')}
         retirePending={retireTaskMutation.isPending}
       />
 

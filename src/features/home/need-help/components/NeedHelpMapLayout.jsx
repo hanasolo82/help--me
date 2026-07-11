@@ -6,7 +6,6 @@ import { useSelectedHelper } from '../hooks/useSelectedHelper'
 import HelperListPanel from './HelperListPanel'
 import MapCategoryChips from './MapCategoryChips'
 import HelperMapMarker from './HelperMapMarker'
-import PublishedRequestCard from './PublishedRequestCard'
 import RequesterTaskMarker from './RequesterTaskMarker'
 import RequesterTaskSummary from './RequesterTaskSummary'
 import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
@@ -195,7 +194,6 @@ export default function NeedHelpMapLayout({
   locationStatus,
   locationError,
   onRequestLocation,
-  publishNotice = '',
   contactError = '',
   preferredMobileView,
   onPreviewHelper,
@@ -208,7 +206,6 @@ export default function NeedHelpMapLayout({
   onEditRequesterTask,
   onRetireRequesterTask,
   onOpenRequesterTaskDetail,
-  onDismissPublishNotice,
   retirePending = false,
 }) {
   const navigate = useNavigate()
@@ -369,18 +366,6 @@ export default function NeedHelpMapLayout({
         </section>
 
         <div className={mobileView === 'map' ? `${styles.panelPane} ${styles.hiddenOnMobile}` : styles.panelPane}>
-          {publishNotice && focusedRequesterTask ? (
-            <PublishedRequestCard
-              task={focusedRequesterTask}
-              justPublished
-              onViewOnMap={onSelectRequesterTask}
-              onEdit={onEditRequesterTask}
-              onRetire={onRetireRequesterTask}
-              onDismiss={onDismissPublishNotice}
-              retirePending={retirePending}
-            />
-          ) : null}
-
           {contactError ? (
             <p className={`${styles.panelNotice} ${styles.panelNoticeError}`} role="alert">
               {contactError}
