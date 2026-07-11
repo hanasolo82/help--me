@@ -15,6 +15,9 @@ export const style = {
     // claro, crema en oscuro), así que "iconOnLight" = "color del texto".
     iconOnLight: 'var(--hm-color-text)',
     iconOnDark: '#ffffff', // sobre chip activo (fondo verde) o fondo oscuro
+    // Sobre superficies BLANCAS FIJAS (no reactivas al tema), como los chips
+    // blancos de los pines del mapa: negro plano fijo, nunca el token reactivo.
+    iconOnWhite: '#1c1916',
   },
   strokeWidth: 2,
   radius: { pill: '999px', card: '16px' },
