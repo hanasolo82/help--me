@@ -1,4 +1,4 @@
-import SkillBadge from '../../../skills/components/SkillBadge'
+import { BadgeCheck, ChevronRight, MapPin, ShieldCheck, Star } from 'lucide-react'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -15,10 +15,10 @@ function formatRating(helper) {
   const reviews = Number(helper?.reviews_count ?? 0)
 
   if (!Number.isFinite(rating) || rating <= 0 || reviews <= 0) {
-    return 'Sin valoraciones'
+    return 'Nuevo helper'
   }
 
-  return `${rating.toFixed(1)} · ${reviews} reviews`
+  return `${rating.toFixed(1)}/5 · ${reviews} valoraciones`
 }
 
 function formatAvailability(helper) {
@@ -34,86 +34,120 @@ function formatAvailability(helper) {
 }
 
 function buildSkillList(helper) {
-  const skills = (helper?.skills || []).slice(0, 3).map((skill) => ({
-    name: skill?.name || skill?.category || 'Ayuda general',
-    icon: skill?.icon || '🏷️',
-  }))
+  const skills = (helper?.skills || []).map((skill) => skill?.category || skill?.name || 'Ayuda general')
 
   if (skills.length === 0) {
-    return [{ name: 'Ayuda general', icon: '✨' }]
+    return ['Ayuda general']
   }
 
   return skills
 }
 
+function buildTrustItems(helper) {
+  const items = []
+
+  if (Number(helper?.completed_tasks ?? 0) > 0) {
+    items.push(`${Number(helper.completed_tasks)} tareas`)
+  }
+
+  return items.slice(0, 3)
+}
+
+function hasStripeVerifiedProfile(helper) {
+  return helper?.stripe_profile_verified === true
+}
+
+function getVisibleSkills(skills) {
+  return {
+    visible: skills.slice(0, 3),
+    extraCount: Math.max(0, skills.length - 3),
+  }
+}
+
 export default function HelperCard({ helper, selected = false, onSelect, onOpenProfile, onContact }) {
   const name = helper?.display_name || helper?.full_name || helper?.username || 'Vecino'
-  const verified = Boolean(
-    helper?.verified ||
-      helper?.verified_email ||
-      helper?.verified_phone ||
-      helper?.verified_identity ||
-      helper?.identity_verified,
-  )
+  const isStripeVerified = hasStripeVerifiedProfile(helper)
   const skills = buildSkillList(helper)
+  const trustItems = buildTrustItems(helper)
+  const { visible: visibleSkills, extraCount } = getVisibleSkills(skills)
   const canContact = helper?.availability_enabled !== false
+  const availabilityLabel = formatAvailability(helper)
+  const ratingLabel = formatRating(helper)
+  const ratingAriaLabel = ratingLabel === 'Nuevo helper'
+    ? 'Nuevo helper sin valoraciones todavía'
+    : `Valoración media ${ratingLabel}`
 
   return (
     <article
       className={selected ? `${styles.helperCard} ${styles.helperCardSelected}` : styles.helperCard}
-      onClick={() => onSelect?.(helper)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onSelect?.(helper)
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      aria-pressed={selected}
     >
       <div className={styles.helperCardTop}>
-        <UserAvatar
-          src={helper?.avatar_url}
-          name={name}
-          alt={name}
-          size="md"
-          variant="rounded"
-          verified={verified}
-          className={styles.helperAvatar}
-        />
-        <div className={styles.helperCardHeading}>
-          <strong>{name}</strong>
-          <p>{formatDistance(helper?.distance_km)}</p>
+        <div className={availabilityLabel === 'Disponible' ? `${styles.helperAvatarWrap} ${styles.helperAvatarAvailable}` : styles.helperAvatarWrap}>
+          <UserAvatar
+            src={helper?.avatar_url}
+            name={name}
+            alt={name}
+            size="lg"
+            variant="circle"
+            verified={false}
+            className={styles.helperAvatar}
+          />
+        </div>
+
+        <div className={styles.helperCardContent}>
+          <div className={styles.helperCardHeading}>
+            <div className={styles.helperNameRow}>
+              <strong>{name}</strong>
+              {isStripeVerified ? (
+                <span
+                  className={styles.helperVerifiedIcon}
+                  aria-label="Cuenta habilitada por Stripe para recibir pagos"
+                  title="Cuenta habilitada por Stripe para recibir pagos"
+                >
+                  <BadgeCheck aria-hidden="true" strokeWidth={2.25} />
+                </span>
+              ) : null}
+            </div>
+            <span className={styles.helperAvailability}>{availabilityLabel}</span>
+          </div>
+
+          <div className={styles.helperTrustLine}>
+            <span
+              className={styles.helperRating}
+              aria-label={ratingAriaLabel}
+            >
+              <Star aria-hidden="true" strokeWidth={2.2} />
+              {ratingLabel}
+            </span>
+            <span className={styles.helperDistance}>
+              <MapPin aria-hidden="true" strokeWidth={2.2} />
+              {formatDistance(helper?.distance_km)}
+            </span>
+          </div>
+
+          {trustItems.length > 0 ? (
+            <div className={styles.helperTrustBadges} aria-label="Señales de confianza">
+              {trustItems.map((item) => (
+                <span key={item}>
+                  <ShieldCheck aria-hidden="true" strokeWidth={2} />
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          <p className={styles.helperDescription}>{helper?.bio || 'Ayuda general y trato cercano dentro de la comunidad.'}</p>
+
+          <div className={styles.helperSkills} aria-label="Tareas que realiza">
+            {visibleSkills.map((skill) => (
+              <span key={skill}>{skill}</span>
+            ))}
+            {extraCount > 0 ? <span className={styles.helperSkillMore}>+{extraCount}</span> : null}
+          </div>
         </div>
       </div>
 
-      <div className={styles.helperCardMeta}>
-        <span>{formatRating(helper)}</span>
-        {verified && <span className={styles.helperVerified}>Verificado</span>}
-        <span>{formatAvailability(helper)}</span>
-      </div>
-
-      <p className={styles.helperDescription}>{helper?.bio || 'Ayuda general y trato cercano dentro de la comunidad.'}</p>
-
-      <div className={styles.helperSkills}>
-        {skills.map((skill) => (
-          <SkillBadge key={skill.name} skill={skill} type="span" />
-        ))}
-      </div>
-
       <div className={styles.helperActions}>
-        <button
-          type="button"
-          className="secondary-action"
-          onClick={(event) => {
-            event.stopPropagation()
-            onOpenProfile?.(helper)
-          }}
-        >
-          Ver perfil
-        </button>
-
         {canContact && (
           <button
             type="button"
@@ -126,6 +160,19 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
             Pedir ayuda
           </button>
         )}
+
+        <button
+          type="button"
+          className={styles.helperProfileLink}
+          onClick={(event) => {
+            event.stopPropagation()
+            onSelect?.(helper)
+            onOpenProfile?.(helper)
+          }}
+        >
+          Ver perfil
+          <ChevronRight aria-hidden="true" strokeWidth={2.2} />
+        </button>
       </div>
     </article>
   )

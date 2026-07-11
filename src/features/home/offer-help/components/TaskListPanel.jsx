@@ -1,5 +1,6 @@
 import HomeEmptyState from '../../components/HomeEmptyState'
 import TaskCard from '../../../../features/tasks/components/TaskCard/TaskCard'
+import { isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import styles from '../../need-help/components/NeedHelpMapLayout.module.css'
 
 function buildHelperActions({
@@ -119,7 +120,12 @@ export default function TaskListPanel({
           const hasPendingOffer = applicationStatus === 'pending'
           const isSelectedOffer = applicationStatus === 'selected'
           const hasActiveOffer = hasPendingOffer || isSelectedOffer
-          const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
+          const canContact = (
+            task.status === 'open' &&
+            !isTaskTimeWindowExpired(task) &&
+            task.created_by !== currentUserId &&
+            !hasActiveOffer
+          )
           const actionPending = pendingOfferTaskId === task.id
 
           return (

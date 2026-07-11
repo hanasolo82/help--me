@@ -1,5 +1,5 @@
 import styles from './MyRequestCard.module.css'
-import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
+import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../../tasks/utils/taskStatusLabels'
 
@@ -43,20 +43,24 @@ export default function MyRequestCard({
 }) {
   const dateLabel = formatDate(task.cancelled_at || task.published_at || task.modified_at || task.updated_at || task.created_at)
   const availabilityLabel = formatTaskAvailabilityShort(task)
+  const isExpired = task.status === 'open' && isTaskTimeWindowExpired(task)
+  const isOpen = task.status === 'open' && !isExpired
   const isPendingConfirmation = task.status === 'assigned'
   const applicationCount = Number(task.application_count || 0)
-  const hasInterestedHelpers = task.status === 'open' && applicationCount > 0
+  const hasInterestedHelpers = isOpen && applicationCount > 0
   const isReviewed = reviewedTaskIds.has(task.id)
   const helperProfile = task.accepted_profile || {}
   const helperName = helperProfile.display_name || helperProfile.full_name || helperProfile.username || 'Un helper'
-  const statusLabel = getTaskStatusLabel(task.status)
-  const statusHint = getTaskStatusHint({
-    status: task.status,
-    viewerRole: 'requester',
-    applicationCount,
-    helperName,
-    hasReview: isReviewed,
-  })
+  const statusLabel = isExpired ? 'Plazo finalizado' : getTaskStatusLabel(task.status)
+  const statusHint = isExpired
+    ? 'Ya no admite nuevas ofertas. Reprograma la solicitud o retírala.'
+    : getTaskStatusHint({
+      status: task.status,
+      viewerRole: 'requester',
+      applicationCount,
+      helperName,
+      hasReview: isReviewed,
+    })
 
   return (
     <article className={`${styles.card} ${isPendingConfirmation ? styles.pendingConfirmationCard : ''}`.trim()}>
@@ -94,7 +98,7 @@ export default function MyRequestCard({
       ) : null}
 
       <div className={styles.actions}>
-        {task.status === 'open' && (
+        {isOpen && (
           <>
             {hasInterestedHelpers ? (
               <button type="button" className="primary-action" onClick={() => onOpenDetail?.(task)}>
@@ -106,6 +110,17 @@ export default function MyRequestCard({
             </button>
             <button type="button" className="secondary-action" onClick={() => onEdit?.(task)}>
               Editar
+            </button>
+            <button type="button" className="danger-action" onClick={() => onRetire?.(task)}>
+              Retirar
+            </button>
+          </>
+        )}
+
+        {isExpired && (
+          <>
+            <button type="button" className="secondary-action" onClick={() => onEdit?.(task)}>
+              Reprogramar
             </button>
             <button type="button" className="danger-action" onClick={() => onRetire?.(task)}>
               Retirar

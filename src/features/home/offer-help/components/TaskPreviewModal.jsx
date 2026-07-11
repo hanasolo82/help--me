@@ -1,6 +1,6 @@
 import Modal, { ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
-import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
+import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 import { getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
 import styles from './TaskPreviewModal.module.css'
@@ -48,7 +48,12 @@ export default function TaskPreviewModal({
   const hasPendingOffer = applicationStatus === 'pending'
   const isSelectedOffer = applicationStatus === 'selected'
   const hasActiveOffer = hasPendingOffer || isSelectedOffer
-  const canContact = task.status === 'open' && task.created_by !== currentUserId && !hasActiveOffer
+  const canContact = (
+    task.status === 'open' &&
+    !isTaskTimeWindowExpired(task) &&
+    task.created_by !== currentUserId &&
+    !hasActiveOffer
+  )
   const publishedAt = task.published_at || task.created_at
 
   return (

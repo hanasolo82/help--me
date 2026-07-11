@@ -1,16 +1,18 @@
 import { useEffect } from 'react'
 import MyRequestCard from './MyRequestCard'
+import { isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import styles from './MyRequestsDrawer.module.css'
 
 const SECTIONS = [
-  { key: 'open', title: 'Publicadas', statuses: ['open'] },
-  { key: 'pending-confirmation', title: 'Ofertas pendientes', statuses: ['assigned'] },
-  { key: 'in-progress', title: 'En curso', statuses: ['in_progress'] },
-  { key: 'history', title: 'Historial', statuses: ['completed', 'closed', 'cancelled'] },
+  { key: 'open', title: 'Publicadas', matches: (task) => task.status === 'open' && !isTaskTimeWindowExpired(task) },
+  { key: 'pending-confirmation', title: 'Ofertas pendientes', matches: (task) => task.status === 'assigned' },
+  { key: 'in-progress', title: 'En curso', matches: (task) => task.status === 'in_progress' },
+  { key: 'expired', title: 'Plazo finalizado', matches: (task) => task.status === 'open' && isTaskTimeWindowExpired(task) },
+  { key: 'history', title: 'Historial', matches: (task) => ['completed', 'closed', 'cancelled'].includes(task.status) },
 ]
 
-function groupTasks(tasks = [], statuses) {
-  return tasks.filter((task) => statuses.includes(task.status))
+function groupTasks(tasks = [], section) {
+  return tasks.filter(section.matches)
 }
 
 export default function MyRequestsDrawer({
@@ -61,7 +63,7 @@ export default function MyRequestsDrawer({
 
       <div className={styles.sections}>
         {SECTIONS.map((section) => {
-          const sectionTasks = groupTasks(tasks, section.statuses)
+          const sectionTasks = groupTasks(tasks, section)
 
           return (
             <section key={section.key} className={styles.section}>

@@ -5,9 +5,12 @@ import { getCurrentUser } from './authService'
 import { canAcceptTask } from '../features/helper-onboarding/utils/helperPermissions'
 import { getProfileByUserId } from './profilesService'
 import {
+  isTaskTimeWindowExpired,
   normalizeApplicationAvailabilityInput,
   normalizeTaskAvailabilityInput,
+  normalizeTaskTimeWindowInput,
   normalizeTimeSlot,
+  validateTaskTimeWindow,
 } from '../features/tasks/availability/taskAvailability'
 
 // Nota: categorias que el frontend ofrece al crear/filtrar. IMPORTANTE: la BD impone un CHECK
@@ -37,6 +40,9 @@ const TASK_SELECT = `
   requested_date,
   requested_time_slot,
   requested_time_note,
+  starts_at,
+  ends_at,
+  timezone,
   published_at,
   cancelled_at,
   modified_at,
@@ -176,6 +182,8 @@ export function validateTaskInput(input) {
   const lng = Number(input.lng)
   const locationLabel = sanitizeText(input.location_label ?? input.locationLabel ?? '', 240)
   const availability = normalizeTaskAvailabilityInput(input)
+  const timeWindow = normalizeTaskTimeWindowInput(input)
+  const timeWindowValidation = validateTaskTimeWindow(input)
   const requestedTimeNote = sanitizeText(availability.requested_time_note || '', 240)
 
   const errors = []
@@ -189,6 +197,7 @@ export function validateTaskInput(input) {
   if ((input.requested_time_slot || input.requestedTimeSlot) && !normalizeTimeSlot(input.requested_time_slot ?? input.requestedTimeSlot)) {
     errors.push('Franja horaria no valida.')
   }
+  errors.push(...timeWindowValidation.errors)
 
   return {
     isValid: errors.length === 0,
@@ -204,6 +213,9 @@ export function validateTaskInput(input) {
       requested_date: availability.requested_date,
       requested_time_slot: availability.requested_time_slot,
       requested_time_note: requestedTimeNote || null,
+      starts_at: timeWindow.starts_at,
+      ends_at: timeWindow.ends_at,
+      timezone: timeWindow.timezone,
     },
   }
 }
@@ -394,6 +406,11 @@ export async function publishTask(taskId) {
     throw new Error('La tarea no se puede publicar.')
   }
 
+  const timeWindowValidation = validateTaskTimeWindow(candidateTask, { requireComplete: true })
+  if (!timeWindowValidation.isValid) {
+    throw new Error(timeWindowValidation.errors[0])
+  }
+
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('tasks')
@@ -446,6 +463,7 @@ export async function getAvailableTasksForHelper(profile, { category } = {}) {
     .from('tasks')
     .select(TASK_SELECT)
     .eq('status', 'open')
+    .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`)
     .order('created_at', { ascending: false })
 
   if (helperId) {
@@ -632,7 +650,8 @@ export async function applyToTask(taskId, input = {}) {
     !candidateTask ||
     !isProfileAvailable(candidateTask.creator_profile) ||
     candidateTask.status !== 'open' ||
-    candidateTask.accepted_by
+    candidateTask.accepted_by ||
+    isTaskTimeWindowExpired(candidateTask)
   ) {
     throw new Error('La tarea ya no esta disponible.')
   }

@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
-import { allowedCategories, canEditTask, createTask, updateTask } from '../../services/tasksService'
+import { allowedCategories, canEditTask, createTask, publishTask, updateTask } from '../../services/tasksService'
 import { useTaskById } from '../../hooks/useTaskById'
 import { useUserLocation } from '../../hooks/useUserLocation'
 import TaskAvailabilityFields from '../../features/tasks/availability/TaskAvailabilityFields'
+import { getTaskTimeWindowFormValues, validateTaskTimeWindow } from '../../features/tasks/availability/taskAvailability'
 import TaskLocationPicker from '../../features/tasks/components/TaskLocationPicker'
 
 const priceSuggestions = [3, 5, 10]
@@ -42,9 +43,10 @@ function CreateTaskForm({
   const [description, setDescription] = useState(() => initialValues.description)
   const [category, setCategory] = useState(() => initialValues.category)
   const [priceEuros, setPriceEuros] = useState(() => initialValues.priceEuros)
-  const [availability, setAvailability] = useState(() => initialValues.availability)
+  const [schedule, setSchedule] = useState(() => initialValues.schedule)
   const [selectedLocation, setSelectedLocation] = useState(() => initialValues.location)
   const [submitError, setSubmitError] = useState('')
+  const [scheduleError, setScheduleError] = useState('')
   const [saved, setSaved] = useState(false)
   const redirectTimerRef = useRef(null)
 
@@ -70,12 +72,13 @@ function CreateTaskForm({
         lat: formLocation.latitude,
         lng: formLocation.longitude,
         location_label: formLocation.label || null,
-        requested_date: availability.requestedDate || null,
-        requested_time_slot: availability.requestedTimeSlot || null,
-        requested_time_note: availability.requestedTimeNote || null,
+        starts_at: schedule.startsAt,
+        ends_at: schedule.endsAt,
+        timezone: schedule.timezone,
+        requested_time_note: schedule.requestedTimeNote || null,
       }
 
-      return isEditing ? updateTask(taskId, payload) : createTask(payload)
+      return isEditing ? updateTask(taskId, payload) : createTask(payload).then((draftTask) => publishTask(draftTask.id))
     },
     onSuccess: async (savedTask) => {
       await Promise.all([
@@ -119,10 +122,17 @@ function CreateTaskForm({
   async function handleSubmit(event) {
     event.preventDefault()
     setSubmitError('')
+    setScheduleError('')
 
     const validationError = validateForm()
     if (validationError) {
       setSubmitError(validationError)
+      return
+    }
+
+    const timeWindowValidation = validateTaskTimeWindow(schedule, { requireComplete: true })
+    if (!timeWindowValidation.isValid) {
+      setScheduleError(timeWindowValidation.errors[0])
       return
     }
 
@@ -182,10 +192,15 @@ function CreateTaskForm({
           </div>
 
           <TaskAvailabilityFields
-            requestedDate={availability.requestedDate}
-            requestedTimeSlot={availability.requestedTimeSlot}
-            requestedTimeNote={availability.requestedTimeNote}
-            onChange={setAvailability}
+            startsAt={schedule.startsAt}
+            endsAt={schedule.endsAt}
+            timezone={schedule.timezone}
+            requestedTimeNote={schedule.requestedTimeNote}
+            onChange={(nextSchedule) => {
+              setSchedule(nextSchedule)
+              setScheduleError('')
+            }}
+            error={scheduleError}
           />
 
           <div className="choice-group">
@@ -301,9 +316,8 @@ export default function CreateTask() {
         description: task.description || '',
         category: task.category || allowedCategories[0],
         priceEuros: Number(task.price ?? 0),
-        availability: {
-          requestedDate: task.requested_date || '',
-          requestedTimeSlot: task.requested_time_slot || 'flexible',
+        schedule: {
+          ...getTaskTimeWindowFormValues(task),
           requestedTimeNote: task.requested_time_note || '',
         },
         location: getLocationPayload({
@@ -319,9 +333,8 @@ export default function CreateTask() {
       description: '',
       category: allowedCategories[0],
       priceEuros: 5,
-      availability: {
-        requestedDate: '',
-        requestedTimeSlot: 'flexible',
+      schedule: {
+        ...getTaskTimeWindowFormValues(),
         requestedTimeNote: '',
       },
       location: null,

@@ -1,5 +1,5 @@
 import styles from './MyRequestsPanel.module.css'
-import { formatTaskAvailabilityShort } from '../../../tasks/availability/taskAvailability'
+import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import ActivityBadge from '../../../tasks/categories/ActivityBadge'
 import { getTaskStatusHint, getTaskStatusLabel } from '../../../tasks/utils/taskStatusLabels'
 
@@ -26,10 +26,13 @@ export default function MyRequestsPanel({
     )
   }
 
-  const openTasks = tasks.filter((task) => task.status === 'open')
+  const openTasks = tasks.filter((task) => task.status === 'open' && !isTaskTimeWindowExpired(task))
   const pendingConfirmationTasks = tasks.filter((task) => task.status === 'assigned')
   const inProgressTasks = tasks.filter((task) => task.status === 'in_progress')
-  const historyTasks = tasks.filter((task) => ['completed', 'closed', 'cancelled'].includes(task.status))
+  const historyTasks = tasks.filter((task) => (
+    ['completed', 'closed', 'cancelled'].includes(task.status) ||
+    (task.status === 'open' && isTaskTimeWindowExpired(task))
+  ))
   const latestOpenTask = openTasks[0] || null
 
   return (

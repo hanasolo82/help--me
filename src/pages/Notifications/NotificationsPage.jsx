@@ -5,6 +5,7 @@ import { Bell, ClipboardCheck, HeartHandshake, MessageCircle } from 'lucide-reac
 import { useAuth } from '../../contexts/useAuth'
 import { useChats } from '../../hooks/useChats'
 import { getMyTasks, getPendingTaskApplications } from '../../services/tasksService'
+import { isTaskTimeWindowExpired } from '../../features/tasks/availability/taskAvailability'
 import styles from './NotificationsPage.module.css'
 
 function getDisplayName(profile) {
@@ -59,7 +60,9 @@ export default function NotificationsPage() {
   })
 
   const openTaskIds = useMemo(
-    () => (myTasksQuery.data || []).filter((task) => task.status === 'open').map((task) => task.id),
+    () => (myTasksQuery.data || [])
+      .filter((task) => task.status === 'open' && !isTaskTimeWindowExpired(task))
+      .map((task) => task.id),
     [myTasksQuery.data],
   )
 

@@ -13,6 +13,7 @@ import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import MapAutoResize from '../../../../shared/ui/map/MapAutoResize'
 import Modal from '../../../../shared/ui/Modal/Modal'
 import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery'
+import { isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import styles from './NeedHelpMapLayout.module.css'
 
 const defaultMapCenter = [41.6523, -0.9019]
@@ -32,38 +33,17 @@ function normalizeZoom(zoom, currentZoom = fallbackZoom) {
     : fallbackZoom
 }
 
-function stopMapAnimationIfMounted(map) {
-  try {
-    if (map?._loaded && map?._mapPane) {
-      map.stop()
-    }
-  } catch {
-    // Leaflet puede haber desmontado sus panes internos durante el cambio de modo.
-  }
-}
-
-// Centra el mapa: el primer centrado salta directo (sin viaje desde el centro
-// por defecto); los siguientes vuelan suave (flyTo). Con reduced-motion, sin animar.
-function RecenterMap({ center, zoom = null }) {
+// Solo fija la vista inicial. Después el usuario manda: seleccionar helpers,
+// cambiar chips o refrescar datos no arrastra el mapa automáticamente.
+function InitialMapView({ center, zoom = null }) {
   const map = useMap()
-  const hasCenteredRef = useRef(false)
+  const initialCenterRef = useRef(center)
+  const initialZoomRef = useRef(zoom)
 
   useEffect(() => {
-    const targetZoom = normalizeZoom(zoom, map.getZoom())
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-
-    if (!hasCenteredRef.current || reduceMotion) {
-      hasCenteredRef.current = true
-      map.setView(center, targetZoom, { animate: false })
-      return undefined
-    }
-
-    map.flyTo(center, targetZoom, { duration: 0.75 })
-
-    return () => {
-      stopMapAnimationIfMounted(map)
-    }
-  }, [center, map, zoom])
+    const targetZoom = normalizeZoom(initialZoomRef.current, map.getZoom())
+    map.setView(initialCenterRef.current, targetZoom, { animate: false })
+  }, [map])
 
   return null
 }
@@ -343,7 +323,7 @@ export default function NeedHelpMapLayout({
                 map.setView(focusCenter, normalizeZoom(focusZoom), { animate: false })
               }}
             >
-              <RecenterMap center={focusCenter} zoom={focusZoom} />
+              <InitialMapView center={focusCenter} zoom={focusZoom} />
               <MapRefCapture mapRef={mapRef} />
               <ViewportReporter onViewportChange={setMapBounds} />
               <MapAutoResize />
@@ -359,7 +339,12 @@ export default function NeedHelpMapLayout({
               ))}
 
               {requesterTasks
-                .filter((task) => task.status === 'open' && Number.isFinite(Number(task.lat)) && Number.isFinite(Number(task.lng)))
+                .filter((task) => (
+                  task.status === 'open' &&
+                  !isTaskTimeWindowExpired(task) &&
+                  Number.isFinite(Number(task.lat)) &&
+                  Number.isFinite(Number(task.lng))
+                ))
                 .map((task) => (
                   <RequesterTaskMarker
                     key={task.id}

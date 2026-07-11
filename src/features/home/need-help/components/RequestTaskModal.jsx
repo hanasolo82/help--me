@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
 import TaskAvailabilityFields from '../../../tasks/availability/TaskAvailabilityFields'
+import { getTaskTimeWindowFormValues, validateTaskTimeWindow } from '../../../tasks/availability/taskAvailability'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
 import Modal from '../../../../shared/ui/Modal/Modal'
 import TaskLocationSearch from './TaskLocationSearch'
@@ -46,11 +47,10 @@ function RequestTaskModalInner({
   const [description, setDescription] = useState(task?.description || '')
   const [category, setCategory] = useState(task?.category || defaultCategories[0])
   const [price, setPrice] = useState(String(task?.price ?? ''))
-  const [availability, setAvailability] = useState({
-    requestedDate: task?.requested_date || '',
-    requestedTimeSlot: task?.requested_time_slot || 'flexible',
+  const [schedule, setSchedule] = useState(() => ({
+    ...getTaskTimeWindowFormValues(task),
     requestedTimeNote: task?.requested_time_note || '',
-  })
+  }))
   const [error, setError] = useState('')
   // Validación inline: un mensaje junto a cada campo en vez de un único error global.
   const [fieldErrors, setFieldErrors] = useState({})
@@ -65,8 +65,7 @@ function RequestTaskModalInner({
     description: task?.description || '',
     category: task?.category || defaultCategories[0],
     price: String(task?.price ?? ''),
-    requestedDate: task?.requested_date || '',
-    requestedTimeSlot: task?.requested_time_slot || 'flexible',
+    ...getTaskTimeWindowFormValues(task),
     requestedTimeNote: task?.requested_time_note || '',
   }))
 
@@ -103,9 +102,10 @@ function RequestTaskModalInner({
     description !== initial.description ||
     category !== initial.category ||
     price !== initial.price ||
-    availability.requestedDate !== initial.requestedDate ||
-    availability.requestedTimeSlot !== initial.requestedTimeSlot ||
-    availability.requestedTimeNote !== initial.requestedTimeNote ||
+    schedule.startsAt !== initial.startsAt ||
+    schedule.endsAt !== initial.endsAt ||
+    schedule.timezone !== initial.timezone ||
+    schedule.requestedTimeNote !== initial.requestedTimeNote ||
     locationEdited
 
   // Espejo de los valores cambiantes: permite que requestClose tenga identidad
@@ -155,6 +155,11 @@ function RequestTaskModalInner({
       nextFieldErrors.location = 'Selecciona el lugar de la tarea para situarla en el mapa.'
     }
 
+    const timeWindowValidation = validateTaskTimeWindow(schedule, { requireComplete: true })
+    if (!timeWindowValidation.isValid) {
+      nextFieldErrors.schedule = timeWindowValidation.errors[0]
+    }
+
     setFieldErrors(nextFieldErrors)
 
     if (Object.keys(nextFieldErrors).length > 0) {
@@ -163,6 +168,8 @@ function RequestTaskModalInner({
         ? 'request-title-input'
         : nextFieldErrors.description
           ? 'request-description-input'
+          : nextFieldErrors.schedule
+            ? 'request-starts-at-input'
           : null
       if (firstInvalidId) {
         document.getElementById(firstInvalidId)?.focus()
@@ -179,9 +186,10 @@ function RequestTaskModalInner({
         lat: taskLocation.lat,
         lng: taskLocation.lng,
         location_label: taskLocation.label || null,
-        requested_date: availability.requestedDate || null,
-        requested_time_slot: availability.requestedTimeSlot || null,
-        requested_time_note: availability.requestedTimeNote || null,
+        starts_at: schedule.startsAt,
+        ends_at: schedule.endsAt,
+        timezone: schedule.timezone,
+        requested_time_note: schedule.requestedTimeNote || null,
       }
 
       const savedTask = isEditing ? await updateTask(task.id, payload) : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
@@ -274,10 +282,15 @@ function RequestTaskModalInner({
           ) : null}
 
           <TaskAvailabilityFields
-            requestedDate={availability.requestedDate}
-            requestedTimeSlot={availability.requestedTimeSlot}
-            requestedTimeNote={availability.requestedTimeNote}
-            onChange={setAvailability}
+            startsAt={schedule.startsAt}
+            endsAt={schedule.endsAt}
+            timezone={schedule.timezone}
+            requestedTimeNote={schedule.requestedTimeNote}
+            onChange={(nextSchedule) => {
+              setSchedule(nextSchedule)
+              setFieldErrors((current) => ({ ...current, schedule: undefined }))
+            }}
+            error={fieldErrors.schedule}
           />
 
           <div className={styles.inlineRow}>
@@ -354,8 +367,9 @@ export default function RequestTaskModal(props) {
     props.task?.id || 'new',
     props.initialTitle || '',
     props.task?.location_label || '',
-    props.task?.requested_date || '',
-    props.task?.requested_time_slot || '',
+    props.task?.starts_at || '',
+    props.task?.ends_at || '',
+    props.task?.timezone || '',
     props.task?.requested_time_note || '',
     props.location?.label || '',
     props.locationStatus || '',

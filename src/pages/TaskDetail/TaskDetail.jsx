@@ -19,6 +19,7 @@ import ApplicationAvailabilityFields from '../../features/tasks/availability/App
 import {
   formatApplicationAvailability,
   formatTaskAvailabilityFull,
+  isTaskTimeWindowExpired,
 } from '../../features/tasks/availability/taskAvailability'
 import ActivityBadge from '../../features/tasks/categories/ActivityBadge'
 import { getTaskStatusHint, getTaskStatusLabel, STATUS_HINT_PHRASES } from '../../features/tasks/utils/taskStatusLabels'
@@ -213,7 +214,8 @@ export default function TaskDetail() {
 
   const isOwner = user?.id === task?.created_by
   const isHelper = user?.id === task?.accepted_by
-  const canApply = Boolean(task) && !isOwner && task.status === 'open' && !task.accepted_by
+  const isTaskExpired = isTaskTimeWindowExpired(task)
+  const canApply = Boolean(task) && !isTaskExpired && !isOwner && task.status === 'open' && !task.accepted_by
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && task.status === 'in_progress'
   const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
@@ -226,14 +228,14 @@ export default function TaskDetail() {
   const applicationsQuery = useQuery({
     queryKey: ['task-applications', id],
     queryFn: () => getTaskApplications(id),
-    enabled: Boolean(task) && ['open', 'assigned'].includes(task.status) && (isOwner || canApply),
+    enabled: Boolean(task) && ['open', 'assigned'].includes(task.status) && ((isOwner && !isTaskExpired) || canApply),
     staleTime: 15_000,
   })
 
   const taskApplications = applicationsQuery.data || []
   const pendingApplications = taskApplications.filter((application) => application.status === 'pending')
   const currentUserApplication = taskApplications.find((application) => application.helper_id === user?.id) || null
-  const showApplicationsGate = Boolean(task) && isOwner && task.status === 'open'
+  const showApplicationsGate = Boolean(task) && !isTaskExpired && isOwner && task.status === 'open'
   const actionStatus = selectHelperMutation.isPending
     ? {
         title: 'Asignando helper...',
@@ -258,14 +260,18 @@ export default function TaskDetail() {
 
   const roleEyebrow = getRoleEyebrow({ isOwner, isHelper, canApply, creatorName })
   const viewerRole = isOwner ? 'requester' : isHelper ? 'helper' : 'viewer'
-  const humanTaskStatus = getTaskStatusLabel(task?.status)
-  const taskStatusHint = getTaskStatusHint({
-    status: task?.status,
-    viewerRole,
-    applicationCount: pendingApplications.length,
-    helperName,
-    hasReview: Boolean(helperReviewQuery.data),
-  })
+  const humanTaskStatus = isTaskExpired && task?.status === 'open'
+    ? 'Plazo finalizado'
+    : getTaskStatusLabel(task?.status)
+  const taskStatusHint = isTaskExpired && task?.status === 'open'
+    ? 'Ya no aparece en el tablón ni acepta nuevas ofertas. Puedes reprogramarla o retirarla.'
+    : getTaskStatusHint({
+      status: task?.status,
+      viewerRole,
+      applicationCount: pendingApplications.length,
+      helperName,
+      hasReview: Boolean(helperReviewQuery.data),
+    })
   const moneyLabel = isOwner
     ? 'Coste de la tarea'
     : isHelper
@@ -432,6 +438,12 @@ export default function TaskDetail() {
           </div>
         ) : null}
       </section>
+
+      {isTaskExpired && task.status === 'open' ? (
+        <p className="auth-message" role="status">
+          El plazo de esta solicitud ha finalizado. Reprograma el horario antes de volver a publicarla.
+        </p>
+      ) : null}
 
       {showDecisionGate ? (
         <section className="detail-panel decision-gate">

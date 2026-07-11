@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTransitionNavigate } from '../../../shared/navigation/usePageTransition'
 import TaskCard from '../../tasks/components/TaskCard/TaskCard'
 import ActivityBadge from '../../tasks/categories/ActivityBadge'
-import { formatTaskAvailabilityShort } from '../../tasks/availability/taskAvailability'
+import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
 import { applyToTask, withdrawTaskApplication } from '../../../services/tasksService'
@@ -88,7 +88,12 @@ function buildMapEntries(entries = [], currentUserId, profile) {
   return entries
     .map((entry) => {
       const task = entry?.task || entry
-      if (!task || task.status !== 'open' || task.created_by === currentUserId) return null
+      if (
+        !task ||
+        task.status !== 'open' ||
+        isTaskTimeWindowExpired(task) ||
+        task.created_by === currentUserId
+      ) return null
 
       const distanceValue = Number(entry?.distance ?? entry?.distance_km ?? null)
       const distance = Number.isFinite(distanceValue) ? distanceValue : null
@@ -191,6 +196,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const canOffer = Boolean(
     selectedTask &&
     selectedTask.status === 'open' &&
+    !isTaskTimeWindowExpired(selectedTask) &&
     selectedTask.created_by !== helperHomeProps.currentUserId &&
     !hasActiveOffer,
   )
@@ -200,7 +206,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
       : helperHomeProps.locationSource === 'search'
         ? 'search'
         : 'profile'
-  const shouldFitTasksOnLoad = locationSource !== 'search'
+  const shouldRecenterOnLocationChange = locationSource === 'search'
 
   async function handleOffer(task) {
     const application = task?.current_user_application || null
@@ -209,6 +215,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     if (
       !task ||
       task.status !== 'open' ||
+      isTaskTimeWindowExpired(task) ||
       task.created_by === helperHomeProps.currentUserId ||
       offerMutation.isPending ||
       withdrawMutation.isPending
@@ -260,9 +267,9 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
             userLocation={center}
             distances={opportunityDistances}
             showUserWaypoint={false}
-            recenterOnCenter
+            recenterOnCenter={shouldRecenterOnLocationChange}
             centerSource={locationSource}
-            fitTasksOnLoad={shouldFitTasksOnLoad}
+            fitTasksOnLoad={false}
             fitTasksKey={locationSource}
             onViewportChange={setMapBounds}
             onTaskSelect={(taskId) => {

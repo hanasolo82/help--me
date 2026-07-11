@@ -95,8 +95,8 @@ export default function RequesterHome({
     setRequestTaskOpen(true)
   }
 
-  // Sin remontar el mapa: RecenterMap vuela (flyTo) al nuevo foco y los popups
-  // del marcador sobreviven al clic (antes el remount los cerraba al instante).
+  // Sin remontar el mapa: cambiamos el foco de la solicitud sin forzar
+  // recentrados automáticos, para que el usuario conserve su vista del mapa.
   function handleFocusTask(task) {
     if (!task) return
     setPreferredView('map')

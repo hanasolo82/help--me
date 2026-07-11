@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTransitionNavigate } from '../../../../shared/navigation/usePageTransition'
 import { applyToTask, withdrawTaskApplication } from '../../../../services/tasksService'
 import TaskMap from '../../../../features/map/components/TaskMap/TaskMap'
+import { isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import TaskFiltersBar from './TaskFiltersBar'
 import TaskListPanel from './TaskListPanel'
 import TaskPreviewModal from './TaskPreviewModal'
@@ -62,8 +63,12 @@ export default function OfferHelpMapLayout({
     return null
   }, [location, profile?.city, profile?.lat, profile?.lng, profile?.neighborhood])
 
-  const taskCount = visibleTasks?.length || 0
-  const viewportTasks = visibleTasks || []
+  const availableTasks = useMemo(
+    () => (visibleTasks || []).filter(({ task }) => task && !isTaskTimeWindowExpired(task)),
+    [visibleTasks],
+  )
+  const taskCount = availableTasks.length
+  const viewportTasks = availableTasks
   const markerLegend = useMemo(
     () => [
       { label: 'Tu ubicación', tone: 'me' },
@@ -73,8 +78,8 @@ export default function OfferHelpMapLayout({
   )
 
   const selectedTask = useMemo(
-    () => (visibleTasks || []).find(({ task }) => task.id === selectedTaskId)?.task || null,
-    [selectedTaskId, visibleTasks],
+    () => availableTasks.find(({ task }) => task.id === selectedTaskId)?.task || null,
+    [availableTasks, selectedTaskId],
   )
 
   const selectedTaskDistance = selectedTask ? distancesById?.[selectedTask.id] ?? null : null
@@ -95,6 +100,7 @@ export default function OfferHelpMapLayout({
     if (
       !task ||
       task.status !== 'open' ||
+      isTaskTimeWindowExpired(task) ||
       task.created_by === currentUserId ||
       offerMutation.isPending ||
       withdrawMutation.isPending
@@ -180,7 +186,7 @@ export default function OfferHelpMapLayout({
 
           <div className={styles.mapShell}>
             <TaskMap
-              tasks={(visibleTasks || []).map((item) => item.task)}
+              tasks={availableTasks.map((item) => item.task)}
               userLocation={taskMapLocation}
               distances={distancesById}
               userAvatarUrl={userAvatarUrl}
@@ -193,7 +199,7 @@ export default function OfferHelpMapLayout({
 
         <div className={mobileView === 'map' ? `${styles.panelPane} ${styles.hiddenOnMobile}` : styles.panelPane}>
           <TaskListPanel
-            tasks={visibleTasks}
+            tasks={availableTasks}
             visibleTasks={viewportTasks}
             selectedTaskId={selectedTaskId}
             onSelectTask={handleLocateTask}

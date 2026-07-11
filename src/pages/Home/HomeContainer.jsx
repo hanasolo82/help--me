@@ -18,6 +18,7 @@ import { useHomeTasks } from './hooks/useHomeTasks'
 import { useChats } from '../../hooks/useChats'
 import { readHelperHomeIntent, setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import HelperJourneyModal from '../../features/helper-onboarding/components/HelperJourneyModal'
+import { isTaskTimeWindowExpired } from '../../features/tasks/availability/taskAvailability'
 import HomeView from './HomeView'
 import {
   applyThemeToDocument,
@@ -195,7 +196,7 @@ export default function HomeContainer() {
   })
   const openRequesterTaskIds = useMemo(
     () => (requesterTasksQuery.data || [])
-      .filter((task) => task.status === 'open')
+      .filter((task) => task.status === 'open' && !isTaskTimeWindowExpired(task))
       .map((task) => task.id),
     [requesterTasksQuery.data],
   )

@@ -377,13 +377,12 @@
 
 .helperCard {
   display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
+  gap: 0.85rem;
+  padding: 0.95rem;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-xl);
   background: var(--color-surface);
   box-shadow: var(--hm-shadow-sm);
-  cursor: pointer;
 }
 
 .helperCardSelected {
@@ -393,87 +392,219 @@
 
 .helperCardTop {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.8rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
   align-items: start;
 }
 
-.helperAvatar {
-  width: 3.25rem;
-  height: 3.25rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  overflow: hidden;
-  background: var(--hm-color-secondary);
-  color: var(--color-text);
+.helperAvatarWrap {
+  position: relative;
   display: grid;
   place-items: center;
-  font-weight: 700;
+  width: 4.75rem;
+  height: 4.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hm-color-secondary) 72%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px var(--hm-color-border-subtle);
 }
 
-.helperAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.helperAvatarAvailable {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 68%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.helperAvatar {
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 999px;
+}
+
+.helperCardContent {
+  display: grid;
+  gap: 0.48rem;
+  min-width: 0;
 }
 
 .helperCardHeading {
-  display: grid;
-  gap: 0.2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.helperNameRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.36rem;
+  min-width: 0;
 }
 
 .helperCardHeading strong {
   /* Color explícito: en dark mode el nombre podía heredar un color oscuro
      ilegible sobre la superficie oscura de la tarjeta (QA). */
   color: var(--color-text);
-  font-weight: 700;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.18;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.helperCardHeading p {
-  color: var(--color-text-muted);
-  font-weight: 700;
+.helperVerifiedIcon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--color-primary);
+  line-height: 1;
 }
 
-.helperCardMeta {
+.helperVerifiedIcon svg {
+  width: 1.12rem;
+  height: 1.12rem;
+  fill: color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.helperAvailability {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.helperTrustLine {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.58rem;
 }
 
-.helperCardMeta span,
-.helperVerified {
+.helperRating,
+.helperDistance {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  background: var(--hm-color-secondary);
+  gap: 0.28rem;
   color: var(--color-text);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.4rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.2;
 }
 
-.helperVerified {
-  background: var(--color-surface);
+.helperRating svg {
+  width: 0.92rem;
+  height: 0.92rem;
+  fill: #f1b45c;
+  color: #b76b08;
+}
+
+.helperDistance {
+  color: var(--color-text-muted);
+}
+
+.helperDistance svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.helperTrustBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.36rem;
+}
+
+.helperTrustBadges span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.26rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--hm-color-border-subtle));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
   color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+  padding: 0.34rem 0.55rem;
+}
+
+.helperTrustBadges svg {
+  width: 0.78rem;
+  height: 0.78rem;
 }
 
 .helperDescription {
-  line-height: 1.5;
   color: var(--color-text-muted);
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.83rem;
+  line-height: 1.42;
 }
 
 .helperSkills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.36rem;
+}
+
+.helperSkills span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.72rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hm-color-secondary) 68%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0.32rem 0.58rem;
+}
+
+.helperSkills .helperSkillMore {
+  border-style: dashed;
+  color: var(--color-primary);
 }
 
 .helperActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.58rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
+}
+
+.helperActions :global(.primary-action) {
+  width: auto;
+  min-height: 2.35rem;
+  padding-inline: 1rem;
+}
+
+.helperProfileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 2.35rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 850;
+  padding: 0.35rem 0;
+}
+
+.helperProfileLink:hover {
+  color: var(--color-primary);
+}
+
+.helperProfileLink svg {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .emptyState {
@@ -649,7 +780,7 @@
   }
 
   .desktopGrid {
-    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+    grid-template-columns: minmax(27rem, 28.75rem) minmax(0, 1fr);
     align-items: stretch;
     height: 100%;
     min-height: 0;
