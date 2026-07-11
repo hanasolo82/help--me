@@ -142,6 +142,96 @@
   color: var(--color-primary);
 }
 
+.mapFilterModalBody {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.mapFilterOptions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mapFilterOption {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 3.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border-radius: var(--hm-radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.72rem 0.82rem;
+  text-align: left;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.mapFilterOption:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  box-shadow: var(--hm-shadow-sm);
+}
+
+.mapFilterOptionOn {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+}
+
+.mapFilterOption strong,
+.mapFilterOption small {
+  display: block;
+}
+
+.mapFilterOption strong {
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.mapFilterOption small {
+  margin-top: 0.14rem;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.mapFilterOptionSwitch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 2.72rem;
+  height: 1.52rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text-muted) 34%, var(--color-surface));
+  padding: 0.16rem;
+  transition: background-color 0.16s ease;
+}
+
+.mapFilterOptionSwitch span {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-text) 18%, transparent);
+  transform: translateX(0);
+  transition: transform 0.16s ease;
+}
+
+.mapFilterOptionOn .mapFilterOptionSwitch {
+  background: var(--color-primary);
+}
+
+.mapFilterOptionOn .mapFilterOptionSwitch span {
+  transform: translateX(1.2rem);
+}
+
 .map {
   width: 100%;
   min-height: clamp(24rem, 58vw, 40rem);

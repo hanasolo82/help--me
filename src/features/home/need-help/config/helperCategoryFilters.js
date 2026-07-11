@@ -28,6 +28,12 @@ export function cleanCategoryLabel(value) {
   return label || 'Categoría'
 }
 
+export function getDefaultVisibleMapCategoryIds() {
+  return MAP_CATEGORY_FILTERS
+    .filter((filter) => filter.defaultVisible)
+    .map((filter) => filter.id)
+}
+
 export function buildMapCategoryFilters(dynamicFilters = []) {
   const byId = new Map()
 

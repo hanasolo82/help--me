@@ -46,21 +46,41 @@ function buildSkillFilters(helpers = []) {
   return filters
 }
 
+function normalizeSkillFilters(selectedSkillIds = []) {
+  if (!Array.isArray(selectedSkillIds)) {
+    return selectedSkillIds && selectedSkillIds !== 'all' ? [selectedSkillIds] : []
+  }
+
+  return selectedSkillIds
+    .filter((item) => item && item !== 'all')
+    .map(String)
+}
+
+function helperMatchesAnySkill(helper, selectedSkillIds = []) {
+  if (selectedSkillIds.length === 0) return true
+
+  return (helper?.skills || []).some((skill) => {
+    const skillId = skill?.category || skill?.name || skill?.id
+    return selectedSkillIds.includes(skillId)
+  })
+}
+
 export function useAvailableHelpers({
   profile,
   location,
   mapBounds = null,
-  selectedSkillId = 'all',
+  selectedSkillIds = [],
 } = {}) {
   const center = useMemo(() => resolveCenter(profile, location), [location, profile])
+  const normalizedSkillFilters = useMemo(() => normalizeSkillFilters(selectedSkillIds), [selectedSkillIds])
   const hasMapBounds = Boolean(
     Number.isFinite(Number(mapBounds?.north)) &&
       Number.isFinite(Number(mapBounds?.south)) &&
       Number.isFinite(Number(mapBounds?.east)) &&
       Number.isFinite(Number(mapBounds?.west)),
   )
-  const skillFilter = selectedSkillId && selectedSkillId !== 'all' ? selectedSkillId : null
-  const canSearch = hasMapBounds || Boolean(skillFilter)
+  const serverSkillFilter = normalizedSkillFilters.length === 1 ? normalizedSkillFilters[0] : null
+  const canSearch = hasMapBounds || normalizedSkillFilters.length > 0
   const excludeProfileId = profile?.id || null
 
   const query = useQuery({
@@ -73,14 +93,14 @@ export function useAvailableHelpers({
       mapBounds?.south ?? null,
       mapBounds?.east ?? null,
       mapBounds?.west ?? null,
-      skillFilter,
+      normalizedSkillFilters.join('|'),
     ],
     queryFn: () =>
       getNearbyHelpers({
         lat: center.lat,
         lng: center.lng,
         bounds: hasMapBounds ? mapBounds : null,
-        category: skillFilter,
+        category: serverSkillFilter,
         excludeProfileId,
         limit: 32,
       }),
@@ -88,12 +108,17 @@ export function useAvailableHelpers({
     staleTime: 30_000,
   })
 
-  const skillFilters = useMemo(() => buildSkillFilters(query.data || []), [query.data])
+  const rawHelpers = useMemo(() => query.data || [], [query.data])
+  const helpers = useMemo(
+    () => rawHelpers.filter((helper) => helperMatchesAnySkill(helper, normalizedSkillFilters)),
+    [normalizedSkillFilters, rawHelpers],
+  )
+  const skillFilters = useMemo(() => buildSkillFilters(rawHelpers), [rawHelpers])
 
   return {
     center,
     hasLocation: Boolean(center.hasValue),
-    helpers: query.data || [],
+    helpers,
     skillFilters,
     isLoading: query.isLoading && !query.data,
     error: query.error?.message || '',

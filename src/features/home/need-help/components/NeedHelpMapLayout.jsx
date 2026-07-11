@@ -200,12 +200,12 @@ function isInsideBounds(entry, bounds) {
   )
 }
 
-function matchesSkill(helper, selectedSkillId) {
-  if (!selectedSkillId || selectedSkillId === 'all') return false
+function matchesAnySkill(helper, selectedSkillIds) {
+  if (!selectedSkillIds.length) return false
 
   return (helper?.skills || []).some((skill) => {
     const skillId = skill?.category || skill?.name || skill?.id
-    return skillId === selectedSkillId
+    return selectedSkillIds.includes(skillId)
   })
 }
 
@@ -233,7 +233,7 @@ export default function NeedHelpMapLayout({
 }) {
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
-  const [selectedSkillId, setSelectedSkillId] = useState('all')
+  const [selectedSkillIds, setSelectedSkillIds] = useState([])
   const [mapBounds, setMapBounds] = useState(null)
   const mapRef = useRef(null)
   // En pantallas estrechas, el detalle del pin se abre como bottom-sheet (el popup
@@ -262,7 +262,7 @@ export default function NeedHelpMapLayout({
     profile,
     location,
     mapBounds,
-    selectedSkillId,
+    selectedSkillIds,
   })
 
   const {
@@ -294,8 +294,8 @@ export default function NeedHelpMapLayout({
   // Vista requester siempre arranca y recentra a nivel barrio.
   const focusZoom = fallbackZoom
   const viewportHelpers = useMemo(() => {
-    return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesSkill(helper, selectedSkillId))
-  }, [helpers, mapBounds, selectedSkillId])
+    return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesAnySkill(helper, selectedSkillIds))
+  }, [helpers, mapBounds, selectedSkillIds])
 
   function handleSelectHelper(helper) {
     selectHelper(helper)
@@ -327,8 +327,8 @@ export default function NeedHelpMapLayout({
           <div className={styles.mapShell}>
             <MapCategoryChips
               filters={skillFilters}
-              selectedSkillId={selectedSkillId}
-              onSkillChange={setSelectedSkillId}
+              selectedSkillIds={selectedSkillIds}
+              onSelectedSkillIdsChange={setSelectedSkillIds}
             />
 
             <MapContainer
