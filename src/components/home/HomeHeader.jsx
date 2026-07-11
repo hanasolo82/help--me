@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import styles from '../../pages/Home/Home.module.css'
 import AnimatedDropdown from '../../shared/ui/AnimatedDropdown'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
@@ -232,33 +233,39 @@ export default function HomeHeader({
         </div>
       </header>
 
-      {confirmLogoutOpen ? (
-        <div className={styles.logoutOverlay} role="presentation" onClick={() => setConfirmLogoutOpen(false)}>
-          <div
-            className={styles.logoutModal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="logout-modal-title"
-            aria-describedby="logout-modal-description"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <p className={styles.logoutKicker}>Salir</p>
-            <h2 id="logout-modal-title">¿Quieres cerrar sesión?</h2>
-            <p id="logout-modal-description" className="muted">
-              Puedes volver a entrar cuando quieras. Si sales ahora, tendrás que identificarte de nuevo para continuar.
-            </p>
+      {/* Portal a document.body: si no, el overlay sería `.shell > *` en HomeLayout,
+          cuya regla `position: relative` empata en especificidad con `.logoutOverlay`
+          (position: fixed) y lo saca del modo modal, empujando el contenido hacia abajo. */}
+      {confirmLogoutOpen
+        ? createPortal(
+            <div className={styles.logoutOverlay} role="presentation" onClick={() => setConfirmLogoutOpen(false)}>
+              <div
+                className={styles.logoutModal}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="logout-modal-title"
+                aria-describedby="logout-modal-description"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <p className={styles.logoutKicker}>Salir</p>
+                <h2 id="logout-modal-title">¿Quieres cerrar sesión?</h2>
+                <p id="logout-modal-description" className="muted">
+                  Puedes volver a entrar cuando quieras. Si sales ahora, tendrás que identificarte de nuevo para continuar.
+                </p>
 
-            <div className={styles.logoutActions}>
-              <button type="button" className="secondary-action" onClick={() => setConfirmLogoutOpen(false)}>
-                Cancelar
-              </button>
-              <button type="button" className="danger-action" onClick={handleConfirmLogout}>
-                Salir
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <div className={styles.logoutActions}>
+                  <button type="button" className="secondary-action" onClick={() => setConfirmLogoutOpen(false)}>
+                    Cancelar
+                  </button>
+                  <button type="button" className="danger-action" onClick={handleConfirmLogout}>
+                    Salir
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   )
 }
