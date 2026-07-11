@@ -8,6 +8,7 @@ import {
   getTaskApplications,
   rejectAssignedHelper,
   rejectTaskApplication,
+  respondToDirectTask,
   selectTaskHelper,
   withdrawTaskApplication,
 } from '../../services/tasksService'
@@ -172,6 +173,17 @@ export default function TaskDetail() {
     },
   })
 
+  const directResponseMutation = useMutation({
+    mutationFn: (response) => respondToDirectTask(id, response),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', id] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-tasks', user?.id] }),
+      ])
+    },
+  })
+
   const creatorProfile = task?.creator_profile || {}
   const helperProfile = task?.accepted_profile || {}
   const creatorName = creatorProfile.display_name || creatorProfile.full_name || creatorProfile.username || 'Vecino'
@@ -214,8 +226,10 @@ export default function TaskDetail() {
 
   const isOwner = user?.id === task?.created_by
   const isHelper = user?.id === task?.accepted_by
+  const isDirectTask = task?.is_direct_request === true
+  const isDirectTarget = isDirectTask && user?.id === task?.target_helper_id
   const isTaskExpired = isTaskTimeWindowExpired(task)
-  const canApply = Boolean(task) && !isTaskExpired && !isOwner && task.status === 'open' && !task.accepted_by
+  const canApply = Boolean(task) && !isDirectTask && !isTaskExpired && !isOwner && task.status === 'open' && !task.accepted_by
   const canOpenPayment = Boolean(task) && isOwner && task.status === 'assigned' && Boolean(task.accepted_by)
   const canCloseTask = Boolean(task) && isOwner && Boolean(task.accepted_by) && task.status === 'in_progress'
   const canReviewHelper = Boolean(task) && isOwner && Boolean(task.accepted_by) && ['completed', 'closed'].includes(task.status)
@@ -228,14 +242,14 @@ export default function TaskDetail() {
   const applicationsQuery = useQuery({
     queryKey: ['task-applications', id],
     queryFn: () => getTaskApplications(id),
-    enabled: Boolean(task) && ['open', 'assigned'].includes(task.status) && ((isOwner && !isTaskExpired) || canApply),
+    enabled: Boolean(task) && !isDirectTask && ['open', 'assigned'].includes(task.status) && ((isOwner && !isTaskExpired) || canApply),
     staleTime: 15_000,
   })
 
   const taskApplications = applicationsQuery.data || []
   const pendingApplications = taskApplications.filter((application) => application.status === 'pending')
   const currentUserApplication = taskApplications.find((application) => application.helper_id === user?.id) || null
-  const showApplicationsGate = Boolean(task) && !isTaskExpired && isOwner && task.status === 'open'
+  const showApplicationsGate = Boolean(task) && !isDirectTask && !isTaskExpired && isOwner && task.status === 'open'
   const actionStatus = selectHelperMutation.isPending
     ? {
         title: 'Asignando helper...',
@@ -260,10 +274,20 @@ export default function TaskDetail() {
 
   const roleEyebrow = getRoleEyebrow({ isOwner, isHelper, canApply, creatorName })
   const viewerRole = isOwner ? 'requester' : isHelper ? 'helper' : 'viewer'
-  const humanTaskStatus = isTaskExpired && task?.status === 'open'
+  const humanTaskStatus = isDirectTask && task?.direct_request_response === 'declined'
+    ? 'Solicitud no aceptada'
+    : isDirectTask && task?.status === 'open'
+    ? 'Solicitud directa'
+    : isTaskExpired && task?.status === 'open'
     ? 'Plazo finalizado'
     : getTaskStatusLabel(task?.status)
-  const taskStatusHint = isTaskExpired && task?.status === 'open'
+  const taskStatusHint = isDirectTask && task?.direct_request_response === 'declined'
+    ? 'El helper invitado no ha podido aceptar esta solicitud. Puedes publicar otra o elegir otra persona.'
+    : isDirectTask && task?.status === 'open'
+    ? isOwner
+      ? 'La solicitud solo está visible para el helper que elegiste.'
+      : 'Esta solicitud es exclusiva para ti. Decide si te encaja antes de que termine el plazo.'
+    : isTaskExpired && task?.status === 'open'
     ? 'Ya no aparece en el tablón ni acepta nuevas ofertas. Puedes reprogramarla o retirarla.'
     : getTaskStatusHint({
       status: task?.status,
@@ -348,6 +372,12 @@ export default function TaskDetail() {
     }
 
     rejectHelperMutation.mutate()
+  }
+
+  function handleDirectResponse(response) {
+    if (directResponseMutation.isPending) return
+
+    directResponseMutation.mutate(response)
   }
 
   if (loading) {
@@ -443,6 +473,47 @@ export default function TaskDetail() {
         <p className="auth-message" role="status">
           El plazo de esta solicitud ha finalizado. Reprograma el horario antes de volver a publicarla.
         </p>
+      ) : null}
+
+      {isDirectTask && task.status === 'open' && !isTaskExpired ? (
+        <section className="detail-panel decision-gate">
+          {isOwner ? (
+            <>
+              <p className="eyebrow">Solicitud enviada</p>
+              <h2>Esperando la respuesta del helper invitado</h2>
+              <p className="muted">Esta solicitud no aparece en el tablón ni admite ofertas de otras personas.</p>
+            </>
+          ) : isDirectTarget ? (
+            <>
+              <p className="eyebrow">Solicitud exclusiva</p>
+              <h2>{creatorName} te ha pedido ayuda directamente</h2>
+              <p className="muted">Si aceptas, el requester podrá confirmar y pagar. Si no te encaja, puedes rechazarla sin abrir un chat.</p>
+              <div className="two-actions decision-actions">
+                <button
+                  type="button"
+                  className="primary-action sticky-action"
+                  onClick={() => handleDirectResponse('accept')}
+                  disabled={directResponseMutation.isPending}
+                >
+                  {directResponseMutation.isPending ? 'Guardando...' : 'Aceptar solicitud'}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action sticky-action"
+                  onClick={() => handleDirectResponse('decline')}
+                  disabled={directResponseMutation.isPending}
+                >
+                  Rechazar
+                </button>
+              </div>
+              {directResponseMutation.error ? (
+                <p className="auth-message error" role="alert">
+                  {directResponseMutation.error.message || 'No se pudo responder a la solicitud.'}
+                </p>
+              ) : null}
+            </>
+          ) : null}
+        </section>
       ) : null}
 
       {showDecisionGate ? (

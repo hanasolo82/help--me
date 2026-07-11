@@ -6,7 +6,7 @@ import ActivityBadge from '../../tasks/categories/ActivityBadge'
 import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
 import CategoryFilter from '../../../components/home/CategoryFilter'
-import { applyToTask, withdrawTaskApplication } from '../../../services/tasksService'
+import { applyToTask, respondToDirectTask, withdrawTaskApplication } from '../../../services/tasksService'
 import { getLocationLabel } from '../../profile/utils/profileFormatters'
 import styles from '../styles/helperHome.module.css'
 
@@ -107,6 +107,10 @@ function buildMapEntries(entries = [], currentUserId, profile) {
     })
     .filter(Boolean)
     .sort((left, right) => {
+      if (left.task.is_direct_request !== right.task.is_direct_request) {
+        return left.task.is_direct_request ? -1 : 1
+      }
+
       const leftDistance = Number(left.distance)
       const rightDistance = Number(right.distance)
       const hasLeftDistance = Number.isFinite(leftDistance)
@@ -139,7 +143,11 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const [offerError, setOfferError] = useState('')
 
   const offerMutation = useMutation({
-    mutationFn: (task) => applyToTask(task.id),
+    mutationFn: (task) => (
+      task.is_direct_request
+        ? respondToDirectTask(task.id, 'accept')
+        : applyToTask(task.id)
+    ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
@@ -159,7 +167,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   )
 
   const mapEntries = useMemo(
-    () => allMapEntries.filter((entry) => isWithinBounds(entry.task, mapBounds)),
+    () => allMapEntries.filter((entry) => entry.task.is_direct_request || isWithinBounds(entry.task, mapBounds)),
     [allMapEntries, mapBounds],
   )
 
@@ -198,6 +206,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     selectedTask.status === 'open' &&
     !isTaskTimeWindowExpired(selectedTask) &&
     selectedTask.created_by !== helperHomeProps.currentUserId &&
+    (!selectedTask.is_direct_request || selectedTask.target_helper_id === helperHomeProps.currentUserId) &&
     !hasActiveOffer,
   )
   const locationSource =
@@ -217,6 +226,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
       task.status !== 'open' ||
       isTaskTimeWindowExpired(task) ||
       task.created_by === helperHomeProps.currentUserId ||
+      (task.is_direct_request && task.target_helper_id !== helperHomeProps.currentUserId) ||
       offerMutation.isPending ||
       withdrawMutation.isPending
     ) {
@@ -252,7 +262,9 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     ? hasPendingOffer
       ? 'Retirando...'
       : 'Enviando...'
-    : isSelectedOffer
+    : selectedTask?.is_direct_request
+      ? 'Aceptar solicitud'
+      : isSelectedOffer
       ? 'Seleccionado'
       : hasPendingOffer
         ? 'Retirar oferta'

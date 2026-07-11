@@ -71,6 +71,8 @@ async function ensureProfile(user, roleLabel, overrides = {}) {
 
 async function createTask(requesterId, helperId, status, title) {
   const id = randomUUID()
+  const startsAt = new Date(Date.now() + 2 * 60 * 60 * 1000)
+  const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000)
   const { error } = await admin.from('tasks').insert({
     id,
     created_by: requesterId,
@@ -82,6 +84,9 @@ async function createTask(requesterId, helperId, status, title) {
     status,
     lat: 40.4168,
     lng: -3.7038,
+    starts_at: startsAt.toISOString(),
+    ends_at: endsAt.toISOString(),
+    timezone: 'Europe/Madrid',
     published_at: new Date().toISOString(),
   })
   if (error) throw error

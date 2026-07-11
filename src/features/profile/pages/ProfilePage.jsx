@@ -57,10 +57,13 @@ export default function ProfilePage() {
     if (!profile?.id) return
 
     setContactError('')
-    navigate('/create', {
+    navigate('/home', {
       state: {
-        helperId: profile.id,
-        returnTo: location.pathname,
+        mode: 'need',
+        directHelper: {
+          ...profile,
+          skills: skills.map((entry) => entry?.skill || entry).filter(Boolean),
+        },
       },
     })
   }
@@ -135,7 +138,7 @@ export default function ProfilePage() {
         onBack={() => navigate(returnTo)}
         onPrimaryAction={handlePrimaryAction}
         primaryActionLabel="Pedir ayuda"
-        showPrimaryAction={!hasTaskContext}
+        showPrimaryAction={!hasTaskContext && helperAvailable && profile?.accepts_direct_requests === true}
         onToggleFavorite={handleToggleFavorite}
         favoriteState={favoriteState}
         favoriteLabel={favoriteLabel}

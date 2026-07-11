@@ -21,6 +21,10 @@ function applyHelperFilters(tasks, { category, location }) {
       distance: buildTaskDistance(task, location),
     }))
     .filter(({ task }) => {
+      if (task.is_direct_request) {
+        return true
+      }
+
       if (category !== 'Todas' && task.category !== category) {
         return false
       }

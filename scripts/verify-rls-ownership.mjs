@@ -83,6 +83,7 @@ async function ensureProfile(user, label, overrides = {}) {
       reviews_count: 0,
       verified: false,
       helper_status: 'not_started',
+      accepts_direct_requests: true,
       stripe_onboarding_completed: false,
       stripe_account_id: null,
       stripe_charges_enabled: false,
@@ -95,7 +96,7 @@ async function ensureProfile(user, label, overrides = {}) {
   if (error) throw error
 }
 
-async function createTask(ids, requesterId, helperId, status, title) {
+async function createTask(ids, requesterId, helperId, status, title, { targetHelperId = null } = {}) {
   const id = randomUUID()
   const startsAt = new Date(Date.now() + 2 * 60 * 60 * 1000)
   const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000)
@@ -108,6 +109,8 @@ async function createTask(ids, requesterId, helperId, status, title) {
     category: 'Recados',
     price: 12.34,
     status,
+    is_direct_request: Boolean(targetHelperId),
+    target_helper_id: targetHelperId,
     lat: 40.4168,
     lng: -3.7038,
     published_at: new Date().toISOString(),
@@ -537,6 +540,57 @@ async function main() {
         { p_application_id: foreignAppId },
         'A-rpc-select-foreign',
         'Requester no acepta helper fuera de su task',
+      )
+    }
+
+    // Direct tasks are private: only the requester and invited helper can see or answer them.
+    {
+      const directTask = await createTask(
+        ids,
+        requester.id,
+        null,
+        'open',
+        'RLS direct task privacy',
+        { targetHelperId: helper.id },
+      )
+
+      await assertNoRead(tc, 'tasks', directTask, 'D-read-third')
+
+      {
+        const { data, error } = await hc.from('tasks').select('id').eq('id', directTask)
+        record(
+          'D-read-target',
+          'Helper invitado sí puede leer su solicitud directa',
+          !error && rowCount(data) === 1,
+          error ? `error ${error.code}` : `filas=${rowCount(data)}`,
+        )
+      }
+
+      await assertRpcBlocked(
+        tc,
+        'apply_to_task',
+        { p_task_id: directTask, p_message: 'Direct task bypass should fail' },
+        'D-apply-blocked',
+        'Nadie puede aplicar a una solicitud directa por apply_to_task',
+      )
+
+      await assertRpcBlocked(
+        tc,
+        'respond_to_direct_task',
+        { p_task_id: directTask, p_response: 'accept' },
+        'D-respond-third',
+        'Tercero no puede responder una solicitud directa',
+      )
+
+      const { data, error } = await hc.rpc('respond_to_direct_task', {
+        p_task_id: directTask,
+        p_response: 'accept',
+      })
+      record(
+        'D-respond-target',
+        'Helper invitado acepta su solicitud directa',
+        !error && data?.status === 'assigned' && data?.accepted_by === helper.id,
+        error ? `error ${error.code}` : `status=${data?.status}`,
       )
     }
 

@@ -10,6 +10,7 @@ export default function NeedHomeMode({
   requestsDrawerOpen,
   onOpenRequestsDrawer,
   onCloseRequestsDrawer,
+  directHelper,
 }) {
   return (
     <RequesterProfileGate profile={profile}>
@@ -22,6 +23,7 @@ export default function NeedHomeMode({
         requestsDrawerOpen={requestsDrawerOpen}
         onOpenRequestsDrawer={onOpenRequestsDrawer}
         onCloseRequestsDrawer={onCloseRequestsDrawer}
+        directHelper={directHelper}
       />
     </RequesterProfileGate>
   )

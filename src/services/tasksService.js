@@ -16,7 +16,19 @@ import {
 // Nota: categorias que el frontend ofrece al crear/filtrar. IMPORTANTE: la BD impone un CHECK
 // (tasks_category_check, ver supabase/schema.sql) que SOLO admite estos valores. Ampliar esta
 // lista requiere ANTES una migracion que actualice el constraint (y schema.sql) — ver 0046.
-export const allowedCategories = ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica']
+export const allowedCategories = [
+  'Mascotas',
+  'Recados',
+  'Compras',
+  'Ayuda tecnica',
+  'Limpieza',
+  'Mudanza',
+  'Reparaciones',
+  'Clases',
+  'Cuidado',
+  'Tecnología',
+  'Otros',
+]
 
 // Nota Supabase - public.tasks:
 // Estas son las columnas que este servicio pide cada vez que lee una tarea.
@@ -34,6 +46,9 @@ const TASK_SELECT = `
   category,
   price,
   status,
+  is_direct_request,
+  target_helper_id,
+  direct_request_response,
   lat,
   lng,
   location_label,
@@ -162,6 +177,10 @@ function sortHelperTasks(tasks) {
 }
 
 function hasMatchingCategory(task, category) {
+  if (task?.is_direct_request) {
+    return true
+  }
+
   if (!category || category === 'Todas') {
     return true
   }
@@ -344,6 +363,51 @@ export async function createTask(input) {
   return tasksWithProfiles[0]
 }
 
+export async function createDirectTask(targetHelperId, input) {
+  const validation = validateTaskInput(input)
+  const timeWindowValidation = validateTaskTimeWindow(input, { requireComplete: true })
+
+  if (!validation.isValid) {
+    throw new Error(validation.errors[0])
+  }
+
+  if (!timeWindowValidation.isValid) {
+    throw new Error(timeWindowValidation.errors[0])
+  }
+
+  if (!targetHelperId) {
+    throw new Error('Elige un helper para enviar una solicitud privada.')
+  }
+
+  await requireUser('Necesitas iniciar sesion para enviar una solicitud privada.')
+
+  const { data, error } = await supabase.rpc('create_direct_task', {
+    p_target_helper_id: targetHelperId,
+    p_title: validation.value.title,
+    p_description: validation.value.description,
+    p_category: validation.value.category,
+    p_price: validation.value.price,
+    p_lat: validation.value.lat,
+    p_lng: validation.value.lng,
+    p_location_label: validation.value.location_label,
+    p_starts_at: timeWindowValidation.value.starts_at,
+    p_ends_at: timeWindowValidation.value.ends_at,
+    p_timezone: timeWindowValidation.value.timezone,
+    p_requested_time_note: validation.value.requested_time_note,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('No se pudo enviar la solicitud privada.')
+  }
+
+  const tasksWithProfiles = await attachTaskProfiles([data])
+  return tasksWithProfiles[0]
+}
+
 // Nota funcion:
 // Actualiza una tarea propia sin cambiar su id ni su created_at.
 // Solo permite editar borradores o tareas publicadas que aun no hayan sido aceptadas.
@@ -463,15 +527,14 @@ export async function getAvailableTasksForHelper(profile, { category } = {}) {
     .from('tasks')
     .select(TASK_SELECT)
     .eq('status', 'open')
-    .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`)
     .order('created_at', { ascending: false })
 
   if (helperId) {
-    query = query.neq('created_by', helperId)
-  }
-
-  if (category && category !== 'Todas') {
-    query = query.eq('category', category)
+    query = query
+      .neq('created_by', helperId)
+      .or(`is_direct_request.eq.false,target_helper_id.eq.${helperId}`)
+  } else {
+    query = query.eq('is_direct_request', false)
   }
 
   const { data, error } = await query
@@ -481,7 +544,9 @@ export async function getAvailableTasksForHelper(profile, { category } = {}) {
   }
 
   const tasksWithProfiles = await attachTaskProfiles(data)
-  const publicTasks = keepTasksWithAvailableCreators(tasksWithProfiles).filter((task) => hasMatchingCategory(task, category))
+  const publicTasks = keepTasksWithAvailableCreators(tasksWithProfiles)
+    .filter((task) => !isTaskTimeWindowExpired(task))
+    .filter((task) => hasMatchingCategory(task, category))
   const tasksWithApplications = await attachCurrentHelperApplications(publicTasks, helperId)
 
   return sortHelperTasks(tasksWithApplications)
@@ -617,7 +682,11 @@ export async function getTaskById(taskId, { viewer } = {}) {
   const resolvedViewer = viewer !== undefined ? viewer : await getCurrentUser()
   const userId = resolvedViewer?.id
   const canSeeUnavailableCreator =
-    userId && (taskWithProfile.created_by === userId || taskWithProfile.accepted_by === userId)
+    userId && (
+      taskWithProfile.created_by === userId ||
+      taskWithProfile.accepted_by === userId ||
+      taskWithProfile.target_helper_id === userId
+    )
 
   if (!isProfileAvailable(taskWithProfile.creator_profile) && !canSeeUnavailableCreator) {
     return null
@@ -651,6 +720,7 @@ export async function applyToTask(taskId, input = {}) {
     !isProfileAvailable(candidateTask.creator_profile) ||
     candidateTask.status !== 'open' ||
     candidateTask.accepted_by ||
+    candidateTask.is_direct_request ||
     isTaskTimeWindowExpired(candidateTask)
   ) {
     throw new Error('La tarea ya no esta disponible.')
@@ -733,6 +803,26 @@ export async function selectTaskHelper(applicationId) {
 
   if (!data) {
     throw new Error('No se pudo elegir este helper.')
+  }
+
+  const tasksWithProfiles = await attachTaskProfiles([data])
+  return tasksWithProfiles[0]
+}
+
+export async function respondToDirectTask(taskId, response) {
+  await requireUser('Necesitas iniciar sesion para responder una solicitud privada.')
+
+  const { data, error } = await supabase.rpc('respond_to_direct_task', {
+    p_task_id: taskId,
+    p_response: response,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('No se pudo actualizar la solicitud privada.')
   }
 
   const tasksWithProfiles = await attachTaskProfiles([data])

@@ -1,5 +1,6 @@
 import { BadgeCheck, ChevronRight, MapPin, ShieldCheck, Star } from 'lucide-react'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './NeedHelpMapLayout.module.css'
 
 function formatDistance(distanceKm) {
@@ -70,7 +71,7 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
   const skills = buildSkillList(helper)
   const trustItems = buildTrustItems(helper)
   const { visible: visibleSkills, extraCount } = getVisibleSkills(skills)
-  const canContact = helper?.availability_enabled !== false
+  const canContact = canHelperReceiveDirectRequest(helper)
   const availabilityLabel = formatAvailability(helper)
   const ratingLabel = formatRating(helper)
   const ratingAriaLabel = ratingLabel === 'Nuevo helper'

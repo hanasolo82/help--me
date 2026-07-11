@@ -133,18 +133,30 @@ export default function TaskCard({
   const ratingLabel = `${ratingValue}/5`
   const helper = task.accepted_profile
   const helperName = helper?.display_name || helper?.full_name || helper?.username || 'Ayudante'
+  const isDirectRequest = task.is_direct_request === true && task.status === 'open'
+  const isDirectDeclined = task.is_direct_request === true && task.direct_request_response === 'declined'
   const distanceLabel = Number.isFinite(distanceKm) ? `${distanceKm} km` : 'Distancia desconocida'
   const locationLabel = task.location_label || task.zone || task.location || null
   const isDetailActionLabel = (label) => ['Ver detalle', 'Ocultar'].includes(label)
   const isPublishActionLabel = (label) => label === 'Publicar tarea'
-  const statusLabel = getTaskStatusLabel(task.status)
-  const statusHint = getTaskStatusHint({
-    status: task.status,
-    viewerRole,
-    applicationCount: task.application_count,
-    helperName,
-    hasReview,
-  })
+  const statusLabel = isDirectRequest
+    ? 'Solicitud directa'
+    : isDirectDeclined
+      ? 'Solicitud no aceptada'
+      : getTaskStatusLabel(task.status)
+  const statusHint = isDirectRequest
+    ? viewerRole === 'helper'
+      ? `${creatorName} te ha pedido ayuda solo a ti.`
+      : 'Enviada solo al helper que elegiste.'
+    : isDirectDeclined
+      ? 'El helper invitado no ha podido aceptar esta solicitud.'
+    : getTaskStatusHint({
+      status: task.status,
+      viewerRole,
+      applicationCount: task.application_count,
+      helperName,
+      hasReview,
+    })
   const metaItems = [
     locationLabel,
     formatTaskAvailabilityShort(task),

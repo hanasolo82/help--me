@@ -65,6 +65,7 @@ export default function HomeView({
   requestsDrawerOpen,
   onOpenRequestsDrawer,
   onCloseRequestsDrawer,
+  directHelper,
 }) {
   return (
     <HomeLayout
@@ -153,6 +154,7 @@ export default function HomeView({
           requestsDrawerOpen={requestsDrawerOpen}
           onOpenRequestsDrawer={onOpenRequestsDrawer}
           onCloseRequestsDrawer={onCloseRequestsDrawer}
+          directHelper={directHelper}
         />
       )}
 

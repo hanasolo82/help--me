@@ -17,6 +17,13 @@ const CATEGORY_LABELS = {
   'Recados': 'Recados',
   'Compras': 'Compras',
   'Ayuda tecnica': 'Ayuda técnica',
+  'Limpieza': 'Limpieza',
+  'Mudanza': 'Mudanza',
+  'Reparaciones': 'Reparaciones',
+  'Clases': 'Clases',
+  'Cuidado': 'Cuidado',
+  'Tecnología': 'Tecnología',
+  'Otros': 'Otros',
 }
 
 function getLocationPayload(location) {

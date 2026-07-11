@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useTransitionNavigate } from '../../../../shared/navigation/usePageTransition'
@@ -17,6 +17,7 @@ export default function RequesterHome({
   locationStatus,
   locationError,
   onRequestLocation,
+  directHelper = null,
   requestsDrawerOpen = false,
   onCloseRequestsDrawer,
 }) {
@@ -28,10 +29,12 @@ export default function RequesterHome({
   const [selectedHelper, setSelectedHelper] = useState(null)
   const [requestTaskOpen, setRequestTaskOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
+  const [targetHelper, setTargetHelper] = useState(null)
   const [selectedRequesterTaskId, setSelectedRequesterTaskId] = useState(null)
   const [focusRequesterTaskId, setFocusRequesterTaskId] = useState(null)
   const [contactError, setContactError] = useState('')
   const [draftTaskTitle, setDraftTaskTitle] = useState('')
+  const handledDirectHelperIdRef = useRef(null)
   const myTasksQuery = useQuery({
     queryKey: ['my-tasks', profile?.id],
     queryFn: () => getMyTasks(profile?.id),
@@ -72,6 +75,7 @@ export default function RequesterHome({
     setContactError('')
     setSelectedHelper(null)
     setEditingTask(null)
+    setTargetHelper(helper)
     setDraftTaskTitle(heroQuery.trim())
     setRequestTaskOpen(true)
   }
@@ -79,6 +83,7 @@ export default function RequesterHome({
   function handleOpenTaskModal() {
     setSelectedHelper(null)
     setEditingTask(null)
+    setTargetHelper(null)
     setDraftTaskTitle(heroQuery.trim())
     setHeroQuery('')
     setRequestTaskOpen(true)
@@ -91,6 +96,7 @@ export default function RequesterHome({
   function handleEditTask(task) {
     setSelectedHelper(null)
     setEditingTask(task)
+    setTargetHelper(null)
     setRequestTaskOpen(true)
   }
 
@@ -120,13 +126,30 @@ export default function RequesterHome({
   function handleSavedTask(task) {
     setRequestTaskOpen(false)
     setEditingTask(null)
-    setFocusRequesterTaskId(task?.id || null)
-    setSelectedRequesterTaskId(task?.id || null)
-    setPreferredView('map')
+    setTargetHelper(null)
+
+    if (task?.is_direct_request) {
+      transitionNavigate(`/task/${task.id}`)
+    } else {
+      setFocusRequesterTaskId(task?.id || null)
+      setSelectedRequesterTaskId(task?.id || null)
+      setPreferredView('map')
+    }
 
     queryClient.invalidateQueries({ queryKey: ['my-tasks', profile?.id] })
     queryClient.invalidateQueries({ queryKey: ['tasks'] })
   }
+
+  useEffect(() => {
+    if (!directHelper?.id || handledDirectHelperIdRef.current === directHelper.id) return
+
+    handledDirectHelperIdRef.current = directHelper.id
+    setSelectedHelper(null)
+    setEditingTask(null)
+    setTargetHelper(directHelper)
+    setDraftTaskTitle('')
+    setRequestTaskOpen(true)
+  }, [directHelper])
 
   function handleOpenChat(task) {
     transitionNavigate(`/task/${task.id}`, { state: { openChat: true } })
@@ -203,6 +226,7 @@ export default function RequesterHome({
       <RequestTaskModal
         open={requestTaskOpen}
         task={editingTask}
+        targetHelper={targetHelper}
         initialTitle={draftTaskTitle}
         location={location}
         locationStatus={locationStatus}
@@ -211,6 +235,7 @@ export default function RequesterHome({
         onClose={() => {
           setRequestTaskOpen(false)
           setEditingTask(null)
+          setTargetHelper(null)
           setDraftTaskTitle('')
         }}
       />

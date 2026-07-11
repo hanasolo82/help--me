@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { allowedCategories, createTask, publishTask, updateTask } from '../../../../services/tasksService'
+import { allowedCategories, createDirectTask, createTask, publishTask, updateTask } from '../../../../services/tasksService'
 import { useAuth } from '../../../../contexts/useAuth'
 import TaskAvailabilityFields from '../../../tasks/availability/TaskAvailabilityFields'
 import { getTaskTimeWindowFormValues, validateTaskTimeWindow } from '../../../tasks/availability/taskAvailability'
+import { getDirectRequestCategories } from '../../../tasks/direct-requests/directRequestCategories'
 import GlitchSoftButton from '../../../../shared/ui/GlitchSoftButton'
 import Modal from '../../../../shared/ui/Modal/Modal'
 import TaskLocationSearch from './TaskLocationSearch'
@@ -38,14 +39,18 @@ function RequestTaskModalInner({
   locationStatus,
   onRequestLocation,
   onSaved,
+  targetHelper = null,
 }) {
   const queryClient = useQueryClient()
   const { profile } = useAuth()
   const isEditing = Boolean(task?.id)
+  const directCategories = useMemo(() => getDirectRequestCategories(targetHelper), [targetHelper])
+  const categoryOptions = targetHelper ? directCategories : defaultCategories
+  const targetHelperName = targetHelper?.display_name || targetHelper?.full_name || targetHelper?.username || 'este helper'
   const titleId = useId()
   const [title, setTitle] = useState(task?.title || initialTitle || '')
   const [description, setDescription] = useState(task?.description || '')
-  const [category, setCategory] = useState(task?.category || defaultCategories[0])
+  const [category, setCategory] = useState(task?.category || categoryOptions[0] || '')
   const [price, setPrice] = useState(String(task?.price ?? ''))
   const [schedule, setSchedule] = useState(() => ({
     ...getTaskTimeWindowFormValues(task),
@@ -63,7 +68,7 @@ function RequestTaskModalInner({
   const [initialValues] = useState(() => ({
     title: task?.title || initialTitle || '',
     description: task?.description || '',
-    category: task?.category || defaultCategories[0],
+    category: task?.category || categoryOptions[0] || '',
     price: String(task?.price ?? ''),
     ...getTaskTimeWindowFormValues(task),
     requestedTimeNote: task?.requested_time_note || '',
@@ -154,6 +159,9 @@ function RequestTaskModalInner({
     if (!taskLocation) {
       nextFieldErrors.location = 'Selecciona el lugar de la tarea para situarla en el mapa.'
     }
+    if (targetHelper && categoryOptions.length === 0) {
+      nextFieldErrors.category = 'Este helper no tiene actividades compatibles configuradas.'
+    }
 
     const timeWindowValidation = validateTaskTimeWindow(schedule, { requireComplete: true })
     if (!timeWindowValidation.isValid) {
@@ -192,7 +200,11 @@ function RequestTaskModalInner({
         requested_time_note: schedule.requestedTimeNote || null,
       }
 
-      const savedTask = isEditing ? await updateTask(task.id, payload) : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
+      const savedTask = isEditing
+        ? await updateTask(task.id, payload)
+        : targetHelper
+          ? await createDirectTask(targetHelper.id, payload)
+          : await createTask(payload).then((draftTask) => publishTask(draftTask.id))
 
       if (!isEditing) {
         await queryClient.invalidateQueries({ queryKey: ['tasks'] })
@@ -215,9 +227,9 @@ function RequestTaskModalInner({
       {/* Header propio (no ModalHeader) para una X limpia sin contenedor visible. */}
       <div className={styles.modalHeader}>
         <div className={styles.modalHeaderText}>
-          <p className={styles.modalEyebrow}>{isEditing ? 'Editar solicitud' : 'Publicar solicitud'}</p>
+          <p className={styles.modalEyebrow}>{isEditing ? 'Editar solicitud' : targetHelper ? 'Solicitud privada' : 'Publicar solicitud'}</p>
           <h2 className={styles.modalTitle} id={titleId}>
-            {isEditing ? 'Ajusta tu solicitud' : 'Cuéntanos qué necesitas'}
+            {isEditing ? 'Ajusta tu solicitud' : targetHelper ? `Pide ayuda a ${targetHelperName}` : 'Cuéntanos qué necesitas'}
           </h2>
         </div>
         <button
@@ -231,6 +243,12 @@ function RequestTaskModalInner({
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+          {targetHelper ? (
+            <section className={styles.directRecipient} aria-label="Destinatario de la solicitud privada">
+              <strong>Solo {targetHelperName} verá esta solicitud.</strong>
+              <p>Elige una actividad que ya ofrece y podrá aceptarla o rechazarla desde su panel.</p>
+            </section>
+          ) : null}
           <label className="field">
             <span>Título</span>
             <input
@@ -296,13 +314,22 @@ function RequestTaskModalInner({
           <div className={styles.inlineRow}>
             <label className="field">
               <span>Categoría</span>
-              <select value={category} onChange={(event) => setCategory(event.target.value)}>
-                {defaultCategories.map((item) => (
+              <select
+                value={category}
+                onChange={(event) => {
+                  setCategory(event.target.value)
+                  setFieldErrors((current) => ({ ...current, category: undefined }))
+                }}
+                disabled={categoryOptions.length === 0}
+                aria-invalid={fieldErrors.category ? 'true' : undefined}
+              >
+                {categoryOptions.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
                 ))}
               </select>
+              {fieldErrors.category ? <p className={styles.fieldError} role="alert">{fieldErrors.category}</p> : null}
             </label>
 
             <label className="field">
@@ -330,7 +357,7 @@ function RequestTaskModalInner({
               Cancelar
             </button>
             <GlitchSoftButton type="submit" variant="primary">
-              {isEditing ? 'Guardar cambios' : 'Publicar solicitud'}
+              {isEditing ? 'Guardar cambios' : targetHelper ? 'Enviar solicitud privada' : 'Publicar solicitud'}
             </GlitchSoftButton>
           </div>
         </form>
@@ -366,6 +393,7 @@ export default function RequestTaskModal(props) {
   const resetKey = [
     props.task?.id || 'new',
     props.initialTitle || '',
+    props.targetHelper?.id || '',
     props.task?.location_label || '',
     props.task?.starts_at || '',
     props.task?.ends_at || '',

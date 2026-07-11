@@ -363,6 +363,28 @@ export default function ProfileSettings() {
               </button>
             </div>
 
+            <div className={`${styles.helperAvailabilityRow} ${styles.spanTwo}`}>
+              <div className={styles.helperAvailabilityCopy}>
+                <strong>Aceptar solicitudes directas</strong>
+                <p>Permite que alguien te envíe una solicitud privada dentro de las actividades que ofreces.</p>
+              </div>
+              <button
+                type="button"
+                className={
+                  form.acceptsDirectRequests
+                    ? `${styles.settingsSwitch} ${styles.settingsSwitchOn}`
+                    : styles.settingsSwitch
+                }
+                onClick={() => setField('acceptsDirectRequests', !form.acceptsDirectRequests)}
+                disabled={!displayedAvailabilityEnabled}
+                role="switch"
+                aria-checked={form.acceptsDirectRequests}
+                aria-label="Aceptar solicitudes directas"
+              >
+                <span className={styles.settingsSwitchThumb} aria-hidden="true" />
+              </button>
+            </div>
+
             <div className={`${styles.infoGroup} ${styles.spanTwo}`}>
               <span className={styles.panelKicker}>Disponibilidad</span>
               <div className={styles.daySelector} aria-label="Días disponibles">

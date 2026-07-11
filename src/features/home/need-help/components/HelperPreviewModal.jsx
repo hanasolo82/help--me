@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import SkillBadge from '../../../skills/components/SkillBadge'
 import Modal, { ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './HelperPreviewModal.module.css'
 
 function formatDistance(distanceKm) {
@@ -43,6 +44,7 @@ export default function HelperPreviewModal({
   if (!helper) return null
 
   const name = helper.display_name || helper.full_name || helper.username || 'Vecino'
+  const canContact = canHelperReceiveDirectRequest(helper)
 
   return (
     <Modal open={open} onClose={onClose} size="lg" ariaLabel={`Vista previa de ${name}`}>
@@ -83,9 +85,11 @@ export default function HelperPreviewModal({
         <button type="button" className="secondary-action" onClick={() => onViewProfile?.(helper)} disabled={contactPending}>
           Ver perfil
         </button>
-        <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
-          {contactPending ? 'Preparando...' : 'Pedir ayuda'}
-        </button>
+        {canContact ? (
+          <button type="button" className="secondary-action" onClick={() => onContact?.(helper)} disabled={contactPending}>
+            {contactPending ? 'Preparando...' : 'Pedir ayuda'}
+          </button>
+        ) : null}
         <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
           Publicar solicitud
         </button>

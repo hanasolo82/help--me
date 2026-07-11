@@ -404,6 +404,7 @@ function normalizeProfileUpdateInput(input) {
     'helper_status',
     'allowHelperStatusUpdate',
     'availabilityEnabled',
+    'acceptsDirectRequests',
     'visibilityEnabled',
     'responseTimeMinutes',
     'hourlyRate',
@@ -564,6 +565,10 @@ function normalizeProfileUpdateInput(input) {
 
   if (Object.prototype.hasOwnProperty.call(input, 'availabilityEnabled')) {
     updates.availability_enabled = normalizeBoolean(input.availabilityEnabled, DEFAULT_AVAILABILITY_ENABLED)
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'acceptsDirectRequests')) {
+    updates.accepts_direct_requests = normalizeBoolean(input.acceptsDirectRequests, false)
   }
 
   if (Object.prototype.hasOwnProperty.call(input, 'visibilityEnabled')) {

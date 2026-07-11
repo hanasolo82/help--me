@@ -25,6 +25,7 @@ export async function getProfileById(profileId) {
       reviews_count,
       helper_status,
       availability_enabled,
+      accepts_direct_requests,
       account_status,
       location_label
     `)

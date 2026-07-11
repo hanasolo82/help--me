@@ -534,6 +534,7 @@ export default function HomeContainer() {
         requestsDrawerOpen={myRequestsDrawerOpen}
         onOpenRequestsDrawer={handleOpenMyRequests}
         onCloseRequestsDrawer={handleCloseMyRequests}
+        directHelper={routeLocation.state?.directHelper || null}
       />
       <HelperJourneyModal
         open={helperJourneyOpen}
