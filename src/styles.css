@@ -2070,3 +2070,293 @@ p {
   border-right: 6px solid transparent;
   border-top: 8px solid;
 }
+
+/* ============================================================
+   /task/:id — rediseño visual de la pantalla de decisión.
+   TODO scoped bajo .task-detail-screen: las clases base
+   (.page-header, .detail-panel, .task-fact, .two-actions…) son
+   globales y las comparten TaskComplete/Profile/CreateTask.
+   Solo presentación; tokens existentes, sin valores mágicos.
+   ============================================================ */
+
+.task-detail-screen {
+  /* Ancla del posicionamiento absoluto de la flecha atrás. */
+  position: relative;
+}
+
+/* Columna estrecha centrada; los modales (hijos div sin clase de
+   layout) quedan fuera a propósito de esta regla. */
+.task-detail-screen > header,
+.task-detail-screen > section,
+.task-detail-screen > p,
+.task-detail-screen > .two-actions {
+  width: min(100%, 40rem);
+  margin-inline: auto;
+}
+
+/* Separación clara entre secciones (pide --space-8 = 2rem). */
+.task-detail-screen > section {
+  margin-bottom: var(--space-8);
+}
+
+/* --- Flecha atrás: fuera del flujo, arriba a la izquierda del main --- */
+.task-detail-screen .page-header {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0;
+  margin-bottom: var(--space-8);
+  padding-top: var(--space-6); /* respiro superior generoso */
+}
+
+.task-detail-screen .page-header > .icon-button {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 1;
+}
+
+/* --- Header centrado (jerarquía nivel 1) --- */
+.task-detail-screen .task-header-copy {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  text-align: center;
+}
+
+.task-detail-screen .task-header-copy .eyebrow {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.task-detail-screen .page-header h1 {
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.task-detail-screen .task-header-person {
+  margin-top: var(--space-2);
+  text-align: left;
+}
+
+/* Avatar del helper: ~2.75rem con anillo (el componente es circular). */
+.task-detail-screen .task-header-person > :first-child {
+  width: 2.75rem;
+  height: 2.75rem;
+  box-shadow: 0 0 0 3px var(--hm-avatar-ring);
+}
+
+/* Estado como pill/badge, no como línea de texto. */
+.task-detail-screen .task-header-status {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  margin-top: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--highlight);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.task-detail-screen .task-header-turn {
+  max-width: 32ch;
+  margin-inline: auto;
+  margin-top: var(--space-2);
+}
+
+/* --- Sección de datos (nivel 2): un solo panel, nada de pills sueltos --- */
+.task-detail-screen .task-overview-panel {
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  margin-inline: auto;
+}
+
+.task-detail-screen .task-fact,
+.task-detail-screen .task-review-grid div {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.task-detail-screen .task-facts-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+
+.task-detail-screen .task-fact > span {
+  font-size: 0.6875rem; /* 11px */
+}
+
+/* Coste destacado: fila completa arriba, con separador inferior. */
+.task-detail-screen .task-fact-cost {
+  grid-column: 1 / -1;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.task-detail-screen .task-fact-cost strong {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+}
+
+/* Valoraciones: metadata terciaria, separada y apagada. */
+.task-detail-screen .task-review-grid {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.task-detail-screen .task-review-grid span {
+  color: var(--text-400);
+  font-size: 0.65rem;
+}
+
+.task-detail-screen .task-review-grid strong {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- Sección decisión (foco / CTA), centrada --- */
+.task-detail-screen .decision-gate {
+  max-width: none;
+  justify-items: center;
+  text-align: center;
+  padding: var(--space-6);
+  border: 1px solid var(--hm-payment-panel-border);
+  border-radius: var(--hm-payment-panel-radius);
+  background: var(--hm-payment-panel-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.task-detail-screen .decision-gate h2,
+.task-detail-screen .decision-gate > .muted {
+  margin-inline: auto;
+}
+
+/* Botones apilados a ancho completo con altura de botón normal.
+   Contrarresta el estirado heredado (.decision-actions align-items:stretch
+   + flex:1 1 13rem convertía los botones en cajas gigantes). */
+.task-detail-screen .decision-actions {
+  flex-direction: column;
+  align-items: stretch;
+  width: min(100%, 22.5rem);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.task-detail-screen .decision-actions > button {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: var(--hm-button-min-height);
+}
+
+/* Rechazar: secundario con borde y texto de peligro. */
+.task-detail-screen .decision-actions > .secondary-action {
+  border: 1px solid var(--color-border-subtle);
+  color: var(--hm-color-danger);
+}
+
+/* Ver perfil: link ghost discreto, el último del stack. */
+.task-detail-screen .decision-actions > .profile-link-action {
+  justify-self: auto;
+  min-height: var(--space-8);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--hm-button-ghost-fg);
+  font-weight: 700;
+}
+
+.task-detail-screen .decision-actions > .profile-link-action:hover {
+  transform: none;
+  box-shadow: none;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- Chat bloqueado (nivel 3): barra compacta con candado --- */
+.task-detail-screen .task-chat-locked {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--hm-card-radius);
+  background: var(--hm-card-muted-bg);
+}
+
+.task-detail-screen .task-chat-locked-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border: 1px solid var(--hm-card-border);
+  border-radius: var(--radius-pill);
+  background: var(--hm-card-bg);
+  color: var(--text-muted);
+}
+
+.task-detail-screen .task-chat-locked-icon svg {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.task-detail-screen .task-chat-locked > div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.task-detail-screen .task-chat-locked strong {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.task-detail-screen .task-chat-locked span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* --- Responsive --- */
+@media (max-width: 40rem) {
+  .task-detail-screen .task-facts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 42rem) {
+  /* Neutraliza la tarjeta sticky heredada del CTA móvil (flotaba sobre el h2 y
+     la descripción del panel): aquí los botones van en flujo normal, apilados
+     dentro del propio panel de decisión. */
+  .task-detail-screen .decision-actions {
+    position: static;
+    z-index: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Sin CTA sticky ya no hace falta reservar --hm-space-sticky bajo el panel. */
+  .task-detail-screen .decision-gate {
+    margin-bottom: var(--space-8);
+  }
+}

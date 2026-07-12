@@ -317,10 +317,10 @@ export default function TaskDetail() {
   const chatAvailabilityCopy = canOpenChat
     ? 'Habla con la otra persona sin salir del contexto de esta tarea.'
     : task?.status === 'assigned'
-      ? 'El chat se desbloqueará cuando el pago esté confirmado.'
+      ? 'Se abre al confirmar el pago.'
       : task?.status === 'open'
-        ? 'El chat estará disponible cuando elijas helper y confirmes la tarea.'
-        : 'El chat todavía no está disponible para esta tarea.'
+        ? 'Se abre al elegir helper y confirmar el pago.'
+        : 'Todavía no está disponible para esta tarea.'
   const contextualProfile = isOwner && task?.accepted_by ? helperProfile : creatorProfile
   const contextualName = isOwner && task?.accepted_by ? helperName : creatorName
   const contextualRole = isOwner
@@ -405,7 +405,10 @@ export default function TaskDetail() {
   }
 
   return (
-    <main className="app-screen">
+    // task-detail-screen: scope del rediseño visual de esta pantalla (styles.css).
+    // Las clases base (.page-header, .detail-panel, .task-fact…) son globales y
+    // las comparten otras pantallas; sin el scope, los overrides se fugarían.
+    <main className="app-screen task-detail-screen">
       <header className="page-header">
         <button className="icon-button" onClick={() => transitionNavigate(returnTo, { direction: 'back' })} aria-label="Volver">
           ←
@@ -433,6 +436,11 @@ export default function TaskDetail() {
 
       <section className="detail-panel task-overview-panel" aria-label="Resumen de la tarea">
         <div className="task-facts-grid">
+          {/* El coste es el dato clave de la decisión: fila completa y destacado. */}
+          <div className="task-fact task-fact-cost">
+            <span>{moneyLabel}</span>
+            <strong>{priceEuros} EUR</strong>
+          </div>
           <div className="task-fact">
             <span>Ubicación de la tarea</span>
             <strong>
@@ -440,10 +448,6 @@ export default function TaskDetail() {
                 ? 'Buscando dirección...'
                 : taskLocationLabel || task.location_label || 'Dirección privada'}
             </strong>
-          </div>
-          <div className="task-fact">
-            <span>{moneyLabel}</span>
-            <strong>{priceEuros} EUR</strong>
           </div>
           <div className="task-fact">
             <span>Categoría</span>
@@ -546,19 +550,18 @@ export default function TaskDetail() {
                   onClick={handleRejectHelper}
                   disabled={rejectHelperMutation.isPending}
                 >
-                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar'}
                 </button>
               </>
             )}
+            <button
+              type="button"
+              className="secondary-action profile-link-action"
+              onClick={() => navigate(`/profile/${task.accepted_by}`, { state: { returnTo: taskPath } })}
+            >
+              Ver perfil
+            </button>
           </div>
-
-          <button
-            type="button"
-            className="secondary-action profile-link-action"
-            onClick={() => navigate(`/profile/${task.accepted_by}`, { state: { returnTo: taskPath } })}
-          >
-            Ver perfil
-          </button>
         </section>
       ) : showApplicationsGate ? (
         <section className="detail-panel applications-gate">
@@ -658,22 +661,32 @@ export default function TaskDetail() {
       )}
 
       {(isOwner || isHelper) ? (
-        <section className="detail-panel task-chat-panel">
-          <div>
-            <p className="eyebrow">Mensajes</p>
-            <h2>Chat de la tarea</h2>
-            <p className="muted">{chatAvailabilityCopy}</p>
-          </div>
-          {canOpenChat ? (
+        canOpenChat ? (
+          <section className="detail-panel task-chat-panel">
+            <div>
+              <p className="eyebrow">Mensajes</p>
+              <h2>Chat de la tarea</h2>
+              <p className="muted">{chatAvailabilityCopy}</p>
+            </div>
             <button type="button" className="primary-action" onClick={() => setChatOpen(true)}>
               Abrir chat
             </button>
-          ) : (
-            <button type="button" className="secondary-action" disabled>
-              Chat bloqueado
-            </button>
-          )}
-        </section>
+          </section>
+        ) : (
+          // Estado "cerrado" compacto: candado + una línea, sin panel voluminoso.
+          <section className="task-chat-locked" role="status" aria-label="Chat bloqueado">
+            <span className="task-chat-locked-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <rect x="5" y="11" width="14" height="9" rx="2" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              </svg>
+            </span>
+            <div>
+              <strong>Chat bloqueado</strong>
+              <span>{chatAvailabilityCopy}</span>
+            </div>
+          </section>
+        )
       ) : null}
 
       {(error ||
@@ -759,7 +772,7 @@ export default function TaskDetail() {
                   onClick={handleRejectHelper}
                   disabled={rejectHelperMutation.isPending}
                 >
-                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar helper'}
+                  {rejectHelperMutation.isPending ? 'Rechazando...' : 'Rechazar'}
                 </button>
               </>
             )}
