@@ -185,6 +185,8 @@ export default function MessagesThread({ conversation, onBack, onOpenTask }) {
               currentUserId={user?.id}
               onEditMessage={handleEdit}
               onDeleteMessage={handleDelete}
+              counterpartName={counterpartName}
+              counterpartAvatarUrl={counterpart?.avatar_url}
             />
             <div ref={endRef} />
           </div>

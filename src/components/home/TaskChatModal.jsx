@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/useAuth'
 import Modal from '../../shared/ui/Modal/Modal'
+import UserAvatar from '../../shared/ui/UserAvatar'
 import MessageList from '../../shared/ui/chat/MessageList'
 import MessageInput from '../../features/chat/components/MessageInput'
 import { getMessages, getOrCreateChatByTaskId } from '../../services/chatService'
 import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
 import chatStyles from './TaskChatModal.module.css'
 
+function getCounterpartProfile(task, userId) {
+  return task?.created_by === userId ? task?.accepted_profile : task?.creator_profile
+}
+
 function getCounterpartName(task, userId) {
-  const counterpartProfile =
-    task?.created_by === userId ? task?.accepted_profile : task?.creator_profile
+  const counterpartProfile = getCounterpartProfile(task, userId)
 
   return (
     counterpartProfile?.display_name ||
@@ -133,6 +137,7 @@ export default function TaskChatModal({ open, task, onClose }) {
     return null
   }
 
+  const counterpartProfile = getCounterpartProfile(task, user?.id)
   const counterpartName = getCounterpartName(task, user?.id)
 
   async function handleSendTaskChatMessage() {
@@ -171,10 +176,18 @@ export default function TaskChatModal({ open, task, onClose }) {
   return (
     <Modal open={open} onClose={onClose} labelledBy="home-task-chat-title" className={chatStyles.panel}>
       <header className="task-chat-header">
-        <div>
-          <p className="eyebrow">Mensaje</p>
-          <h2 id="home-task-chat-title">{counterpartName}</h2>
-          <p className="muted">{task.title}</p>
+        <div className="task-chat-header-identity">
+          <UserAvatar
+            src={counterpartProfile?.avatar_url}
+            name={counterpartName}
+            alt={counterpartName}
+            size="md"
+          />
+          <div>
+            <p className="eyebrow">Mensaje</p>
+            <h2 id="home-task-chat-title">{counterpartName}</h2>
+            <p className="muted">{task.title}</p>
+          </div>
         </div>
         <button type="button" className="icon-button" onClick={onClose} aria-label="Cerrar chat">
           ×
@@ -192,6 +205,8 @@ export default function TaskChatModal({ open, task, onClose }) {
               currentUserId={user?.id}
               onEditMessage={handleEditTaskChatMessage}
               onDeleteMessage={handleDeleteTaskChatMessage}
+              counterpartName={counterpartName}
+              counterpartAvatarUrl={counterpartProfile?.avatar_url}
             />
             <div ref={taskChatMessagesEndRef} />
           </section>

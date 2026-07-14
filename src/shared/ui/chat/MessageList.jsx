@@ -11,6 +11,10 @@ export default function MessageList({
   loadingMore = false,
   hasMore = false,
   onLoadMore,
+  // Interlocutor del chat 1-a-1: pinta un avatar pequeño junto a los mensajes
+  // entrantes (opcional; sin estos props las burbujas quedan como antes).
+  counterpartName = '',
+  counterpartAvatarUrl = '',
 }) {
   return (
     <>
@@ -34,6 +38,8 @@ export default function MessageList({
               onEdit={onEditMessage}
               onDelete={onDeleteMessage}
               onRetry={onRetryMessage}
+              counterpartName={counterpartName}
+              counterpartAvatarUrl={counterpartAvatarUrl}
             />
           ))}
         </div>

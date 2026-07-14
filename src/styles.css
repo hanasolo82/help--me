@@ -1051,6 +1051,31 @@ p {
   font-weight: 900;
 }
 
+/* Identidad del interlocutor en el header del chat: avatar + bloque de texto. */
+.task-chat-header-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.task-chat-header-identity > :first-child {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.task-chat-header-identity > div {
+  min-width: 0;
+}
+
+/* Botón de cerrar del chat: circular (el .icon-button global es cuadrado 12px). */
+.task-chat-header .icon-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-pill);
+}
+
 .task-chat-messages {
   /* contextual task chat messages area: components/home/TaskChatModal.jsx */
   display: flex;
@@ -2359,4 +2384,44 @@ p {
   .task-detail-screen .decision-gate {
     margin-bottom: var(--space-8);
   }
+}
+
+/* --- Cierre de tarea: botón de página "Cerrar tarea" (estado en curso) ---
+   Compacto y alineado a la derecha del contenido, en la misma vertical que
+   "Abrir chat". Clase propia para no acoplarse al .two-actions compartido. */
+.task-detail-screen .page-close-action {
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: auto;
+  max-width: none;
+  min-width: 9.5rem;
+  min-height: var(--hm-button-min-height);
+  padding: var(--space-3) var(--space-6);
+}
+
+/* --- Modal de confirmación de cierre (TaskComplete): botones en fila ---
+   Scoped a .completion-panel (el modal portalea a body con esa clase + role
+   dialog): NO usar [role="dialog"] .two-actions genérico ni tocar el
+   .two-actions compartido de la página. */
+.completion-panel .two-actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+  height: auto;
+  /* Separación del párrafo descriptivo del modal (antes quedaban pegados). */
+  margin-top: var(--space-5);
+}
+
+.completion-panel .two-actions > .secondary-action,
+.completion-panel .two-actions > .success-action,
+.completion-panel .two-actions > .primary-action {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  min-width: 7rem;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-5);
+  font-size: 0.875rem;
 }

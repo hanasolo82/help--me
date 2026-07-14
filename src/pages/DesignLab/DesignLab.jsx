@@ -474,7 +474,15 @@ export default function DesignLab() {
           variables={['--hm-color-surface', '--hm-color-primary', '--hm-color-border-subtle', '--shadow-xs']}
           wide
         >
-          <MessageList messages={mockMessages} currentUserId="me" />
+          {/* Handlers no-op para exhibir la anatomía completa: acciones
+              Editar/Borrar y el modo de edición inline de la burbuja. */}
+          <MessageList
+            messages={mockMessages}
+            currentUserId="me"
+            counterpartName="Aroa"
+            onEditMessage={async () => {}}
+            onDeleteMessage={async () => {}}
+          />
         </SpecCard>
         <SpecCard
           title="Message composer"

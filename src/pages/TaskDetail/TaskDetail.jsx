@@ -778,12 +778,15 @@ export default function TaskDetail() {
             )}
 
             {canCloseTask && (
+              /* "Cerrar tarea" (no "Confirmar pago": el pago ya se hizo antes de
+                 este estado). Clase propia para estilarlo sin acoplarse al
+                 .two-actions compartido con otros estados de la pantalla. */
               <button
                 type="button"
-                className="secondary-action sticky-action"
+                className="secondary-action sticky-action page-close-action"
                 onClick={() => setCompletionOpen(true)}
               >
-                Confirmar finalización
+                Cerrar tarea
               </button>
             )}
 
