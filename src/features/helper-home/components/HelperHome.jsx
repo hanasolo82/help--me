@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTransitionNavigate } from '../../../shared/navigation/usePageTransition'
-import TaskCard from '../../tasks/components/TaskCard/TaskCard'
-import ActivityBadge from '../../tasks/categories/ActivityBadge'
-import { formatTaskAvailabilityShort, isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
+import { isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
 import { getTaskUrgency } from '../../tasks/urgency/taskUrgency'
 import TaskMap from '../../map/components/TaskMap/TaskMap'
-import CategoryFilter from '../../../components/home/CategoryFilter'
+import TaskCategoryChips from './TaskCategoryChips'
+import TaskOpportunityCard from './TaskOpportunityCard'
+import HelperTaskMarker from './HelperTaskMarker'
 import { applyToTask, respondToDirectTask, withdrawTaskApplication } from '../../../services/tasksService'
 import { getLocationLabel } from '../../profile/utils/profileFormatters'
 import styles from '../styles/helperHome.module.css'
@@ -15,23 +15,6 @@ const DEFAULT_CENTER = { latitude: 41.6523, longitude: -0.9019, label: 'Tu zona'
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
-}
-
-function formatTaskAge(task) {
-  const date = new Date(task?.published_at || task?.updated_at || task?.created_at || Date.now())
-  if (Number.isNaN(date.getTime())) return 'Hace poco'
-
-  const minutes = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60000))
-  if (minutes < 60) return `Hace ${Math.max(1, minutes)} min`
-
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `Hace ${hours} h`
-
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-}
-
-function formatTaskLocation(task) {
-  return task?.zone || task?.location_label || task?.location || 'Zona no indicada'
 }
 
 function buildCenter(location, profile) {
@@ -200,26 +183,11 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         ? selectedTaskId
         : mapEntries[0].task.id
 
-  const selectedEntry = mapEntries.find((entry) => entry.task.id === resolvedSelectedTaskId) || mapEntries[0] || null
-  const selectedTask = selectedEntry?.task || null
-  const selectedDistance = selectedEntry?.distance ?? null
   const openTaskCount = mapEntries.length
   const compatibilityAverage = mapEntries.length
     ? Math.round(mapEntries.reduce((sum, entry) => sum + entry.compatibilityScore, 0) / mapEntries.length)
     : 0
   const mapTasks = mapEntries.map((entry) => entry.task)
-  const selectedApplicationStatus = selectedTask?.current_user_application?.status
-  const hasPendingOffer = selectedApplicationStatus === 'pending'
-  const isSelectedOffer = selectedApplicationStatus === 'selected'
-  const hasActiveOffer = hasPendingOffer || isSelectedOffer
-  const canOffer = Boolean(
-    selectedTask &&
-    selectedTask.status === 'open' &&
-    !isTaskTimeWindowExpired(selectedTask) &&
-    selectedTask.created_by !== helperHomeProps.currentUserId &&
-    (!selectedTask.is_direct_request || selectedTask.target_helper_id === helperHomeProps.currentUserId) &&
-    !hasActiveOffer,
-  )
   const locationSource =
     helperHomeProps.locationSource === 'current'
       ? 'current'
@@ -227,6 +195,39 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         ? 'search'
         : 'profile'
   const shouldRecenterOnLocationChange = locationSource === 'search'
+
+  // Estado de la oferta por tarea (misma lógica que antes, ahora por tarjeta):
+  // etiqueta, si está deshabilitada y si su acción está en curso.
+  function getOfferState(task) {
+    const application = task?.current_user_application || null
+    const status = application?.status
+    const hasPending = status === 'pending'
+    const isSelected = status === 'selected'
+    const isOpen = task?.status === 'open' && !isTaskTimeWindowExpired(task)
+    const isOwn = task?.created_by === helperHomeProps.currentUserId
+    const directBlocked = task?.is_direct_request && task?.target_helper_id !== helperHomeProps.currentUserId
+    const canOffer = isOpen && !isOwn && !directBlocked && !hasPending && !isSelected
+    const isPendingAction = pendingOfferTaskId === task?.id
+    const mutationActive = offerMutation.isPending || withdrawMutation.isPending
+
+    const label = isPendingAction
+      ? hasPending
+        ? 'Retirando...'
+        : 'Enviando...'
+      : task?.is_direct_request
+        ? 'Aceptar solicitud'
+        : isSelected
+          ? 'Seleccionado'
+          : hasPending
+            ? 'Retirar oferta'
+            : 'Ofrecerme'
+
+    return {
+      label,
+      disabled: mutationActive || isSelected || (!canOffer && !hasPending),
+      pending: isPendingAction,
+    }
+  }
 
   async function handleOffer(task) {
     const application = task?.current_user_application || null
@@ -267,126 +268,78 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     transitionNavigate(`/task/${task.id}`)
   }
 
-  const offerActionPending = pendingOfferTaskId === selectedTask?.id
-  const offerMutationActive = offerMutation.isPending || withdrawMutation.isPending
-  const offerButtonLabel = offerActionPending
-    ? hasPendingOffer
-      ? 'Retirando...'
-      : 'Enviando...'
-    : selectedTask?.is_direct_request
-      ? 'Aceptar solicitud'
-      : isSelectedOffer
-      ? 'Seleccionado'
-      : hasPendingOffer
-        ? 'Retirar oferta'
-        : 'Ofrecerme'
-
   return (
     <section className={styles.home}>
       <section className={styles.mapWorkspace} aria-label="Mapa de solicitudes activas">
         <div className={styles.mapPane}>
+          <TaskCategoryChips
+            category={helperHomeProps.category}
+            categories={helperHomeProps.categories}
+            onChange={helperHomeProps.onCategoryChange}
+          />
+
           <TaskMap
             tasks={mapTasks}
             userLocation={center}
             distances={opportunityDistances}
+            selectedTaskId={resolvedSelectedTaskId}
             showUserWaypoint={false}
             recenterOnCenter={shouldRecenterOnLocationChange}
             centerSource={locationSource}
             fitTasksOnLoad={false}
             fitTasksKey={locationSource}
             onViewportChange={setMapBounds}
-            onTaskSelect={(taskId) => {
-              const nextTask = mapEntries.find((entry) => entry.task.id === taskId)
-              if (nextTask) {
-                setSelectedTaskId(nextTask.task.id)
-              }
-            }}
+            renderTaskMarker={(task, { selected }) => (
+              <HelperTaskMarker
+                key={task.id}
+                task={task}
+                selected={selected}
+                offer={getOfferState(task)}
+                onSelect={(nextTask) => setSelectedTaskId(nextTask.id)}
+                onOpenDetail={handleOpenTask}
+                onOffer={handleOffer}
+              />
+            )}
           />
         </div>
 
         <aside className={styles.mapDrawer}>
-          <section className={styles.columnPanel} aria-label="Filtros del mapa">
-            <div className={styles.paneHeader}>
-              <div>
-                <p className="eyebrow">Buscar tareas</p>
-                <h3>Solicitudes publicadas</h3>
-                <p className="muted">El mapa se mantiene fijo; filtra por actividad y revisa el detalle aquí.</p>
-              </div>
+          <header className={styles.listHeader}>
+            <p className="eyebrow">Buscar tareas</p>
+            <h2>Solicitudes publicadas</h2>
+            <p className="muted">Filtra por actividad en el mapa y revisa el detalle aquí.</p>
+            <div className={styles.listCount}>
+              <strong>{openTaskCount} en el mapa</strong>
+              <span>{allMapEntries.length} con estos filtros · {compatibilityAverage}% match medio</span>
             </div>
+          </header>
 
-            <div className={styles.filtersBar}>
-              <div className={styles.filtersInner}>
-                <CategoryFilter
-                  category={helperHomeProps.category}
-                  onChange={helperHomeProps.onCategoryChange}
-                  options={helperHomeProps.categories || []}
-                />
-              </div>
+          {offerError ? (
+            <p className="auth-message error" role="alert">{offerError}</p>
+          ) : null}
 
-              <div className={styles.filtersCount}>
-                <strong>{openTaskCount} solicitudes</strong>
-                <span>{allMapEntries.length} con estos filtros · {compatibilityAverage}% match medio</span>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.columnPanel} aria-label="Detalle de solicitud">
-            <div className={styles.paneHeader}>
-              <div>
-                <p className="eyebrow">Selección</p>
-                <h3>Solicitud seleccionada</h3>
-                <p className="muted">
-                  {selectedTask
-                    ? 'Revisa lo esencial y abre el detalle completo cuando quieras actuar.'
-                    : 'Selecciona un marcador para cargar su resumen.'}
-                </p>
-              </div>
-            </div>
-
-            {selectedTask ? (
-              <>
-                <div className={styles.selectedTaskSummary}>
-                  <strong>{selectedTask.title}</strong>
-                  <div className={styles.selectedTaskActivity}>
-                    <ActivityBadge category={selectedTask.category} compact />
-                    <span>{formatTaskLocation(selectedTask)}</span>
-                  </div>
-                  <span>
-                    {Number.isFinite(Number(selectedDistance)) ? `${Number(selectedDistance).toFixed(1)} km` : 'Distancia no disponible'}
-                    {' · '}
-                    {formatTaskAge(selectedTask)}
-                    {' · '}
-                    {formatTaskAvailabilityShort(selectedTask)}
-                  </span>
-                </div>
-
-                <div key={selectedTask.id} className={styles.selectionShell}>
-                  <TaskCard
-                    task={selectedTask}
-                    distanceKm={selectedDistance}
-                    showDistance
-                    expanded
-                    viewerRole="helper"
-                    primaryActionLabel="Ver solicitud"
-                    primaryActionVariant="primary"
-                    onPrimaryAction={() => handleOpenTask(selectedTask)}
-                    secondaryActionLabel={offerButtonLabel}
-                    secondaryActionVariant="secondary"
-                    secondaryActionDisabled={offerMutationActive || isSelectedOffer || (!canOffer && !hasPendingOffer)}
-                    secondaryActionPending={offerActionPending}
-                    onSecondaryAction={() => handleOffer(selectedTask)}
-                  />
-                  {offerError ? <p className="auth-message error" role="alert">{offerError}</p> : null}
-                </div>
-              </>
-            ) : (
+          <div className={styles.listScroll}>
+            {mapEntries.length === 0 ? (
               <div className={styles.empty}>
                 <strong>No hay solicitudes visibles todavía</strong>
                 <p>Cuando una solicitud abierta entre en la parte visible del mapa, aparecerá aquí.</p>
                 <span className={styles.emptyNote}>Mueve el mapa o busca otra zona desde el header.</span>
               </div>
+            ) : (
+              mapEntries.map((entry) => (
+                <TaskOpportunityCard
+                  key={entry.task.id}
+                  task={entry.task}
+                  distanceKm={entry.distance}
+                  selected={entry.task.id === resolvedSelectedTaskId}
+                  onSelect={(task) => setSelectedTaskId(task.id)}
+                  onOpenDetail={handleOpenTask}
+                  offer={getOfferState(entry.task)}
+                  onOffer={handleOffer}
+                />
+              ))
             )}
-          </section>
+          </div>
         </aside>
       </section>
     </section>

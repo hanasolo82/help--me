@@ -308,7 +308,9 @@
   position: relative;
 }
 
-.markerPreview span {
+/* Solo la etiqueta de la preview: el selector descendente alcanzaba los spans
+   internos del marcador (glifo/precio) y falseaba sus colores reales. */
+.markerPreview > span {
   color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 900;

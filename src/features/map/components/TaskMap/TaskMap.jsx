@@ -261,6 +261,8 @@ export default function TaskMap({
   userAvatarUrl,
   userInitial,
   onViewportChange,
+  selectedTaskId = null,
+  renderTaskMarker = null,
   showUserWaypoint = true,
   recenterOnCenter = true,
   centerSource = 'profile',
@@ -318,6 +320,12 @@ export default function TaskMap({
         ) : null}
 
         {safeTasks.map((task) => {
+          // Marcador personalizado opcional (p. ej. el waypoint + popup del helper).
+          // Si no se pasa, se usa la pastilla de precio por defecto.
+          if (renderTaskMarker) {
+            return renderTaskMarker(task, { selected: task.id === selectedTaskId })
+          }
+
           const priceEuros = Number(task.price ?? 0)
           const distance = distances?.[task.id]
           const publishedAt = task.published_at || task.created_at
@@ -330,7 +338,7 @@ export default function TaskMap({
             <Marker
               key={task.id}
               position={[task.lat, task.lng]}
-              icon={createTaskMarkerIcon({ task })}
+              icon={createTaskMarkerIcon({ task, selected: task.id === selectedTaskId })}
               eventHandlers={{
                 click: (e) => {
                   try {

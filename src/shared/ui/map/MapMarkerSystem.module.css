@@ -80,6 +80,8 @@
 .taskPinOwn .taskPinGlyphSvg {
   width: 0.9rem;
   height: 0.9rem;
+  /* Icono sobre chip blanco fijo: negro fijo (iconOnWhite), no el blanco de la pastilla. */
+  color: #1c1916;
 }
 
 .taskPinCluster {

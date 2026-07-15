@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { getAvatarInitial } from '../../../utils/avatar'
-import { createActivityMarkerSvg } from '../../../features/tasks/categories/taskCategories'
+import { categoryIconSvg } from '../../../design/categoryIconSvg'
 import { getTaskStatusLabel as getTaskStatusLabelValue } from '../../../features/tasks/utils/taskStatusLabels'
 import styles from './MapMarkerSystem.module.css'
 
@@ -36,7 +36,17 @@ export function createTaskMarkerIcon({ task, selected = false, requester = false
     requester ? styles.taskPinOwn : '',
     selected ? styles.taskPinSelected : '',
   ].filter(Boolean).join(' ')
-  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.taskPinGlyphSvg })
+  // Glifo de la biblioteca de diseño (src/design), como el pin del requester:
+  // icono Lucide plano en currentColor, que hereda el color de texto de la
+  // pastilla (--hm-map-marker-fg) y se adapta a tema claro/oscuro. La variante
+  // requester (chip blanco fijo) fuerza negro fijo vía CSS. Sustituye al
+  // HelpMoji a color; la pastilla (precio, punta, selección) no cambia.
+  const activityGlyph = categoryIconSvg(task?.category, {
+    className: styles.taskPinGlyphSvg,
+    size: 16,
+    strokeWidth: 2.25,
+    color: 'currentColor',
+  })
   const price = escapeHtml(formatPrice(task?.price))
   const html = `
     <span class="${styles.taskPinGlyph}">${activityGlyph}</span>
@@ -60,7 +70,16 @@ export function createTaskMarkerIcon({ task, selected = false, requester = false
  * elevación sutil; aparece con una animación de drop suave.
  */
 export function createOwnTaskPinIcon({ task, selected = false, responses = 0 } = {}) {
-  const activityGlyph = createActivityMarkerSvg(task?.category, { className: styles.ownPinGlyphSvg })
+  // Glifo de la biblioteca de diseño (src/design): icono Lucide plano por
+  // categoría, negro fijo sobre el círculo blanco fijo del pin (regla del
+  // design system: los iconos pequeños nunca llevan color de marca; legible en
+  // tema claro y oscuro). Sustituye al HelpMoji a color anterior. La carcasa
+  // (gota, badge de respuestas, selección, anclas) no cambia.
+  const activityGlyph = categoryIconSvg(task?.category, {
+    className: styles.ownPinGlyphSvg,
+    size: 24,
+    strokeWidth: 2,
+  })
   const count = Number(responses)
   const badge = Number.isFinite(count) && count > 0
     ? `<span class="${styles.ownPinBadge}">${escapeHtml(count > 99 ? '99+' : String(count))}</span>`

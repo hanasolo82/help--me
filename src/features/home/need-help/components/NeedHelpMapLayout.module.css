@@ -705,17 +705,8 @@
   display: block;
 }
 
-/* Control de zoom (+/-) con esquinas un poco más redondeadas. */
-.mapShell :global(.leaflet-control-zoom) {
-  overflow: hidden;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.mapShell :global(.leaflet-control-zoom a) {
-  border-radius: 0;
-}
+/* El estilo de los controles de zoom (+/-) vive en styles.css como regla
+   global (.leaflet-control-zoom.leaflet-bar) para ser idéntico en ambos mapas. */
 
 @media (max-width: 899px) {
   .mobileTabs {

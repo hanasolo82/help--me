@@ -11,6 +11,7 @@ import { PRICING_COPY } from '../../config/pricing'
 import {
   createClusterMarkerIcon,
   createHelperMarkerIcon,
+  createOwnTaskPinIcon,
   createTaskMarkerIcon,
   createUserMarkerIcon,
 } from '../../shared/ui/map/mapMarkerIcons'
@@ -228,6 +229,23 @@ export default function DesignLab() {
     user: createUserMarkerIcon({ avatarUrl: avatarDataUrl, initial: 'TU' }),
     cluster: createClusterMarkerIcon({ count: 8 }),
   }), [])
+
+  // Waypoint de solicitud propia (mapa requester): glifo de la biblioteca de
+  // diseño por categoría, sobre la carcasa de gota con badge de respuestas.
+  const ownPins = useMemo(
+    () =>
+      ['Mascotas', 'Recados', 'Compras', 'Ayuda tecnica', 'Limpieza', 'Mudanza', 'Reparaciones', 'Clases', 'Cuidado', 'Tecnología', 'Otros'].map(
+        (category, index) => ({
+          category,
+          icon: createOwnTaskPinIcon({
+            task: { ...mockTask, category },
+            responses: index === 0 ? 3 : 0,
+            selected: index === 1,
+          }),
+        }),
+      ),
+    [],
+  )
 
   return (
     <main className={styles.page}>
@@ -514,6 +532,18 @@ export default function DesignLab() {
             <MarkerPreview label="Helper" icon={markers.helper} />
             <MarkerPreview label="Usuario" icon={markers.user} />
             <MarkerPreview label="Cluster futuro" icon={markers.cluster} />
+          </div>
+        </SpecCard>
+        <SpecCard
+          title="Waypoint de solicitud propia (por categoría)"
+          classNameLabel="createOwnTaskPinIcon + src/design/categoryIconSvg"
+          variables={['--hm-color-primary', '--hm-map-marker-shadow']}
+          wide
+        >
+          <div className={styles.markerGrid}>
+            {ownPins.map((pin) => (
+              <MarkerPreview key={pin.category} label={pin.category} icon={pin.icon} />
+            ))}
           </div>
         </SpecCard>
       </DesignSection>

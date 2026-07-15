@@ -2096,6 +2096,52 @@ p {
   border-top: 8px solid;
 }
 
+/* --- Controles de zoom de Leaflet: dos botones circulares separados ---
+   Regla global (Leaflet inyecta estos controles fuera de React) para que el
+   estilo sea idéntico en ambos mapas (requester y helper). Reacciona al tema
+   con los tokens --hm-color-*. */
+.leaflet-control-zoom.leaflet-bar {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.leaflet-control-zoom.leaflet-bar a {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 50%;
+  background: var(--hm-color-surface);
+  color: var(--hm-color-text);
+  box-shadow: var(--hm-shadow-sm);
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.leaflet-control-zoom.leaflet-bar a:hover {
+  border-color: color-mix(in srgb, var(--hm-color-primary) 28%, var(--hm-color-border-subtle));
+  background: color-mix(in srgb, var(--hm-color-primary) 10%, var(--hm-color-surface));
+  color: var(--hm-color-primary);
+  transform: translateY(-1px);
+}
+
+.leaflet-control-zoom.leaflet-bar a:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus, 0 0 0 4px rgba(31, 107, 72, 0.16));
+}
+
+.leaflet-control-zoom.leaflet-bar a.leaflet-disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ============================================================
    /task/:id — rediseño visual de la pantalla de decisión.
    TODO scoped bajo .task-detail-screen: las clases base
