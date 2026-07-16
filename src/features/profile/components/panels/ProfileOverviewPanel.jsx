@@ -2,17 +2,13 @@ import styles from '../../styles/profilePublicView.module.css'
 import ProfileTrustMetrics from '../ProfileTrustMetrics'
 import ProfileContentSection from '../ProfileContentSection'
 import ProfileEditableRow from '../ProfileEditableRow'
-import {
-  getLocationLabel,
-  getProfileName,
-  summarizeReviews,
-} from '../../utils/profileFormatters'
+import { getProfileName, summarizeReviews } from '../../utils/profileFormatters'
 
-// Respuesta y Tarifa viven SOLO en la fila de stats (ProfileTrustMetrics):
-// antes aparecían duplicadas también como filas individuales (QA).
-export default function ProfileOverviewPanel({ profile, reviews = [] }) {
+// Sin fila de Ubicación ni métrica de Valoración: ambas viven SOLO en el aside.
+// Aquí quedan la bio y las métricas que el aside no muestra (Opiniones, Tareas,
+// Respuesta, Tarifa — ver buildTrustMetricItems).
+export default function ProfileOverviewPanel({ profile, reviews = [], isEditing = false, onEditIdentity }) {
   const displayName = getProfileName(profile)
-  const locationLabel = getLocationLabel(profile)
   const reviewSummary = summarizeReviews(reviews)
 
   return (
@@ -21,17 +17,14 @@ export default function ProfileOverviewPanel({ profile, reviews = [] }) {
       eyebrow="Sobre mí"
       title="Perfil de ayudante"
       lead="Una vista pública clara para entender quién es, en qué puede ayudar y qué señales de confianza aporta."
+      actionLabel={isEditing ? 'Editar identidad en Ajustes' : null}
+      onAction={isEditing ? onEditIdentity : null}
     >
       <div className={styles.sectionRows}>
         <ProfileEditableRow
           label={`Sobre ${displayName}`}
           value={profile?.bio || 'Aún no ha compartido una presentación pública.'}
           meta="Presentación visible para otras personas."
-        />
-        <ProfileEditableRow
-          label="Ubicación"
-          value={locationLabel}
-          meta="Zona visible aproximada para proteger la privacidad."
         />
       </div>
 

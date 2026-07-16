@@ -4,14 +4,13 @@ export default function ProfilePublicView({
   profile,
   reviews,
   skills,
-  filteredSkills,
   verifications,
   availability,
   sections,
-  activeSkillId,
-  onSkillChange,
   isOwnProfile,
-  onEditProfile,
+  isEditing,
+  onToggleEdit,
+  onEditIdentity,
   onBack,
   onPrimaryAction,
   primaryActionLabel,
@@ -20,20 +19,18 @@ export default function ProfilePublicView({
   favoriteState,
   favoriteLabel,
   isFavoriteLoading,
-  helperAvailable,
 }) {
   return <ProfilePublicLayout
     profile={profile}
     reviews={reviews}
     skills={skills}
-    filteredSkills={filteredSkills}
     verifications={verifications}
     availability={availability}
     sections={sections}
-    activeSkillId={activeSkillId}
-    onSkillChange={onSkillChange}
     isOwnProfile={isOwnProfile}
-    onEditProfile={onEditProfile}
+    isEditing={isEditing}
+    onToggleEdit={onToggleEdit}
+    onEditIdentity={onEditIdentity}
     onBack={onBack}
     onPrimaryAction={onPrimaryAction}
     primaryActionLabel={primaryActionLabel}
@@ -42,6 +39,5 @@ export default function ProfilePublicView({
     favoriteState={favoriteState}
     favoriteLabel={favoriteLabel}
     isFavoriteLoading={isFavoriteLoading}
-    helperAvailable={helperAvailable}
   />
 }

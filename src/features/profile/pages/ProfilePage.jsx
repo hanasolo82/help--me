@@ -4,7 +4,6 @@ import { useAuth } from '../../../contexts/useAuth'
 import { useFavoriteProfile } from '../hooks/useFavoriteProfile'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
-import { buildSkillOptions } from '../utils/profileFormatters'
 import { resolveReturnTo } from '../../../shared/utils/navigation'
 
 export default function ProfilePage() {
@@ -13,7 +12,7 @@ export default function ProfilePage() {
   const params = useParams()
   const { user, profile: authProfile } = useAuth()
   const profileId = params.id || user?.id || authProfile?.id || null
-  const [activeSkillId, setActiveSkillId] = useState('all')
+  const [isEditing, setIsEditing] = useState(false)
   const [contactError, setContactError] = useState('')
   const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
 
@@ -30,22 +29,19 @@ export default function ProfilePage() {
   } = useProfilePageData(profileId)
 
   const favoriteMutation = useFavoriteProfile(profile?.id)
-  const skillCategories = useMemo(() => buildSkillOptions(skills), [skills])
-  const filteredSkills = useMemo(() => {
-    if (activeSkillId === 'all') return skills
 
-    return skills.filter((skill) => skill?.skill?.category === activeSkillId || skill?.skill?.id === activeSkillId)
-  }, [activeSkillId, skills])
-
+  // Índice de anclas del perfil single-page (el orden refleja el flujo real).
+  // "Contacto" solo existe para visitantes: nadie se contacta a sí mismo.
   const sections = useMemo(
     () => [
       { id: 'resumen', label: 'Sobre mí' },
+      { id: 'disponibilidad', label: 'Disponibilidad' },
       { id: 'habilidades', label: 'Habilidades' },
       { id: 'confianza', label: 'Confianza' },
       { id: 'opiniones', label: 'Opiniones' },
-      { id: 'disponibilidad', label: 'Disponibilidad' },
+      ...(isOwnProfile ? [] : [{ id: 'contacto', label: 'Contacto' }]),
     ],
-    [],
+    [isOwnProfile],
   )
   const hasTaskContext = /^\/task\/[^/?#]+(?:[/?#]|$)/.test(returnTo)
 
@@ -126,15 +122,14 @@ export default function ProfilePage() {
       <ProfilePublicView
         profile={profile}
         reviews={reviews}
-        skills={skillCategories}
-        filteredSkills={filteredSkills}
+        skills={skills}
         verifications={verifications}
         availability={availability}
         sections={sections}
-        activeSkillId={activeSkillId}
-        onSkillChange={setActiveSkillId}
         isOwnProfile={isOwnProfile}
-        onEditProfile={() => navigate('/settings#perfil')}
+        isEditing={isOwnProfile && isEditing}
+        onToggleEdit={() => setIsEditing((current) => !current)}
+        onEditIdentity={() => navigate('/settings#perfil')}
         onBack={() => navigate(returnTo)}
         onPrimaryAction={handlePrimaryAction}
         primaryActionLabel="Pedir ayuda"

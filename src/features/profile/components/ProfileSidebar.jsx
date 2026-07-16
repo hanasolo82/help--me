@@ -1,17 +1,20 @@
 import UserAvatar from '../../../shared/ui/UserAvatar'
 import styles from '../styles/profilePublicView.module.css'
 import {
-  getHelperStatusCopy,
-  getHelperStatusLabel,
   getLocationLabel,
   getProfileName,
   getProfileHandle,
 } from '../utils/profileFormatters'
 
+// Aside de identidad: avatar, nombre, handle, ubicación, valoración y acciones.
+// Sin bloque de "Helper activo" ni stat de Estado: un ayudante inactivo no
+// aparece en el listado/mapa, así que ese dato no aporta nada al visitante.
+// La valoración y la ubicación viven SOLO aquí (no se repiten en el panel).
 export default function ProfileSidebar({
   profile,
   isOwnProfile,
-  onEditProfile,
+  isEditing = false,
+  onToggleEdit,
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
@@ -19,13 +22,10 @@ export default function ProfileSidebar({
   favoriteLabel,
   isFavoriteLoading,
   favoriteState,
-  helperAvailable = false,
 }) {
   const displayName = getProfileName(profile)
   const handle = getProfileHandle(profile)
   const locationLabel = getLocationLabel(profile)
-  const helperStatusLabel = getHelperStatusLabel(profile)
-  const helperStatusCopy = getHelperStatusCopy(profile)
 
   return (
     <aside className={`${styles.sidebar} ${isOwnProfile ? styles.sidebarOwn : styles.sidebarGuest}`.trim()}>
@@ -47,26 +47,22 @@ export default function ProfileSidebar({
         </div>
       </div>
 
-      <div className={styles.sidebarStatus}>
-        <strong>{helperStatusLabel}</strong>
-        <p>{helperStatusCopy}</p>
-      </div>
-
       <div className={styles.sidebarStats}>
         <div className={styles.sidebarStat}>
           <span>Valoración</span>
           <strong>{Number(profile?.rating ?? 0).toFixed(1)}</strong>
         </div>
-        <div className={styles.sidebarStat}>
-          <span>Estado</span>
-          <strong>{helperAvailable ? 'Activo' : 'Pausado'}</strong>
-        </div>
       </div>
 
       <div className={styles.sidebarActions}>
         {isOwnProfile ? (
-          <button type="button" className="primary-action" onClick={onEditProfile}>
-            Editar perfil
+          <button
+            type="button"
+            className={isEditing ? 'secondary-action' : 'primary-action'}
+            onClick={onToggleEdit}
+            aria-pressed={isEditing}
+          >
+            {isEditing ? 'Salir de edición' : 'Editar perfil'}
           </button>
         ) : (
           <>

@@ -25,48 +25,6 @@ export function getLocationLabel(profile) {
   return profile.neighborhood || 'Zona aproximada'
 }
 
-export function getHelperStatusLabel(profile) {
-  switch (profile?.helper_status) {
-    case 'active':
-      return 'Helper activo'
-    case 'identity_pending':
-      return 'Revisión de confianza'
-    case 'terms_pending':
-      return 'Normas pendientes'
-    case 'contact_pending':
-      return 'Contacto pendiente'
-    case 'profile_incomplete':
-      return 'Perfil en construcción'
-    case 'suspended':
-      return 'Visibilidad pausada'
-    case 'rejected':
-      return 'Revisión necesaria'
-    default:
-      return 'Helper pausado'
-  }
-}
-
-export function getHelperStatusCopy(profile) {
-  switch (profile?.helper_status) {
-    case 'active':
-      return 'Visible para la comunidad y preparado para recibir solicitudes.'
-    case 'identity_pending':
-      return 'Todavía quedan pasos de confianza por completar.'
-    case 'terms_pending':
-      return 'Falta la aceptación de normas para activar el perfil.'
-    case 'contact_pending':
-      return 'Añadir un medio de contacto puede mejorar la confianza.'
-    case 'profile_incomplete':
-      return 'Completa tu presentación para mostrar un perfil más sólido.'
-    case 'suspended':
-      return 'La visibilidad está pausada temporalmente.'
-    case 'rejected':
-      return 'Hay una revisión pendiente antes de volver a mostrar el perfil.'
-    default:
-      return 'El perfil todavía no está listo para aparecer en el mapa.'
-  }
-}
-
 export function formatResponseTime(minutes) {
   const value = Number(minutes)
   if (!Number.isFinite(value) || value <= 0) return 'Respuesta flexible'
@@ -99,20 +57,6 @@ export function summarizeReviews(reviews = []) {
     total,
     completed: total,
   }
-}
-
-export function buildSkillCategories(skills = []) {
-  return skills.reduce((acc, skill) => {
-    const skillObject = skill?.skill || skill
-    if (!skillObject?.category) return acc
-    if (acc.some((item) => item.category === skillObject.category)) return acc
-    acc.push({ id: skillObject.category, category: skillObject.category, name: skillObject.category, icon: '🏷️' })
-    return acc
-  }, [])
-}
-
-export function buildSkillOptions(skills = []) {
-  return buildSkillCategories(skills)
 }
 
 export function deriveAvailabilitySummary(availability = []) {
@@ -152,13 +96,9 @@ export function deriveAvailabilityUpdatedAt(availability = []) {
   return formatAvailabilityUpdatedAt(latest)
 }
 
+// Sin "Valoración": vive solo en el aside (regla: cada dato una única vez).
 export function buildTrustMetricItems(profile, reviewSummary = {}) {
   return [
-    {
-      label: 'Valoración',
-      value: Number(profile?.rating ?? 0).toFixed(1),
-      meta: '/5',
-    },
     {
       label: 'Opiniones',
       value: String(reviewSummary.total || profile?.reviews_count || 0),

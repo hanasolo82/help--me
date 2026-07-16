@@ -124,33 +124,12 @@
   overflow-wrap: anywhere;
 }
 
-.sidebarStatus {
-  display: grid;
-  gap: 0.25rem;
-  min-width: 0;
-  padding: 0.78rem;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--hm-shell-card-border);
-  box-shadow: var(--hm-shell-card-shadow);
-}
-
-.sidebarStatus strong {
-  color: var(--color-text);
-  font-size: 0.9rem;
-  line-height: 1.25;
-}
-
-.sidebarStatus p {
-  color: var(--color-text-muted);
-  font-size: 0.86rem;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
+/* Una sola stat (Valoración) a ancho completo: el bloque de estado y la stat
+   "Estado: Activo" se eliminaron por redundantes (un helper inactivo no
+   aparece en el listado/mapa). */
 .sidebarStats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.55rem;
   min-width: 0;
 }
@@ -182,59 +161,51 @@
   overflow-wrap: anywhere;
 }
 
-.sectionStepper {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.sectionProgress {
-  display: grid;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.sectionProgress span {
-  color: var(--color-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.sectionProgress strong {
-  overflow: hidden;
-  color: var(--color-text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sectionControls {
+/* Índice de anclas: sustituye al stepper "Sección X de N". Solo navega con
+   scroll suave; nunca oculta contenido. */
+.anchorNav {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  align-items: center;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.sectionStepButton {
-  min-height: 2.75rem;
-  padding: 0.65rem 0.9rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--hm-shell-card-border);
+.anchorNav::-webkit-scrollbar {
+  display: none;
+}
+
+.anchorLink {
+  flex: 0 0 auto;
+  min-height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-text);
+  font-size: 0.85rem;
   font-weight: 700;
-  box-shadow: var(--hm-shell-card-shadow);
-  cursor: pointer;
+  text-decoration: none;
+  padding: 0.4rem 0.85rem;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.sectionStepButton:not(:disabled):hover {
-  border-color: color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
-  transform: translateY(-1px);
+.anchorLink:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--hm-color-border-subtle));
+  color: var(--color-primary);
 }
 
-.sectionStepButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
+.anchorLink:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus, 0 0 0 4px rgba(31, 107, 72, 0.16));
 }
 
 .sidebarActions {
@@ -413,10 +384,169 @@
   font-size: 0.82rem;
 }
 
-.skillGrid {
+/* Lista ordenada de habilidades (prioridad definida por el ayudante). */
+.skillList {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: skill;
+}
+
+.skillItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.skillRank {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: var(--color-highlight);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.skillIcon {
+  flex: 0 0 auto;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.skillCopy {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.skillCopy strong {
+  color: var(--color-text);
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.skillCopy small {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.skillControls {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+
+.skillControl {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.skillControl svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.skillControl:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--color-primary) 32%, var(--hm-color-border-subtle));
+  color: var(--color-primary);
+}
+
+.skillControl:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.skillControlDanger:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--hm-color-border-subtle));
+  color: var(--color-danger);
+}
+
+.skillControl:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus, 0 0 0 4px rgba(31, 107, 72, 0.16));
+}
+
+.skillAddField {
+  display: grid;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.skillAddField span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.skillAddField select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  padding: 0.55rem 0.75rem;
+}
+
+/* Patrón de edición compartido (disponibilidad y habilidades): Guardar +
+   Descartar bajo el bloque editable. */
+.editActions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
+  align-items: center;
+  padding-top: 0.35rem;
+}
+
+.editActions > button {
+  width: auto;
+  min-width: 0;
+}
+
+.editActions > p {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.contactActions > button {
+  width: auto;
+  min-width: 11rem;
 }
 
 .emptyState {
@@ -469,8 +599,9 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  /* 4 métricas (Opiniones, Tareas, Respuesta, Tarifa): la Valoración vive en el aside. */
   .trustMetrics {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .actionBar {
@@ -560,19 +691,6 @@
     width: 44px;
   }
 
-  .sectionStepper {
-    grid-template-columns: 1fr;
-  }
-
-  .sectionControls {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sectionStepButton {
-    width: 100%;
-  }
-
   .sectionCard {
     gap: 0.85rem;
     padding: 0.85rem;
@@ -612,10 +730,8 @@
 }
 
 .sidebar,
-.sidebarStatus,
 .sidebarStat,
 .profileNavigation,
-.sectionStepButton,
 .sectionCard,
 .overviewCard,
 .trustMetricCard,

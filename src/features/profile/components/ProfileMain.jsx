@@ -4,54 +4,63 @@ import ProfileSkillsPanel from './panels/ProfileSkillsPanel'
 import ProfileTrustPanel from './panels/ProfileTrustPanel'
 import ProfileReviewsPanel from './panels/ProfileReviewsPanel'
 import ProfileAvailabilityPanel from './panels/ProfileAvailabilityPanel'
+import ProfileContactPanel from './panels/ProfileContactPanel'
 
-// Navegación real por secciones: solo se monta el panel activo (los ids deben
-// coincidir con `sections` en ProfilePage). Sin id, se muestran todos.
+// Single-page: todos los bloques apilados, en este orden — Sobre mí,
+// Disponibilidad (arriba, tras la cabecera), Habilidades, Confianza,
+// Opiniones y CTA de contacto (solo visitantes). Los ids son las anclas
+// del índice de navegación.
 export default function ProfileMain({
   profile,
   reviews = [],
   skills = [],
-  filteredSkills = [],
   verifications,
   availability = [],
-  activeSkillId,
-  onSkillChange,
-  activeSectionId = null,
+  isOwnProfile = false,
+  isEditing = false,
+  onEditIdentity,
+  onPrimaryAction,
+  primaryActionLabel,
+  showPrimaryAction,
+  onToggleFavorite,
+  favoriteState,
+  favoriteLabel,
+  isFavoriteLoading,
 }) {
-  const panels = [
-    {
-      id: 'resumen',
-      element: <ProfileOverviewPanel key="resumen" profile={profile} reviews={reviews} />,
-    },
-    {
-      id: 'habilidades',
-      element: (
-        <ProfileSkillsPanel
-          key="habilidades"
-          skills={skills}
-          activeSkillId={activeSkillId}
-          onSkillChange={onSkillChange}
-          filteredSkills={filteredSkills}
+  const canEdit = isOwnProfile && isEditing
+
+  return (
+    <main className={styles.main}>
+      <ProfileOverviewPanel
+        profile={profile}
+        reviews={reviews}
+        isEditing={canEdit}
+        onEditIdentity={onEditIdentity}
+      />
+      <ProfileAvailabilityPanel
+        profile={profile}
+        availability={availability}
+        isEditing={canEdit}
+      />
+      <ProfileSkillsPanel
+        profile={profile}
+        skills={skills}
+        isEditing={canEdit}
+      />
+      <ProfileTrustPanel profile={profile} verifications={verifications} />
+      <ProfileReviewsPanel profile={profile} reviews={reviews} />
+      {!isOwnProfile ? (
+        <ProfileContactPanel
+          profile={profile}
+          onPrimaryAction={onPrimaryAction}
+          primaryActionLabel={primaryActionLabel}
+          showPrimaryAction={showPrimaryAction}
+          onToggleFavorite={onToggleFavorite}
+          favoriteState={favoriteState}
+          favoriteLabel={favoriteLabel}
+          isFavoriteLoading={isFavoriteLoading}
         />
-      ),
-    },
-    {
-      id: 'confianza',
-      element: <ProfileTrustPanel key="confianza" profile={profile} verifications={verifications} />,
-    },
-    {
-      id: 'opiniones',
-      element: <ProfileReviewsPanel key="opiniones" profile={profile} reviews={reviews} />,
-    },
-    {
-      id: 'disponibilidad',
-      element: <ProfileAvailabilityPanel key="disponibilidad" profile={profile} availability={availability} />,
-    },
-  ]
-
-  const visiblePanels = activeSectionId
-    ? panels.filter((panel) => panel.id === activeSectionId)
-    : panels
-
-  return <main className={styles.main}>{visiblePanels.map((panel) => panel.element)}</main>
+      ) : null}
+    </main>
+  )
 }
