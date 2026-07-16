@@ -1,16 +1,28 @@
 .switch {
+  /* Geometría en un solo sitio: el centro de cada icono y el recorrido del
+     thumb se derivan de --sw-col (el ancho de media pista), así no pueden
+     descuadrarse entre sí. Para cambiar el tamaño basta con --sw-width. */
+  --sw-width: 4rem;
+  --sw-height: 2.25rem;
+  --sw-pad: 0.2rem;
+  --sw-border: 1px;
+  --sw-col: calc((var(--sw-width) - 2 * var(--sw-border) - 2 * var(--sw-pad)) / 2);
+
   position: relative;
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  width: 4rem;
-  height: 2.25rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  /* Centra cada icono en su columna; sin esto quedaban pegados al borde
+     izquierdo de la columna (tienen ancho fijo y justify-items es stretch). */
+  justify-items: center;
+  width: var(--sw-width);
+  height: var(--sw-height);
+  border: var(--sw-border) solid color-mix(in srgb, var(--color-border) 82%, white);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-surface-strong) 94%, white);
   color: var(--color-text);
   cursor: pointer;
-  padding: 0.2rem;
+  padding: var(--sw-pad);
   box-shadow: var(--shadow-xs);
   transition:
     border-color var(--motion-fast) var(--ease-out),
@@ -41,36 +53,44 @@
   width: 1.55rem;
   height: 1.55rem;
   color: var(--color-text-muted);
-  transition: color 0.18s ease, opacity 0.18s ease;
+  /* 0.22s = misma duración que el deslizamiento del thumb, para que el cambio
+     de color acompañe al movimiento. */
+  transition: color 0.22s ease;
 }
 
-.switchChecked .icon:first-of-type {
-  opacity: 0.35;
+/* El icono que queda bajo el thumb verde va en blanco puro: sobre el verde de
+   marca, el gris apagado (--color-text-muted) no tenía contraste.
+   Los SVG de lucide pintan con stroke="currentColor" y fill="none", así que
+   fijar `color` basta para teñir el trazo.
+   Se seleccionan por clase propia (.iconMoon/.iconSun) y NO con
+   :first-of-type/:last-of-type: los iconos conviven con los span .srOnly y
+   .thumb, así que esos selectores apuntaban a los spans equivocados y no
+   llegaban a aplicarse nunca. */
+.switch:not(.switchChecked) .iconMoon,
+.switchChecked .iconSun {
+  color: #ffffff;
 }
 
-.switch:not(.switchChecked) .icon:last-of-type {
-  opacity: 0.35;
-}
-
+/* Centrado exacto sobre el icono: `left` cae en el centro de la primera
+   columna y translate(-50%,-50%) centra el círculo ahí. `top: 50%` lo alinea
+   con el centro real del switch (antes, top/left fijos lo dejaban 1px bajo). */
 .thumb {
   position: absolute;
-  top: 0.2rem;
-  left: 0.2rem;
+  top: 50%;
+  left: calc(var(--sw-pad) + var(--sw-col) / 2);
   width: 1.85rem;
   height: 1.85rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 85%, white);
   border-radius: var(--radius-pill);
   background: var(--color-primary);
   box-shadow: var(--shadow-primary);
+  transform: translate(-50%, -50%);
   transition: transform 0.22s var(--ease-spring-soft);
 }
 
+/* Recorrido = una columna exacta: del centro del primer icono al del segundo. */
 .switchChecked .thumb {
-  transform: translateX(1.7rem);
-}
-
-.switchChecked .icon:last-of-type {
-  color: #ffffff;
+  transform: translate(-50%, -50%) translateX(var(--sw-col));
 }
 
 .srOnly {
@@ -86,9 +106,12 @@
 }
 
 @media (max-width: 42rem) {
+  /* Solo cambia el tamaño: el centro de los iconos y el recorrido del thumb
+     se recalculan solos a partir de --sw-col (por eso ya no hace falta
+     redefinir aquí el transform del thumb). */
   .switch {
-    width: 3.2rem;
-    height: 1.95rem;
+    --sw-width: 3.2rem;
+    --sw-height: 1.95rem;
   }
 
   .icon {
@@ -99,9 +122,5 @@
   .thumb {
     width: 1.55rem;
     height: 1.55rem;
-  }
-
-  .switchChecked .thumb {
-    transform: translateX(1.25rem);
   }
 }

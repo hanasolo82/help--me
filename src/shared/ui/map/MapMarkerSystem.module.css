@@ -437,7 +437,9 @@
   flex: 1 1 auto;
   border: 0;
   background: var(--hm-color-primary);
-  color: #fff;
+  /* En dark el primario es verde CLARO: el blanco fijo dejaba el CTA lavado.
+     --hm-button-primary-fg es blanco en claro y casi negro en oscuro. */
+  color: var(--hm-button-primary-fg, #fff);
 }
 
 .taskPopupPrimary:hover {

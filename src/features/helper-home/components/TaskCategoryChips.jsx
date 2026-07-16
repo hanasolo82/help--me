@@ -31,7 +31,10 @@ function focusSiblingChip(event, direction) {
 // en useTasks). "Todas" siempre visible; la categoría activa se mantiene
 // visible aunque esté oculta, para no perder de vista el filtro en uso.
 export default function TaskCategoryChips({ category = ALL_CATEGORY, categories = [], onChange }) {
-  const options = categories.length > 0 ? categories : [ALL_CATEGORY]
+  const options = useMemo(
+    () => (categories.length > 0 ? categories : [ALL_CATEGORY]),
+    [categories],
+  )
   const selectableOptions = useMemo(
     () => options.filter((option) => option !== ALL_CATEGORY),
     [options],

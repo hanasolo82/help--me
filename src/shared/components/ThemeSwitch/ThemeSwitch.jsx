@@ -77,10 +77,10 @@ export default function ThemeSwitch({
       onClick={handleClick}
     >
       <span className={styles.srOnly}>{nextLabel}</span>
-      <span className={styles.icon} aria-hidden="true">
+      <span className={`${styles.icon} ${styles.iconMoon}`} aria-hidden="true">
         <Moon size={16} strokeWidth={2} />
       </span>
-      <span className={styles.icon} aria-hidden="true">
+      <span className={`${styles.icon} ${styles.iconSun}`} aria-hidden="true">
         <Sun size={16} strokeWidth={2} />
       </span>
       <span className={styles.thumb} aria-hidden="true" />

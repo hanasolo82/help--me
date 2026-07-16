@@ -2109,10 +2109,24 @@ p {
   box-shadow: none;
 }
 
-.leaflet-control-zoom.leaflet-bar a {
+/* first-child/last-child y la variante .leaflet-touch van incluidos a propósito:
+   Leaflet fija ahí sus propios border-*-radius y width/height/line-height y, con
+   la misma especificidad, ganaría por orden de carga.
+   El glifo se centra con flex (no con line-height): Leaflet impone line-height
+   26/30px y text-indent 1px, que descentraban el + y el − dentro del círculo. */
+.leaflet-control-zoom.leaflet-bar a,
+.leaflet-control-zoom.leaflet-bar a:first-child,
+.leaflet-control-zoom.leaflet-bar a:last-child,
+.leaflet-touch .leaflet-control-zoom.leaflet-bar a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   width: 34px;
   height: 34px;
-  line-height: 34px;
+  line-height: 1;
+  text-indent: 0;
+  font-size: 18px;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: 50%;
   background: var(--hm-color-surface);
