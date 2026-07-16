@@ -1,8 +1,6 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../contexts/useAuth'
 import {
-  getFavoriteProfileIds,
   getProfileAvailability,
   getProfileById,
   getProfileReviews,
@@ -51,23 +49,6 @@ export function useProfilePageData(profileId) {
     staleTime: 60_000,
   })
 
-  const favoriteIdsQuery = useQuery({
-    queryKey: ['favorite-profile-ids', user?.id],
-    queryFn: () => getFavoriteProfileIds(user?.id),
-    enabled: Boolean(user?.id && !isOwnProfile),
-    staleTime: 30_000,
-  })
-
-  const favoriteState = useMemo(() => {
-    if (!targetProfileId || isOwnProfile) {
-      return { isFavorite: false }
-    }
-
-    return {
-      isFavorite: favoriteIdsQuery.data?.includes(targetProfileId) ?? false,
-    }
-  }, [favoriteIdsQuery.data, isOwnProfile, targetProfileId])
-
   const isLoading =
     profileQuery.isPending ||
     skillsQuery.isPending ||
@@ -91,8 +72,6 @@ export function useProfilePageData(profileId) {
     reviews: reviewsQuery.data ?? [],
     verifications: verificationsQuery.data,
     availability: availabilityQuery.data ?? [],
-    favoriteState,
-    isFavoriteLoading: favoriteIdsQuery.isPending,
     isLoading,
     error,
   }

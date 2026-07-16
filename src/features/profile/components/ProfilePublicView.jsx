@@ -15,10 +15,6 @@ export default function ProfilePublicView({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteState,
-  favoriteLabel,
-  isFavoriteLoading,
 }) {
   return <ProfilePublicLayout
     profile={profile}
@@ -35,9 +31,5 @@ export default function ProfilePublicView({
     onPrimaryAction={onPrimaryAction}
     primaryActionLabel={primaryActionLabel}
     showPrimaryAction={showPrimaryAction}
-    onToggleFavorite={onToggleFavorite}
-    favoriteState={favoriteState}
-    favoriteLabel={favoriteLabel}
-    isFavoriteLoading={isFavoriteLoading}
   />
 }

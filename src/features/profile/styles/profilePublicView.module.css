@@ -116,6 +116,17 @@
   overflow-wrap: anywhere;
 }
 
+.sidebarNameRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.sidebarNameRow .sidebarName {
+  flex: 1 1 auto;
+}
+
 .sidebarHandle,
 .sidebarLocation {
   color: var(--color-text-muted);

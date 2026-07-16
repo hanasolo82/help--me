@@ -22,10 +22,6 @@ export default function ProfileMain({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteState,
-  favoriteLabel,
-  isFavoriteLoading,
 }) {
   const canEdit = isOwnProfile && isEditing
 
@@ -55,10 +51,6 @@ export default function ProfileMain({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
-          onToggleFavorite={onToggleFavorite}
-          favoriteState={favoriteState}
-          favoriteLabel={favoriteLabel}
-          isFavoriteLoading={isFavoriteLoading}
         />
       ) : null}
     </main>

@@ -22,10 +22,6 @@ export default function ProfilePublicLayout({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteState,
-  favoriteLabel,
-  isFavoriteLoading,
 }) {
   return (
     <div className={styles.page}>
@@ -45,10 +41,6 @@ export default function ProfilePublicLayout({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
-          onToggleFavorite={onToggleFavorite}
-          favoriteLabel={favoriteLabel}
-          isFavoriteLoading={isFavoriteLoading}
-          favoriteState={favoriteState}
         />
 
         <ProfileMain
@@ -63,10 +55,6 @@ export default function ProfilePublicLayout({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
-          onToggleFavorite={onToggleFavorite}
-          favoriteState={favoriteState}
-          favoriteLabel={favoriteLabel}
-          isFavoriteLoading={isFavoriteLoading}
         />
       </div>
 
@@ -75,10 +63,6 @@ export default function ProfilePublicLayout({
         onPrimaryAction={onPrimaryAction}
         primaryActionLabel={primaryActionLabel}
         showPrimaryAction={showPrimaryAction}
-        onToggleFavorite={onToggleFavorite}
-        favoriteLabel={favoriteLabel}
-        favoriteState={favoriteState}
-        isFavoriteLoading={isFavoriteLoading}
       />
     </div>
   )

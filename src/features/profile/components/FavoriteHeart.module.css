@@ -1,0 +1,71 @@
+.root {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.root svg {
+  width: 1.18rem;
+  height: 1.18rem;
+}
+
+.root:not(:disabled):hover {
+  background: color-mix(in srgb, var(--color-danger) 9%, transparent);
+  color: var(--color-danger);
+  transform: scale(1.04);
+}
+
+.root:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 34%, transparent);
+  outline-offset: 2px;
+}
+
+.root:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.isFavorite {
+  color: var(--color-danger);
+  animation: favorite-heart-pop 0.22s ease-out;
+}
+
+.isFavorite svg {
+  fill: currentColor;
+}
+
+.sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.sm svg {
+  width: 1.04rem;
+  height: 1.04rem;
+}
+
+@keyframes favorite-heart-pop {
+  0% { transform: scale(0.84); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .isFavorite {
+    animation: none;
+    transition: none;
+  }
+}

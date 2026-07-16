@@ -1,4 +1,5 @@
 import UserAvatar from '../../../shared/ui/UserAvatar'
+import FavoriteHeart from './FavoriteHeart'
 import styles from '../styles/profilePublicView.module.css'
 import {
   getLocationLabel,
@@ -18,10 +19,6 @@ export default function ProfileSidebar({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteLabel,
-  isFavoriteLoading,
-  favoriteState,
 }) {
   const displayName = getProfileName(profile)
   const handle = getProfileHandle(profile)
@@ -41,7 +38,10 @@ export default function ProfileSidebar({
 
         <div className={styles.sidebarIdentity}>
           <p className={styles.sidebarEyebrow}>{isOwnProfile ? 'Tu perfil público' : 'Perfil de ayudante'}</p>
-          <h1 className={styles.sidebarName}>{displayName}</h1>
+          <div className={styles.sidebarNameRow}>
+            <h1 className={styles.sidebarName}>{displayName}</h1>
+            {!isOwnProfile ? <FavoriteHeart helperId={profile?.id} size="sm" /> : null}
+          </div>
           <p className={styles.sidebarHandle}>{handle}</p>
           <p className={styles.sidebarLocation}>{locationLabel}</p>
         </div>
@@ -65,21 +65,11 @@ export default function ProfileSidebar({
             {isEditing ? 'Salir de edición' : 'Editar perfil'}
           </button>
         ) : (
-          <>
-            {showPrimaryAction ? (
-              <button type="button" className="primary-action" onClick={onPrimaryAction}>
-                {primaryActionLabel}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="secondary-action"
-              onClick={onToggleFavorite}
-              disabled={isFavoriteLoading}
-            >
-              {favoriteState?.isFavorite ? 'Quitar favorito' : favoriteLabel}
+          showPrimaryAction ? (
+            <button type="button" className="primary-action" onClick={onPrimaryAction}>
+              {primaryActionLabel}
             </button>
-          </>
+          ) : null
         )}
       </div>
     </aside>

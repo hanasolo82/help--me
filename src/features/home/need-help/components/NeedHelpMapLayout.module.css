@@ -444,6 +444,13 @@
   min-width: 0;
 }
 
+.helperHeadingActions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.28rem;
+}
+
 .helperCardHeading strong {
   /* Color explícito: en dark mode el nombre podía heredar un color oscuro
      ilegible sobre la superficie oscura de la tarjeta (QA). */

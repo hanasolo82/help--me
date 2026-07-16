@@ -10,10 +10,6 @@ export default function ProfileContactPanel({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteState,
-  favoriteLabel,
-  isFavoriteLoading,
 }) {
   const displayName = getProfileName(profile)
 
@@ -25,7 +21,7 @@ export default function ProfileContactPanel({
       lead={
         showPrimaryAction
           ? 'Cuéntale qué necesitas: recibirá tu solicitud directa y podrá aceptarla al momento.'
-          : 'Guárdalo en favoritos para tenerlo a mano cuando publiques una solicitud.'
+          : 'Este helper no acepta solicitudes directas en este momento.'
       }
     >
       <div className={styles.contactActions}>
@@ -34,14 +30,6 @@ export default function ProfileContactPanel({
             {primaryActionLabel}
           </button>
         ) : null}
-        <button
-          type="button"
-          className="secondary-action"
-          onClick={onToggleFavorite}
-          disabled={isFavoriteLoading}
-        >
-          {favoriteState?.isFavorite ? 'Quitar favorito' : favoriteLabel}
-        </button>
       </div>
     </ProfileContentSection>
   )

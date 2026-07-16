@@ -1,5 +1,6 @@
 import { BadgeCheck, ChevronRight, MapPin, ShieldCheck, Star } from 'lucide-react'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import FavoriteHeart from '../../../profile/components/FavoriteHeart'
 import { CategoryIcon, style as designStyle } from '../../../../design'
 import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './NeedHelpMapLayout.module.css'
@@ -110,7 +111,10 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
                 </span>
               ) : null}
             </div>
-            <span className={styles.helperAvailability}>{availabilityLabel}</span>
+            <div className={styles.helperHeadingActions}>
+              <FavoriteHeart helperId={helper?.id} size="sm" />
+              <span className={styles.helperAvailability}>{availabilityLabel}</span>
+            </div>
           </div>
 
           <div className={styles.helperTrustLine}>

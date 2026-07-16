@@ -5,33 +5,19 @@ export default function ProfileActionBar({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
-  onToggleFavorite,
-  favoriteLabel,
-  favoriteState,
-  isFavoriteLoading,
 }) {
-  if (isOwnProfile) {
+  if (isOwnProfile || !showPrimaryAction) {
     return null
   }
 
   return (
     <div
-      className={`${styles.actionBar} ${showPrimaryAction ? '' : styles.actionBarSingle}`.trim()}
+      className={`${styles.actionBar} ${styles.actionBarSingle}`}
       role="toolbar"
       aria-label="Acciones rápidas del perfil"
     >
-      {showPrimaryAction ? (
-        <button type="button" className="primary-action" onClick={onPrimaryAction}>
-          {primaryActionLabel}
-        </button>
-      ) : null}
-      <button
-        type="button"
-        className="secondary-action"
-        onClick={onToggleFavorite}
-        disabled={isFavoriteLoading}
-      >
-        {favoriteState?.isFavorite ? 'Quitar favorito' : favoriteLabel}
+      <button type="button" className="primary-action" onClick={onPrimaryAction}>
+        {primaryActionLabel}
       </button>
     </div>
   )

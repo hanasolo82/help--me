@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
-import { useFavoriteProfile } from '../hooks/useFavoriteProfile'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
 import { resolveReturnTo } from '../../../shared/utils/navigation'
@@ -22,13 +21,10 @@ export default function ProfilePage() {
     reviews,
     verifications,
     availability,
-    favoriteState,
     isLoading,
     error,
     isOwnProfile,
   } = useProfilePageData(profileId)
-
-  const favoriteMutation = useFavoriteProfile(profile?.id)
 
   // Índice de anclas del perfil single-page (el orden refleja el flujo real).
   // "Contacto" solo existe para visitantes: nadie se contacta a sí mismo.
@@ -43,12 +39,6 @@ export default function ProfilePage() {
     ],
     [isOwnProfile],
   )
-  const hasTaskContext = /^\/task\/[^/?#]+(?:[/?#]|$)/.test(returnTo)
-
-  function handleToggleFavorite() {
-    favoriteMutation.mutate()
-  }
-
   function handlePrimaryAction() {
     if (!profile?.id) return
 
@@ -110,8 +100,6 @@ export default function ProfilePage() {
   }
 
   const helperAvailable = profile?.helper_status === 'active'
-  const favoriteLabel = favoriteState?.isFavorite ? 'Quitar favorito' : 'Guardar favorito'
-
   return (
     <main className="app-screen with-nav">
       {contactError ? (
@@ -132,12 +120,8 @@ export default function ProfilePage() {
         onEditIdentity={() => navigate('/settings#perfil')}
         onBack={() => navigate(returnTo)}
         onPrimaryAction={handlePrimaryAction}
-        primaryActionLabel="Pedir ayuda"
-        showPrimaryAction={!hasTaskContext && helperAvailable && profile?.accepts_direct_requests === true}
-        onToggleFavorite={handleToggleFavorite}
-        favoriteState={favoriteState}
-        favoriteLabel={favoriteLabel}
-        isFavoriteLoading={favoriteMutation.isPending}
+        primaryActionLabel="Proponer una tarea"
+        showPrimaryAction={helperAvailable && profile?.accepts_direct_requests === true}
         helperAvailable={helperAvailable}
       />
     </main>
