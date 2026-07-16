@@ -1,7 +1,14 @@
+/* El label "¿Qué necesitas?" queda equidistante entre el buscador del header y
+   el input de abajo. El hueco de ARRIBA no se puede tocar desde aquí: lo fija
+   el header (su margin-bottom) y cae entero fuera de este contenedor, que
+   además recorta (.requesterShell tiene overflow:hidden en escritorio, así que
+   subir el label con un margen negativo lo cortaría). Por eso el reparto se
+   hace igualando el hueco de ABAJO con el gap. Medido: header→label 16px,
+   antes label→input solo 8px. */
 .hero {
   display: grid;
   justify-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 1rem;
   width: 100%;
 }
@@ -46,8 +53,11 @@
 }
 
 @media (min-width: 900px) {
+  /* En escritorio el header es más alto que su buscador y lo centra, así que
+     el hueco sobre el label crece (~32px a 1024px, ~40px a 1440px). 2.25rem es
+     el punto medio: deja el desfase por debajo de ~4px en todo el rango. */
   .hero {
-    gap: 0.42rem;
+    gap: 2.25rem;
   }
 
   .actionRow {

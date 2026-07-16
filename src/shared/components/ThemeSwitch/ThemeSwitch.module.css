@@ -24,15 +24,17 @@
   cursor: pointer;
   padding: var(--sw-pad);
   box-shadow: var(--shadow-xs);
+  /* Sin `transform` aquí: el switch nunca se mueve (el que se desplaza es el
+     thumb, con su propia transición). */
   transition:
     border-color var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-spring-soft);
+    box-shadow var(--motion-fast) var(--ease-out);
 }
 
+/* Sin desplazamiento en hover: el switch se queda quieto y el realce lo da
+   solo la sombra. */
 .switch:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
