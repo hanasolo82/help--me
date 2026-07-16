@@ -158,6 +158,7 @@ export default function MessagesThread({ conversation, onBack, onOpenTask }) {
         <div className={styles.threadHeaderCopy}>
           <strong>{counterpartName}</strong>
           {conversation.task?.title ? <p>{conversation.task.title}</p> : null}
+          {conversation.conversation_type === 'direct' && !conversation.task_id ? <p>Conversación directa</p> : null}
         </div>
         {conversation.task_id ? (
           <button

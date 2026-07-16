@@ -22,6 +22,9 @@ export default function ProfilePublicLayout({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
+  onSecondaryAction,
+  secondaryActionLabel,
+  showSecondaryAction,
 }) {
   return (
     <div className={styles.page}>
@@ -41,6 +44,9 @@ export default function ProfilePublicLayout({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
+          onSecondaryAction={onSecondaryAction}
+          secondaryActionLabel={secondaryActionLabel}
+          showSecondaryAction={showSecondaryAction}
         />
 
         <ProfileMain
@@ -55,6 +61,9 @@ export default function ProfilePublicLayout({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
+          onSecondaryAction={onSecondaryAction}
+          secondaryActionLabel={secondaryActionLabel}
+          showSecondaryAction={showSecondaryAction}
         />
       </div>
 
@@ -63,6 +72,9 @@ export default function ProfilePublicLayout({
         onPrimaryAction={onPrimaryAction}
         primaryActionLabel={primaryActionLabel}
         showPrimaryAction={showPrimaryAction}
+        onSecondaryAction={onSecondaryAction}
+        secondaryActionLabel={secondaryActionLabel}
+        showSecondaryAction={showSecondaryAction}
       />
     </div>
   )

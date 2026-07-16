@@ -10,6 +10,9 @@ export default function ProfileContactPanel({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
+  onSecondaryAction,
+  secondaryActionLabel,
+  showSecondaryAction,
 }) {
   const displayName = getProfileName(profile)
 
@@ -21,13 +24,20 @@ export default function ProfileContactPanel({
       lead={
         showPrimaryAction
           ? 'Cuéntale qué necesitas: recibirá tu solicitud directa y podrá aceptarla al momento.'
-          : 'Este helper no acepta solicitudes directas en este momento.'
+          : showSecondaryAction
+            ? 'Puedes resolver una duda antes de proponer una tarea.'
+            : 'Este helper no acepta solicitudes directas en este momento.'
       }
     >
       <div className={styles.contactActions}>
         {showPrimaryAction ? (
           <button type="button" className="primary-action" onClick={onPrimaryAction}>
             {primaryActionLabel}
+          </button>
+        ) : null}
+        {showSecondaryAction ? (
+          <button type="button" className="secondary-action" onClick={onSecondaryAction}>
+            {secondaryActionLabel}
           </button>
         ) : null}
       </div>

@@ -22,6 +22,9 @@ export default function ProfileMain({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
+  onSecondaryAction,
+  secondaryActionLabel,
+  showSecondaryAction,
 }) {
   const canEdit = isOwnProfile && isEditing
 
@@ -51,6 +54,9 @@ export default function ProfileMain({
           onPrimaryAction={onPrimaryAction}
           primaryActionLabel={primaryActionLabel}
           showPrimaryAction={showPrimaryAction}
+          onSecondaryAction={onSecondaryAction}
+          secondaryActionLabel={secondaryActionLabel}
+          showSecondaryAction={showSecondaryAction}
         />
       ) : null}
     </main>

@@ -92,6 +92,66 @@ function normalizePublicProfile(profile) {
   }
 }
 
+export async function getDirectMessagePreference() {
+  assertSupabaseReady()
+  const user = await requireUser('Necesitas iniciar sesion para gestionar los mensajes directos.')
+
+  const { data, error } = await supabase
+    .from('direct_message_preferences')
+    .select('accepts_direct_messages')
+    .eq('profile_id', user.id)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data?.accepts_direct_messages === true
+}
+
+export async function setDirectMessagePreference(acceptsDirectMessages) {
+  assertSupabaseReady()
+  const user = await requireUser('Necesitas iniciar sesion para gestionar los mensajes directos.')
+
+  const { data, error } = await supabase
+    .from('direct_message_preferences')
+    .upsert(
+      {
+        profile_id: user.id,
+        accepts_direct_messages: acceptsDirectMessages === true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'profile_id' },
+    )
+    .select('accepts_direct_messages')
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data.accepts_direct_messages === true
+}
+
+export async function canStartDirectConversation(otherUserId) {
+  assertSupabaseReady()
+  await requireUser('Necesitas iniciar sesion para contactar a este helper.')
+
+  if (!isUuid(otherUserId)) {
+    return false
+  }
+
+  const { data, error } = await supabase.rpc('can_start_direct_conversation', {
+    p_other_user_id: otherUserId,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data === true
+}
+
 export async function createOrGetDirectConversation(otherUserId) {
   assertSupabaseReady()
 

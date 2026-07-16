@@ -769,6 +769,11 @@
   box-shadow: 0 8px 20px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
+.settingsSwitch:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .settingsSwitchThumb {
   width: 1.36rem;
   height: 1.36rem;
@@ -2122,6 +2127,12 @@
 
 .notificationSwitchRow {
   padding-top: 0.1rem;
+}
+
+.notificationSubrow {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 42%, transparent);
 }
 
 .notificationSwitchCopy {

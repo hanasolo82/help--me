@@ -19,6 +19,9 @@ export default function ProfileSidebar({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
+  onSecondaryAction,
+  secondaryActionLabel,
+  showSecondaryAction,
 }) {
   const displayName = getProfileName(profile)
   const handle = getProfileHandle(profile)
@@ -65,11 +68,18 @@ export default function ProfileSidebar({
             {isEditing ? 'Salir de edición' : 'Editar perfil'}
           </button>
         ) : (
-          showPrimaryAction ? (
-            <button type="button" className="primary-action" onClick={onPrimaryAction}>
-              {primaryActionLabel}
-            </button>
-          ) : null
+          <>
+            {showPrimaryAction ? (
+              <button type="button" className="primary-action" onClick={onPrimaryAction}>
+                {primaryActionLabel}
+              </button>
+            ) : null}
+            {showSecondaryAction ? (
+              <button type="button" className="secondary-action" onClick={onSecondaryAction}>
+                {secondaryActionLabel}
+              </button>
+            ) : null}
+          </>
         )}
       </div>
     </aside>

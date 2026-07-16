@@ -270,9 +270,16 @@ async function assertServiceBlocked(callback, id, desc) {
 }
 
 async function assertDirectConversationHardeningInstalled() {
-  const { error } = await admin.from('direct_message_preferences').select('profile_id').limit(1)
-  if (error) {
-    throw new Error(`Missing direct conversation hardening migration 0053: ${error.message}`)
+  const { error: preferencesError } = await admin.from('direct_message_preferences').select('profile_id').limit(1)
+  if (preferencesError) {
+    throw new Error(`Missing direct conversation hardening migration 0053: ${preferencesError.message}`)
+  }
+
+  const { error: availabilityError } = await admin.rpc('can_start_direct_conversation', {
+    p_other_user_id: null,
+  })
+  if (availabilityError) {
+    throw new Error(`Missing direct conversation availability migration 0054: ${availabilityError.message}`)
   }
 }
 
@@ -649,11 +656,33 @@ async function main() {
         withoutPreferenceError ? `bloqueado (${withoutPreferenceError.code})` : `data=${withoutPreference}`,
       )
 
+      const { data: unavailableContact, error: unavailableContactError } = await rc.rpc(
+        'can_start_direct_conversation',
+        { p_other_user_id: helper.id },
+      )
+      record(
+        'C-direct-contact-unavailable',
+        'La consulta de contacto no expone helpers sin opt-in',
+        !unavailableContactError && unavailableContact === false,
+        unavailableContactError ? `error ${unavailableContactError.code}` : `available=${unavailableContact}`,
+      )
+
       const { error: preferenceError } = await admin.from('direct_message_preferences').upsert({
         profile_id: helper.id,
         accepts_direct_messages: true,
       })
       if (preferenceError) throw preferenceError
+
+      const { data: availableContact, error: availableContactError } = await rc.rpc(
+        'can_start_direct_conversation',
+        { p_other_user_id: helper.id },
+      )
+      record(
+        'C-direct-contact-available',
+        'La consulta de contacto habilita solo helpers con opt-in',
+        !availableContactError && availableContact === true,
+        availableContactError ? `error ${availableContactError.code}` : `available=${availableContact}`,
+      )
 
       const { data: directConversationId, error: directConversationError } = await rc.rpc(
         'create_or_get_direct_conversation',
@@ -757,6 +786,17 @@ async function main() {
           blocked_profile_id: requester.id,
         })
         if (blockSetupError) throw blockSetupError
+
+        const { data: blockedContact, error: blockedContactError } = await rc.rpc(
+          'can_start_direct_conversation',
+          { p_other_user_id: helper.id },
+        )
+        record(
+          'C-direct-contact-blocked',
+          'La consulta de contacto no revela ni habilita perfiles bloqueados',
+          !blockedContactError && blockedContact === false,
+          blockedContactError ? `error ${blockedContactError.code}` : `available=${blockedContact}`,
+        )
 
         const { data: blockedConversation, error: blockedConversationError } = await rc.rpc(
           'create_or_get_direct_conversation',

@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/useAuth'
+import { canStartDirectConversation, createOrGetDirectConversation } from '../../chat/api/chatApi'
 import { useProfilePageData } from '../hooks/useProfilePageData'
 import ProfilePublicView from '../components/ProfilePublicView'
 import { resolveReturnTo } from '../../../shared/utils/navigation'
@@ -13,6 +14,7 @@ export default function ProfilePage() {
   const profileId = params.id || user?.id || authProfile?.id || null
   const [isEditing, setIsEditing] = useState(false)
   const [contactError, setContactError] = useState('')
+  const [directMessageState, setDirectMessageState] = useState({ profileId: null, status: 'idle' })
   const returnTo = resolveReturnTo(location.state?.returnTo, '/home')
 
   const {
@@ -25,6 +27,28 @@ export default function ProfilePage() {
     error,
     isOwnProfile,
   } = useProfilePageData(profileId)
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!profile?.id || isOwnProfile || profile.id === user?.id) return undefined
+
+    canStartDirectConversation(profile.id)
+      .then((available) => {
+        if (!cancelled) {
+          setDirectMessageState({ profileId: profile.id, status: available ? 'available' : 'unavailable' })
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDirectMessageState({ profileId: profile.id, status: 'unavailable' })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOwnProfile, profile?.id, user?.id])
 
   // Índice de anclas del perfil single-page (el orden refleja el flujo real).
   // "Contacto" solo existe para visitantes: nadie se contacta a sí mismo.
@@ -52,6 +76,21 @@ export default function ProfilePage() {
         },
       },
     })
+  }
+
+  async function handleDirectMessage() {
+    if (!profile?.id || directMessageState.status === 'opening') return
+
+    setContactError('')
+    setDirectMessageState({ profileId: profile.id, status: 'opening' })
+
+    try {
+      const conversationId = await createOrGetDirectConversation(profile.id)
+      navigate('/messages', { state: { conversationId } })
+    } catch {
+      setDirectMessageState({ profileId: profile.id, status: 'unavailable' })
+      setContactError('No se puede iniciar una conversación directa con este helper ahora.')
+    }
   }
 
   if (isLoading && !profile) {
@@ -100,6 +139,8 @@ export default function ProfilePage() {
   }
 
   const helperAvailable = profile?.helper_status === 'active'
+  const directMessageStatus = directMessageState.profileId === profile.id ? directMessageState.status : 'loading'
+  const showDirectMessageAction = helperAvailable && directMessageStatus === 'available'
   return (
     <main className="app-screen with-nav">
       {contactError ? (
@@ -122,6 +163,9 @@ export default function ProfilePage() {
         onPrimaryAction={handlePrimaryAction}
         primaryActionLabel="Proponer una tarea"
         showPrimaryAction={helperAvailable && profile?.accepts_direct_requests === true}
+        onSecondaryAction={handleDirectMessage}
+        secondaryActionLabel="Enviar mensaje"
+        showSecondaryAction={showDirectMessageAction}
         helperAvailable={helperAvailable}
       />
     </main>

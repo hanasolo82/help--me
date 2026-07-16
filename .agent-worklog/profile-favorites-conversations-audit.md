@@ -61,6 +61,12 @@ Las conversaciones de tarea, su gate de pago, el layout de Mensajes, composer y
 Realtime no se modifican. El verificador RLS cubre el flujo con tres usuarios y
 falla antes de crear datos de prueba si la migración no está instalada.
 
+La fase de interfaz se completa con `0054_direct_message_contact_availability`:
+el helper activo controla el opt-in desde Ajustes y el perfil consulta una RPC
+booleana antes de mostrar `Enviar mensaje`. El resultado no diferencia opt-out,
+bloqueo o estado de cuenta. El botón abre la bandeja existente en `/messages`;
+no crea un layout, una notificación ni un hilo de tarea nuevos.
+
 ## Archivos auditados
 
 - Perfil y propuesta: `src/features/profile/pages/ProfilePage.jsx`,

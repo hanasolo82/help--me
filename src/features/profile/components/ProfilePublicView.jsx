@@ -15,6 +15,9 @@ export default function ProfilePublicView({
   onPrimaryAction,
   primaryActionLabel,
   showPrimaryAction,
+  onSecondaryAction,
+  secondaryActionLabel,
+  showSecondaryAction,
 }) {
   return <ProfilePublicLayout
     profile={profile}
@@ -31,5 +34,8 @@ export default function ProfilePublicView({
     onPrimaryAction={onPrimaryAction}
     primaryActionLabel={primaryActionLabel}
     showPrimaryAction={showPrimaryAction}
+    onSecondaryAction={onSecondaryAction}
+    secondaryActionLabel={secondaryActionLabel}
+    showSecondaryAction={showSecondaryAction}
   />
 }
