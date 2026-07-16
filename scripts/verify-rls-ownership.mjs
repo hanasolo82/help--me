@@ -269,6 +269,13 @@ async function assertServiceBlocked(callback, id, desc) {
   }
 }
 
+async function assertDirectConversationHardeningInstalled() {
+  const { error } = await admin.from('direct_message_preferences').select('profile_id').limit(1)
+  if (error) {
+    throw new Error(`Missing direct conversation hardening migration 0053: ${error.message}`)
+  }
+}
+
 async function main() {
   const ids = {
     userIds: [],
@@ -280,9 +287,12 @@ async function main() {
     auditIds: [],
     reviewIds: [],
     applicationIds: [],
+    conversationIds: [],
   }
 
   try {
+    await assertDirectConversationHardeningInstalled()
+
     const requester = await createUser('requester')
     const helper = await createUser('helper')
     const third = await createUser('third')
@@ -614,6 +624,203 @@ async function main() {
       )
     }
 
+    // Direct conversations stay opt-in and server-authorized. They never change task state.
+    {
+      const { data: directInsert, error: directInsertError } = await rc
+        .from('conversations')
+        .insert({ created_by: requester.id, conversation_type: 'direct', task_id: null })
+        .select('id')
+      if (!directInsertError && rowCount(directInsert) > 0) ids.conversationIds.push(...directInsert.map((row) => row.id))
+      record(
+        'C-direct-client-create',
+        'Authenticated no crea conversaciones directas por tabla',
+        isBlocked(directInsertError, directInsert),
+        directInsertError ? `bloqueado (${directInsertError.code})` : `filas=${rowCount(directInsert)}`,
+      )
+
+      const { data: withoutPreference, error: withoutPreferenceError } = await rc.rpc(
+        'create_or_get_direct_conversation',
+        { other_user_id: helper.id },
+      )
+      record(
+        'C-direct-opt-in',
+        'Sin opt-in del helper no se abre conversación directa',
+        Boolean(withoutPreferenceError) && withoutPreference === null,
+        withoutPreferenceError ? `bloqueado (${withoutPreferenceError.code})` : `data=${withoutPreference}`,
+      )
+
+      const { error: preferenceError } = await admin.from('direct_message_preferences').upsert({
+        profile_id: helper.id,
+        accepts_direct_messages: true,
+      })
+      if (preferenceError) throw preferenceError
+
+      const { data: directConversationId, error: directConversationError } = await rc.rpc(
+        'create_or_get_direct_conversation',
+        { other_user_id: helper.id },
+      )
+      if (!directConversationError && directConversationId) ids.conversationIds.push(directConversationId)
+
+      const { data: repeatedConversationId, error: repeatedConversationError } = await rc.rpc(
+        'create_or_get_direct_conversation',
+        { other_user_id: helper.id },
+      )
+      record(
+        'C-direct-create-reuse',
+        'La RPC crea una conversación directa y reutiliza la misma pareja',
+        !directConversationError
+          && !repeatedConversationError
+          && Boolean(directConversationId)
+          && directConversationId === repeatedConversationId,
+        directConversationError || repeatedConversationError
+          ? `error=${directConversationError?.code || repeatedConversationError?.code}`
+          : `conversation=${directConversationId}`,
+      )
+
+      if (directConversationId) {
+        await assertNoRead(tc, 'conversations', directConversationId, 'C-direct-read-third')
+
+        const { data: firstMessage, error: firstMessageError } = await rc.rpc('send_message', {
+          p_conversation_id: directConversationId,
+          p_body: 'Primer mensaje directo',
+        })
+        record(
+          'C-direct-first-message',
+          'Solicitante envía el primer mensaje directo por RPC',
+          !firstMessageError && firstMessage?.conversation_id === directConversationId,
+          firstMessageError ? `error ${firstMessageError.code}` : `message=${firstMessage?.id}`,
+        )
+
+        const { data: directMessageInsert, error: directMessageInsertError } = await rc
+          .from('messages')
+          .insert({
+            conversation_id: directConversationId,
+            sender_id: requester.id,
+            body: 'Bypass de insert directo',
+            message_type: 'text',
+          })
+          .select('id')
+        record(
+          'C-direct-client-send',
+          'Authenticated no inserta mensajes directos fuera de send_message',
+          isBlocked(directMessageInsertError, directMessageInsert),
+          directMessageInsertError ? `bloqueado (${directMessageInsertError.code})` : `filas=${rowCount(directMessageInsert)}`,
+        )
+
+        const { data: burstMessage, error: burstMessageError } = await rc.rpc('send_message', {
+          p_conversation_id: directConversationId,
+          p_body: 'Segundo mensaje sin respuesta',
+        })
+        record(
+          'C-direct-message-limit',
+          'No se envía un segundo directo antes de recibir respuesta',
+          Boolean(burstMessageError) && burstMessage === null,
+          burstMessageError ? `bloqueado (${burstMessageError.code})` : `message=${burstMessage?.id}`,
+        )
+
+        const { data: helperReply, error: helperReplyError } = await hc.rpc('send_message', {
+          p_conversation_id: directConversationId,
+          p_body: 'Respuesta del helper',
+        })
+        record(
+          'C-direct-reply',
+          'El helper puede responder dentro del hilo autorizado',
+          !helperReplyError && helperReply?.conversation_id === directConversationId,
+          helperReplyError ? `error ${helperReplyError.code}` : `message=${helperReply?.id}`,
+        )
+
+        const { error: disableError } = await admin.from('direct_message_preferences').upsert({
+          profile_id: helper.id,
+          accepts_direct_messages: false,
+        })
+        if (disableError) throw disableError
+
+        const { data: optOutMessage, error: optOutMessageError } = await rc.rpc('send_message', {
+          p_conversation_id: directConversationId,
+          p_body: 'No debe enviarse tras desactivar mensajes',
+        })
+        record(
+          'C-direct-opt-out-send',
+          'Desactivar mensajes bloquea nuevos envíos al helper',
+          Boolean(optOutMessageError) && optOutMessage === null,
+          optOutMessageError ? `bloqueado (${optOutMessageError.code})` : `message=${optOutMessage?.id}`,
+        )
+
+        const { error: enableError } = await admin.from('direct_message_preferences').upsert({
+          profile_id: helper.id,
+          accepts_direct_messages: true,
+        })
+        if (enableError) throw enableError
+
+        const { error: blockSetupError } = await admin.from('user_blocks').upsert({
+          blocker_id: helper.id,
+          blocked_profile_id: requester.id,
+        })
+        if (blockSetupError) throw blockSetupError
+
+        const { data: blockedConversation, error: blockedConversationError } = await rc.rpc(
+          'create_or_get_direct_conversation',
+          { other_user_id: helper.id },
+        )
+        record(
+          'C-direct-block-open',
+          'Un bloqueo impide reabrir o crear conversación directa',
+          Boolean(blockedConversationError) && blockedConversation === null,
+          blockedConversationError ? `bloqueado (${blockedConversationError.code})` : `data=${blockedConversation}`,
+        )
+
+        const { data: blockedMessage, error: blockedMessageError } = await rc.rpc('send_message', {
+          p_conversation_id: directConversationId,
+          p_body: 'No debe enviarse tras bloqueo',
+        })
+        record(
+          'C-direct-block-send',
+          'Un bloqueo impide nuevos mensajes directos',
+          Boolean(blockedMessageError) && blockedMessage === null,
+          blockedMessageError ? `bloqueado (${blockedMessageError.code})` : `message=${blockedMessage?.id}`,
+        )
+
+        const { data: foreignBlocks, error: foreignBlocksError } = await tc
+          .from('user_blocks')
+          .select('blocker_id')
+          .eq('blocker_id', helper.id)
+          .eq('blocked_profile_id', requester.id)
+        record(
+          'C-direct-block-private',
+          'Un tercero no lee bloqueos ajenos',
+          Boolean(foreignBlocksError) || rowCount(foreignBlocks) === 0,
+          foreignBlocksError ? `bloqueado (${foreignBlocksError.code})` : `filas=${rowCount(foreignBlocks)}`,
+        )
+
+        const { error: thirdPreferenceError } = await admin.from('direct_message_preferences').upsert({
+          profile_id: third.id,
+          accepts_direct_messages: true,
+        })
+        if (thirdPreferenceError) throw thirdPreferenceError
+
+        const rateLimitRows = Array.from({ length: 5 }, () => ({
+          id: randomUUID(),
+          created_by: requester.id,
+          conversation_type: 'direct',
+          task_id: null,
+        }))
+        const { error: rateSetupError } = await admin.from('conversations').insert(rateLimitRows)
+        if (rateSetupError) throw rateSetupError
+        ids.conversationIds.push(...rateLimitRows.map((row) => row.id))
+
+        const { data: rateLimitedConversation, error: rateLimitedConversationError } = await rc.rpc(
+          'create_or_get_direct_conversation',
+          { other_user_id: third.id },
+        )
+        record(
+          'C-direct-conversation-limit',
+          'No se crean más de cinco conversaciones directas nuevas por hora',
+          Boolean(rateLimitedConversationError) && rateLimitedConversation === null,
+          rateLimitedConversationError ? `bloqueado (${rateLimitedConversationError.code})` : `data=${rateLimitedConversation}`,
+        )
+      }
+    }
+
     // task completion / release / chat unlock cannot be forced out of state.
     {
       const assignedToComplete = await createTask(ids, requester.id, helper.id, 'assigned', 'RLS invalid complete task')
@@ -679,6 +886,11 @@ async function main() {
     if (ids.auditIds.length) await admin.from('audit_events').delete().in('id', ids.auditIds)
     if (ids.webhookIds.length) await admin.from('stripe_webhook_events').delete().in('id', ids.webhookIds)
     if (ids.paymentIds.length) await admin.from('payments').delete().in('id', ids.paymentIds)
+    if (ids.conversationIds.length) {
+      await admin.from('messages').delete().in('conversation_id', ids.conversationIds)
+      await admin.from('conversation_participants').delete().in('conversation_id', ids.conversationIds)
+      await admin.from('conversations').delete().in('id', ids.conversationIds)
+    }
     if (ids.taskIds.length) {
       await admin.from('conversations').delete().in('task_id', ids.taskIds)
       await admin.from('chats').delete().in('task_id', ids.taskIds)

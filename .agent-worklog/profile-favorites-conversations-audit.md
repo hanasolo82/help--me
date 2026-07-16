@@ -53,11 +53,13 @@ ni se habilita el chat directo en esta etapa.
 | C. Un hilo por pareja | Descartada | Mezcla tareas, pagos e incidencias; hace la auditoría ambigua. |
 | D. Chat por fecha | Descartada | Las fechas cambian y multiplican hilos sin resolver trazabilidad. |
 
-La implementación mínima de B queda bloqueada hasta una migración revisada que
-añada preferencia de mensajes directos, bloqueo, control transaccional/anti-
-spam, grants explícitos, pruebas RLS de tres usuarios y una estrategia para no
-duplicar el feed derivado actual. El layout de Mensajes, composer, Realtime y
-conversaciones de tarea no se tocarán.
+La implementación mínima de B se ha preparado localmente en la migración
+`0053_direct_conversation_safety_controls.sql`, pendiente de aplicar y validar
+en staging. Añade preferencia explícita de recepción, bloqueo bilateral, límite
+transaccional de cinco hilos nuevos por hora y un mensaje consecutivo por lado.
+Las conversaciones de tarea, su gate de pago, el layout de Mensajes, composer y
+Realtime no se modifican. El verificador RLS cubre el flujo con tres usuarios y
+falla antes de crear datos de prueba si la migración no está instalada.
 
 ## Archivos auditados
 
@@ -72,7 +74,13 @@ conversaciones de tarea no se tocarán.
 - Validación existente: `verify:rls-payment-gate` y el caso de gate de chat en
   `verify:rls-ownership.mjs`.
 
-## Plan de rollback
+## Rollback
 
 La Etapa A solo cambia controles React y cache de favoritos. Su rollback es
 revertir esos archivos; no requiere migración ni altera datos existentes.
+
+La fase de hardening de conversaciones directas requiere una migración de
+reversión revisada: restaura las funciones y grants previos de conversaciones y
+elimina las tablas `direct_message_preferences` y `user_blocks` solo después de
+preservar la decisión sobre los bloqueos existentes. No basta con revertir el
+cliente porque los controles viven deliberadamente en servidor.
