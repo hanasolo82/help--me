@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import SkillBadge from '../../../skills/components/SkillBadge'
 import Modal, { ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
+import { useDirectMessage } from '../../../chat/hooks/useDirectMessage'
 import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './HelperPreviewModal.module.css'
 
@@ -40,6 +41,8 @@ export default function HelperPreviewModal({
   onSendProposal,
 }) {
   const skills = useMemo(() => buildSkillList(helper), [helper])
+  // Mismo gate y misma apertura que el CTA "Enviar mensaje" del perfil público.
+  const directMessage = useDirectMessage(helper?.id, { enabled: open && Boolean(helper?.id) })
 
   if (!helper) return null
 
@@ -90,10 +93,26 @@ export default function HelperPreviewModal({
             {contactPending ? 'Preparando...' : 'Pedir ayuda'}
           </button>
         ) : null}
+        {directMessage.canMessage ? (
+          <button
+            type="button"
+            className="secondary-action"
+            onClick={directMessage.openDirectMessage}
+            disabled={contactPending || directMessage.isOpening}
+          >
+            {directMessage.isOpening ? 'Abriendo...' : 'Enviar mensaje'}
+          </button>
+        ) : null}
         <button type="button" className="primary-action" onClick={() => onSendProposal?.(helper)} disabled={contactPending}>
           Publicar solicitud
         </button>
       </div>
+
+      {directMessage.rejectsMessages ? (
+        <p className={styles.directHint}>
+          {directMessage.error || `${name} no recibe mensajes directos por ahora.`}
+        </p>
+      ) : null}
     </Modal>
   )
 }

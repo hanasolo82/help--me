@@ -1,7 +1,8 @@
-import { BadgeCheck, ChevronRight, MapPin, ShieldCheck, Star } from 'lucide-react'
+import { BadgeCheck, ChevronRight, MapPin, MessageSquare, ShieldCheck, Star } from 'lucide-react'
 import UserAvatar from '../../../../shared/ui/UserAvatar'
 import FavoriteHeart from '../../../profile/components/FavoriteHeart'
 import { CategoryIcon, style as designStyle } from '../../../../design'
+import { useDirectMessage } from '../../../chat/hooks/useDirectMessage'
 import { canHelperReceiveDirectRequest } from '../../../tasks/direct-requests/directRequestCategories'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -74,6 +75,13 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
   const trustItems = buildTrustItems(helper)
   const { visible: visibleSkills, extraCount } = getVisibleSkills(skills)
   const canContact = canHelperReceiveDirectRequest(helper)
+  // Mismo gate/apertura que perfil y HelperPreviewModal. El botón "Contacto"
+  // se renderiza SIEMPRE; el gate solo decide si está habilitado. El title
+  // únicamente atribuye rechazo al helper cuando el gate respondió false
+  // ('unavailable'), nunca en 'error'/'idle' (gate caído o pendiente).
+  const directMessage = useDirectMessage(helper?.id)
+  const contactDisabled = !directMessage.canMessage || directMessage.isOpening
+  const contactTitle = directMessage.rejectsMessages ? 'No recibe mensajes directos por ahora' : undefined
   const availabilityLabel = formatAvailability(helper)
   const ratingLabel = formatRating(helper)
   const ratingAriaLabel = ratingLabel === 'Nuevo helper'
@@ -157,6 +165,22 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
       </div>
 
       <div className={styles.helperActions}>
+        <button
+          type="button"
+          className={styles.helperContactLink}
+          disabled={contactDisabled}
+          aria-disabled={contactDisabled}
+          title={contactTitle}
+          onClick={(event) => {
+            event.stopPropagation()
+            if (contactDisabled) return
+            directMessage.openDirectMessage()
+          }}
+        >
+          <MessageSquare aria-hidden="true" strokeWidth={2.2} />
+          {directMessage.isOpening ? 'Abriendo...' : 'Contacto'}
+        </button>
+
         {canContact && (
           <button
             type="button"

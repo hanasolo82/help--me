@@ -67,7 +67,16 @@
 
 .actions :global(.primary-action) {
   background: var(--color-primary);
-  color: #ffffff;
+  /* En oscuro el primario es verde claro: blanco fijo no contrasta. */
+  color: var(--hm-button-primary-fg, #ffffff);
+}
+
+/* Pista discreta cuando el helper no acepta mensajes directos: texto, no badge,
+   para explicar la ausencia del CTA sin penalizar visualmente al helper. */
+.directHint {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 .actions :global(.secondary-action) {
