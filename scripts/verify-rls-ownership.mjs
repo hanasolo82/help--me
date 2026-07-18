@@ -354,13 +354,12 @@ async function main() {
         .select('id, name, category')
         .eq('is_active', true)
         .order('sort_order', { ascending: true })
-        .limit(6)
       if (catalogError) throw catalogError
 
-      const furnitureSkill = catalogSkills.find((skill) => skill.name === 'Montaje de muebles') || catalogSkills[0]
+      const furnitureSkill = catalogSkills.find((skill) => skill.name === 'Montaje de muebles')
       const alternateSkill = catalogSkills.find((skill) => skill.id !== furnitureSkill?.id)
       if (!furnitureSkill || !alternateSkill || catalogSkills.length < 4) {
-        throw new Error('The active skills catalog needs at least four rows for migration 0055 verification')
+        throw new Error('Migration 0055 verification requires Montaje de muebles and at least four active catalog skills')
       }
 
       const initialItems = [
@@ -524,11 +523,37 @@ async function main() {
         'get_public_helpers_for_map',
         { ...mapSearchArgs, p_search_query: 'montar muebles' },
       )
+      let catalogSearchDiagnostic = ''
+      if (!catalogSearchError && !catalogSearch?.some((entry) => entry.id === helper.id)) {
+        const [skillVectorResult, exactSearchResult, nounSearchResult] = await Promise.all([
+          admin
+            .from('skills')
+            .select('name, search_vector')
+            .eq('id', furnitureSkill.id)
+            .maybeSingle(),
+          rc.rpc('get_public_helpers_for_map', {
+            ...mapSearchArgs,
+            p_search_query: furnitureSkill.name,
+          }),
+          rc.rpc('get_public_helpers_for_map', {
+            ...mapSearchArgs,
+            p_search_query: 'muebles',
+          }),
+        ])
+        catalogSearchDiagnostic = [
+          `skill=${skillVectorResult.data?.name || furnitureSkill.name}`,
+          `vector=${skillVectorResult.data?.search_vector || 'n/a'}`,
+          `exact=${rowCount(exactSearchResult.data)}/${exactSearchResult.error?.code || 'ok'}`,
+          `noun=${rowCount(nounSearchResult.data)}/${nounSearchResult.error?.code || 'ok'}`,
+        ].join(' ')
+      }
       record(
         'S-search-catalog',
         'La búsqueda encuentra habilidades sugeridas sin cambiar categorías',
         !catalogSearchError && catalogSearch?.some((entry) => entry.id === helper.id),
-        catalogSearchError ? `error ${catalogSearchError.code}` : `filas=${rowCount(catalogSearch)}`,
+        catalogSearchError
+          ? `error ${catalogSearchError.code}`
+          : `filas=${rowCount(catalogSearch)}${catalogSearchDiagnostic ? ` ${catalogSearchDiagnostic}` : ''}`,
       )
 
       const { data: missingSearch, error: missingSearchError } = await rc.rpc(
