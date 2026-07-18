@@ -25,10 +25,10 @@ function formatRating(helper) {
 function buildSkillList(helper) {
   const skills = (helper?.skills || []).slice(0, 3).map((skill) => ({
     name: skill?.name || skill?.category || 'Ayuda general',
-    icon: skill?.icon || '🏷️',
+    icon: skill?.icon || '',
   }))
 
-  return skills.length > 0 ? skills : [{ name: 'Ayuda general', icon: '✨' }]
+  return skills.length > 0 ? skills : [{ name: 'Ayuda general', icon: '' }]
 }
 
 export default function HelperPreviewModal({

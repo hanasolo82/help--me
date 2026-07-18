@@ -27,9 +27,11 @@ export function normalizeCategory(value) {
     .replace(/^_+|_+$/g, '')
 }
 
-// Cubre las 11 categorías de tasksService.allowedCategories más los valores
-// históricos. 'all' ("Todas") no lleva icono a propósito.
+// Cubre las categorías de tarea y las agrupaciones generales de skills de helper.
+// 'all' ("Todas") no lleva icono a propósito.
 export const CATEGORY_ICONS = {
+  hogar: Wrench,
+  personas: HeartHandshake,
   mascotas: PawPrint,
   recados: ShoppingBag,
   compras: ShoppingCart,

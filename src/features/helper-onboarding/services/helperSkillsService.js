@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabaseClient'
 import { requireUser } from '../../../lib/authHelpers'
+import { MAX_PROFILE_SKILLS } from '../../skills/config/skillCategories'
 
 async function resolveOwnedProfileId(profileId = null) {
   const user = await requireUser('Necesitas una sesion valida para gestionar tus habilidades.')
@@ -25,7 +26,7 @@ function normalizeSelectedSkillIds(selectedSkills = []) {
     }
   }
 
-  return ids.slice(0, 6)
+  return ids.slice(0, MAX_PROFILE_SKILLS)
 }
 
 export async function getActiveSkills() {
@@ -50,10 +51,9 @@ export async function getProfileSkills(profileId) {
 
   const { data, error } = await supabase
     .from('profile_skills')
-    .select('profile_id, skill_id, is_primary, experience_level, years_experience, skill:skills(id, name, icon, category, sort_order)')
+    .select('profile_id, skill_id, is_primary, experience_level, years_experience, sort_order, skill:skills(id, name, icon, category, sort_order)')
     .eq('profile_id', ownedProfileId)
-    .order('is_primary', { ascending: false })
-    .order('created_at', { ascending: true })
+    .order('sort_order', { ascending: true })
 
   if (error) {
     throw error
@@ -63,40 +63,18 @@ export async function getProfileSkills(profileId) {
 }
 
 export async function replaceProfileSkills(profileId, selectedSkills = []) {
-  const ownedProfileId = await resolveOwnedProfileId(profileId)
+  await resolveOwnedProfileId(profileId)
 
   // TODO: el requester filtrará helpers por skills compatibles cuando el matching de tareas esté listo.
   const skillIds = normalizeSelectedSkillIds(selectedSkills)
 
-  const { error: deleteError } = await supabase
-    .from('profile_skills')
-    .delete()
-    .eq('profile_id', ownedProfileId)
-
-  if (deleteError) {
-    throw deleteError
-  }
-
-  if (!skillIds.length) {
-    return []
-  }
-
-  const rows = skillIds.map((skillId, index) => ({
-    profile_id: ownedProfileId,
-    skill_id: skillId,
-    experience_level: 'beginner',
-    years_experience: 0,
-    is_primary: index === 0,
-  }))
-
-  const { data, error } = await supabase
-    .from('profile_skills')
-    .insert(rows)
-    .select('profile_id, skill_id, is_primary, experience_level, years_experience, skill:skills(id, name, icon, category, sort_order)')
+  const { error } = await supabase.rpc('replace_own_catalog_skills', {
+    p_skill_ids: skillIds,
+  })
 
   if (error) {
     throw error
   }
 
-  return data ?? []
+  return getProfileSkills(profileId)
 }

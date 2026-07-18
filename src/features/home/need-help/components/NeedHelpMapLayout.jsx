@@ -12,6 +12,7 @@ import MapTileLayer from '../../../../shared/ui/map/MapTileLayer'
 import MapAutoResize from '../../../../shared/ui/map/MapAutoResize'
 import Modal from '../../../../shared/ui/Modal/Modal'
 import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery'
+import { useDebouncedValue } from '../../../../shared/hooks/useDebouncedValue'
 import { isTaskTimeWindowExpired } from '../../../tasks/availability/taskAvailability'
 import styles from './NeedHelpMapLayout.module.css'
 
@@ -191,6 +192,7 @@ function matchesAnySkill(helper, selectedSkillIds) {
 export default function NeedHelpMapLayout({
   profile,
   location,
+  searchQuery = '',
   locationStatus,
   locationError,
   onRequestLocation,
@@ -213,6 +215,9 @@ export default function NeedHelpMapLayout({
   const [selectedSkillIds, setSelectedSkillIds] = useState([])
   const [mapBounds, setMapBounds] = useState(null)
   const mapRef = useRef(null)
+  const normalizedSearchQuery = String(searchQuery || '').trim().slice(0, 80)
+  const activeSearchQuery = normalizedSearchQuery.length >= 3 ? normalizedSearchQuery : ''
+  const debouncedSearchQuery = useDebouncedValue(activeSearchQuery, 300)
   // En pantallas estrechas, el detalle del pin se abre como bottom-sheet (el popup
   // de Leaflet queda pequeño e incómodo con el pulgar); en desktop, popup normal.
   const isNarrow = useMediaQuery('(max-width: 640px)')
@@ -234,12 +239,14 @@ export default function NeedHelpMapLayout({
     helpers,
     skillFilters,
     isLoading,
+    isRefreshing,
     error,
   } = useAvailableHelpers({
     profile,
     location,
     mapBounds,
     selectedSkillIds,
+    searchQuery: debouncedSearchQuery,
   })
 
   const {
@@ -379,7 +386,9 @@ export default function NeedHelpMapLayout({
             onOpenProfile={(helper) => navigate(`/profile/${helper.id}`)}
             onContact={onContact}
             loading={isLoading}
+            refreshing={isRefreshing || activeSearchQuery !== debouncedSearchQuery}
             error={error}
+            searchQuery={debouncedSearchQuery}
             hasLocation={hasLocation}
             locationError={locationStatus !== 'loading' ? locationError : ''}
             onRequestLocation={onRequestLocation}

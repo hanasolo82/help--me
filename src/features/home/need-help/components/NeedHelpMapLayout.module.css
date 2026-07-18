@@ -564,6 +564,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px; /* icono de categoría + texto (CategoryIcon de src/design) */
+  max-width: 100%;
+  min-width: 0;
   min-height: 1.72rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
   border-radius: 999px;
@@ -571,7 +573,8 @@
   color: var(--color-text);
   font-size: 0.76rem;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
   padding: 0.32rem 0.58rem;
 }
 

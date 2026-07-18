@@ -1,5 +1,9 @@
 import { supabase } from '../../../lib/supabaseClient'
 import { requireUser } from '../../../lib/authHelpers'
+import {
+  MAX_PROFILE_SKILLS,
+  normalizeSkillNameForComparison,
+} from '../../skills/config/skillCategories'
 
 function toNumber(value) {
   const parsed = Number(value)
@@ -58,21 +62,56 @@ export async function getSkillsCatalog() {
 export async function getProfileSkills(profileId) {
   if (!profileId) return []
 
-  const { data, error } = await supabase
-    .from('profile_skills')
-    .select('profile_id, experience_level, years_experience, skill:skills(id, name, icon, category)')
-    .eq('profile_id', profileId)
-    .order('years_experience', { ascending: false })
-    .order('created_at', { ascending: false })
+  const [catalogResult, customResult] = await Promise.all([
+    supabase
+      .from('profile_skills')
+      .select('profile_id, experience_level, years_experience, sort_order, skill:skills(id, name, icon, category)')
+      .eq('profile_id', profileId)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('profile_custom_skills')
+      .select('id, profile_id, name, category, sort_order, created_at, updated_at')
+      .eq('profile_id', profileId)
+      .order('sort_order', { ascending: true }),
+  ])
 
-  if (error) {
-    throw error
+  if (catalogResult.error) {
+    throw catalogResult.error
   }
 
-  return (data ?? []).map((row) => ({
-    ...row,
-    skill: Array.isArray(row.skill) ? row.skill[0] : row.skill,
+  if (customResult.error) {
+    throw customResult.error
+  }
+
+  const catalogSkills = (catalogResult.data ?? []).map((row) => {
+    const skill = Array.isArray(row.skill) ? row.skill[0] : row.skill
+
+    return {
+      ...row,
+      source: 'catalog',
+      skill: skill ? { ...skill, source: 'catalog', is_custom: false } : skill,
+    }
+  })
+
+  const customSkills = (customResult.data ?? []).map((row) => ({
+    profile_id: row.profile_id,
+    experience_level: null,
+    years_experience: null,
+    sort_order: row.sort_order,
+    source: 'custom',
+    skill: {
+      id: row.id,
+      name: row.name,
+      icon: null,
+      category: row.category,
+      source: 'custom',
+      is_custom: true,
+    },
   }))
+
+  return [...catalogSkills, ...customSkills]
+    .filter((row) => row.skill)
+    .sort((left, right) => Number(left.sort_order) - Number(right.sort_order))
 }
 
 export async function getProfileReviews(profileId) {
@@ -180,6 +219,7 @@ export async function getNearbyHelpers({
   limit = 12,
   excludeProfileId = null,
   category = null,
+  searchQuery = '',
 }) {
   const centerLat = toNumber(lat)
   const centerLng = toNumber(lng)
@@ -188,6 +228,7 @@ export async function getNearbyHelpers({
   const east = toNumber(bounds?.east)
   const west = toNumber(bounds?.west)
   const skillFilter = category && category !== 'all' ? String(category) : null
+  const normalizedSearchQuery = String(searchQuery || '').trim().slice(0, 80)
 
   if (centerLat === null || centerLng === null) {
     return []
@@ -205,6 +246,7 @@ export async function getNearbyHelpers({
     p_limit: Math.max(limit * 4, limit),
     p_exclude_profile_id: excludeProfileId,
     p_skill_filter: skillFilter,
+    p_search_query: normalizedSearchQuery || null,
   })
 
   if (error) {
@@ -227,34 +269,79 @@ export async function getNearbyHelpers({
 
   const helperIds = publicHelpers.map((helper) => helper.id)
 
-  const { data: skillRows, error: skillError } = await supabase
-    .from('profile_skills')
-    .select('profile_id, experience_level, years_experience, skill:skills(id, name, icon, category)')
-    .in('profile_id', helperIds)
-    .order('years_experience', { ascending: false })
+  const [catalogSkillsResult, customSkillsResult] = await Promise.all([
+    supabase
+      .from('profile_skills')
+      .select('profile_id, sort_order, skill:skills(id, name, icon, category)')
+      .in('profile_id', helperIds)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('profile_custom_skills')
+      .select('id, profile_id, name, category, sort_order')
+      .in('profile_id', helperIds)
+      .order('sort_order', { ascending: true }),
+  ])
 
-  if (skillError) {
-    throw skillError
+  if (catalogSkillsResult.error) {
+    throw catalogSkillsResult.error
+  }
+
+  if (customSkillsResult.error) {
+    throw customSkillsResult.error
   }
 
   const skillRowsByProfileId = new Map()
 
-  for (const row of skillRows ?? []) {
+  for (const row of catalogSkillsResult.data ?? []) {
     const skill = Array.isArray(row.skill) ? row.skill[0] : row.skill
     const current = skillRowsByProfileId.get(row.profile_id) ?? []
     current.push({
-      experience_level: row.experience_level,
-      years_experience: row.years_experience,
-      skill,
+      sortOrder: Number(row.sort_order) || 0,
+      skill: skill ? { ...skill, source: 'catalog', is_custom: false } : skill,
     })
     skillRowsByProfileId.set(row.profile_id, current)
   }
 
+  for (const row of customSkillsResult.data ?? []) {
+    const current = skillRowsByProfileId.get(row.profile_id) ?? []
+    current.push({
+      sortOrder: Number(row.sort_order) || 0,
+      skill: {
+        id: row.id,
+        name: row.name,
+        icon: null,
+        category: row.category,
+        source: 'custom',
+        is_custom: true,
+      },
+    })
+    skillRowsByProfileId.set(row.profile_id, current)
+  }
+
+  const queryTokens = normalizeSkillNameForComparison(normalizedSearchQuery)
+    .split(/\s+/)
+    .filter((token) => token.length > 1)
+
+  function getSearchScore(skill) {
+    if (queryTokens.length === 0) return 0
+
+    const searchable = normalizeSkillNameForComparison(`${skill?.name || ''} ${skill?.category || ''}`)
+    return queryTokens.reduce((score, token) => score + (searchable.includes(token) ? 1 : 0), 0)
+  }
+
   const helpers = publicHelpers
-    .map((helper) => ({
-      ...helper,
-      skills: (skillRowsByProfileId.get(helper.id) ?? []).map((entry) => entry.skill).filter(Boolean).slice(0, 3),
-    }))
+    .map((helper) => {
+      const orderedSkills = (skillRowsByProfileId.get(helper.id) ?? [])
+        .filter((entry) => entry.skill)
+        .sort((left, right) => {
+          const scoreDifference = getSearchScore(right.skill) - getSearchScore(left.skill)
+          return scoreDifference || left.sortOrder - right.sortOrder
+        })
+        .map((entry) => entry.skill)
+        .slice(0, MAX_PROFILE_SKILLS)
+
+      return { ...helper, skills: orderedSkills }
+    })
     .slice(0, limit)
 
   return helpers.map((helper) => ({

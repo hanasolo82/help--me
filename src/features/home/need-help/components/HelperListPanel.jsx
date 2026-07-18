@@ -9,19 +9,30 @@ export default function HelperListPanel({
   onOpenProfile,
   onContact,
   loading = false,
+  refreshing = false,
   error = '',
+  searchQuery = '',
   hasLocation = false,
   locationError = '',
   onRequestLocation,
   onPublishRequest,
   onExpandMap,
 }) {
+  const activeSearchQuery = String(searchQuery || '').trim()
+  const hasSearchQuery = activeSearchQuery.length >= 3
+
   return (
     <aside className={styles.panelShell}>
       <header className={styles.helperListHeader}>
         <p className="eyebrow">Helpers disponibles</p>
-        <h2>Ayuda cercana</h2>
-        <p className="muted">La lista se actualiza con los chips de categoría del mapa.</p>
+        <h2>{hasSearchQuery ? 'Resultados cercanos' : 'Ayuda cercana'}</h2>
+        <p className="muted" aria-live="polite">
+          {hasSearchQuery && refreshing
+            ? `Buscando helpers para “${activeSearchQuery}”...`
+            : hasSearchQuery
+            ? `${visibleHelpers.length} ${visibleHelpers.length === 1 ? 'helper coincide' : 'helpers coinciden'} con “${activeSearchQuery}”.`
+            : 'La lista se actualiza con los chips de categoría del mapa.'}
+        </p>
       </header>
 
       {!hasLocation && (
@@ -39,13 +50,18 @@ export default function HelperListPanel({
       )}
 
       {loading && <p className="muted">Buscando helpers cercanos...</p>}
+      {!loading && refreshing ? <p className="muted" aria-live="polite">Actualizando resultados...</p> : null}
       {error && <p className="auth-message error">{error}</p>}
 
       <div className={styles.listScroll}>
-        {!loading && !error && visibleHelpers.length === 0 ? (
+        {!loading && !refreshing && !error && visibleHelpers.length === 0 ? (
           <HomeEmptyState
-            title="No hay personas disponibles en esta parte del mapa"
-            description="Amplía la zona del mapa o publica una solicitud para que la comunidad pueda responder."
+            title={hasSearchQuery
+              ? `No encontramos helpers para “${activeSearchQuery}”`
+              : 'No hay personas disponibles en esta parte del mapa'}
+            description={hasSearchQuery
+              ? 'Prueba con una habilidad más breve, amplía la zona o publica una solicitud.'
+              : 'Amplía la zona del mapa o publica una solicitud para que la comunidad pueda responder.'}
             actionLabel={onExpandMap ? 'Ampliar zona del mapa' : null}
             onAction={onExpandMap}
             secondaryActionLabel={onPublishRequest ? 'Publicar solicitud' : onRequestLocation ? 'Usar mi ubicación' : null}

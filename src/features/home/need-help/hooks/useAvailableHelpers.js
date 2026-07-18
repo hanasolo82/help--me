@@ -70,9 +70,11 @@ export function useAvailableHelpers({
   location,
   mapBounds = null,
   selectedSkillIds = [],
+  searchQuery = '',
 } = {}) {
   const center = useMemo(() => resolveCenter(profile, location), [location, profile])
   const normalizedSkillFilters = useMemo(() => normalizeSkillFilters(selectedSkillIds), [selectedSkillIds])
+  const normalizedSearchQuery = String(searchQuery || '').trim().slice(0, 80)
   const hasMapBounds = Boolean(
     Number.isFinite(Number(mapBounds?.north)) &&
       Number.isFinite(Number(mapBounds?.south)) &&
@@ -80,7 +82,7 @@ export function useAvailableHelpers({
       Number.isFinite(Number(mapBounds?.west)),
   )
   const serverSkillFilter = normalizedSkillFilters.length === 1 ? normalizedSkillFilters[0] : null
-  const canSearch = hasMapBounds || normalizedSkillFilters.length > 0
+  const canSearch = hasMapBounds || normalizedSkillFilters.length > 0 || normalizedSearchQuery.length >= 3
   const excludeProfileId = profile?.id || null
 
   const query = useQuery({
@@ -94,6 +96,7 @@ export function useAvailableHelpers({
       mapBounds?.east ?? null,
       mapBounds?.west ?? null,
       normalizedSkillFilters.join('|'),
+      normalizedSearchQuery,
     ],
     queryFn: () =>
       getNearbyHelpers({
@@ -101,11 +104,13 @@ export function useAvailableHelpers({
         lng: center.lng,
         bounds: hasMapBounds ? mapBounds : null,
         category: serverSkillFilter,
+        searchQuery: normalizedSearchQuery,
         excludeProfileId,
         limit: 32,
       }),
     enabled: canSearch,
     staleTime: 30_000,
+    placeholderData: (previousData) => previousData,
   })
 
   const rawHelpers = useMemo(() => query.data || [], [query.data])
@@ -121,6 +126,7 @@ export function useAvailableHelpers({
     helpers,
     skillFilters,
     isLoading: query.isLoading && !query.data,
+    isRefreshing: query.isFetching && Boolean(query.data),
     error: query.error?.message || '',
     refetch: query.refetch,
   }

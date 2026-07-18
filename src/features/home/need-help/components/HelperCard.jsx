@@ -38,10 +38,14 @@ function formatAvailability(helper) {
 }
 
 function buildSkillList(helper) {
-  const skills = (helper?.skills || []).map((skill) => skill?.category || skill?.name || 'Ayuda general')
+  const skills = (helper?.skills || []).map((skill) => ({
+    id: skill?.id || null,
+    name: skill?.name || skill?.category || 'Ayuda general',
+    category: skill?.category || skill?.name || 'Otros',
+  }))
 
   if (skills.length === 0) {
-    return ['Ayuda general']
+    return [{ id: null, name: 'Ayuda general', category: 'Otros' }]
   }
 
   return skills
@@ -154,9 +158,9 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
 
           <div className={styles.helperSkills} aria-label="Tareas que realiza">
             {visibleSkills.map((skill) => (
-              <span key={skill}>
-                <CategoryIcon category={skill} size={designStyle.iconSize.tag} tone="light" />
-                {skill}
+              <span key={skill.id || `${skill.category}-${skill.name}`}>
+                <CategoryIcon category={skill.category} size={designStyle.iconSize.tag} tone="light" />
+                {skill.name}
               </span>
             ))}
             {extraCount > 0 ? <span className={styles.helperSkillMore}>+{extraCount}</span> : null}

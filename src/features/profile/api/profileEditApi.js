@@ -1,8 +1,7 @@
 import { supabase } from '../../../lib/supabaseClient'
 import { requireUser } from '../../../lib/authHelpers'
 import { cellSetToRows } from '../../availability/timeSlots'
-
-const MAX_SKILLS = 6
+import { MAX_PROFILE_SKILLS, normalizeSkillName } from '../../skills/config/skillCategories'
 
 async function resolveOwnedProfileId(profileId = null) {
   const user = await requireUser('Necesitas una sesion valida para editar tu perfil.')
@@ -57,52 +56,40 @@ export async function replaceOwnAvailabilityCells(profileId, cells) {
   return data ?? []
 }
 
-// Persiste la lista de habilidades EN ORDEN de prioridad (definido por el
-// ayudante). profile_skills no tiene columna de orden, pero el lector público
-// (profileApi.getProfileSkills) ordena por years_experience desc — campo que
-// hoy se escribe siempre a 0 y que ninguna UI muestra— así que se usa como
-// peso: la primera skill recibe N-1, la última 0. Sin migraciones.
-export async function replaceOwnSkillsOrdered(profileId, skillIds = []) {
-  const ownedProfileId = await resolveOwnedProfileId(profileId)
+function toSkillPayload(entry) {
+  const skill = entry?.skill || entry
 
-  const ids = []
-  for (const value of skillIds) {
-    const skillId = typeof value === 'string' ? value : value?.skill?.id || value?.id || null
-    if (skillId && !ids.includes(skillId)) ids.push(skillId)
-  }
-  const limited = ids.slice(0, MAX_SKILLS)
-
-  const { error: deleteError } = await supabase
-    .from('profile_skills')
-    .delete()
-    .eq('profile_id', ownedProfileId)
-
-  if (deleteError) {
-    throw deleteError
+  if (skill?.source === 'custom' || skill?.is_custom === true) {
+    return {
+      source: 'custom',
+      name: normalizeSkillName(skill.name),
+      category: String(skill.category || '').trim(),
+    }
   }
 
-  if (!limited.length) {
-    return []
-  }
+  const skillId = typeof skill === 'string' ? skill : skill?.id || null
+  return skillId ? { source: 'catalog', id: skillId } : null
+}
 
-  const rows = limited.map((skillId, index) => ({
-    profile_id: ownedProfileId,
-    skill_id: skillId,
-    experience_level: 'beginner',
-    years_experience: limited.length - 1 - index,
-    is_primary: index === 0,
-  }))
+// Sustituye sugeridas y propias en una sola transacción. La RPC aplica
+// ownership, límites, categorías y deduplicación aunque el cliente se modifique.
+export async function replaceOwnSkillsOrdered(profileId, skills = []) {
+  await resolveOwnedProfileId(profileId)
 
-  const { data, error } = await supabase
-    .from('profile_skills')
-    .insert(rows)
-    .select('profile_id, skill_id, is_primary, experience_level, years_experience, skill:skills(id, name, icon, category)')
+  const items = skills
+    .map(toSkillPayload)
+    .filter(Boolean)
+    .slice(0, MAX_PROFILE_SKILLS)
+
+  const { error } = await supabase.rpc('replace_own_profile_skills', {
+    p_items: items,
+  })
 
   if (error) {
     throw error
   }
 
-  return data ?? []
+  return items
 }
 
-export { MAX_SKILLS }
+export { MAX_PROFILE_SKILLS as MAX_SKILLS }

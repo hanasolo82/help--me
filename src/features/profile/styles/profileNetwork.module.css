@@ -202,10 +202,19 @@
 }
 
 .skillBadge {
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: var(--color-surface);
   cursor: pointer;
   appearance: none;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.skillBadge > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .skillBadge:hover,

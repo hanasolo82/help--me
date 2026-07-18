@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { MAX_PROFILE_SKILLS } from '../../../skills/config/skillCategories'
 import { Navigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../../../contexts/useAuth'
@@ -7,7 +8,7 @@ import styles from './SkillsStep.module.css'
 import { getActiveSkills, replaceProfileSkills } from '../../services/helperSkillsService'
 import { helperOnboardingKeys } from '../../utils/helperOnboardingKeys'
 
-const MAX_SKILLS = 6
+const MAX_SKILLS = MAX_PROFILE_SKILLS
 
 function updateJourneyDraft(setJourneyDraft, patch) {
   if (typeof setJourneyDraft !== 'function') return

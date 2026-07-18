@@ -283,6 +283,17 @@ async function assertDirectConversationHardeningInstalled() {
   }
 }
 
+async function assertCustomSkillSearchInstalled() {
+  const { error: customSkillsError } = await admin
+    .from('profile_custom_skills')
+    .select('id')
+    .limit(1)
+
+  if (customSkillsError) {
+    throw new Error(`Missing profile custom skills migration 0055: ${customSkillsError.message}`)
+  }
+}
+
 async function main() {
   const ids = {
     userIds: [],
@@ -299,6 +310,7 @@ async function main() {
 
   try {
     await assertDirectConversationHardeningInstalled()
+    await assertCustomSkillSearchInstalled()
 
     const requester = await createUser('requester')
     const helper = await createUser('helper')
@@ -306,7 +318,13 @@ async function main() {
     ids.userIds.push(requester.id, helper.id, third.id)
 
     await ensureProfile(requester, 'requester', { helper_status: 'active' })
-    await ensureProfile(helper, 'helper', { helper_status: 'active' })
+    await ensureProfile(helper, 'helper', {
+      helper_status: 'active',
+      availability_enabled: true,
+      show_approx_location: true,
+      lat: 40.4168,
+      lng: -3.7038,
+    })
     await ensureProfile(third, 'third', { helper_status: 'active' })
 
     const rc = await userClient(requester)
@@ -326,6 +344,218 @@ async function main() {
       const { data, error } = await rc.from('profiles').update({ full_name: nextName }).eq('id', requester.id).select('full_name')
       const after = await fetchProfile(requester.id, 'id, full_name')
       record('P-full_name', 'Owner sí puede cambiar profiles.full_name', !error && rowCount(data) === 1 && after?.full_name === nextName, error ? error.message : `full_name=${after?.full_name}`)
+    }
+
+    // helper skills: suggested + owner-authored values are replaced atomically;
+    // direct table writes, cross-owner mutations and limit bypasses stay blocked.
+    {
+      const { data: catalogSkills, error: catalogError } = await admin
+        .from('skills')
+        .select('id, name, category')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .limit(6)
+      if (catalogError) throw catalogError
+
+      const furnitureSkill = catalogSkills.find((skill) => skill.name === 'Montaje de muebles') || catalogSkills[0]
+      const alternateSkill = catalogSkills.find((skill) => skill.id !== furnitureSkill?.id)
+      if (!furnitureSkill || !alternateSkill || catalogSkills.length < 4) {
+        throw new Error('The active skills catalog needs at least four rows for migration 0055 verification')
+      }
+
+      const initialItems = [
+        { source: 'catalog', id: furnitureSkill.id },
+        { source: 'custom', name: 'Cortar pelo', category: 'Personas' },
+        { source: 'custom', name: 'Arreglar persianas', category: 'Hogar' },
+      ]
+      const { error: replaceError } = await hc.rpc('replace_own_profile_skills', {
+        p_items: initialItems,
+      })
+      const { data: catalogAfter, error: catalogAfterError } = await admin
+        .from('profile_skills')
+        .select('profile_id, skill_id, sort_order')
+        .eq('profile_id', helper.id)
+      const { data: customAfter, error: customAfterError } = await admin
+        .from('profile_custom_skills')
+        .select('id, profile_id, name, category, sort_order')
+        .eq('profile_id', helper.id)
+        .order('sort_order', { ascending: true })
+      if (catalogAfterError || customAfterError) throw catalogAfterError || customAfterError
+
+      record(
+        'S-owner-replace',
+        'Helper guarda sugeridas y propias de forma atómica',
+        !replaceError
+          && rowCount(catalogAfter) === 1
+          && rowCount(customAfter) === 2
+          && customAfter[0]?.name === 'Cortar pelo',
+        replaceError
+          ? `error ${replaceError.code}`
+          : `catalog=${rowCount(catalogAfter)} custom=${rowCount(customAfter)}`,
+      )
+
+      const { data: directCustomInsert, error: directCustomInsertError } = await hc
+        .from('profile_custom_skills')
+        .insert({
+          profile_id: helper.id,
+          name: 'Bypass personalizado',
+          category: 'Hogar',
+          sort_order: 3,
+        })
+        .select('id')
+      record(
+        'S-custom-direct-write',
+        'Authenticated no inserta habilidades propias fuera de la RPC',
+        isBlocked(directCustomInsertError, directCustomInsert),
+        directCustomInsertError ? `bloqueado (${directCustomInsertError.code})` : `filas=${rowCount(directCustomInsert)}`,
+      )
+
+      const { data: directCatalogInsert, error: directCatalogInsertError } = await hc
+        .from('profile_skills')
+        .insert({
+          profile_id: helper.id,
+          skill_id: alternateSkill.id,
+          experience_level: 'beginner',
+          years_experience: 0,
+          is_primary: false,
+          sort_order: 3,
+        })
+        .select('skill_id')
+      record(
+        'S-catalog-direct-write',
+        'Authenticated no inserta profile_skills fuera de la RPC',
+        isBlocked(directCatalogInsertError, directCatalogInsert),
+        directCatalogInsertError ? `bloqueado (${directCatalogInsertError.code})` : `filas=${rowCount(directCatalogInsert)}`,
+      )
+
+      const targetCustomSkill = customAfter[0]
+      const { data: foreignUpdate, error: foreignUpdateError } = await tc
+        .from('profile_custom_skills')
+        .update({ name: 'Habilidad ajena alterada' })
+        .eq('id', targetCustomSkill.id)
+        .select('id')
+      const { data: customAfterForeign, error: customAfterForeignError } = await admin
+        .from('profile_custom_skills')
+        .select('name')
+        .eq('id', targetCustomSkill.id)
+        .maybeSingle()
+      if (customAfterForeignError) throw customAfterForeignError
+      record(
+        'S-custom-foreign-write',
+        'Un tercero no modifica habilidades propias ajenas',
+        isBlocked(foreignUpdateError, foreignUpdate) && customAfterForeign?.name === targetCustomSkill.name,
+        foreignUpdateError ? `bloqueado (${foreignUpdateError.code})` : `filas=${rowCount(foreignUpdate)}`,
+      )
+
+      const tooManyCustomItems = Array.from({ length: 4 }, (_, index) => ({
+        source: 'custom',
+        name: `Habilidad propia límite ${index + 1}`,
+        category: 'Hogar',
+      }))
+      const { error: customLimitError } = await hc.rpc('replace_own_profile_skills', {
+        p_items: tooManyCustomItems,
+      })
+      const { count: customCountAfterLimit, error: customCountError } = await admin
+        .from('profile_custom_skills')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', helper.id)
+      if (customCountError) throw customCountError
+      record(
+        'S-custom-limit',
+        'La RPC bloquea más de tres habilidades propias sin perder las guardadas',
+        Boolean(customLimitError) && customCountAfterLimit === 2,
+        customLimitError ? `bloqueado (${customLimitError.code}) custom=${customCountAfterLimit}` : 'permitido',
+      )
+
+      const tooManyTotalItems = [
+        ...catalogSkills.slice(0, 4).map((skill) => ({ source: 'catalog', id: skill.id })),
+        { source: 'custom', name: 'Corte de césped', category: 'Hogar' },
+        { source: 'custom', name: 'Regar plantas', category: 'Hogar' },
+        { source: 'custom', name: 'Ordenar trasteros', category: 'Hogar' },
+      ]
+      const { error: totalLimitError } = await hc.rpc('replace_own_profile_skills', {
+        p_items: tooManyTotalItems,
+      })
+      record(
+        'S-total-limit',
+        'La RPC bloquea más de seis habilidades totales',
+        Boolean(totalLimitError),
+        totalLimitError ? `bloqueado (${totalLimitError.code})` : 'permitido',
+      )
+
+      const { error: duplicateError } = await hc.rpc('replace_own_profile_skills', {
+        p_items: [
+          { source: 'custom', name: 'Cortar pelo', category: 'Personas' },
+          { source: 'custom', name: 'cortar pelo', category: 'Personas' },
+        ],
+      })
+      record(
+        'S-custom-duplicate',
+        'La RPC bloquea habilidades propias duplicadas ignorando mayúsculas',
+        Boolean(duplicateError),
+        duplicateError ? `bloqueado (${duplicateError.code})` : 'permitido',
+      )
+
+      const mapSearchArgs = {
+        p_center_lat: 40.4168,
+        p_center_lng: -3.7038,
+        p_radius_km: 10,
+        p_radius_enabled: false,
+        p_north: 40.6,
+        p_south: 40.2,
+        p_east: -3.5,
+        p_west: -3.9,
+        p_limit: 20,
+        p_exclude_profile_id: requester.id,
+        p_skill_filter: null,
+      }
+      const { data: customSearch, error: customSearchError } = await rc.rpc(
+        'get_public_helpers_for_map',
+        { ...mapSearchArgs, p_search_query: 'cortarme el pelo' },
+      )
+      record(
+        'S-search-custom',
+        'La búsqueda española encuentra una habilidad propia relacionada por texto',
+        !customSearchError && customSearch?.some((entry) => entry.id === helper.id),
+        customSearchError ? `error ${customSearchError.code}` : `filas=${rowCount(customSearch)}`,
+      )
+
+      const { data: catalogSearch, error: catalogSearchError } = await rc.rpc(
+        'get_public_helpers_for_map',
+        { ...mapSearchArgs, p_search_query: 'montar muebles' },
+      )
+      record(
+        'S-search-catalog',
+        'La búsqueda encuentra habilidades sugeridas sin cambiar categorías',
+        !catalogSearchError && catalogSearch?.some((entry) => entry.id === helper.id),
+        catalogSearchError ? `error ${catalogSearchError.code}` : `filas=${rowCount(catalogSearch)}`,
+      )
+
+      const { data: missingSearch, error: missingSearchError } = await rc.rpc(
+        'get_public_helpers_for_map',
+        { ...mapSearchArgs, p_search_query: 'soldadura submarina' },
+      )
+      record(
+        'S-search-miss',
+        'Una búsqueda sin coincidencias no devuelve helpers irrelevantes',
+        !missingSearchError && !missingSearch?.some((entry) => entry.id === helper.id),
+        missingSearchError ? `error ${missingSearchError.code}` : `filas=${rowCount(missingSearch)}`,
+      )
+
+      const { error: catalogReplaceError } = await hc.rpc('replace_own_catalog_skills', {
+        p_skill_ids: [furnitureSkill.id, alternateSkill.id],
+      })
+      const { count: preservedCustomCount, error: preservedCustomError } = await admin
+        .from('profile_custom_skills')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', helper.id)
+      if (preservedCustomError) throw preservedCustomError
+      record(
+        'S-onboarding-preserves-custom',
+        'Actualizar sugeridas conserva las habilidades propias existentes',
+        !catalogReplaceError && preservedCustomCount === 2,
+        catalogReplaceError ? `error ${catalogReplaceError.code}` : `custom=${preservedCustomCount}`,
+      )
     }
 
     // financial privacy and write-lock.

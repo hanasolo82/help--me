@@ -180,6 +180,7 @@ export default function RequesterHome({
       <NeedHelpMapLayout
         profile={profile}
         location={location}
+        searchQuery={heroQuery}
         locationStatus={locationStatus}
         locationError={locationError}
         onRequestLocation={onRequestLocation}
