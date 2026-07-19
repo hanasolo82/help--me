@@ -255,12 +255,12 @@ async function main() {
       const { error: upErr } = await admin.from('tasks').update({ status: 'in_progress' }).eq('id', chatTask)
       if (upErr) throw upErr
       const { data: canAccess, error: caErr } = await rc.rpc('can_access_conversation', { p_conversation_id: convo })
-      const { data: inserted, error: insErr } = await rc
-        .from('messages')
-        .insert({ conversation_id: convo, sender_id: requester.id, body: 'ahora sí', content: 'ahora sí', message_type: 'text' })
-        .select()
-      const ok = !caErr && canAccess === true && !insErr && (inserted?.length || 0) === 1
-      record('T12', 'Chat se desbloquea con tarea in_progress', ok, `can_access=${canAccess} insert=${insErr ? insErr.code : 'ok'}`)
+      const { data: sent, error: sendErr } = await rc.rpc('send_message', {
+        p_conversation_id: convo,
+        p_body: 'ahora sí',
+      })
+      const ok = !caErr && canAccess === true && !sendErr && sent?.conversation_id === convo
+      record('T12', 'Chat se desbloquea con tarea in_progress', ok, `can_access=${canAccess} send=${sendErr ? sendErr.code : 'ok'}`)
     }
   } catch (error) {
     record('SETUP', 'Error de preparación', false, error?.message || String(error))
