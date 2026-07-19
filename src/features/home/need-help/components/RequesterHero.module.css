@@ -1,10 +1,3 @@
-/* El label "¿Qué necesitas?" queda equidistante entre el buscador del header y
-   el input de abajo. El hueco de ARRIBA no se puede tocar desde aquí: lo fija
-   el header (su margin-bottom) y cae entero fuera de este contenedor, que
-   además recorta (.requesterShell tiene overflow:hidden en escritorio, así que
-   subir el label con un margen negativo lo cortaría). Por eso el reparto se
-   hace igualando el hueco de ABAJO con el gap. Medido: header→label 16px,
-   antes label→input solo 8px. */
 .hero {
   display: grid;
   justify-items: center;
@@ -14,6 +7,7 @@
 }
 
 .promptLabel {
+  margin: 0;
   color: var(--color-text);
   font-family: var(--font-heading);
   font-size: clamp(1.2rem, 2.8vw, 1.8rem);
@@ -23,27 +17,9 @@
 }
 
 .actionRow {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.6rem;
+  display: flex;
+  justify-content: center;
   width: min(100%, 32rem);
-}
-
-.searchInput {
-  width: 100%;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 500;
-  padding: 0.8rem 1rem;
-  box-shadow: var(--hm-shadow-sm);
-}
-
-.searchInput::placeholder {
-  color: var(--color-text-muted);
 }
 
 .publishButton {
@@ -53,18 +29,12 @@
 }
 
 @media (min-width: 900px) {
-  /* En escritorio el header es más alto que su buscador y lo centra, así que
-     el hueco sobre el label crece (~32px a 1024px, ~40px a 1440px). 2.25rem es
-     el punto medio: deja el desfase por debajo de ~4px en todo el rango. */
   .hero {
-    gap: 2.25rem;
+    gap: 1.25rem;
   }
 
   .actionRow {
-    grid-template-columns: minmax(20rem, 32rem) auto;
-    justify-content: center;
-    align-items: center;
-    width: min(100%, 44rem);
+    width: min(100%, 32rem);
   }
 
   .publishButton {

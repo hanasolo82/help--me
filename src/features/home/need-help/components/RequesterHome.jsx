@@ -24,7 +24,7 @@ export default function RequesterHome({
   const navigate = useNavigate()
   const transitionNavigate = useTransitionNavigate()
   const queryClient = useQueryClient()
-  const [heroQuery, setHeroQuery] = useState('')
+  const [helperSearchQuery, setHelperSearchQuery] = useState('')
   const [preferredView, setPreferredView] = useState('map')
   const [selectedHelper, setSelectedHelper] = useState(null)
   const [requestTaskOpen, setRequestTaskOpen] = useState(false)
@@ -76,7 +76,7 @@ export default function RequesterHome({
     setSelectedHelper(null)
     setEditingTask(null)
     setTargetHelper(helper)
-    setDraftTaskTitle(heroQuery.trim())
+    setDraftTaskTitle('')
     setRequestTaskOpen(true)
   }
 
@@ -84,8 +84,7 @@ export default function RequesterHome({
     setSelectedHelper(null)
     setEditingTask(null)
     setTargetHelper(null)
-    setDraftTaskTitle(heroQuery.trim())
-    setHeroQuery('')
+    setDraftTaskTitle('')
     setRequestTaskOpen(true)
   }
 
@@ -171,16 +170,13 @@ export default function RequesterHome({
 
   return (
     <section className={styles.requesterShell}>
-      <RequesterHero
-        value={heroQuery}
-        onChange={setHeroQuery}
-        onPublishRequest={handleOpenTaskModal}
-      />
+      <RequesterHero onPublishRequest={handleOpenTaskModal} />
 
       <NeedHelpMapLayout
         profile={profile}
         location={location}
-        searchQuery={heroQuery}
+        searchQuery={helperSearchQuery}
+        onSearchQueryChange={setHelperSearchQuery}
         locationStatus={locationStatus}
         locationError={locationError}
         onRequestLocation={onRequestLocation}

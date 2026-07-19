@@ -19,6 +19,7 @@ import styles from './NeedHelpMapLayout.module.css'
 const defaultMapCenter = [41.6523, -0.9019]
 const fallbackZoom = 15
 const minimumMapZoom = 10
+const emptySelectedSkillIds = Object.freeze([])
 
 function normalizeZoom(zoom, currentZoom = fallbackZoom) {
   const nextZoom = Number(zoom)
@@ -193,6 +194,7 @@ export default function NeedHelpMapLayout({
   profile,
   location,
   searchQuery = '',
+  onSearchQueryChange,
   locationStatus,
   locationError,
   onRequestLocation,
@@ -213,9 +215,11 @@ export default function NeedHelpMapLayout({
   const navigate = useNavigate()
   const [mobileView, setMobileView] = useState(preferredMobileView || 'map')
   const [selectedSkillIds, setSelectedSkillIds] = useState([])
+  const [searchOpen, setSearchOpen] = useState(false)
   const [mapBounds, setMapBounds] = useState(null)
   const mapRef = useRef(null)
-  const normalizedSearchQuery = String(searchQuery || '').trim().slice(0, 80)
+  const effectiveSelectedSkillIds = searchOpen ? emptySelectedSkillIds : selectedSkillIds
+  const normalizedSearchQuery = searchOpen ? String(searchQuery || '').trim().slice(0, 80) : ''
   const activeSearchQuery = normalizedSearchQuery.length >= 3 ? normalizedSearchQuery : ''
   const debouncedSearchQuery = useDebouncedValue(activeSearchQuery, 300)
   // En pantallas estrechas, el detalle del pin se abre como bottom-sheet (el popup
@@ -245,7 +249,7 @@ export default function NeedHelpMapLayout({
     profile,
     location,
     mapBounds,
-    selectedSkillIds,
+    selectedSkillIds: effectiveSelectedSkillIds,
     searchQuery: debouncedSearchQuery,
   })
 
@@ -278,8 +282,8 @@ export default function NeedHelpMapLayout({
   // Vista requester siempre arranca y recentra a nivel barrio.
   const focusZoom = fallbackZoom
   const viewportHelpers = useMemo(() => {
-    return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesAnySkill(helper, selectedSkillIds))
-  }, [helpers, mapBounds, selectedSkillIds])
+    return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesAnySkill(helper, effectiveSelectedSkillIds))
+  }, [effectiveSelectedSkillIds, helpers, mapBounds])
 
   function handleSelectHelper(helper) {
     selectHelper(helper)
@@ -313,6 +317,10 @@ export default function NeedHelpMapLayout({
               filters={skillFilters}
               selectedSkillIds={selectedSkillIds}
               onSelectedSkillIdsChange={setSelectedSkillIds}
+              searchOpen={searchOpen}
+              searchQuery={searchQuery}
+              onSearchOpenChange={setSearchOpen}
+              onSearchQueryChange={onSearchQueryChange}
             />
 
             <MapContainer

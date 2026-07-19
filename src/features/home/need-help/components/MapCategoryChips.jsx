@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, Search } from 'lucide-react'
 import Modal, { ModalActions, ModalBody, ModalHeader } from '../../../../shared/ui/Modal/Modal'
 import { CategoryIcon, style as designStyle } from '../../../../design'
 import {
@@ -29,9 +30,16 @@ export default function MapCategoryChips({
   filters = [],
   selectedSkillIds = [],
   onSelectedSkillIdsChange,
+  searchOpen = false,
+  searchQuery = '',
+  onSearchOpenChange,
+  onSearchQueryChange,
 }) {
   const [visibleCategoryIds, setVisibleCategoryIds] = useState(() => getDefaultVisibleMapCategoryIds())
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const searchTriggerRef = useRef(null)
+  const searchInputRef = useRef(null)
+  const previousSearchOpenRef = useRef(searchOpen)
   const selectedIds = useMemo(
     () =>
       Array.isArray(selectedSkillIds)
@@ -69,6 +77,17 @@ export default function MapCategoryChips({
     (option) => !visibleIdSet.has(option.id) && !selectedIdSet.has(option.id),
   ).length
   const filtersButtonLabel = hiddenCount > 0 ? '+ Filtros' : '- Filtros'
+
+  useEffect(() => {
+    const wasSearchOpen = previousSearchOpenRef.current
+    previousSearchOpenRef.current = searchOpen
+
+    if (searchOpen) {
+      searchInputRef.current?.focus()
+    } else if (wasSearchOpen) {
+      searchTriggerRef.current?.focus()
+    }
+  }, [searchOpen])
 
   function selectAll() {
     onSelectedSkillIdsChange?.([])
@@ -114,44 +133,93 @@ export default function MapCategoryChips({
     }
   }
 
+  function closeSearch() {
+    onSearchQueryChange?.('')
+    onSearchOpenChange?.(false)
+  }
+
   return (
     <>
       <div className={styles.mapCategoryOverlay}>
-        <div className={styles.mapCategoryScroller} role="group" aria-label="Filtro de categorías del mapa">
-          {visibleOptions.map((option) => {
-            const isActive = option.id === ALL_HELPER_CATEGORY_ID ? allSelected : selectedIdSet.has(option.id)
+        {searchOpen ? (
+          <div className={styles.mapSearchBar} role="search" aria-label="Buscar helpers por habilidad">
+            <Search aria-hidden="true" strokeWidth={2.2} />
+            <label className={styles.mapSearchLabel} htmlFor="map-helper-skill-search">
+              Buscar por habilidad
+            </label>
+            <input
+              ref={searchInputRef}
+              id="map-helper-skill-search"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange?.(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') closeSearch()
+              }}
+              placeholder="Ej. cortar pelo, montar muebles..."
+              maxLength={80}
+              autoComplete="off"
+            />
+            <button
+              type="button"
+              className={styles.mapSearchClose}
+              onClick={closeSearch}
+              aria-label="Volver a los filtros por categoría"
+              title="Volver a categorías"
+            >
+              <Plus aria-hidden="true" strokeWidth={2.2} />
+            </button>
+          </div>
+        ) : (
+          <div className={styles.mapCategoryScroller} role="group" aria-label="Filtro de categorías del mapa">
+            <button
+              ref={searchTriggerRef}
+              type="button"
+              className={styles.mapSearchOpen}
+              onClick={() => onSearchOpenChange?.(true)}
+              aria-label="Buscar helpers por habilidad"
+              aria-expanded={searchOpen}
+              title="Buscar por habilidad"
+            >
+              <Search aria-hidden="true" strokeWidth={2.2} />
+            </button>
+            <span className={styles.mapCategorySeparator} aria-hidden="true" />
 
-            return (
-              <button
-                key={option.id}
-                id={`map-category-${buildDomId(option.id)}`}
-                type="button"
-                className={isActive ? `${styles.mapCategoryChip} ${styles.mapCategoryChipActive}` : styles.mapCategoryChip}
-                aria-pressed={isActive}
-                data-map-category-chip="true"
-                onClick={() => toggleCategory(option.id)}
-                onKeyDown={handleKeyDown}
-              >
-                <CategoryIcon
-                  category={option.id}
-                  size={designStyle.iconSize.chip}
-                  tone={isActive ? 'dark' : 'light'}
-                />
-                {option.label}
-              </button>
-            )
-          })}
+            {visibleOptions.map((option) => {
+              const isActive = option.id === ALL_HELPER_CATEGORY_ID ? allSelected : selectedIdSet.has(option.id)
 
-          <span className={styles.mapCategorySeparator} aria-hidden="true" />
-          <button
-            type="button"
-            className={styles.mapCategoryMore}
-            onClick={() => setFiltersOpen(true)}
-            aria-label={hiddenCount > 0 ? `Gestionar filtros: ${hiddenCount} ocultos` : 'Gestionar filtros visibles'}
-          >
-            {filtersButtonLabel}
-          </button>
-        </div>
+              return (
+                <button
+                  key={option.id}
+                  id={`map-category-${buildDomId(option.id)}`}
+                  type="button"
+                  className={isActive ? `${styles.mapCategoryChip} ${styles.mapCategoryChipActive}` : styles.mapCategoryChip}
+                  aria-pressed={isActive}
+                  data-map-category-chip="true"
+                  onClick={() => toggleCategory(option.id)}
+                  onKeyDown={handleKeyDown}
+                >
+                  <CategoryIcon
+                    category={option.id}
+                    size={designStyle.iconSize.chip}
+                    tone={isActive ? 'dark' : 'light'}
+                  />
+                  {option.label}
+                </button>
+              )
+            })}
+
+            <span className={styles.mapCategorySeparator} aria-hidden="true" />
+            <button
+              type="button"
+              className={styles.mapCategoryMore}
+              onClick={() => setFiltersOpen(true)}
+              aria-label={hiddenCount > 0 ? `Gestionar filtros: ${hiddenCount} ocultos` : 'Gestionar filtros visibles'}
+            >
+              {filtersButtonLabel}
+            </button>
+          </div>
+        )}
       </div>
 
       <Modal
