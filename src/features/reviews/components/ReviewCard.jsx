@@ -1,11 +1,17 @@
 import UserAvatar from '../../../shared/ui/UserAvatar'
+import ActivityIcon from '../../tasks/categories/ActivityIcon'
+import { formatRating } from '../utils/ratingFormat'
+import RatingStars from './RatingStars'
 import styles from '../../profile/styles/profileNetwork.module.css'
 
-function scoreLabel(value) {
-  if (value >= 5) return 'Excelente'
-  if (value >= 4) return 'Muy bien'
-  if (value >= 3) return 'Correcto'
-  return 'Por mejorar'
+function formatReviewDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return new Intl.DateTimeFormat('es-ES', {
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
 }
 
 export default function ReviewCard({ review }) {
@@ -13,6 +19,12 @@ export default function ReviewCard({ review }) {
   const reviewerName = reviewer.display_name || reviewer.full_name || reviewer.username || 'Vecino'
   const taskTitle = review?.task?.title || 'Tarea completada'
   const tags = Array.isArray(review?.tags) ? review.tags.filter(Boolean) : []
+  const reviewDate = formatReviewDate(review?.created_at)
+  const metrics = [
+    { label: 'Comunicación', value: review?.communication_rating },
+    { label: 'Puntualidad', value: review?.punctuality_rating },
+    { label: 'Confianza', value: review?.trust_rating },
+  ].filter((item) => Number.isFinite(Number(item.value)))
 
   return (
     <article className={styles.reviewCard}>
@@ -25,28 +37,42 @@ export default function ReviewCard({ review }) {
           className={styles.reviewAvatar}
         />
         <div className={styles.reviewName}>
-          <strong>{reviewerName}</strong>
+          <div className={styles.reviewNameLine}>
+            <strong>{reviewerName}</strong>
+            {reviewDate ? <time dateTime={review?.created_at}>{reviewDate}</time> : null}
+          </div>
           <span>@{reviewer.username || 'helpMe'}</span>
-          <p className="muted">{taskTitle}</p>
         </div>
       </div>
 
-      <p className="muted">{review.comment || 'Sin comentario adicional.'}</p>
+      <div className={styles.reviewRatingLine}>
+        <RatingStars value={review.rating} size="md" />
+        <strong>{formatRating(review.rating)}</strong>
+      </div>
 
-      {tags.length > 0 && (
-        <div className={styles.reviewTags}>
-          {tags.map((tag) => (
-            <span key={tag} className={styles.reviewBadge}>{tag}</span>
+      {review.comment ? <p className={styles.reviewComment}>{review.comment}</p> : null}
+
+      <div className={styles.reviewTask}>
+        <ActivityIcon category={review?.task?.category} size={22} decorative />
+        <span>{taskTitle}</span>
+      </div>
+
+      {metrics.length > 0 ? (
+        <dl className={styles.reviewMetrics}>
+          {metrics.map((metric) => (
+            <div key={metric.label}>
+              <dt>{metric.label}</dt>
+              <dd>{Number(metric.value).toFixed(0)}/5</dd>
+            </div>
           ))}
-        </div>
-      )}
+        </dl>
+      ) : null}
 
-      <div className={styles.reviewScores}>
-        <span className={styles.reviewBadge}>⭐ {review.rating}/5</span>
-        <span className={styles.reviewBadge}>💬 {scoreLabel(review.communication_rating)}</span>
-        <span className={styles.reviewBadge}>⏱️ {scoreLabel(review.punctuality_rating)}</span>
-        <span className={styles.reviewBadge}>🤝 {scoreLabel(review.trust_rating)}</span>
-      </div>
+      {tags.length > 0 ? (
+        <p className={styles.reviewHighlights}>
+          <strong>Destaca por:</strong> {tags.join(', ')}
+        </p>
+      ) : null}
     </article>
   )
 }

@@ -1,0 +1,50 @@
+.ratingStars {
+  --rating-star-size: 1rem;
+  display: inline-flex;
+  gap: 0.12rem;
+  width: max-content;
+  color: #e3a008;
+  line-height: 1;
+}
+
+.sm {
+  --rating-star-size: 0.9rem;
+}
+
+.md {
+  --rating-star-size: 1.08rem;
+}
+
+.lg {
+  --rating-star-size: 1.3rem;
+}
+
+.star {
+  position: relative;
+  display: block;
+  flex: 0 0 var(--rating-star-size);
+  width: var(--rating-star-size);
+  height: var(--rating-star-size);
+}
+
+.star svg {
+  display: block;
+  width: var(--rating-star-size);
+  height: var(--rating-star-size);
+}
+
+.starEmpty {
+  color: color-mix(in srgb, var(--color-text-muted) 36%, transparent);
+}
+
+.starFillClip {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  overflow: hidden;
+}
+
+.starFilled {
+  max-width: none;
+  color: #e3a008;
+}

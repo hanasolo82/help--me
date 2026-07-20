@@ -1,4 +1,6 @@
 import UserAvatar from '../../../shared/ui/UserAvatar'
+import RatingStars from '../../reviews/components/RatingStars'
+import { formatRating } from '../../reviews/utils/ratingFormat'
 import FavoriteHeart from './FavoriteHeart'
 import styles from '../styles/profilePublicView.module.css'
 import {
@@ -53,7 +55,13 @@ export default function ProfileSidebar({
       <div className={styles.sidebarStats}>
         <div className={styles.sidebarStat}>
           <span>Valoración</span>
-          <strong>{Number(profile?.rating ?? 0).toFixed(1)}</strong>
+          <div className={styles.sidebarRatingRow}>
+            <strong>{formatRating(profile?.rating)}</strong>
+            <RatingStars value={profile?.rating} size="sm" />
+            <small>
+              {Number(profile?.reviews_count ?? 0)} {Number(profile?.reviews_count ?? 0) === 1 ? 'opinión' : 'opiniones'}
+            </small>
+          </div>
         </div>
       </div>
 

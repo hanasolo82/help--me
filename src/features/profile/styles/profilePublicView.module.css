@@ -172,6 +172,26 @@
   overflow-wrap: anywhere;
 }
 
+.sidebarRatingRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.sidebarRatingRow > strong {
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebarRatingRow small {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
 /* Índice de anclas: sustituye al stepper "Sección X de N". Solo navega con
    scroll suave; nunca oculta contenido. */
 .anchorNav {
@@ -233,19 +253,29 @@
 
 .main {
   display: grid;
-  gap: 1rem;
+  gap: 0;
   min-width: 0;
+  border: 1px solid var(--hm-shell-card-border);
+  border-radius: var(--hm-shell-card-radius);
+  background: var(--hm-shell-card-bg);
+  box-shadow: var(--hm-shell-card-shadow);
+  overflow: hidden;
 }
 
 .sectionCard {
   display: grid;
   gap: 1rem;
-  padding: 1.1rem;
-  border: 1px solid var(--hm-shell-card-border);
-  border-radius: var(--hm-shell-card-radius);
-  background: var(--hm-shell-card-bg);
-  box-shadow: var(--hm-shell-card-shadow);
+  padding: 1.4rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   scroll-margin-top: 6.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--hm-shell-card-border) 60%, transparent);
+}
+
+.sectionCard:first-child {
+  border-top: 0;
 }
 
 .sectionHeaderRow {
@@ -395,30 +425,6 @@
   font-size: 0.82rem;
 }
 
-/* Lista ordenada de habilidades (prioridad definida por el ayudante). */
-.publicSkillPills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.publicSkillPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: 100%;
-  min-height: 2.1rem;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.85rem;
-  font-weight: 750;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  padding: 0.42rem 0.72rem;
-}
-
 .skillList {
   display: grid;
   gap: 0.5rem;
@@ -426,6 +432,11 @@
   padding: 0;
   list-style: none;
   counter-reset: skill;
+}
+
+.publicSkillList .skillItem {
+  align-items: flex-start;
+  padding-block: 0.75rem;
 }
 
 .skillItem {
@@ -863,11 +874,10 @@
 .sidebar,
 .sidebarStat,
 .profileNavigation,
-.sectionCard,
+.main,
 .overviewCard,
 .trustMetricCard,
 .portfolioCard,
-.reviewCard,
 .emptyState,
 .actionBar {
   border-color: var(--hm-color-border-subtle);

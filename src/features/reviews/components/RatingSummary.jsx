@@ -1,4 +1,6 @@
 import styles from '../../profile/styles/profileNetwork.module.css'
+import { formatRating } from '../utils/ratingFormat'
+import RatingStars from './RatingStars'
 
 function getAverage(reviews = [], profileRating = 0) {
   if (reviews.length === 0) return Number(profileRating || 0).toFixed(1)
@@ -7,15 +9,15 @@ function getAverage(reviews = [], profileRating = 0) {
 }
 
 function buildDistribution(reviews = []) {
+  const total = reviews.length
   const counts = [5, 4, 3, 2, 1].map((rating) => ({
     rating,
     count: reviews.filter((review) => Number(review.rating || 0) === rating).length,
   }))
-  const max = Math.max(...counts.map((entry) => entry.count), 1)
 
   return counts.map((entry) => ({
     ...entry,
-    percent: Math.round((entry.count / max) * 100),
+    percent: total > 0 ? Math.round((entry.count / total) * 100) : 0,
   }))
 }
 
@@ -27,23 +29,32 @@ export default function RatingSummary({ profile, reviews = [] }) {
   return (
     <div className={styles.ratingSummary}>
       <div className={styles.ratingHeader}>
-        <strong className={styles.ratingValue}>{average}</strong>
+        <div className={styles.ratingScoreRow}>
+          <strong className={styles.ratingValue}>{formatRating(average)}</strong>
+          <RatingStars value={average} size="lg" />
+        </div>
         <p className="muted">
-          {totalReviews} review{totalReviews === 1 ? '' : 's'} · {Number(profile?.completed_tasks ?? 0)} tareas completadas
+          {totalReviews} {totalReviews === 1 ? 'opinión' : 'opiniones'} · {Number(profile?.completed_tasks ?? 0)} tareas completadas
         </p>
       </div>
 
-      <div className={styles.ratingBarList}>
-        {distribution.map((entry) => (
-          <div key={entry.rating} className={styles.ratingBar}>
-            <span>{entry.rating} estrellas</span>
-            <div className={styles.ratingTrack} aria-hidden="true">
-              <span className={styles.ratingFill} style={{ width: `${entry.percent}%` }} />
+      {reviews.length > 0 ? (
+        <div className={styles.ratingBarList} aria-label="Distribución de valoraciones">
+          {distribution.map((entry) => (
+            <div key={entry.rating} className={styles.ratingBar}>
+              <span>{entry.rating}</span>
+              <div
+                className={styles.ratingTrack}
+                role="img"
+                aria-label={`${entry.count} opiniones de ${entry.rating} estrellas`}
+              >
+                <span className={styles.ratingFill} style={{ width: `${entry.percent}%` }} />
+              </div>
+              <strong>{entry.count}</strong>
             </div>
-            <strong>{entry.count}</strong>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -70,7 +70,6 @@
 .skillBadge,
 .categoryPill,
 .availabilityPill,
-.reviewBadge,
 .verificationBadge {
   display: inline-flex;
   align-items: center;
@@ -94,7 +93,6 @@
 .skillBadge strong,
 .categoryPill strong,
 .availabilityPill strong,
-.reviewBadge strong,
 .verificationBadge strong {
   font-weight: 800;
 }
@@ -192,7 +190,6 @@
 .skillBadge,
 .categoryPill,
 .availabilityPill,
-.reviewBadge,
 .verificationBadge {
   transition:
     transform 160ms ease,
@@ -244,14 +241,22 @@
 
 .ratingHeader {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.35rem;
+}
+
+.ratingScoreRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
 }
 
 .ratingValue {
   font-size: clamp(2rem, 7vw, 3rem);
   font-weight: 900;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .ratingBarList {
@@ -261,7 +266,7 @@
 
 .ratingBar {
   display: grid;
-  grid-template-columns: 4.4rem minmax(0, 1fr) auto;
+  grid-template-columns: 1rem minmax(0, 1fr) 1.75rem;
   gap: 0.6rem;
   align-items: center;
 }
@@ -272,38 +277,131 @@
 }
 
 .ratingTrack {
-  height: 0.72rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  height: 0.55rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.88);
+  background: color-mix(in srgb, var(--color-text-muted) 18%, transparent);
 }
 
 .ratingFill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), rgba(99, 102, 241, 0.82));
+  background: #e3a008;
 }
 
-.reviewList {
+.reviewsDisclosure {
   display: grid;
   gap: 0.85rem;
 }
 
-.reviewCard {
-  display: grid;
-  gap: 0.8rem;
-  padding: 0.95rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 95%, var(--bg)));
-  box-shadow:
-    0 20px 46px rgba(15, 23, 42, 0.08),
-    0 7px 16px rgba(15, 23, 42, 0.04);
+.reviewsDisclosureButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.7rem 0;
+  border: 0;
+  border-top: 1px solid var(--hm-color-border-subtle);
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 800;
+  text-align: left;
 }
 
-.reviewBadge {
-  background: rgba(255, 255, 255, 0.94);
+.reviewsDisclosureButton:focus-visible,
+.reviewMoreButton:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus, 0 0 0 4px rgba(31, 107, 72, 0.16));
+}
+
+.reviewsDisclosureIcon,
+.reviewsDisclosureIconOpen {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.reviewsDisclosureIconOpen {
+  transform: rotate(180deg);
+}
+
+.reviewsExpanded {
+  display: grid;
+  gap: 1rem;
+}
+
+.reviewToolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.reviewControl {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.reviewControl > span {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.reviewControl select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.65rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.7rem;
+}
+
+.reviewCheckbox {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.65rem;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reviewCheckbox input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.reviewList {
+  display: grid;
+  gap: 0;
+}
+
+.reviewCard {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .reviewMeta {
@@ -320,7 +418,7 @@
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 1rem;
+  border-radius: 999px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(99, 102, 241, 0.92));
   color: var(--color-surface);
   font-weight: 900;
@@ -334,7 +432,8 @@
 
 .reviewName {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.15rem;
+  min-width: 0;
 }
 
 .reviewName strong {
@@ -346,23 +445,105 @@
   font-size: 0.82rem;
 }
 
-.reviewScores {
+.reviewNameLine {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
 }
 
-.reviewTags {
+.reviewNameLine time {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.reviewRatingLine {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.reviewTags .reviewBadge {
-  min-height: 2rem;
-  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
-  color: color-mix(in srgb, var(--color-primary) 78%, var(--color-text));
-  box-shadow: none;
+.reviewRatingLine strong {
+  color: var(--color-text);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.reviewComment {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.reviewTask {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.reviewTask svg {
+  flex: 0 0 auto;
+}
+
+.reviewMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--hm-color-border-subtle);
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+}
+
+.reviewMetrics > div {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.reviewMetrics dt {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.reviewMetrics dd {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.reviewHighlights {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.reviewHighlights strong {
+  color: var(--color-text);
+}
+
+.reviewMoreButton {
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
 }
 
 .verificationList {
@@ -529,6 +710,34 @@
   }
 }
 
+@media (max-width: 640px) {
+  .reviewToolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reviewMetrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reviewMetrics > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    padding-inline: 0;
+  }
+
+  .reviewMetrics > div + div {
+    border-top: 1px solid var(--hm-color-border-subtle);
+    border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviewsDisclosureIcon,
+  .reviewsDisclosureIconOpen {
+    transition: none;
+  }
+}
+
 .heroCard,
 .highlightCard,
 .miniStat,
@@ -536,14 +745,12 @@
 .emptyState,
 .helperCard,
 .mapCard,
-.reviewCard,
 .reviewItem,
 .ratingCard,
 .trustPill,
 .skillBadge,
 .categoryPill,
 .availabilityPill,
-.reviewBadge,
 .verificationBadge {
   border-color: var(--hm-color-border-subtle);
   background: var(--hm-color-surface);

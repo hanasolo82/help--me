@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, Plus, Sparkles, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react'
 import ProfileContentSection from '../ProfileContentSection'
 import styles from '../../styles/profilePublicView.module.css'
 import { useSkillsCatalog } from '../../../skills/hooks/useSkillsCatalog'
@@ -147,13 +147,9 @@ export default function ProfileSkillsPanel({ profile, skills = [], isEditing = f
             {items.map((item, index) => (
               <li key={item.id} className={styles.skillItem}>
                 <span className={styles.skillRank} aria-hidden="true">{index + 1}</span>
-                {item.icon ? (
-                  <span className={styles.skillIcon} aria-hidden="true">{item.icon}</span>
-                ) : (
-                  <span className={styles.skillIcon} aria-hidden="true">
-                    <Sparkles strokeWidth={2} />
-                  </span>
-                )}
+                <span className={styles.skillIcon} aria-hidden="true">
+                  <CategoryIcon category={item.category} size={designStyle.iconSize.tag} tone="light" />
+                </span>
                 <span className={styles.skillCopy}>
                   <strong>{item.name}</strong>
                   {item.category ? (
@@ -196,14 +192,20 @@ export default function ProfileSkillsPanel({ profile, skills = [], isEditing = f
             ))}
           </ol>
         ) : (
-          <div className={styles.publicSkillPills} aria-label="Habilidades">
-            {items.map((item) => (
-              <span key={item.id} className={styles.publicSkillPill} title={item.category || undefined}>
-                <CategoryIcon category={item.category} size={designStyle.iconSize.tag} tone="light" />
-                {item.name}
-              </span>
+          <ol className={`${styles.skillList} ${styles.publicSkillList}`} aria-label="Habilidades por orden de prioridad">
+            {items.map((item, index) => (
+              <li key={item.id} className={styles.skillItem}>
+                <span className={styles.skillRank} aria-hidden="true">{index + 1}</span>
+                <span className={styles.skillIcon} aria-hidden="true">
+                  <CategoryIcon category={item.category} size={designStyle.iconSize.tag} tone="light" />
+                </span>
+                <span className={styles.skillCopy}>
+                  <strong>{item.name}</strong>
+                  {item.category ? <small>{item.category}</small> : null}
+                </span>
+              </li>
             ))}
-          </div>
+          </ol>
         )
       ) : (
         <div className={styles.emptyState}>

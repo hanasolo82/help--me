@@ -32,7 +32,6 @@ export default function ProfileMain({
     <main className={styles.main}>
       <ProfileOverviewPanel
         profile={profile}
-        reviews={reviews}
         isEditing={canEdit}
         onEditIdentity={onEditIdentity}
       />
