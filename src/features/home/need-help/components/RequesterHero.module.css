@@ -25,6 +25,7 @@
 .publishButton {
   width: 100%;
   max-width: none;
+  border-radius: calc(var(--hm-button-radius) + 4px);
   white-space: nowrap;
 }
 

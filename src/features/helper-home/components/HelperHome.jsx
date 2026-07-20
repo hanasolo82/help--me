@@ -50,6 +50,32 @@ function isWithinBounds(task, bounds) {
   )
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('es-ES')
+}
+
+function matchesTaskSearch(task, searchQuery) {
+  if (!searchQuery) return true
+
+  const requester = task?.creator_profile || {}
+  const searchableValues = [
+    task?.title,
+    task?.description,
+    task?.category,
+    task?.zone,
+    task?.location_label,
+    task?.location,
+    requester?.display_name,
+    requester?.full_name,
+    requester?.username,
+  ]
+
+  return searchableValues.some((value) => normalizeSearchText(value).includes(searchQuery))
+}
+
 function getCompatibilityScore(task, profile, distanceKm) {
   if (!task) return 0
 
@@ -133,6 +159,8 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const queryClient = useQueryClient()
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [mapBounds, setMapBounds] = useState(null)
+  const [taskSearchOpen, setTaskSearchOpen] = useState(false)
+  const [taskSearchQuery, setTaskSearchQuery] = useState('')
   const [pendingOfferTaskId, setPendingOfferTaskId] = useState(null)
   const [offerError, setOfferError] = useState('')
 
@@ -159,10 +187,15 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     () => buildMapEntries(helperHomeProps.visibleTasks || [], helperHomeProps.currentUserId, profile),
     [helperHomeProps.currentUserId, helperHomeProps.visibleTasks, profile],
   )
+  const normalizedTaskSearchQuery = taskSearchOpen ? normalizeSearchText(taskSearchQuery).trim() : ''
+  const searchFilteredEntries = useMemo(
+    () => allMapEntries.filter((entry) => matchesTaskSearch(entry.task, normalizedTaskSearchQuery)),
+    [allMapEntries, normalizedTaskSearchQuery],
+  )
 
   const mapEntries = useMemo(
-    () => allMapEntries.filter((entry) => entry.task.is_direct_request || isWithinBounds(entry.task, mapBounds)),
-    [allMapEntries, mapBounds],
+    () => searchFilteredEntries.filter((entry) => entry.task.is_direct_request || isWithinBounds(entry.task, mapBounds)),
+    [mapBounds, searchFilteredEntries],
   )
 
   const opportunityDistances = useMemo(
@@ -184,9 +217,6 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
         : mapEntries[0].task.id
 
   const openTaskCount = mapEntries.length
-  const compatibilityAverage = mapEntries.length
-    ? Math.round(mapEntries.reduce((sum, entry) => sum + entry.compatibilityScore, 0) / mapEntries.length)
-    : 0
   const mapTasks = mapEntries.map((entry) => entry.task)
   const locationSource =
     helperHomeProps.locationSource === 'current'
@@ -220,7 +250,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
           ? 'Seleccionado'
           : hasPending
             ? 'Retirar oferta'
-            : 'Ofrecerme'
+            : 'Ayudar'
 
     return {
       label,
@@ -276,6 +306,10 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
             category={helperHomeProps.category}
             categories={helperHomeProps.categories}
             onChange={helperHomeProps.onCategoryChange}
+            searchOpen={taskSearchOpen}
+            searchQuery={taskSearchQuery}
+            onSearchOpenChange={setTaskSearchOpen}
+            onSearchQueryChange={setTaskSearchQuery}
           />
 
           <TaskMap
@@ -310,7 +344,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
             <p className="muted">Filtra por actividad en el mapa y revisa el detalle aquí.</p>
             <div className={styles.listCount}>
               <strong>{openTaskCount} en el mapa</strong>
-              <span>{allMapEntries.length} con estos filtros · {compatibilityAverage}% match medio</span>
+              <span>{searchFilteredEntries.length} con {searchFilteredEntries.length === 1 ? 'este filtro' : 'estos filtros'}</span>
             </div>
           </header>
 

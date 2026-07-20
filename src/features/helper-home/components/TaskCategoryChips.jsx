@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, Search } from 'lucide-react'
 import Modal, { ModalActions, ModalBody, ModalHeader } from '../../../shared/ui/Modal/Modal'
 import { CategoryIcon, style as designStyle } from '../../../design'
 import { cleanCategoryLabel } from '../../home/need-help/config/helperCategoryFilters'
@@ -6,6 +7,8 @@ import styles from '../styles/helperHome.module.css'
 
 const ALL_CATEGORY = 'Todas'
 const DEFAULT_VISIBLE_COUNT = 4
+const SEARCH_COLLAPSE_DURATION_MS = 220
+const PILL_SEQUENCE_DURATION_MS = 560
 
 function buildDomId(value) {
   return String(value || ALL_CATEGORY)
@@ -30,7 +33,15 @@ function focusSiblingChip(event, direction) {
 // pero con filtro de selección única (category / onChange, ya aplicado upstream
 // en useTasks). "Todas" siempre visible; la categoría activa se mantiene
 // visible aunque esté oculta, para no perder de vista el filtro en uso.
-export default function TaskCategoryChips({ category = ALL_CATEGORY, categories = [], onChange }) {
+export default function TaskCategoryChips({
+  category = ALL_CATEGORY,
+  categories = [],
+  onChange,
+  searchOpen = false,
+  searchQuery = '',
+  onSearchOpenChange,
+  onSearchQueryChange,
+}) {
   const options = useMemo(
     () => (categories.length > 0 ? categories : [ALL_CATEGORY]),
     [categories],
@@ -45,6 +56,12 @@ export default function TaskCategoryChips({ category = ALL_CATEGORY, categories 
     () => selectableOptions.slice(0, DEFAULT_VISIBLE_COUNT),
   )
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [searchClosing, setSearchClosing] = useState(false)
+  const [pillsEntering, setPillsEntering] = useState(false)
+  const searchTriggerRef = useRef(null)
+  const searchInputRef = useRef(null)
+  const collapseTimerRef = useRef(null)
+  const pillTimerRef = useRef(null)
 
   const visibleSet = useMemo(() => new Set(visibleCategories), [visibleCategories])
   const barOptions = options.filter(
@@ -57,6 +74,29 @@ export default function TaskCategoryChips({ category = ALL_CATEGORY, categories 
     (option) => !visibleSet.has(option) && option !== activeCategory,
   ).length
   const filtersButtonLabel = hiddenCount > 0 ? '+ Filtros' : '- Filtros'
+  const overlayClasses = [styles.mapCategoryOverlay]
+
+  if (searchOpen) {
+    overlayClasses.push(styles.mapCategoryOverlaySearchOpen)
+  } else if (searchClosing) {
+    overlayClasses.push(styles.mapCategoryOverlaySearchClosing)
+  } else if (pillsEntering) {
+    overlayClasses.push(styles.mapCategoryOverlayPillsEntering)
+  }
+
+  const overlayClassName = overlayClasses.join(' ')
+  const filtersHidden = searchOpen || searchClosing
+
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus()
+    }
+  }, [searchOpen])
+
+  useEffect(() => () => {
+    window.clearTimeout(collapseTimerRef.current)
+    window.clearTimeout(pillTimerRef.current)
+  }, [])
 
   function toggleVisibleCategory(option) {
     setVisibleCategories((current) =>
@@ -78,10 +118,68 @@ export default function TaskCategoryChips({ category = ALL_CATEGORY, categories 
     }
   }
 
+  function openSearch() {
+    window.clearTimeout(collapseTimerRef.current)
+    window.clearTimeout(pillTimerRef.current)
+    setSearchClosing(false)
+    setPillsEntering(false)
+    onSearchOpenChange?.(true)
+  }
+
+  function closeSearch() {
+    if (searchClosing) return
+
+    window.clearTimeout(collapseTimerRef.current)
+    window.clearTimeout(pillTimerRef.current)
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onSearchQueryChange?.('')
+      setSearchClosing(false)
+      setPillsEntering(false)
+      onSearchOpenChange?.(false)
+      window.requestAnimationFrame(() => searchTriggerRef.current?.focus())
+      return
+    }
+
+    setSearchClosing(true)
+    setPillsEntering(false)
+    onSearchOpenChange?.(false)
+
+    collapseTimerRef.current = window.setTimeout(() => {
+      onSearchQueryChange?.('')
+      setSearchClosing(false)
+      setPillsEntering(true)
+      window.requestAnimationFrame(() => searchTriggerRef.current?.focus())
+
+      pillTimerRef.current = window.setTimeout(() => {
+        setPillsEntering(false)
+      }, PILL_SEQUENCE_DURATION_MS)
+    }, SEARCH_COLLAPSE_DURATION_MS)
+  }
+
   return (
     <>
-      <div className={styles.mapCategoryOverlay}>
-        <div className={styles.mapCategoryScroller} role="group" aria-label="Filtro de categorías del mapa">
+      <div className={overlayClassName}>
+        <div
+          className={styles.mapCategoryScroller}
+          role="group"
+          aria-label="Filtro de categorías del mapa"
+          aria-hidden={filtersHidden}
+        >
+          <button
+            ref={searchTriggerRef}
+            type="button"
+            className={styles.mapSearchOpen}
+            onClick={openSearch}
+            aria-label="Buscar solicitudes por necesidad"
+            aria-expanded={searchOpen}
+            title="Buscar solicitudes"
+            tabIndex={filtersHidden ? -1 : undefined}
+          >
+            <Search aria-hidden="true" strokeWidth={2.2} />
+          </button>
+          <span className={styles.mapCategorySeparator} aria-hidden="true" />
+
           {barOptions.map((option) => {
             const isActive = option === activeCategory
             const label = option === ALL_CATEGORY ? ALL_CATEGORY : cleanCategoryLabel(option)
@@ -96,6 +194,7 @@ export default function TaskCategoryChips({ category = ALL_CATEGORY, categories 
                 data-map-category-chip="true"
                 onClick={() => onChange?.(option)}
                 onKeyDown={handleKeyDown}
+                tabIndex={filtersHidden ? -1 : undefined}
               >
                 <CategoryIcon
                   category={option}
@@ -113,8 +212,40 @@ export default function TaskCategoryChips({ category = ALL_CATEGORY, categories 
             className={styles.mapCategoryMore}
             onClick={() => setFiltersOpen(true)}
             aria-label={hiddenCount > 0 ? `Gestionar filtros: ${hiddenCount} ocultos` : 'Gestionar filtros visibles'}
+            tabIndex={filtersHidden ? -1 : undefined}
           >
             {filtersButtonLabel}
+          </button>
+        </div>
+
+        <div className={styles.mapSearchBar} role="search" aria-label="Buscar solicitudes por necesidad" aria-hidden={!searchOpen}>
+          <Search aria-hidden="true" strokeWidth={2.2} />
+          <label className={styles.mapSearchLabel} htmlFor="map-task-search">
+            Buscar solicitudes por necesidad
+          </label>
+          <input
+            ref={searchInputRef}
+            id="map-task-search"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange?.(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') closeSearch()
+            }}
+            placeholder="Ej. montar muebles, limpiar..."
+            maxLength={80}
+            autoComplete="off"
+            tabIndex={searchOpen ? undefined : -1}
+          />
+          <button
+            type="button"
+            className={styles.mapSearchClose}
+            onClick={closeSearch}
+            aria-label="Volver a los filtros por categoría"
+            title="Volver a categorías"
+            tabIndex={searchOpen ? undefined : -1}
+          >
+            <Plus aria-hidden="true" strokeWidth={2.2} />
           </button>
         </div>
       </div>
