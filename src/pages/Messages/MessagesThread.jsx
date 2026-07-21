@@ -6,6 +6,7 @@ import UserAvatar from '../../shared/ui/UserAvatar'
 import { getMessages } from '../../services/chatService'
 import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
 import { useRealtimeMessages } from '../../features/chat/hooks/useRealtimeMessages'
+import { isTaskConversationReadOnly } from '../../features/chat/utils/conversationPermissions'
 import styles from './MessagesPage.module.css'
 
 function getMessageKeys(message) {
@@ -119,6 +120,7 @@ export default function MessagesThread({ conversation, onBack, onOpenTask }) {
 
   const counterpart = conversation.other_user
   const counterpartName = getDisplayName(counterpart)
+  const isReadOnly = isTaskConversationReadOnly(conversation)
 
   async function handleSend() {
     const text = draft.trim()
@@ -184,8 +186,8 @@ export default function MessagesThread({ conversation, onBack, onOpenTask }) {
             <MessageList
               messages={messages}
               currentUserId={user?.id}
-              onEditMessage={handleEdit}
-              onDeleteMessage={handleDelete}
+              onEditMessage={isReadOnly ? undefined : handleEdit}
+              onDeleteMessage={isReadOnly ? undefined : handleDelete}
               counterpartName={counterpartName}
               counterpartAvatarUrl={counterpart?.avatar_url}
             />
@@ -198,14 +200,21 @@ export default function MessagesThread({ conversation, onBack, onOpenTask }) {
             </p>
           ) : null}
 
-          <MessageInput
-            value={draft}
-            onChange={setDraft}
-            onSubmit={handleSend}
-            sending={sending}
-            placeholder="Escribe un mensaje"
-            maxLength={1200}
-          />
+          {isReadOnly ? (
+            <div className={styles.readOnlyNotice} role="status">
+              <strong>Tarea finalizada</strong>
+              <p>Puedes consultar el historial, pero ya no enviar mensajes.</p>
+            </div>
+          ) : (
+            <MessageInput
+              value={draft}
+              onChange={setDraft}
+              onSubmit={handleSend}
+              sending={sending}
+              placeholder="Escribe un mensaje"
+              maxLength={1200}
+            />
+          )}
         </>
       ) : null}
     </section>

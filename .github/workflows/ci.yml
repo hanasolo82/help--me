@@ -121,6 +121,10 @@ jobs:
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:rls-payment-gate
 
+      - name: verify:chat-lifecycle
+        if: steps.preflight.outputs.have_secrets == 'true'
+        run: pnpm run verify:chat-lifecycle
+
       - name: verify:rls-ownership
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:rls-ownership

@@ -6,6 +6,7 @@ import MessageList from '../../shared/ui/chat/MessageList'
 import MessageInput from '../../features/chat/components/MessageInput'
 import { getMessages, getOrCreateChatByTaskId } from '../../services/chatService'
 import { useConversationComposer } from '../../features/chat/hooks/useConversationComposer'
+import { isTerminalTaskChatStatus } from '../../features/chat/utils/conversationPermissions'
 import chatStyles from './TaskChatModal.module.css'
 
 function getCounterpartProfile(task, userId) {
@@ -139,6 +140,7 @@ export default function TaskChatModal({ open, task, onClose }) {
 
   const counterpartProfile = getCounterpartProfile(task, user?.id)
   const counterpartName = getCounterpartName(task, user?.id)
+  const isReadOnly = isTerminalTaskChatStatus(task.status)
 
   async function handleSendTaskChatMessage() {
     const messageText = draftMessage.trim()
@@ -203,25 +205,32 @@ export default function TaskChatModal({ open, task, onClose }) {
             <MessageList
               messages={messages}
               currentUserId={user?.id}
-              onEditMessage={handleEditTaskChatMessage}
-              onDeleteMessage={handleDeleteTaskChatMessage}
+              onEditMessage={isReadOnly ? undefined : handleEditTaskChatMessage}
+              onDeleteMessage={isReadOnly ? undefined : handleDeleteTaskChatMessage}
               counterpartName={counterpartName}
               counterpartAvatarUrl={counterpartProfile?.avatar_url}
             />
             <div ref={taskChatMessagesEndRef} />
           </section>
 
-          <div className="task-chat-composer-stacked">
-            <MessageInput
-              dense
-              value={draftMessage}
-              onChange={setDraftMessage}
-              onSubmit={handleSendTaskChatMessage}
-              sending={sending}
-              placeholder="Escribe un mensaje"
-              maxLength={1200}
-            />
-          </div>
+          {isReadOnly ? (
+            <div className={chatStyles.readOnlyNotice} role="status">
+              <strong>Tarea finalizada</strong>
+              <p>Puedes consultar el historial, pero ya no enviar mensajes.</p>
+            </div>
+          ) : (
+            <div className="task-chat-composer-stacked">
+              <MessageInput
+                dense
+                value={draftMessage}
+                onChange={setDraftMessage}
+                onSubmit={handleSendTaskChatMessage}
+                sending={sending}
+                placeholder="Escribe un mensaje"
+                maxLength={1200}
+              />
+            </div>
+          )}
         </>
       )}
     </Modal>

@@ -8,3 +8,22 @@
   padding: 0;
   overflow: hidden;
 }
+
+.readOnlyNotice {
+  padding: 0.85rem 1rem 1rem;
+  border-top: 1px solid var(--hm-color-border-subtle);
+  background: var(--hm-color-surface);
+}
+
+.readOnlyNotice strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.readOnlyNotice p {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}

@@ -21,6 +21,7 @@
     "verify:webhook-reliability": "node scripts/verify-webhook-reliability.mjs",
     "verify:rls-payment-gate": "node scripts/verify-rls-payment-gate.mjs",
     "verify:rls-ownership": "node scripts/verify-rls-ownership.mjs",
+    "verify:chat-lifecycle": "node scripts/verify-chat-lifecycle.mjs",
     "verify:global-map-search": "node scripts/verify-global-map-search.mjs",
     "verify:financial-drift": "node scripts/verify-financial-drift.mjs",
     "repair:financial-drift": "node scripts/repair-financial-drift.mjs",
