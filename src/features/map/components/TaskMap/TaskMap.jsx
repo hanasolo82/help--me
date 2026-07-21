@@ -251,6 +251,24 @@ function MapViewportReporter({ onViewportChange }) {
   return null
 }
 
+function MapRefCapture({ mapRef }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!mapRef) return undefined
+
+    mapRef.current = map
+
+    return () => {
+      if (mapRef.current === map) {
+        mapRef.current = null
+      }
+    }
+  }, [map, mapRef])
+
+  return null
+}
+
 // Mapa con OpenStreetMap. Las tareas vienen con lat/lng y price (euros) directos del schema.
 // El marcador del usuario usa el map_avatar_url del profile si esta disponible.
 export default function TaskMap({
@@ -269,6 +287,7 @@ export default function TaskMap({
   recenterZoom = 15,
   fitTasksOnLoad = false,
   fitTasksKey = 'initial',
+  mapRef = null,
 }) {
   const userLat = toFiniteNumber(userLocation?.latitude ?? userLocation?.lat)
   const userLng = toFiniteNumber(userLocation?.longitude ?? userLocation?.lng)
@@ -303,6 +322,7 @@ export default function TaskMap({
           <RecenterMap center={center} centerSource={centerSource} zoom={recenterZoom} />
         ) : null}
         {fitTasksOnLoad ? <FitMapOnce key={fitTasksKey} tasks={safeTasks} around={center} /> : null}
+        <MapRefCapture mapRef={mapRef} />
         <MapViewportReporter onViewportChange={onViewportChange} />
         <MapAutoResize />
         <MapTileLayer />

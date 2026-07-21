@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTransitionNavigate } from '../../../shared/navigation/usePageTransition'
 import { isTaskTimeWindowExpired } from '../../tasks/availability/taskAvailability'
@@ -57,23 +57,77 @@ function normalizeSearchText(value) {
     .toLocaleLowerCase('es-ES')
 }
 
-function matchesTaskSearch(task, searchQuery) {
-  if (!searchQuery) return true
+function getTaskSearchMatch(task, searchQuery) {
+  const tokens = [...new Set(String(searchQuery || '').split(/\s+/).filter(Boolean))]
+  if (tokens.length === 0) {
+    return { matches: true, allTermsMatch: true, score: 0 }
+  }
 
   const requester = task?.creator_profile || {}
-  const searchableValues = [
-    task?.title,
-    task?.description,
-    task?.category,
-    task?.zone,
-    task?.location_label,
-    task?.location,
-    requester?.display_name,
-    requester?.full_name,
-    requester?.username,
+  const searchableFields = [
+    { value: task?.title, weight: 5 },
+    { value: task?.category, weight: 4 },
+    { value: task?.description, weight: 3 },
+    { value: task?.zone || task?.location_label || task?.location, weight: 2 },
+    { value: requester?.display_name || requester?.full_name || requester?.username, weight: 1 },
   ]
 
-  return searchableValues.some((value) => normalizeSearchText(value).includes(searchQuery))
+  let matchedTerms = 0
+  let score = 0
+
+  for (const token of tokens) {
+    const bestWeight = searchableFields.reduce((best, field) => {
+      const matches = normalizeSearchText(field.value).includes(token)
+      return matches ? Math.max(best, field.weight) : best
+    }, 0)
+
+    if (bestWeight > 0) {
+      matchedTerms += 1
+      score += bestWeight
+    }
+  }
+
+  return {
+    matches: matchedTerms > 0,
+    allTermsMatch: matchedTerms === tokens.length,
+    score,
+  }
+}
+
+function rankTaskSearchEntries(entries, searchQuery) {
+  return entries
+    .map((entry) => ({ ...entry, searchMatch: getTaskSearchMatch(entry.task, searchQuery) }))
+    .filter((entry) => entry.searchMatch.matches)
+    .sort((left, right) => {
+      if (left.searchMatch.allTermsMatch !== right.searchMatch.allTermsMatch) {
+        return left.searchMatch.allTermsMatch ? -1 : 1
+      }
+
+      if (left.searchMatch.score !== right.searchMatch.score) {
+        return right.searchMatch.score - left.searchMatch.score
+      }
+
+      const leftDistance = Number(left.distance)
+      const rightDistance = Number(right.distance)
+      const hasLeftDistance = Number.isFinite(leftDistance)
+      const hasRightDistance = Number.isFinite(rightDistance)
+      if (hasLeftDistance && hasRightDistance && leftDistance !== rightDistance) {
+        return leftDistance - rightDistance
+      }
+
+      if (hasLeftDistance !== hasRightDistance) {
+        return hasLeftDistance ? -1 : 1
+      }
+
+      const leftDate = new Date(left.task.published_at || left.task.updated_at || left.task.created_at || 0).getTime()
+      const rightDate = new Date(right.task.published_at || right.task.updated_at || right.task.created_at || 0).getTime()
+      if (leftDate !== rightDate) {
+        return rightDate - leftDate
+      }
+
+      return String(left.task.id || '').localeCompare(String(right.task.id || ''))
+    })
+    .map(({ task, distance, compatibilityScore }) => ({ task, distance, compatibilityScore }))
 }
 
 function getCompatibilityScore(task, profile, distanceKm) {
@@ -163,6 +217,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   const [taskSearchQuery, setTaskSearchQuery] = useState('')
   const [pendingOfferTaskId, setPendingOfferTaskId] = useState(null)
   const [offerError, setOfferError] = useState('')
+  const taskMapRef = useRef(null)
 
   const offerMutation = useMutation({
     mutationFn: (task) => (
@@ -183,41 +238,60 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
   })
 
   const center = buildCenter(helperHomeProps.mapLocation, profile)
-  const allMapEntries = useMemo(
+  const categoryMapEntries = useMemo(
     () => buildMapEntries(helperHomeProps.visibleTasks || [], helperHomeProps.currentUserId, profile),
     [helperHomeProps.currentUserId, helperHomeProps.visibleTasks, profile],
   )
+  const allOpenMapEntries = useMemo(
+    () => buildMapEntries(
+      helperHomeProps.availableTasks || helperHomeProps.visibleTasks || [],
+      helperHomeProps.currentUserId,
+      profile,
+    ),
+    [helperHomeProps.availableTasks, helperHomeProps.currentUserId, helperHomeProps.visibleTasks, profile],
+  )
   const normalizedTaskSearchQuery = taskSearchOpen ? normalizeSearchText(taskSearchQuery).trim() : ''
-  const searchFilteredEntries = useMemo(
-    () => allMapEntries.filter((entry) => matchesTaskSearch(entry.task, normalizedTaskSearchQuery)),
-    [allMapEntries, normalizedTaskSearchQuery],
+  const hasGlobalTaskSearch = normalizedTaskSearchQuery.length >= 3
+  const searchResultEntries = useMemo(
+    () => (
+      hasGlobalTaskSearch
+        ? rankTaskSearchEntries(allOpenMapEntries, normalizedTaskSearchQuery)
+        : categoryMapEntries
+    ),
+    [allOpenMapEntries, categoryMapEntries, hasGlobalTaskSearch, normalizedTaskSearchQuery],
   )
 
   const mapEntries = useMemo(
-    () => searchFilteredEntries.filter((entry) => entry.task.is_direct_request || isWithinBounds(entry.task, mapBounds)),
-    [mapBounds, searchFilteredEntries],
+    () => searchResultEntries.filter((entry) => entry.task.is_direct_request || isWithinBounds(entry.task, mapBounds)),
+    [mapBounds, searchResultEntries],
   )
+  const visibleMapEntries = useMemo(
+    () => searchResultEntries.filter((entry) => isWithinBounds(entry.task, mapBounds)),
+    [mapBounds, searchResultEntries],
+  )
+  const listEntries = hasGlobalTaskSearch ? searchResultEntries : mapEntries
 
   const opportunityDistances = useMemo(
     () =>
-      mapEntries.reduce((acc, entry) => {
+      visibleMapEntries.reduce((acc, entry) => {
         if (Number.isFinite(Number(entry.distance))) {
           acc[entry.task.id] = entry.distance
         }
         return acc
       }, {}),
-    [mapEntries],
+    [visibleMapEntries],
   )
 
   const resolvedSelectedTaskId =
-    mapEntries.length === 0
+    listEntries.length === 0
       ? null
-      : mapEntries.some((entry) => entry.task.id === selectedTaskId)
+      : listEntries.some((entry) => entry.task.id === selectedTaskId)
         ? selectedTaskId
-        : mapEntries[0].task.id
+        : listEntries[0].task.id
 
-  const openTaskCount = mapEntries.length
-  const mapTasks = mapEntries.map((entry) => entry.task)
+  const visibleInMapCount = visibleMapEntries.length
+  const globalResultCount = searchResultEntries.length
+  const mapTasks = visibleMapEntries.map((entry) => entry.task)
   const locationSource =
     helperHomeProps.locationSource === 'current'
       ? 'current'
@@ -298,6 +372,31 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
     transitionNavigate(`/task/${task.id}`)
   }
 
+  function focusTaskOnMap(task) {
+    const lat = Number(task?.lat)
+    const lng = Number(task?.lng)
+    const map = taskMapRef.current
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+    try {
+      if (!map?._loaded || !map._mapPane) return
+
+      const currentZoom = Number(map.getZoom())
+      const targetZoom = Number.isFinite(currentZoom) ? Math.max(currentZoom, 13) : 15
+      map.setView([lat, lng], targetZoom, { animate: true })
+    } catch {
+      // Puede desmontarse al cambiar entre mapa y lista en móvil.
+    }
+  }
+
+  function handleSelectTask(task) {
+    if (!task?.id) return
+
+    setSelectedTaskId(task.id)
+    focusTaskOnMap(task)
+  }
+
   return (
     <section className={styles.home}>
       <section className={styles.mapWorkspace} aria-label="Mapa de solicitudes activas">
@@ -322,6 +421,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
             centerSource={locationSource}
             fitTasksOnLoad={false}
             fitTasksKey={locationSource}
+            mapRef={taskMapRef}
             onViewportChange={setMapBounds}
             renderTaskMarker={(task, { selected }) => (
               <HelperTaskMarker
@@ -329,7 +429,7 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
                 task={task}
                 selected={selected}
                 offer={getOfferState(task)}
-                onSelect={(nextTask) => setSelectedTaskId(nextTask.id)}
+                onSelect={handleSelectTask}
                 onOpenDetail={handleOpenTask}
                 onOffer={handleOffer}
               />
@@ -341,10 +441,19 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
           <header className={styles.listHeader}>
             <p className="eyebrow">Buscar tareas</p>
             <h2>Solicitudes publicadas</h2>
-            <p className="muted">Filtra por actividad en el mapa y revisa el detalle aquí.</p>
+            <p className="muted">Busca por necesidad o revisa las solicitudes visibles en el mapa.</p>
             <div className={styles.listCount}>
-              <strong>{openTaskCount} en el mapa</strong>
-              <span>{searchFilteredEntries.length} con {searchFilteredEntries.length === 1 ? 'este filtro' : 'estos filtros'}</span>
+              {hasGlobalTaskSearch ? (
+                <>
+                  <strong>{globalResultCount} {globalResultCount === 1 ? 'resultado' : 'resultados'}</strong>
+                  <span>{visibleInMapCount} visibles en el mapa</span>
+                </>
+              ) : (
+                <>
+                  <strong>{visibleInMapCount} en el mapa</strong>
+                  <span>{categoryMapEntries.length} con {categoryMapEntries.length === 1 ? 'este filtro' : 'estos filtros'}</span>
+                </>
+              )}
             </div>
           </header>
 
@@ -353,20 +462,20 @@ export default function HelperHome({ profile, helperHomeProps = {} }) {
           ) : null}
 
           <div className={styles.listScroll}>
-            {mapEntries.length === 0 ? (
+            {listEntries.length === 0 ? (
               <div className={styles.empty}>
-                <strong>No hay solicitudes visibles todavía</strong>
-                <p>Cuando una solicitud abierta entre en la parte visible del mapa, aparecerá aquí.</p>
-                <span className={styles.emptyNote}>Mueve el mapa o busca otra zona desde el header.</span>
+                <strong>{hasGlobalTaskSearch ? 'No encontramos solicitudes para esta búsqueda' : 'No hay solicitudes visibles todavía'}</strong>
+                <p>{hasGlobalTaskSearch ? 'Prueba con una necesidad más breve o con otras palabras.' : 'Cuando una solicitud abierta entre en la parte visible del mapa, aparecerá aquí.'}</p>
+                {!hasGlobalTaskSearch ? <span className={styles.emptyNote}>Mueve el mapa o busca otra zona desde el header.</span> : null}
               </div>
             ) : (
-              mapEntries.map((entry) => (
+              listEntries.map((entry) => (
                 <TaskOpportunityCard
                   key={entry.task.id}
                   task={entry.task}
                   distanceKm={entry.distance}
                   selected={entry.task.id === resolvedSelectedTaskId}
-                  onSelect={(task) => setSelectedTaskId(task.id)}
+                  onSelect={handleSelectTask}
                   onOpenDetail={handleOpenTask}
                   offer={getOfferState(entry.task)}
                   onOffer={handleOffer}

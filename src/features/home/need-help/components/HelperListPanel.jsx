@@ -6,6 +6,7 @@ export default function HelperListPanel({
   visibleHelpers = [],
   selectedHelperId = null,
   onSelectHelper,
+  onLocateHelper,
   onOpenProfile,
   onContact,
   loading = false,
@@ -17,6 +18,8 @@ export default function HelperListPanel({
   onRequestLocation,
   onPublishRequest,
   onExpandMap,
+  totalResults = null,
+  visibleInMapCount = 0,
 }) {
   const activeSearchQuery = String(searchQuery || '').trim()
   const hasSearchQuery = activeSearchQuery.length >= 3
@@ -25,12 +28,12 @@ export default function HelperListPanel({
     <aside className={styles.panelShell}>
       <header className={styles.helperListHeader}>
         <p className="eyebrow">Helpers disponibles</p>
-        <h2>{hasSearchQuery ? 'Resultados cercanos' : 'Ayuda cercana'}</h2>
+        <h2>{hasSearchQuery ? 'Resultados de habilidades' : 'Ayuda cercana'}</h2>
         <p className="muted" aria-live="polite">
           {hasSearchQuery && refreshing
             ? `Buscando helpers para “${activeSearchQuery}”...`
             : hasSearchQuery
-            ? `${visibleHelpers.length} ${visibleHelpers.length === 1 ? 'helper coincide' : 'helpers coinciden'} con “${activeSearchQuery}”.`
+            ? `${totalResults ?? visibleHelpers.length} ${Number(totalResults ?? visibleHelpers.length) === 1 ? 'resultado' : 'resultados'} para “${activeSearchQuery}” · ${visibleInMapCount} visibles en el mapa.`
             : 'La lista se actualiza con los chips de categoría del mapa.'}
         </p>
       </header>
@@ -76,6 +79,7 @@ export default function HelperListPanel({
             helper={helper}
             selected={selectedHelperId === helper.id}
             onSelect={onSelectHelper}
+            onLocate={onLocateHelper}
             onOpenProfile={onOpenProfile}
             onContact={onContact}
           />

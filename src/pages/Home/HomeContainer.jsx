@@ -176,6 +176,7 @@ export default function HomeContainer() {
   )
   const {
     visibleTasks,
+    availableTasks,
     distancesById,
     isTasksLoading,
     tasksError,
@@ -507,6 +508,7 @@ export default function HomeContainer() {
         isHelperMode={isHelperMode}
         categories={categories}
         visibleTasks={visibleTasks}
+        availableTasks={availableTasks}
         isTasksLoading={isTasksLoading}
         tasksError={tasksError}
         distancesById={distancesById}

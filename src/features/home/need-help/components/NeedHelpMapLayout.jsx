@@ -242,6 +242,8 @@ export default function NeedHelpMapLayout({
     hasLocation,
     helpers,
     skillFilters,
+    totalResults,
+    hasGlobalSearch,
     isLoading,
     isRefreshing,
     error,
@@ -254,7 +256,6 @@ export default function NeedHelpMapLayout({
   })
 
   const {
-    selectedHelper,
     selectedHelperId,
     selectHelper,
   } = useSelectedHelper(helpers)
@@ -271,13 +272,9 @@ export default function NeedHelpMapLayout({
         return [Number(focusedRequesterTask.lat), Number(focusedRequesterTask.lng)]
       }
 
-      if (hasMapPosition(selectedHelper)) {
-        return [selectedHelper.lat, selectedHelper.lng]
-      }
-
       return searchCenter
     },
-    [focusedRequesterTask, searchCenter, selectedHelper],
+    [focusedRequesterTask, searchCenter],
   )
   // Vista requester siempre arranca y recentra a nivel barrio.
   const focusZoom = fallbackZoom
@@ -285,8 +282,31 @@ export default function NeedHelpMapLayout({
     return helpers.filter((helper) => isInsideBounds(helper, mapBounds) || matchesAnySkill(helper, effectiveSelectedSkillIds))
   }, [effectiveSelectedSkillIds, helpers, mapBounds])
 
+  const visibleInMapCount = useMemo(
+    () => helpers.filter((helper) => isInsideBounds(helper, mapBounds)).length,
+    [helpers, mapBounds],
+  )
+  const listHelpers = hasGlobalSearch ? helpers : viewportHelpers
+
+  function focusHelperOnMap(helper) {
+    if (!hasMapPosition(helper)) return
+
+    const map = mapRef.current
+
+    try {
+      if (!map?._loaded || !map._mapPane) return
+
+      const currentZoom = Number(map.getZoom())
+      const targetZoom = Number.isFinite(currentZoom) ? Math.max(currentZoom, 13) : fallbackZoom
+      map.setView([Number(helper.lat), Number(helper.lng)], targetZoom, { animate: true })
+    } catch {
+      // El mapa puede desmontarse al cambiar de vista móvil. No hay que tocarlo entonces.
+    }
+  }
+
   function handleSelectHelper(helper) {
     selectHelper(helper)
+    focusHelperOnMap(helper)
     setMobileView('map')
     onPreviewHelper?.(helper)
   }
@@ -388,15 +408,18 @@ export default function NeedHelpMapLayout({
           ) : null}
 
           <HelperListPanel
-            visibleHelpers={viewportHelpers}
+            visibleHelpers={listHelpers}
             selectedHelperId={selectedHelperId}
             onSelectHelper={handleSelectHelper}
+            onLocateHelper={handleSelectHelper}
             onOpenProfile={(helper) => navigate(`/profile/${helper.id}`)}
             onContact={onContact}
             loading={isLoading}
             refreshing={isRefreshing || activeSearchQuery !== debouncedSearchQuery}
             error={error}
             searchQuery={debouncedSearchQuery}
+            totalResults={totalResults}
+            visibleInMapCount={visibleInMapCount}
             hasLocation={hasLocation}
             locationError={locationStatus !== 'loading' ? locationError : ''}
             onRequestLocation={onRequestLocation}

@@ -229,6 +229,7 @@ export async function getNearbyHelpers({
   const west = toNumber(bounds?.west)
   const skillFilter = category && category !== 'all' ? String(category) : null
   const normalizedSearchQuery = String(searchQuery || '').trim().slice(0, 80)
+  const hasGlobalSearch = normalizedSearchQuery.length >= 3
 
   if (centerLat === null || centerLng === null) {
     return []
@@ -243,7 +244,7 @@ export async function getNearbyHelpers({
     p_south: south,
     p_east: east,
     p_west: west,
-    p_limit: Math.max(limit * 4, limit),
+    p_limit: hasGlobalSearch ? limit : Math.max(limit * 4, limit),
     p_exclude_profile_id: excludeProfileId,
     p_skill_filter: skillFilter,
     p_search_query: normalizedSearchQuery || null,
@@ -258,6 +259,8 @@ export async function getNearbyHelpers({
     lat: toNumber(helper.lat),
     lng: toNumber(helper.lng),
     distance_km: toNumber(helper.distance_km),
+    search_rank: toNumber(helper.search_rank),
+    total_count: toNumber(helper.total_count),
     display_name: helper.full_name,
     username: helper.username || null,
     account_status: 'active',

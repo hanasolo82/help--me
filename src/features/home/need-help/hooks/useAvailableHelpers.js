@@ -81,8 +81,10 @@ export function useAvailableHelpers({
       Number.isFinite(Number(mapBounds?.east)) &&
       Number.isFinite(Number(mapBounds?.west)),
   )
+  const hasGlobalSearch = normalizedSearchQuery.length >= 3
+  const effectiveMapBounds = hasGlobalSearch ? null : (hasMapBounds ? mapBounds : null)
   const serverSkillFilter = normalizedSkillFilters.length === 1 ? normalizedSkillFilters[0] : null
-  const canSearch = hasMapBounds || normalizedSkillFilters.length > 0 || normalizedSearchQuery.length >= 3
+  const canSearch = hasGlobalSearch || hasMapBounds || normalizedSkillFilters.length > 0
   const excludeProfileId = profile?.id || null
 
   const query = useQuery({
@@ -91,10 +93,10 @@ export function useAvailableHelpers({
       excludeProfileId,
       center.lat,
       center.lng,
-      mapBounds?.north ?? null,
-      mapBounds?.south ?? null,
-      mapBounds?.east ?? null,
-      mapBounds?.west ?? null,
+      effectiveMapBounds?.north ?? null,
+      effectiveMapBounds?.south ?? null,
+      effectiveMapBounds?.east ?? null,
+      effectiveMapBounds?.west ?? null,
       normalizedSkillFilters.join('|'),
       normalizedSearchQuery,
     ],
@@ -102,7 +104,7 @@ export function useAvailableHelpers({
       getNearbyHelpers({
         lat: center.lat,
         lng: center.lng,
-        bounds: hasMapBounds ? mapBounds : null,
+        bounds: effectiveMapBounds,
         category: serverSkillFilter,
         searchQuery: normalizedSearchQuery,
         excludeProfileId,
@@ -119,12 +121,20 @@ export function useAvailableHelpers({
     [normalizedSkillFilters, rawHelpers],
   )
   const skillFilters = useMemo(() => buildSkillFilters(rawHelpers), [rawHelpers])
+  const totalResults = useMemo(() => {
+    if (!hasGlobalSearch) return helpers.length
+
+    const reportedTotal = Number(rawHelpers[0]?.total_count)
+    return Number.isFinite(reportedTotal) ? reportedTotal : helpers.length
+  }, [hasGlobalSearch, helpers.length, rawHelpers])
 
   return {
     center,
     hasLocation: Boolean(center.hasValue),
     helpers,
     skillFilters,
+    totalResults,
+    hasGlobalSearch,
     isLoading: query.isLoading && !query.data,
     isRefreshing: query.isFetching && Boolean(query.data),
     error: query.error?.message || '',

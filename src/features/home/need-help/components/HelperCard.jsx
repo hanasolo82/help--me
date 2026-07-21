@@ -72,7 +72,7 @@ function getVisibleSkills(skills) {
   }
 }
 
-export default function HelperCard({ helper, selected = false, onSelect, onOpenProfile, onContact }) {
+export default function HelperCard({ helper, selected = false, onSelect, onLocate, onOpenProfile, onContact }) {
   const name = helper?.display_name || helper?.full_name || helper?.username || 'Vecino'
   const isStripeVerified = hasStripeVerifiedProfile(helper)
   const skills = buildSkillList(helper)
@@ -197,6 +197,18 @@ export default function HelperCard({ helper, selected = false, onSelect, onOpenP
             Pedir ayuda
           </button>
         )}
+
+        <button
+          type="button"
+          className={styles.helperProfileLink}
+          onClick={(event) => {
+            event.stopPropagation()
+            onLocate?.(helper)
+          }}
+        >
+          <MapPin aria-hidden="true" strokeWidth={2.2} />
+          Ver en el mapa
+        </button>
 
         <button
           type="button"

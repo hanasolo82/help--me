@@ -61,7 +61,6 @@ export function useTasks({ profile, mode, category, location }) {
     'tasks',
     profile?.id ?? null,
     mode,
-    category,
     location?.lat ?? null,
     location?.lng ?? null,
   ]
@@ -73,16 +72,20 @@ export function useTasks({ profile, mode, category, location }) {
         return getMyTasks(profile?.id, { role: 'requester' })
       }
 
-      return getAvailableTasksForHelper(profile, { category })
+      return getAvailableTasksForHelper(profile)
     },
     placeholderData: keepPreviousData,
   })
 
-  const { visibleTasks, distancesById } = useMemo(() => {
+  const { availableTasks, visibleTasks, distancesById } = useMemo(() => {
     const rawTasks = query.data || []
 
     if (mode === 'need') {
       return {
+        availableTasks: rawTasks.map((task) => ({
+          task,
+          distance: buildTaskDistance(task, location),
+        })),
         visibleTasks: rawTasks.map((task) => ({
           task,
           distance: buildTaskDistance(task, location),
@@ -97,9 +100,14 @@ export function useTasks({ profile, mode, category, location }) {
       }
     }
 
+    const available = rawTasks.map((task) => ({
+      task,
+      distance: buildTaskDistance(task, location),
+    }))
     const filtered = applyHelperFilters(rawTasks, { category, location })
 
     return {
+      availableTasks: available,
       visibleTasks: filtered,
       distancesById: filtered.reduce((acc, item) => {
         if (Number.isFinite(item.distance)) {
@@ -113,6 +121,7 @@ export function useTasks({ profile, mode, category, location }) {
   return {
     ...query,
     tasks: query.data || [],
+    availableTasks,
     visibleTasks,
     distancesById,
     error: query.error?.message || '',

@@ -10,6 +10,7 @@ export function useHomeTasks({ profile, mode, category, location }) {
 
   return {
     visibleTasks: tasksQuery.visibleTasks,
+    availableTasks: tasksQuery.availableTasks,
     distancesById: tasksQuery.distancesById,
     isTasksLoading: tasksQuery.isLoading,
     tasksError: tasksQuery.error,
