@@ -367,6 +367,121 @@ export async function getFavoriteProfileIds(viewerId) {
   return (data ?? []).map((row) => row.favorited_profile_id)
 }
 
+export async function getFavoriteProfiles(viewerId) {
+  const user = await requireUser('Necesitas una sesion valida para ver favoritos.')
+
+  if (!viewerId || viewerId !== user.id) {
+    return []
+  }
+
+  const { data: favoriteRows, error: favoritesError } = await supabase
+    .from('profile_favorites')
+    .select('favorited_profile_id, created_at')
+    .eq('viewer_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (favoritesError) {
+    throw favoritesError
+  }
+
+  const favoriteIds = (favoriteRows ?? []).map((row) => row.favorited_profile_id).filter(Boolean)
+  if (favoriteIds.length === 0) {
+    return []
+  }
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from('public_profiles')
+    .select(`
+      id,
+      username,
+      full_name,
+      avatar_url,
+      bio,
+      rating,
+      completed_tasks,
+      reviews_count,
+      helper_status,
+      availability_enabled,
+      accepts_direct_requests,
+      location_label
+    `)
+    .in('id', favoriteIds)
+
+  if (profilesError) {
+    throw profilesError
+  }
+
+  const [catalogSkillsResult, customSkillsResult] = await Promise.all([
+    supabase
+      .from('profile_skills')
+      .select('profile_id, sort_order, skill:skills(id, name, icon, category)')
+      .in('profile_id', favoriteIds)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('profile_custom_skills')
+      .select('id, profile_id, name, category, sort_order')
+      .in('profile_id', favoriteIds)
+      .order('sort_order', { ascending: true }),
+  ])
+
+  if (catalogSkillsResult.error) {
+    throw catalogSkillsResult.error
+  }
+
+  if (customSkillsResult.error) {
+    throw customSkillsResult.error
+  }
+
+  const skillsByProfileId = new Map()
+
+  for (const row of catalogSkillsResult.data ?? []) {
+    const skill = Array.isArray(row.skill) ? row.skill[0] : row.skill
+    if (!skill) continue
+
+    const entries = skillsByProfileId.get(row.profile_id) ?? []
+    entries.push({
+      sortOrder: Number(row.sort_order) || 0,
+      skill: { ...skill, source: 'catalog', is_custom: false },
+    })
+    skillsByProfileId.set(row.profile_id, entries)
+  }
+
+  for (const row of customSkillsResult.data ?? []) {
+    const entries = skillsByProfileId.get(row.profile_id) ?? []
+    entries.push({
+      sortOrder: Number(row.sort_order) || 0,
+      skill: {
+        id: row.id,
+        name: row.name,
+        icon: null,
+        category: row.category,
+        source: 'custom',
+        is_custom: true,
+      },
+    })
+    skillsByProfileId.set(row.profile_id, entries)
+  }
+
+  const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile]))
+
+  return (favoriteRows ?? []).flatMap((favorite) => {
+    const profile = profilesById.get(favorite.favorited_profile_id)
+    if (!profile) return []
+
+    const skills = (skillsByProfileId.get(profile.id) ?? [])
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => entry.skill)
+      .slice(0, MAX_PROFILE_SKILLS)
+
+    return [{
+      ...profile,
+      display_name: profile.full_name,
+      saved_at: favorite.created_at,
+      skills,
+    }]
+  })
+}
+
 export async function toggleFavoriteProfile(profileId) {
   const user = await requireUser('Necesitas una sesion valida para guardar favoritos.')
   const viewerId = user.id

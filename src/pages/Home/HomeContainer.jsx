@@ -281,7 +281,7 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenFavorites = useCallback(() => {
-    navigate('/profile', { state: { section: 'favorites' } })
+    navigate('/favorites')
   }, [navigate])
 
   const handleOpenChats = useCallback(

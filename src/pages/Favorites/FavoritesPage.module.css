@@ -1,0 +1,139 @@
+.page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  max-width: 72rem;
+}
+
+.header {
+  margin-bottom: 0;
+}
+
+.headerCopy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.headerCopy p {
+  margin: 0;
+}
+
+.headerCopy h1 {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.skeleton {
+  min-height: 18rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 8px;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--color-surface) 84%, var(--color-text-muted)) 8%,
+    var(--color-surface) 18%,
+    color-mix(in srgb, var(--color-surface) 84%, var(--color-text-muted)) 33%
+  );
+  background-size: 220% 100%;
+  animation: favorite-skeleton 1.15s linear infinite;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.empty h2,
+.empty p {
+  margin: 0;
+}
+
+.empty :global(.primary-action),
+.empty :global(.secondary-action) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: auto;
+}
+
+.emptyIcon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-primary);
+}
+
+.emptyIcon svg {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+.undoNotice {
+  position: fixed;
+  z-index: var(--hm-z-toast);
+  right: max(var(--space-4), env(safe-area-inset-right));
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: calc(100vw - 2 * var(--space-4));
+  padding: 0.72rem 0.9rem;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.undoNotice button {
+  min-height: 2rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.undoNotice button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 34%, transparent);
+  outline-offset: 2px;
+}
+
+.undoNotice button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+@keyframes favorite-skeleton {
+  to { background-position-x: -220%; }
+}
+
+@media (min-width: 48rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

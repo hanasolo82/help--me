@@ -346,6 +346,65 @@ async function main() {
       record('P-full_name', 'Owner sí puede cambiar profiles.full_name', !error && rowCount(data) === 1 && after?.full_name === nextName, error ? error.message : `full_name=${after?.full_name}`)
     }
 
+    // profile_favorites: cada persona solo puede gestionar y leer su propia agenda.
+    {
+      const { data, error } = await rc
+        .from('profile_favorites')
+        .insert({ viewer_id: requester.id, favorited_profile_id: helper.id })
+        .select('viewer_id, favorited_profile_id')
+      record(
+        'PF-owner-create-read',
+        'Owner crea y lee su favorito',
+        !error && rowCount(data) === 1 && data[0]?.viewer_id === requester.id && data[0]?.favorited_profile_id === helper.id,
+        error ? `error ${error.code}` : `filas=${rowCount(data)}`,
+      )
+
+      const { data: thirdRead, error: thirdReadError } = await tc
+        .from('profile_favorites')
+        .select('viewer_id, favorited_profile_id')
+        .eq('viewer_id', requester.id)
+        .eq('favorited_profile_id', helper.id)
+      record(
+        'PF-third-read',
+        'Un tercero no lee favoritos ajenos',
+        isBlocked(thirdReadError, thirdRead),
+        thirdReadError ? `bloqueado (${thirdReadError.code})` : `filas=${rowCount(thirdRead)}`,
+      )
+
+      const { data: thirdDelete, error: thirdDeleteError } = await tc
+        .from('profile_favorites')
+        .delete()
+        .eq('viewer_id', requester.id)
+        .eq('favorited_profile_id', helper.id)
+        .select('viewer_id')
+      const { data: stillFavorite, error: stillFavoriteError } = await rc
+        .from('profile_favorites')
+        .select('viewer_id')
+        .eq('viewer_id', requester.id)
+        .eq('favorited_profile_id', helper.id)
+        .maybeSingle()
+      if (stillFavoriteError) throw stillFavoriteError
+      record(
+        'PF-third-delete',
+        'Un tercero no elimina favoritos ajenos',
+        isBlocked(thirdDeleteError, thirdDelete) && stillFavorite?.viewer_id === requester.id,
+        thirdDeleteError ? `bloqueado (${thirdDeleteError.code})` : `filas=${rowCount(thirdDelete)}`,
+      )
+
+      const { data: ownerDelete, error: ownerDeleteError } = await rc
+        .from('profile_favorites')
+        .delete()
+        .eq('viewer_id', requester.id)
+        .eq('favorited_profile_id', helper.id)
+        .select('viewer_id')
+      record(
+        'PF-owner-delete',
+        'Owner elimina su favorito',
+        !ownerDeleteError && rowCount(ownerDelete) === 1,
+        ownerDeleteError ? `error ${ownerDeleteError.code}` : `filas=${rowCount(ownerDelete)}`,
+      )
+    }
+
     // helper skills: suggested + owner-authored values are replaced atomically;
     // direct table writes, cross-owner mutations and limit bypasses stay blocked.
     {

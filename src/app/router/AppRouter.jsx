@@ -21,6 +21,7 @@ import CreateTask from "../../pages/CreateTask/CreateTask";
 import Chat from "../../pages/Chat/Chat";
 import MessagesPage from "../../pages/Messages/MessagesPage";
 import NotificationsPage from "../../pages/Notifications/NotificationsPage";
+import FavoritesPage from "../../pages/Favorites/FavoritesPage";
 import TaskComplete from "../../pages/TaskComplete/TaskComplete";
 import Profile from "../../pages/Profile/Profile";
 import TaskReviewPage from "../../pages/TaskReview/TaskReviewPage";
@@ -78,6 +79,7 @@ export const router = createBrowserRouter(
       <Route path="/chats" element={<Navigate to="/messages" replace />} />
       <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+      <Route path="/favorites" element={<RequireAuth><FavoritesPage /></RequireAuth>} />
       <Route path="/complete/:id" element={<RequireAuth><TaskComplete /></RequireAuth>} />
       <Route path="/profile/:id" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
