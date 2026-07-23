@@ -125,6 +125,10 @@ jobs:
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:chat-lifecycle
 
+      - name: verify:chat-retention
+        if: steps.preflight.outputs.have_secrets == 'true'
+        run: pnpm run verify:chat-retention
+
       - name: verify:rls-ownership
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:rls-ownership
