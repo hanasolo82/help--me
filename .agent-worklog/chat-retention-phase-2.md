@@ -23,8 +23,10 @@ Revisado antes de implementar la migración `0058`:
 - El reloj se fija una vez: `completed_at` para `completed`/`closed` y
   `cancelled_at` para `cancelled`, con fallback a `updated_at` y `created_at` para
   históricos. El paso `completed -> closed` no lo desplaza.
-- Adjuntos: candidatos a partir de 180 días; mensajes: a partir de 365 días.
-  Esta fase no borra, anonimiza, exporta ni oculta contenido.
+- La decisión inicial de Fase 2 usaba plazos diferenciados. Queda reemplazada
+  por la migración `0060` y la decisión del owner de conservar mensajes y
+  adjuntos durante cinco años. Esta fase no borra, anonimiza, exporta ni oculta
+  contenido.
 - Las disputas activas y los holds manuales detienen ambas fechas en el preview.
 - El preview muestra exclusivamente metadatos y contadores a `service_role`.
   No expone cuerpo de mensaje, nombre de archivo ni ruta de Storage.

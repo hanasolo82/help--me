@@ -44,6 +44,31 @@ function isoDaysBefore(days) {
   return new Date(AS_OF.getTime() - days * 24 * 60 * 60 * 1000).toISOString()
 }
 
+function isoYearsBefore(years, dayOffset = 0) {
+  const date = new Date(AS_OF)
+  date.setUTCFullYear(date.getUTCFullYear() - years)
+  date.setUTCDate(date.getUTCDate() + dayOffset)
+  return date.toISOString()
+}
+
+function addUtcYears(timestamp, years) {
+  const source = new Date(timestamp)
+  const targetYear = source.getUTCFullYear() + years
+  const targetMonth = source.getUTCMonth()
+  const targetDay = source.getUTCDate()
+  const lastTargetDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate()
+
+  return Date.UTC(
+    targetYear,
+    targetMonth,
+    Math.min(targetDay, lastTargetDay),
+    source.getUTCHours(),
+    source.getUTCMinutes(),
+    source.getUTCSeconds(),
+    source.getUTCMilliseconds(),
+  )
+}
+
 function isBlocked(error, data) {
   return Boolean(error) || (Array.isArray(data) ? data.length === 0 : !data)
 }
@@ -55,8 +80,8 @@ function rowFor(rows, conversationId) {
 function hasExpectedSchedule(row, retentionStartedAt) {
   const startedAt = new Date(retentionStartedAt).getTime()
   return new Date(row?.retention_started_at).getTime() === startedAt
-    && new Date(row?.attachments_purge_after).getTime() === startedAt + 180 * 24 * 60 * 60 * 1000
-    && new Date(row?.messages_purge_after).getTime() === startedAt + 365 * 24 * 60 * 60 * 1000
+    && new Date(row?.attachments_purge_after).getTime() === addUtcYears(retentionStartedAt, 5)
+    && new Date(row?.messages_purge_after).getTime() === addUtcYears(retentionStartedAt, 5)
 }
 
 async function createUser(label) {
@@ -290,20 +315,34 @@ async function reportBackfillState() {
   if (conversationError) throw conversationError
 
   const taskIds = [...new Set((conversations || []).map((conversation) => conversation.task_id).filter(Boolean))]
-  if (!taskIds.length) return { taskConversations: 0, initialized: 0, terminalMissing: 0 }
+  if (!taskIds.length) return {
+    taskConversations: 0,
+    initialized: 0,
+    terminalMissing: 0,
+    scheduleMismatches: 0,
+  }
 
   const { data: tasks, error: taskError } = await admin.from('tasks').select('id, status').in('id', taskIds)
   if (taskError) throw taskError
   const statusByTaskId = new Map((tasks || []).map((task) => [task.id, task.status]))
   const terminalStatuses = new Set(['completed', 'closed', 'cancelled'])
-  const initialized = (conversations || []).filter((conversation) => (
+  const initializedConversations = (conversations || []).filter((conversation) => (
     conversation.retention_started_at && conversation.attachments_purge_after && conversation.messages_purge_after
-  )).length
+  ))
+  const initialized = initializedConversations.length
   const terminalMissing = (conversations || []).filter((conversation) => (
     terminalStatuses.has(statusByTaskId.get(conversation.task_id))
     && (!conversation.retention_started_at || !conversation.attachments_purge_after || !conversation.messages_purge_after)
   )).length
-  return { taskConversations: conversations?.length || 0, initialized, terminalMissing }
+  const scheduleMismatches = initializedConversations.filter((conversation) => (
+    !hasExpectedSchedule(conversation, conversation.retention_started_at)
+  )).length
+  return {
+    taskConversations: conversations?.length || 0,
+    initialized,
+    terminalMissing,
+    scheduleMismatches,
+  }
 }
 
 async function main() {
@@ -319,7 +358,10 @@ async function main() {
 
   try {
     const backfill = await reportBackfillState()
-    console.log(`Backfill actual: task chats=${backfill.taskConversations} · inicializados=${backfill.initialized} · terminales sin calendario=${backfill.terminalMissing}`)
+    console.log(`Backfill actual: task chats=${backfill.taskConversations} · inicializados=${backfill.initialized} · terminales sin calendario=${backfill.terminalMissing} · calendarios fuera de 5 años=${backfill.scheduleMismatches}`)
+    if (backfill.terminalMissing > 0 || backfill.scheduleMismatches > 0) {
+      throw new Error('El backfill remoto de retención no cumple el calendario de cinco años.')
+    }
 
     const requester = await createUser('requester')
     const helper = await createUser('helper')
@@ -354,37 +396,37 @@ async function main() {
       `attachments_due=${recentPreview?.attachments_due} messages_due=${recentPreview?.messages_due}`,
     )
 
-    const attachmentOnlyCompletedAt = isoDaysBefore(181)
-    const attachmentOnlyTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention attachment due', { completed_at: attachmentOnlyCompletedAt })
-    const attachmentOnlyConversation = await createTaskConversation(ids, attachmentOnlyTask, requester.id, helper.id)
-    await createMessageAndAttachment(ids, attachmentOnlyConversation, requester.id, 40)
-    const attachmentOnlyPreview = rowFor(await preview(), attachmentOnlyConversation)
+    const beforeFiveYearsCompletedAt = isoYearsBefore(5, 1)
+    const beforeFiveYearsTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention before five years', { completed_at: beforeFiveYearsCompletedAt })
+    const beforeFiveYearsConversation = await createTaskConversation(ids, beforeFiveYearsTask, requester.id, helper.id)
+    await createMessageAndAttachment(ids, beforeFiveYearsConversation, requester.id, 40)
+    const beforeFiveYearsPreview = rowFor(await preview(), beforeFiveYearsConversation)
     record(
       'T3',
-      'completed con 181 dias marca solo adjuntos',
-      hasExpectedSchedule(attachmentOnlyPreview, attachmentOnlyCompletedAt)
-        && attachmentOnlyPreview.attachments_due
-        && !attachmentOnlyPreview.messages_due
-        && attachmentOnlyPreview.attachment_count === 1
-        && attachmentOnlyPreview.attachment_bytes === 40,
-      `attachments_due=${attachmentOnlyPreview?.attachments_due} messages_due=${attachmentOnlyPreview?.messages_due}`,
+      'antes de cinco años no marca contenido como candidato',
+      hasExpectedSchedule(beforeFiveYearsPreview, beforeFiveYearsCompletedAt)
+        && !beforeFiveYearsPreview.attachments_due
+        && !beforeFiveYearsPreview.messages_due
+        && beforeFiveYearsPreview.attachment_count === 1
+        && beforeFiveYearsPreview.attachment_bytes === 40,
+      `attachments_due=${beforeFiveYearsPreview?.attachments_due} messages_due=${beforeFiveYearsPreview?.messages_due}`,
     )
 
-    const bothDueCompletedAt = isoDaysBefore(366)
+    const bothDueCompletedAt = isoYearsBefore(5)
     const bothDueTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention both due', { completed_at: bothDueCompletedAt })
     const bothDueConversation = await createTaskConversation(ids, bothDueTask, requester.id, helper.id)
     await createMessageAndAttachment(ids, bothDueConversation, requester.id, 80)
     const bothDuePreview = rowFor(await preview(), bothDueConversation)
     record(
       'T4',
-      'completed con 366 dias marca adjuntos y mensajes',
+      'al cumplir cinco años marca adjuntos y mensajes',
       hasExpectedSchedule(bothDuePreview, bothDueCompletedAt)
         && bothDuePreview.attachments_due
         && bothDuePreview.messages_due,
       `attachments_due=${bothDuePreview?.attachments_due} messages_due=${bothDuePreview?.messages_due}`,
     )
 
-    const preservedCompletedAt = isoDaysBefore(181)
+    const preservedCompletedAt = isoYearsBefore(4)
     const closeTransitionTask = await createTask(ids, requester.id, helper.id, 'in_progress', 'Retention completed closed')
     const closeTransitionConversation = await createTaskConversation(ids, closeTransitionTask, requester.id, helper.id)
     await updateTask(closeTransitionTask, { status: 'completed', completed_at: preservedCompletedAt })
@@ -401,18 +443,18 @@ async function main() {
       `started=${afterClosed?.retention_started_at}`,
     )
 
-    const cancelledAt = isoDaysBefore(181)
+    const cancelledAt = isoYearsBefore(5)
     const cancelledTask = await createTask(ids, requester.id, helper.id, 'cancelled', 'Retention cancelled', { cancelled_at: cancelledAt })
     const cancelledConversation = await createTaskConversation(ids, cancelledTask, requester.id, helper.id)
     const cancelledPreview = rowFor(await preview(), cancelledConversation)
     record(
       'T6',
       'cancelled usa cancelled_at como inicio',
-      hasExpectedSchedule(cancelledPreview, cancelledAt) && cancelledPreview.attachments_due && !cancelledPreview.messages_due,
+      hasExpectedSchedule(cancelledPreview, cancelledAt) && cancelledPreview.attachments_due && cancelledPreview.messages_due,
       `started=${cancelledPreview?.retention_started_at}`,
     )
 
-    const afterCloseCompletedAt = isoDaysBefore(366)
+    const afterCloseCompletedAt = isoYearsBefore(5)
     const terminalBeforeConversationTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention conversation after close', {
       completed_at: afterCloseCompletedAt,
     })
