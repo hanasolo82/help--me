@@ -230,18 +230,37 @@ async function createDispute(ids, paymentId, requesterId, helperId, status) {
 }
 
 async function createManualHold(ids, conversationId, values = {}) {
-  const id = randomUUID()
-  const { error } = await admin.from('conversation_retention_holds').insert({
-    id,
-    conversation_id: conversationId,
-    hold_type: 'support_review',
-    source_reference: `verify-${id}`,
-    starts_at: isoDaysBefore(2),
-    ...values,
+  const sourceReference = values.source_reference || `verify-${randomUUID()}`
+  const { data, error } = await admin.rpc('create_task_chat_retention_hold', {
+    p_conversation_id: conversationId,
+    p_hold_type: values.hold_type || 'support_review',
+    p_source_reference: sourceReference,
+    p_expires_at: values.expires_at || null,
+    p_operator_reference: 'verify-chat-retention',
   })
   if (error) throw error
-  ids.holdIds.push(id)
-  return id
+  const hold = Array.isArray(data) ? data[0] : data
+  if (!hold?.id) throw new Error('Could not create retention hold fixture.')
+  ids.holdIds.push(hold.id)
+
+  if (values.released_at) {
+    const { error: releaseError } = await admin.rpc('release_task_chat_retention_hold', {
+      p_hold_id: hold.id,
+      p_release_reference: 'fixture release',
+      p_operator_reference: 'verify-chat-retention',
+    })
+    if (releaseError) throw releaseError
+  }
+
+  return hold
+}
+
+async function retentionHoldHistory(conversationId) {
+  const { data, error } = await admin.rpc('get_task_chat_retention_hold_history', {
+    p_conversation_id: conversationId,
+  })
+  if (error) throw error
+  return data || []
 }
 
 async function preview() {
@@ -450,23 +469,31 @@ async function main() {
 
     const activeHoldTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention active manual hold', { completed_at: bothDueCompletedAt })
     const activeHoldConversation = await createTaskConversation(ids, activeHoldTask, requester.id, helper.id)
-    await createManualHold(ids, activeHoldConversation)
+    const activeHold = await createManualHold(ids, activeHoldConversation)
     const activeHoldPreview = rowFor(await preview(), activeHoldConversation)
+    const activeHoldHistory = await retentionHoldHistory(activeHoldConversation)
     record(
       'T10',
-      'un hold manual activo bloquea ambos candidatos',
-      activeHoldPreview?.has_active_manual_hold && !activeHoldPreview.attachments_due && !activeHoldPreview.messages_due,
-      `manual_hold=${activeHoldPreview?.has_active_manual_hold}`,
+      'un hold manual activo auditado bloquea ambos candidatos',
+      activeHoldPreview?.has_active_manual_hold
+        && !activeHoldPreview.attachments_due
+        && !activeHoldPreview.messages_due
+        && activeHoldHistory.length === 1
+        && activeHoldHistory[0]?.hold_id === activeHold.id
+        && activeHoldHistory[0]?.event_type === 'hold_created'
+        && activeHoldHistory[0]?.event_operator_reference === 'verify-chat-retention',
+      `manual_hold=${activeHoldPreview?.has_active_manual_hold} events=${activeHoldHistory.length}`,
     )
 
     const releasedHoldTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention released hold', { completed_at: bothDueCompletedAt })
     const releasedHoldConversation = await createTaskConversation(ids, releasedHoldTask, requester.id, helper.id)
-    await createManualHold(ids, releasedHoldConversation, { released_at: isoDaysBefore(1) })
+    const releasedHold = await createManualHold(ids, releasedHoldConversation, { released_at: isoDaysBefore(1) })
     const expiredHoldTask = await createTask(ids, requester.id, helper.id, 'completed', 'Retention expired hold', { completed_at: bothDueCompletedAt })
     const expiredHoldConversation = await createTaskConversation(ids, expiredHoldTask, requester.id, helper.id)
     await createManualHold(ids, expiredHoldConversation, { expires_at: isoDaysBefore(1) })
     const releasedHoldPreview = rowFor(await preview(), releasedHoldConversation)
     const expiredHoldPreview = rowFor(await preview(), expiredHoldConversation)
+    const releasedHoldHistory = await retentionHoldHistory(releasedHoldConversation)
     record(
       'T11',
       'holds liberados o vencidos vuelven a permitir el candidato',
@@ -475,8 +502,12 @@ async function main() {
         && releasedHoldPreview?.messages_due
         && !expiredHoldPreview?.has_active_manual_hold
         && expiredHoldPreview?.attachments_due
-        && expiredHoldPreview?.messages_due,
-      `released=${releasedHoldPreview?.has_active_manual_hold} expired=${expiredHoldPreview?.has_active_manual_hold}`,
+        && expiredHoldPreview?.messages_due
+        && releasedHoldHistory.length === 2
+        && releasedHoldHistory[0]?.event_type === 'hold_created'
+        && releasedHoldHistory[1]?.event_type === 'hold_released'
+        && releasedHoldHistory[1]?.event_metadata?.release_reference === 'fixture release',
+      `released=${releasedHoldPreview?.has_active_manual_hold} expired=${expiredHoldPreview?.has_active_manual_hold} events=${releasedHoldHistory.length}`,
     )
 
     const directConversation = await createDirectConversation(ids, requester.id, isoDaysBefore(500))
@@ -507,21 +538,76 @@ async function main() {
       .from('conversation_retention_holds')
       .insert({ conversation_id: recentConversation, hold_type: 'support_review' })
       .select('id')
+    const { data: authenticatedCreateHold, error: authenticatedCreateHoldError } = await requesterClient.rpc('create_task_chat_retention_hold', {
+      p_conversation_id: recentConversation,
+      p_hold_type: 'support_review',
+    })
+    const { data: authenticatedHistory, error: authenticatedHistoryError } = await requesterClient.rpc('get_task_chat_retention_hold_history', {
+      p_conversation_id: activeHoldConversation,
+    })
     record(
       'T13',
       'anon y authenticated no ejecutan preview ni leen o escriben holds',
       isBlocked(authenticatedPreviewError, authenticatedPreview)
         && isBlocked(anonPreviewError, anonPreview)
         && isBlocked(authenticatedHoldsError, authenticatedHolds)
-        && isBlocked(authenticatedHoldWriteError, authenticatedHoldWrite),
-      `auth_preview=${authenticatedPreviewError?.code || 'ok'} anon_preview=${anonPreviewError?.code || 'ok'} holds=${authenticatedHoldsError?.code || 'ok'} write=${authenticatedHoldWriteError?.code || 'ok'}`,
+        && isBlocked(authenticatedHoldWriteError, authenticatedHoldWrite)
+        && isBlocked(authenticatedCreateHoldError, authenticatedCreateHold)
+        && isBlocked(authenticatedHistoryError, authenticatedHistory),
+      `auth_preview=${authenticatedPreviewError?.code || 'ok'} anon_preview=${anonPreviewError?.code || 'ok'} holds=${authenticatedHoldsError?.code || 'ok'} write=${authenticatedHoldWriteError?.code || 'ok'} create=${authenticatedCreateHoldError?.code || 'ok'} history=${authenticatedHistoryError?.code || 'ok'}`,
+    )
+
+    const { data: directHold, error: directHoldError } = await admin.rpc('create_task_chat_retention_hold', {
+      p_conversation_id: directConversation,
+      p_hold_type: 'support_review',
+      p_source_reference: 'direct-chat-must-fail',
+    })
+    const { data: activeTaskHold, error: activeTaskHoldError } = await admin.rpc('create_task_chat_retention_hold', {
+      p_conversation_id: inProgressConversation,
+      p_hold_type: 'support_review',
+      p_source_reference: 'active-task-must-fail',
+    })
+    const { data: duplicateHold, error: duplicateHoldError } = await admin.rpc('create_task_chat_retention_hold', {
+      p_conversation_id: activeHoldConversation,
+      p_hold_type: 'support_review',
+      p_source_reference: activeHold.source_reference,
+    })
+    record(
+      'T14',
+      'las operaciones rechazan chats directos, tareas activas y holds duplicados',
+      isBlocked(directHoldError, directHold)
+        && isBlocked(activeTaskHoldError, activeTaskHold)
+        && isBlocked(duplicateHoldError, duplicateHold),
+      `direct=${directHoldError?.code || 'ok'} active=${activeTaskHoldError?.code || 'ok'} duplicate=${duplicateHoldError?.code || 'ok'}`,
+    )
+
+    const { data: directServiceHold, error: directServiceHoldError } = await admin
+      .from('conversation_retention_holds')
+      .insert({
+        conversation_id: recentConversation,
+        hold_type: 'support_review',
+      })
+      .select('id')
+    const { data: directServiceEvent, error: directServiceEventError } = await admin
+      .from('conversation_retention_hold_events')
+      .insert({
+        hold_id: activeHold.id,
+        event_type: 'hold_created',
+      })
+      .select('id')
+    record(
+      'T15',
+      'ni service_role muta holds o su auditoría fuera de las RPCs',
+      isBlocked(directServiceHoldError, directServiceHold)
+        && isBlocked(directServiceEventError, directServiceEvent),
+      `hold=${directServiceHoldError?.code || 'ok'} event=${directServiceEventError?.code || 'ok'}`,
     )
 
     const metadataPreview = rowFor(await preview(), bothDueConversation)
     const forbiddenFields = ['body', 'content', 'storage_path']
     const previewKeys = Object.keys(metadataPreview || {})
     record(
-      'T14',
+      'T16',
       'el preview devuelve metadatos sin contenido ni rutas de Storage',
       Boolean(metadataPreview) && forbiddenFields.every((field) => !previewKeys.includes(field)),
       `columns=${previewKeys.join(',')}`,
@@ -549,7 +635,7 @@ async function main() {
       .eq('messages.conversation_id', bothDueConversation)
     if (afterMessageCountError || afterAttachmentCountError) throw afterMessageCountError || afterAttachmentCountError
     record(
-      'T15',
+      'T17',
       'el preview no altera contadores ni timestamps',
       JSON.stringify(beforePreviewState) === JSON.stringify(afterPreviewState)
         && beforeMessageCount === afterMessageCount
@@ -559,7 +645,6 @@ async function main() {
   } catch (error) {
     record('SETUP', 'Preparación del verificador', false, error?.message || String(error))
   } finally {
-    if (ids.holdIds.length) await admin.from('conversation_retention_holds').delete().in('id', ids.holdIds)
     if (ids.disputeIds.length) await admin.from('disputes').delete().in('id', ids.disputeIds)
     if (ids.paymentIds.length) await admin.from('payments').delete().in('id', ids.paymentIds)
     if (ids.conversationIds.length) {
