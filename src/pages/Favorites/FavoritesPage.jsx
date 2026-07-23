@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Heart, RefreshCw } from 'lucide-react'
+import { Heart, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTransitionNavigate } from '../../shared/navigation/usePageTransition'
 import { toggleFavoriteProfile } from '../../features/profile/api/profileApi'
@@ -150,7 +150,7 @@ export default function FavoritesPage() {
     <main className={`app-screen with-nav ${styles.page}`}>
       <header className={`page-header ${styles.header}`}>
         <button type="button" className="icon-button" onClick={() => transitionNavigate('/home', { direction: 'back' })} aria-label="Volver a inicio">
-          <ArrowLeft aria-hidden="true" strokeWidth={2.1} />
+          ←
         </button>
         <div className={styles.headerCopy}>
           <p className="eyebrow">Favoritos</p>

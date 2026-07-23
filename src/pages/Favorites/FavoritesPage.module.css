@@ -130,6 +130,12 @@
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .grid > :only-child {
+    grid-column: 1 / -1;
+    width: min(100%, 34rem);
+    justify-self: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
