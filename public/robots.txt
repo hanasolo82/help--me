@@ -13,4 +13,4 @@ Disallow: /complete/
 Disallow: /profile
 Disallow: /reset-password
 
-Sitemap: https://helpme.app/sitemap.xml
+Sitemap: https://helpme-community.com/sitemap.xml

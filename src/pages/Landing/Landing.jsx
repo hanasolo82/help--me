@@ -45,17 +45,17 @@ const LANDING_JSONLD = {
   '@graph': [
     {
       '@type': 'Organization',
-      name: 'helpMe',
-      url: 'https://helpme.app/',
+      name: 'HelpMe',
+      url: 'https://helpme-community.com/',
       areaServed: 'Zaragoza, ES',
-      description: 'Plataforma de ayuda cercana entre vecinos.',
+      description: 'Plataforma que conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos.',
     },
     {
       '@type': 'FAQPage',
       mainEntity: [
         {
           '@type': 'Question',
-          name: '¿Como funciona helpMe?',
+          name: '¿Como funciona HelpMe?',
           acceptedAnswer: {
             '@type': 'Answer',
             text: 'Publicas lo que necesitas, conectas con alguien cercano y coordinas el cierre por chat.',
@@ -79,7 +79,7 @@ const LANDING_JSONLD = {
         },
         {
           '@type': 'Question',
-          name: '¿Cuanto cuesta usar helpMe?',
+          name: '¿Cuanto cuesta usar HelpMe?',
           acceptedAnswer: {
             '@type': 'Answer',
             text: 'Publicar una tarea es gratis y el pago retenido hasta confirmar está incluido. Solo pagas el precio acordado de cada tarea.',
@@ -278,7 +278,7 @@ const footerCompanyLinks = [
 ]
 
 // PLACEHOLDER: email de contacto y soporte pendientes de confirmar.
-const FOOTER_CONTACT_EMAIL = 'hola@helpme.app'
+const FOOTER_CONTACT_EMAIL = 'helpme.app.contact@gmail.com'
 
 function StarRating({ value, max = 5 }) {
   return (
@@ -299,7 +299,7 @@ export default function Landing() {
   useDocumentMeta({
     title: 'La ayuda que necesitas, cerca de ti',
     description:
-      'helpMe conecta personas cercanas para resolver recados, compras, mascotas y ayuda tecnica de forma simple y segura.',
+      'HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden ayudarlas.',
     path: '/',
   })
   const navigate = useNavigate()
@@ -462,6 +462,10 @@ export default function Landing() {
               </span>
               <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
             </h1>
+            <p className={styles.heroFullLead}>
+              HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden
+              ayudarlas.
+            </p>
             <div className={styles.heroFullActions}>
               <button type="button" className={styles.heroFullPrimary} onClick={() => startJourney('need')}>
                 Necesito ayuda

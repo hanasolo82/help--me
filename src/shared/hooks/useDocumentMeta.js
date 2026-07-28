@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
-const SITE_NAME = 'helpMe'
-const SITE_ORIGIN = (import.meta.env.VITE_SITE_URL || 'https://helpme.app').replace(/\/$/, '')
+const SITE_NAME = 'HelpMe'
+const SITE_ORIGIN = (import.meta.env.VITE_SITE_URL || 'https://helpme-community.com').replace(/\/$/, '')
 
 function upsertMeta(attrKey, name, value) {
   if (!value) return
@@ -33,13 +33,13 @@ function setCanonical(href) {
 // canonical y OG. La SPA queda indexable por buscadores y previsualizable en redes.
 export function useDocumentMeta({ title, description, path, noindex = false } = {}) {
   useEffect(() => {
-    // La pestaña muestra solo la marca: "helpMe". El texto descriptivo se
+    // La pestaña muestra solo la marca: "HelpMe". El texto descriptivo se
     // reserva para og/twitter (tarjetas al compartir), sin ensuciar el title.
     if (document.title !== SITE_NAME) {
       document.title = SITE_NAME
     }
 
-    const socialTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} · Micro-ayuda local entre vecinos`
+    const socialTitle = title ? `${title} · ${SITE_NAME}` : `${SITE_NAME} · Ayuda local entre vecinos`
     upsertMeta('name', 'description', description)
     upsertMeta('property', 'og:title', socialTitle)
     upsertMeta('property', 'og:description', description)

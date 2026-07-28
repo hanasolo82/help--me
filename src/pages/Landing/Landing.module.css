@@ -1502,6 +1502,14 @@
   min-height: 2.1em;
 }
 
+.heroFullLead {
+  max-width: 36rem;
+  margin: -0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
 /* Texto fijo en su propia línea (línea 1). */
 .heroTitleLead {
   display: block;
