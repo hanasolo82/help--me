@@ -78,7 +78,7 @@ export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left
       <img
         className={imageClassName}
         src={logoSrc}
-        alt="helpMe"
+        alt="HelpMe"
         width={logoDimensions.width}
         height={logoDimensions.height}
         decoding="async"

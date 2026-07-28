@@ -777,6 +777,15 @@ export default function Landing() {
           </nav>
         </div>
 
+        <section className={styles.oauthDisclosure} aria-labelledby="google-sign-in-title">
+          <h2 id="google-sign-in-title">Inicio de sesión con Google</h2>
+          <p>
+            Si eliges continuar con Google, HelpMe utiliza tu nombre, correo electrónico y foto de perfil para
+            crear tu cuenta, identificarte de forma segura y completar tu perfil. Consulta los detalles en nuestra{' '}
+            <Link to="/legal/privacy">Política de privacidad</Link>.
+          </p>
+        </section>
+
         <div className={styles.footerBottom}>
           <span>© {new Date().getFullYear()} HelpMe. Todos los derechos reservados.</span>
         </div>
