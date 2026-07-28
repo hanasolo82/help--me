@@ -12,6 +12,7 @@
     "verify:financial-foundation": "node scripts/verify-financial-foundation.mjs",
     "verify:payment-checkout": "node scripts/verify-payment-checkout.mjs",
     "verify:payment-release": "node scripts/verify-payment-release.mjs",
+    "jobs:payment-release": "node server/jobs/run-payment-release-jobs.js",
     "verify:financial-smoke": "node scripts/verify-financial-smoke.mjs",
     "replay:stripe-webhook": "node scripts/replay-stripe-webhook.mjs",
     "reconcile:financial-state": "node scripts/reconcile-financial-state.mjs",

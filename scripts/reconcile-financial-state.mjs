@@ -78,6 +78,11 @@ function classifyStatus(findings) {
   return 'reconciled'
 }
 
+function stripeObjectId(value) {
+  if (typeof value === 'string') return value
+  return typeof value?.id === 'string' ? value.id : null
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const paymentId = await resolvePaymentId(args)
@@ -161,25 +166,51 @@ async function main() {
       matches.push('transfer_loaded')
     }
 
-    if (remote.transfer.status === 'paid' && payment.status !== 'released') {
-      addFinding(findings, 'critical', 'release_state_mismatch', 'Stripe says the transfer is paid, but the local payment is not released.', {
-        local: payment.status,
-        remote: remote.transfer.status,
+    const remoteSourceTransaction = stripeObjectId(remote.transfer.source_transaction)
+    const remoteCurrency = String(remote.transfer.currency || '').toLowerCase()
+    const expectedCurrency = String(payment.currency || '').toLowerCase()
+
+    if (remote.transfer.amount !== payment.helper_amount_cents) {
+      addFinding(findings, 'critical', 'transfer_amount_mismatch', 'Transfer amount does not match the helper amount.', {
+        local: payment.helper_amount_cents,
+        remote: remote.transfer.amount,
       })
+    } else {
+      matches.push('transfer_amount')
     }
 
-    if (remote.transfer.status === 'pending' && payment.status !== 'transferring') {
-      addFinding(findings, 'warning', 'transfer_pending_mismatch', 'Stripe says the transfer is pending, but the local payment is not transferring.', {
-        local: payment.status,
-        remote: remote.transfer.status,
+    if (remoteCurrency !== expectedCurrency) {
+      addFinding(findings, 'critical', 'transfer_currency_mismatch', 'Transfer currency does not match the payment.', {
+        local: expectedCurrency,
+        remote: remoteCurrency,
       })
+    } else {
+      matches.push('transfer_currency')
     }
 
-    if (remote.transfer.status === 'failed' && payment.status !== 'held') {
-      addFinding(findings, 'warning', 'transfer_failed_mismatch', 'Stripe says the transfer failed, but the local payment did not return to held.', {
-        local: payment.status,
-        remote: remote.transfer.status,
+    if (!remoteSourceTransaction || remoteSourceTransaction !== payment.stripe_charge_id) {
+      addFinding(findings, 'critical', 'transfer_source_transaction_mismatch', 'Transfer source_transaction does not match the payment Charge.', {
+        local: payment.stripe_charge_id || null,
+        remote: remoteSourceTransaction,
       })
+    } else {
+      matches.push('transfer_source_transaction')
+    }
+
+    if (remote.transfer.reversed) {
+      if (payment.reconciliation_status !== 'needs_review') {
+        addFinding(findings, 'critical', 'reversed_transfer_not_reviewed', 'A reversed Transfer must be marked needs_review locally.', {
+          local: payment.reconciliation_status || null,
+        })
+      } else {
+        matches.push('transfer_reversed_reviewed')
+      }
+    } else if (payment.status !== 'released') {
+      addFinding(findings, 'critical', 'release_state_mismatch', 'A confirmed non-reversed Transfer requires a released local payment.', {
+        local: payment.status,
+      })
+    } else {
+      matches.push('transfer_release_state')
     }
   }
 
@@ -194,11 +225,14 @@ async function main() {
 
     remote.connect_account = connectAccount
 
-    if (connectAccount?.stripe_account_id && remote.transfer?.destination && connectAccount.stripe_account_id !== remote.transfer.destination) {
+    const remoteDestination = stripeObjectId(remote.transfer?.destination)
+    if (connectAccount?.stripe_account_id && remoteDestination && connectAccount.stripe_account_id !== remoteDestination) {
       addFinding(findings, 'critical', 'connect_destination_mismatch', 'Transfer destination does not match the helper Connect account.', {
         local: connectAccount.stripe_account_id,
-        remote: remote.transfer.destination,
+        remote: remoteDestination,
       })
+    } else if (connectAccount?.stripe_account_id && remoteDestination) {
+      matches.push('transfer_destination')
     }
   }
 
@@ -228,7 +262,8 @@ async function main() {
     remote: {
       checkout_session_status: remote.checkout_session?.status || null,
       payment_intent_status: remote.payment_intent?.status || null,
-      transfer_status: remote.transfer?.status || null,
+      transfer_reversed: Boolean(remote.transfer?.reversed),
+      transfer_source_transaction: stripeObjectId(remote.transfer?.source_transaction),
       connect_account_id: remote.connect_account?.stripe_account_id || null,
     },
   }

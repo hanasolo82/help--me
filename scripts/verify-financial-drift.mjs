@@ -229,6 +229,22 @@ function inspectPayments({
       )
     }
 
+    if (payment.status === 'held' && taskStatus === 'completed') {
+      addFinding(
+        findings,
+        'critical',
+        'COMPLETED_HELD_PAYMENT_RELEASE_NOT_FINALIZED',
+        payment.id,
+        {
+          payment_id: payment.id,
+          task_id: payment.task_id,
+          payment_status: payment.status,
+          reconciliation_status: payment.reconciliation_status,
+          transfers: transferSummary,
+        },
+      )
+    }
+
     if (payment.status === 'released' && taskStatus !== 'closed') {
       addFinding(
         findings,

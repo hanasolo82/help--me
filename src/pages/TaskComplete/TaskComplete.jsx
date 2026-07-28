@@ -3,15 +3,14 @@ import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/useAuth'
-import { getTaskById, markTaskCompleted } from '../../services/tasksService'
-import { getPaymentForTask, releaseTaskPayment } from '../../services/paymentsService'
+import { getTaskById } from '../../services/tasksService'
+import { completeTaskAndQueuePaymentRelease, getPaymentForTask } from '../../services/paymentsService'
 import { getTaskReviewForUser } from '../../features/reviews/api/reviewsApi'
 import ActionStatusOverlay from '../../shared/ui/ActionStatusOverlay/ActionStatusOverlay'
 import { resolveReturnTo } from '../../shared/utils/navigation'
 
 const INITIAL_LOAD_TIMEOUT_MS = 10_000
-const COMPLETE_TIMEOUT_MS = 12_000
-const RELEASE_TIMEOUT_MS = 15_000
+const COMPLETE_TIMEOUT_MS = 20_000
 const INVALIDATION_TIMEOUT_MS = 8_000
 const REFRESH_TIMEOUT_MS = 5_000
 
@@ -164,25 +163,14 @@ export default function TaskComplete({
         throw new Error('La tarea aún no puede cerrarse. Espera a que esté en curso o completada.')
       }
 
-      if (task.status !== 'completed') {
-        setStatus('completing')
-        const updated = await withAbortableTimeout(
-          (signal) => markTaskCompleted(task.id, { signal }),
-          COMPLETE_TIMEOUT_MS,
-          'No hemos podido confirmar el cierre a tiempo.',
-        )
-        setTask(updated)
-        queryClient.setQueryData(['task', task.id], updated)
-        taskCompleted = true
-      }
-
-      setStatus('releasing')
+      setStatus('completing')
       const releaseResult = await withAbortableTimeout(
-        (signal) => releaseTaskPayment(task.id, { signal }),
-        RELEASE_TIMEOUT_MS,
-        'La actualización del pago está tardando más de lo normal.',
+        (signal) => completeTaskAndQueuePaymentRelease(task.id, { signal }),
+        COMPLETE_TIMEOUT_MS,
+        'No hemos podido confirmar el cierre a tiempo.',
       )
       setPaymentStatus(releaseResult?.payment_status || '')
+      taskCompleted = ['completed', 'closed'].includes(releaseResult?.task_status)
 
       setStatus('syncing')
       await withTimeout(
@@ -328,13 +316,8 @@ export default function TaskComplete({
     )
   }
 
-  const actionPending = ['completing', 'releasing', 'syncing'].includes(status)
-  const overlayCopy = status === 'releasing'
-    ? {
-        title: 'Confirmando el cierre...',
-        message: 'La tarea ya está completada. Estamos terminando la confirmación de forma segura.',
-      }
-    : status === 'syncing'
+  const actionPending = ['completing', 'syncing'].includes(status)
+  const overlayCopy = status === 'syncing'
       ? {
           title: 'Confirmando los cambios...',
           message: 'Estamos comprobando el estado final de la tarea.',

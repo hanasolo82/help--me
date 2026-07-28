@@ -297,8 +297,10 @@ export default function HomeContainer() {
   }, [navigate])
 
   const handleOpenPayments = useCallback(() => {
-    navigate('/pagos')
-  }, [navigate])
+    // El origen decide la pestaña inicial de /pagos: "Ayudar" abre en Cobros,
+    // "Necesito ayuda" en Gastos.
+    navigate('/pagos', { state: { from: mode } })
+  }, [navigate, mode])
 
   const handleOpenNotifications = useCallback(() => {
     navigate('/notifications')

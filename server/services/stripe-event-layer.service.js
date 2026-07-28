@@ -2,6 +2,10 @@ import { createHash, randomUUID } from 'node:crypto'
 import { stripe, syncStripeAccountFromWebhook } from './stripe.service.js'
 import { supabaseAdmin } from './supabase.service.js'
 import { syncSubscriptionFromStripe } from './billing.service.js'
+import {
+  finalizeReleaseFromStripeTransfer,
+  markReleaseTransferReversed,
+} from './payment-release-jobs.service.js'
 
 const PAYMENT_STATUS_BLOCKING = new Set([
   'captured',
@@ -1027,95 +1031,6 @@ async function mirrorDispute(payment, event, object, eventRow, status) {
   })
 }
 
-async function mirrorTransfer(payment, event, object, eventRow, status) {
-  const transferId = getStripeObjectId(object)
-  const amountCents = resolveAmountCents(payment, object, ['amount'])
-  const correlationId = getCorrelationIdForPayment(payment, eventRow, object)
-  const idempotencyKey = ensureIdempotencyKey(
-    `transfer:${payment.id}:${transferId || event.id}:${event.id}`,
-    'transfer',
-  )
-
-  const { error: transferError } = await supabaseAdmin
-    .from('transfers')
-    .upsert({
-      payment_id: payment.id,
-      requester_profile_id: payment.requester_profile_id,
-      helper_profile_id: payment.helper_profile_id,
-      connect_account_profile_id: payment.helper_profile_id,
-      stripe_transfer_id: transferId,
-      stripe_balance_transaction_id: getStripeObjectId(object.balance_transaction),
-      amount_cents: amountCents,
-      currency: payment.currency || 'eur',
-      status,
-      failure_code: normalizeText(object.failure_code) || null,
-      reversed_at: status === 'reversed' ? nowIso() : null,
-      correlation_id: payment.correlation_id || correlationId,
-      idempotency_key: idempotencyKey,
-      metadata: {
-        event_id: event.id,
-        event_type: event.type,
-      },
-      updated_at: nowIso(),
-    }, {
-      onConflict: 'payment_id',
-    })
-    .select('*')
-    .single()
-
-  if (transferError) throw transferError
-
-  return createIdempotentLedgerEntry({
-    paymentId: payment.id,
-    requesterProfileId: payment.requester_profile_id,
-    helperProfileId: payment.helper_profile_id,
-    entryType:
-      status === 'paid'
-        ? 'transfer_paid'
-        : status === 'failed'
-          ? 'transfer_failed'
-          : status === 'reversed'
-            ? 'transfer_reversed'
-            : 'transfer_created',
-    direction: 'debit',
-    accountCode:
-      status === 'paid'
-        ? LEDGER_ACCOUNT_CODES.transfer_paid
-        : status === 'failed'
-          ? LEDGER_ACCOUNT_CODES.transfer_failed
-          : status === 'reversed'
-            ? LEDGER_ACCOUNT_CODES.transfer_reversed
-            : LEDGER_ACCOUNT_CODES.transfer_created,
-    amountCents,
-    platformFeeCents: payment.platform_fee_cents || 0,
-    helperAmountCents: payment.helper_amount_cents || 0,
-    currency: payment.currency || 'eur',
-    stripeObjectType: event.type,
-    stripeObjectId: transferId,
-    sourceEventId: eventRow.id,
-    correlationId,
-    idempotencyKey: getLedgerIdempotencyKey({
-      paymentId: payment.id,
-      entryType:
-        status === 'paid'
-          ? 'transfer_paid'
-          : status === 'failed'
-            ? 'transfer_failed'
-            : status === 'reversed'
-              ? 'transfer_reversed'
-              : 'transfer_created',
-      stripeEventId: event.id,
-      stripeObjectId: transferId,
-    }),
-    createdBySystem: 'stripe-webhook',
-    metadata: {
-      event_type: event.type,
-      stripe_event_id: event.id,
-      status,
-    },
-  })
-}
-
 async function mirrorPayout(payment, event, object, eventRow, status) {
   const payoutId = getStripeObjectId(object)
   const amountCents = resolveAmountCents(payment, object, ['amount'])
@@ -1876,32 +1791,6 @@ async function handleDisputeEvent(event, eventRow, object) {
   }
 }
 
-function getTransferStatusForEvent(eventType) {
-  if (eventType === 'transfer.created') return 'pending'
-  if (eventType === 'transfer.paid') return 'paid'
-  if (eventType === 'transfer.failed') return 'failed'
-  if (eventType === 'transfer.reversed') return 'reversed'
-  return 'pending'
-}
-
-function canAdvanceTransferStatus(currentStatus, nextStatus) {
-  const normalizedCurrent = normalizeText(currentStatus)
-  const normalizedNext = normalizeText(nextStatus)
-
-  if (!normalizedNext) return false
-  if (!normalizedCurrent) return true
-  if (normalizedCurrent === normalizedNext) return false
-  if (normalizedCurrent === 'reversed') return false
-  if (normalizedCurrent === 'paid') return normalizedNext === 'reversed'
-  if (normalizedCurrent === 'failed') return false
-
-  if (normalizedCurrent === 'draft' || normalizedCurrent === 'queued' || normalizedCurrent === 'pending') {
-    return ['pending', 'paid', 'failed', 'reversed'].includes(normalizedNext)
-  }
-
-  return false
-}
-
 function canAdvancePayoutStatus(currentStatus, nextStatus) {
   if (currentStatus === nextStatus) return false
   if (currentStatus === 'canceled') return false
@@ -1909,341 +1798,107 @@ function canAdvancePayoutStatus(currentStatus, nextStatus) {
   return shouldAdvanceStatus(currentStatus, nextStatus, PAYOUT_STATUS_ORDER)
 }
 
-async function closeTaskAfterTransferPaid(payment, event, eventRow, object, correlationId) {
-  if (!payment?.task_id) {
-    return {
-      closed: false,
-      mismatch: true,
-    }
-  }
-
-  const { data: task, error } = await supabaseAdmin
-    .from('tasks')
-    .select('id, created_by, accepted_by, status, updated_at, modified_at, completed_at')
-    .eq('id', payment.task_id)
-    .maybeSingle()
-
-  if (error && !isMissingRecordError(error)) {
-    throw error
-  }
-
-  if (!task) {
-    await markFinancialMismatch({
-      entityType: 'task',
-      entityId: payment.task_id,
-      reason: 'Transfer paid without a matching local task.',
-      metadata: {
-        payment_id: payment.id,
-        transfer_id: getStripeObjectId(object),
-      },
-      payment,
-      eventRow,
-      stripeEventId: event.id,
-      correlationId,
-    })
-
-    return {
-      closed: false,
-      mismatch: true,
-    }
-  }
-
-  const isMatchingTask =
-    task.created_by === payment.requester_profile_id &&
-    task.accepted_by === payment.helper_profile_id
-
-  if (task.status === 'closed' && isMatchingTask) {
-    return {
-      closed: true,
-      mismatch: false,
-    }
-  }
-
-  if (!isMatchingTask || task.status !== 'completed') {
-    await markFinancialMismatch({
-      entityType: 'task',
-      entityId: task.id,
-      reason: 'Transfer paid but the task was not eligible for closing.',
-      metadata: {
-        payment_id: payment.id,
-        task_status: task.status,
-        task_created_by: task.created_by,
-        task_accepted_by: task.accepted_by,
-        transfer_id: getStripeObjectId(object),
-      },
-      payment,
-      eventRow,
-      stripeEventId: event.id,
-      correlationId,
-    })
-
-    return {
-      closed: false,
-      mismatch: true,
-    }
-  }
-
-  const { data: closedTask, error: updateError } = await supabaseAdmin
-    .from('tasks')
-    .update({
-      status: 'closed',
-      updated_at: nowIso(),
-    })
-    .eq('id', task.id)
-    .eq('created_by', payment.requester_profile_id)
-    .eq('accepted_by', payment.helper_profile_id)
-    .eq('status', 'completed')
-    .select('id, status, created_by, accepted_by')
-    .maybeSingle()
-
-  if (updateError) {
-    throw updateError
-  }
-
-  if (!closedTask) {
-    await markFinancialMismatch({
-      entityType: 'task',
-      entityId: task.id,
-      reason: 'Transfer paid but the task could not be closed.',
-      metadata: {
-        payment_id: payment.id,
-        transfer_id: getStripeObjectId(object),
-      },
-      payment,
-      eventRow,
-      stripeEventId: event.id,
-      correlationId,
-    })
-
-    return {
-      closed: false,
-      mismatch: true,
-    }
-  }
-
-  await createIdempotentAuditEvent({
-    eventType: 'task_closed_after_transfer_paid',
-    severity: 'info',
-    actorType: 'stripe',
-    entityType: 'task',
-    entityId: task.id,
-    beforeState: {
-      status: task.status,
-    },
-    afterState: {
-      status: 'closed',
-    },
-    correlationId,
-    stripeEventId: event.id,
-    metadata: {
-      payment_id: payment.id,
-      transfer_id: getStripeObjectId(object),
-    },
-  })
-
-  return {
-    closed: true,
-    mismatch: false,
-  }
-}
-
 async function handleTransferEvent(event, eventRow, object) {
   const enrichedObject = await maybeRefreshStripeObject(event, object)
-  const payment = await resolvePaymentFromEvent(event, enrichedObject)
-  const nextStatus = getTransferStatusForEvent(event.type)
+  const transferId = getStripeObjectId(enrichedObject)
 
+  // transfer.updated has no financial settlement meaning. It is retained in
+  // the webhook inbox/audit trail, but it must never move a payment or task.
+  if (event.type === 'transfer.updated') {
+    await maybeCreateWebHookAudit({
+      eventType: 'transfer_updated',
+      event,
+      entityType: 'stripe_transfer',
+      entityId: transferId || event.id,
+      afterState: { transfer_id: transferId },
+      severity: 'info',
+      metadata: {},
+      correlationId: eventRow.correlation_id,
+    })
+    return { ignored: true }
+  }
+
+  const payment = await resolvePaymentFromEvent(event, enrichedObject)
   if (!payment) {
     await markFinancialMismatch({
       entityType: 'stripe_webhook_event',
       entityId: event.id,
       reason: 'Transfer event without a matching local payment.',
       metadata: {
-        transfer_id: getStripeObjectId(enrichedObject),
+        transfer_id: transferId,
         source_transaction: getStripeObjectId(enrichedObject.source_transaction),
       },
       eventRow,
       stripeEventId: event.id,
       correlationId: eventRow.correlation_id,
     })
-
-    return {
-      mismatch: true,
-    }
+    return { mismatch: true }
   }
 
-  const currentTransfer = await supabaseAdmin
-    .from('transfers')
-    .select('*')
-    .eq('payment_id', payment.id)
-    .maybeSingle()
-
-  if (currentTransfer?.error && !isMissingRecordError(currentTransfer.error)) {
-    throw currentTransfer.error
-  }
-
-  const existingTransfer = currentTransfer?.data || null
-  const isDuplicateStatus = Boolean(existingTransfer && existingTransfer.status === nextStatus)
-  const canAdvance = !existingTransfer || canAdvanceTransferStatus(existingTransfer.status, nextStatus) || isDuplicateStatus
   const correlationId = getCorrelationIdForPayment(payment, eventRow, enrichedObject)
-  const amountCents = resolveAmountCents(payment, enrichedObject, ['amount'])
-  const storedTransferStatus = canAdvance ? nextStatus : existingTransfer?.status || nextStatus
 
-  if (!canAdvance) {
+  if (event.type === 'transfer.reversed') {
+    await markReleaseTransferReversed({
+      paymentId: payment.id,
+      transferId,
+      reason: 'Stripe reported a reversed Transfer.',
+    })
     await maybeCreateWebHookAudit({
-      eventType:
-        event.type === 'transfer.created'
-          ? 'transfer_created'
-          : event.type === 'transfer.paid'
-            ? 'transfer_paid'
-            : event.type === 'transfer.failed'
-              ? 'transfer_failed'
-              : 'transfer_reversed',
+      eventType: 'transfer_reversed',
       event,
       entityType: 'payment',
       entityId: payment.id,
       afterState: {
-        transfer_id: getStripeObjectId(enrichedObject),
-        amount_cents: amountCents,
-        status: nextStatus,
+        transfer_id: transferId,
         payment_status: payment.status,
-        task_closed: false,
+        reconciliation_status: 'needs_review',
       },
       severity: 'warning',
-      metadata: {
-        payment_id: payment.id,
-      },
+      metadata: { payment_id: payment.id },
       correlationId,
     })
+    return { paymentId: payment.id, reversed: true }
+  }
 
+  if (event.type !== 'transfer.created') {
+    return { ignored: true }
+  }
+
+  const finalized = await finalizeReleaseFromStripeTransfer({
+    paymentId: payment.id,
+    transfer: enrichedObject,
+  })
+
+  if (!finalized) {
     await markFinancialMismatch({
       entityType: 'payment',
       entityId: payment.id,
-      reason: 'Transfer event arrived out of order or after a later local transfer state.',
-      metadata: {
-        transfer_id: getStripeObjectId(enrichedObject),
-        source_transaction: getStripeObjectId(enrichedObject.source_transaction),
-      },
+      reason: 'transfer.created arrived without a durable release job.',
+      metadata: { transfer_id: transferId },
       payment,
       eventRow,
       stripeEventId: event.id,
       correlationId,
     })
-
-    return {
-      paymentId: payment.id,
-      mismatch: true,
-    }
-  }
-
-  await mirrorTransfer(payment, event, enrichedObject, eventRow, storedTransferStatus)
-
-  const paymentStatus = normalizeText(payment.status) || ''
-  const paymentUpdates = {
-    stripe_transfer_id: getStripeObjectId(enrichedObject) || payment.stripe_transfer_id,
-    stripe_balance_transaction_id:
-      getStripeObjectId(enrichedObject.balance_transaction) || payment.stripe_balance_transaction_id,
-    correlation_id: payment.correlation_id || correlationId,
-    last_reconciled_at: nowIso(),
-    reconciliation_status: canAdvance ? 'reconciled' : 'needs_review',
-    reconciliation_error: canAdvance ? null : 'Transfer event arrived out of order or after a later local transfer state.',
-  }
-
-  if (event.type === 'transfer.created') {
-    paymentUpdates.status = paymentStatus === 'released' ? payment.status : 'transferring'
-  }
-
-  if (event.type === 'transfer.paid') {
-    paymentUpdates.status = 'released'
-    paymentUpdates.released_at = payment.released_at || nowIso()
-  }
-
-  if (event.type === 'transfer.failed') {
-    paymentUpdates.status = paymentStatus === 'released' ? payment.status : 'held'
-    paymentUpdates.reconciliation_status = 'needs_review'
-    paymentUpdates.reconciliation_error = 'Transfer failed.'
-  }
-
-  if (event.type === 'transfer.reversed') {
-    paymentUpdates.status = payment.status
-    paymentUpdates.reconciliation_status = 'needs_review'
-    paymentUpdates.reconciliation_error = 'Transfer reversed.'
-  }
-
-  const updatedPayment = await updatePaymentRow(payment.id, paymentUpdates)
-
-  let taskClosureResult = { closed: false, mismatch: false }
-  if (event.type === 'transfer.paid') {
-    taskClosureResult = await closeTaskAfterTransferPaid(
-      updatedPayment || payment,
-      event,
-      eventRow,
-      enrichedObject,
-      correlationId,
-    )
+    return { paymentId: payment.id, mismatch: true }
   }
 
   await maybeCreateWebHookAudit({
-    eventType:
-      event.type === 'transfer.created'
-        ? 'transfer_created'
-        : event.type === 'transfer.paid'
-          ? 'transfer_paid'
-          : event.type === 'transfer.failed'
-            ? 'transfer_failed'
-            : 'transfer_reversed',
+    eventType: 'transfer_created',
     event,
     entityType: 'payment',
     entityId: payment.id,
     afterState: {
-      transfer_id: getStripeObjectId(enrichedObject),
-      amount_cents: amountCents,
-      status: nextStatus,
-      payment_status: paymentUpdates.status || payment.status,
-      task_closed: Boolean(taskClosureResult.closed),
+      transfer_id: transferId,
+      payment_status: 'released',
+      task_status: 'closed',
     },
-    severity: canAdvance ? 'info' : 'warning',
-    metadata: {
-      payment_id: payment.id,
-    },
+    severity: 'info',
+    metadata: { payment_id: payment.id },
     correlationId,
   })
 
-  if (!canAdvance) {
-    await markFinancialMismatch({
-      entityType: 'payment',
-      entityId: payment.id,
-      reason: 'Transfer event arrived out of order or after a later local transfer state.',
-      metadata: {
-        transfer_id: getStripeObjectId(enrichedObject),
-        source_transaction: getStripeObjectId(enrichedObject.source_transaction),
-      },
-      payment,
-      eventRow,
-      stripeEventId: event.id,
-      correlationId,
-    })
-
-    if (event.type === 'transfer.paid' && taskClosureResult.mismatch) {
-      await markFinancialMismatch({
-        entityType: 'task',
-        entityId: payment.task_id || payment.id,
-        reason: 'Transfer paid but the related task could not be closed.',
-        metadata: {
-          payment_id: payment.id,
-          transfer_id: getStripeObjectId(enrichedObject),
-        },
-        payment: updatedPayment || payment,
-        eventRow,
-        stripeEventId: event.id,
-        correlationId,
-      })
-    }
-  }
-
-  return {
-    paymentId: payment.id,
-    mismatch: !canAdvance || taskClosureResult.mismatch,
-  }
+  return { paymentId: payment.id, finalized: true }
 }
 
 async function handlePayoutEvent(event, eventRow, object) {
@@ -2407,7 +2062,7 @@ function getEventHandler(eventType) {
     return handleDisputeEvent
   }
 
-  if (eventType.startsWith('transfer.')) {
+  if (['transfer.created', 'transfer.updated', 'transfer.reversed'].includes(eventType)) {
     return handleTransferEvent
   }
 

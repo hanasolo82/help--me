@@ -27,3 +27,25 @@ services:
         sync: false
       - key: SUPABASE_ANON_KEY
         sync: false
+  - type: cron
+    name: helpme-payment-release-jobs
+    runtime: node
+    rootDir: server
+    schedule: "*/5 * * * *"
+    buildCommand: pnpm install --prod --frozen-lockfile --ignore-workspace
+    startCommand: node jobs/run-payment-release-jobs.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        value: https://helpme-community.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false

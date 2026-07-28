@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from '../SettingsPage.module.css'
 import { startStripeConnectOnboarding } from '../../../features/helper-onboarding/services/stripeConnectService'
+import { isHelperStarted } from '../../Payments/paymentStatus'
 import { useSettings } from './SettingsContext'
 import SettingsCard from './SettingsCard'
 
 function getPaymentState(profile) {
-  const helperStarted = Boolean(profile?.helper_enabled || (profile?.helper_status && profile.helper_status !== 'not_started'))
-
-  if (!helperStarted) return 'locked'
+  if (!isHelperStarted(profile)) return 'locked'
   if (!profile?.stripe_onboarding_completed) return 'pending'
   if (profile?.stripe_charges_enabled && profile?.stripe_payouts_enabled) return 'active'
 
@@ -57,7 +56,7 @@ export default function PaymentsSettings() {
       id="pagos"
       eyebrow="Pagos"
       title="Pagos"
-      description="La conexión de cobros con Stripe. El seguimiento de tus pagos vive en su propia página."
+      description="La conexión de cobros con Stripe. El seguimiento de tus pagos está en su propia página."
     >
       <div className={styles.infoGroup}>
         <span className={styles.panelKicker}>{getPaymentStateLabel(paymentState)}</span>

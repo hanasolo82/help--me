@@ -4,8 +4,11 @@ import {
   createExternalPaymentAgreement,
   createTaskCheckout,
   refundHeldPayment,
-  releasePaymentFunds,
 } from '../services/payments.service.js'
+import {
+  completeTaskAndQueuePaymentRelease,
+  requestPaymentReleaseForPayment,
+} from '../services/payment-release-jobs.service.js'
 
 const router = express.Router()
 
@@ -88,6 +91,30 @@ router.post(
 )
 
 router.post(
+  '/tasks/:taskId/complete',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const taskId = typeof req.params?.taskId === 'string' ? req.params.taskId.trim() : ''
+
+    if (!taskId) {
+      return res.status(400).json({
+        error: 'Missing taskId.',
+      })
+    }
+
+    const result = await completeTaskAndQueuePaymentRelease({
+      taskId,
+      requester: {
+        id: req.user.id,
+        email: req.user.email || null,
+      },
+    })
+
+    return res.status(200).json(result)
+  }),
+)
+
+router.post(
   '/:paymentId/release',
   requireAuth,
   asyncHandler(async (req, res) => {
@@ -99,7 +126,9 @@ router.post(
       })
     }
 
-    const result = await releasePaymentFunds({
+    // Kept for already shipped clients. It now enters the same durable queue;
+    // it no longer invokes Stripe from a separate client-triggered step.
+    const result = await requestPaymentReleaseForPayment({
       paymentId,
       requester: {
         id: req.user.id,

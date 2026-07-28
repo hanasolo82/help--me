@@ -79,7 +79,7 @@ export async function getMyPayments({ signal } = {}) {
   let query = supabase
     .from('payments')
     .select(
-      'id, task_id, status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title)',
+      'id, task_id, status, reconciliation_status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title, status)',
     )
     .or(`requester_profile_id.eq.${uid},helper_profile_id.eq.${uid}`)
     .order('created_at', { ascending: false })
@@ -110,7 +110,7 @@ export async function getPaymentById(paymentId, { signal } = {}) {
   let query = supabase
     .from('payments')
     .select(
-      'id, task_id, status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title)',
+      'id, task_id, status, reconciliation_status, amount_cents, platform_fee_cents, helper_amount_cents, currency, created_at, held_at, released_at, refunded_at, requester_profile_id, helper_profile_id, tasks(title, status)',
     )
     .eq('id', paymentId)
     .maybeSingle()
@@ -296,4 +296,36 @@ export async function releaseTaskPayment(taskId, { signal } = {}) {
   const payload = await response.json().catch(() => ({}))
 
   return payload
+}
+
+// One durable backend operation: it records task completion and the release job
+// together before it talks to Stripe. The browser never advances the task state.
+export async function completeTaskAndQueuePaymentRelease(taskId, { signal } = {}) {
+  const accessToken = await getAccessToken()
+
+  let response
+
+  try {
+    response = await fetch(buildBackendUrl(`/api/payments/tasks/${taskId}/complete`), {
+      method: 'POST',
+      signal,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    })
+  } catch (error) {
+    if (error?.message === MISSING_BACKEND_URL_ERROR) {
+      throw error
+    }
+
+    throw new Error(PAYMENT_SERVER_CONNECTION_ERROR, { cause: error })
+  }
+
+  if (!response.ok) {
+    throw new Error(await readBackendError(response, 'No pudimos confirmar el cierre de forma segura.'))
+  }
+
+  return response.json().catch(() => ({}))
 }

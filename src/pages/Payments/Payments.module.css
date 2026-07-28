@@ -11,9 +11,25 @@
 }
 
 .pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.pageHeaderText {
   display: grid;
   gap: 0.4rem;
-  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.billingTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: auto;
+  flex: 0 0 auto;
 }
 
 .pageHeader h1 {
@@ -35,11 +51,65 @@
   gap: 1.25rem;
 }
 
+.panel {
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* ---------- Pestañas de rol (Gastos / Cobros) ----------
+   Estilo archivador (carpetas), no un switch: cada pestaña tiene las esquinas
+   superiores redondeadas y "muerde" la línea inferior del bloque. La activa
+   comparte el color base con un leve tinte de marca (misma color, tonalidad
+   distinta) para diferenciarse del contenido. */
+
+.tabs {
+  display: flex;
+  gap: 0.35rem;
+  align-items: flex-end;
+  padding-inline: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+  appearance: none;
+  position: relative;
+  margin-bottom: -1px;
+  padding: 0.72rem 1.5rem;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 0.85rem 0.85rem 0 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 4%, var(--color-surface));
+}
+
+.tabActive,
+.tabActive:hover {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  color: var(--color-text);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ---------- Resumen ---------- */
 
+/* auto-fit: 2 cifras (Gastos/Cobros) llenan el ancho; si algún panel usa 3,
+   se reparten solas sin dejar hueco. */
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: 1rem;
 }
 
@@ -65,6 +135,16 @@
   font-size: clamp(1.4rem, 3vw, 1.8rem);
   font-weight: 900;
   letter-spacing: -0.02em;
+}
+
+/* Aclara el "qué es" de la cifra (sobre todo el pago retenido: quién lo guarda
+   y cuándo se libera), para que "Retenido" no quede como un dato sin contexto. */
+.tileMeta {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 /* ---------- Tarjetas ---------- */

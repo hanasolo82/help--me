@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
-import { createTestUser, ensureProfile, findActiveHelperFixture, getAuditEventsByStripeEventId, getLedgerEntriesByPaymentId, getPaymentById, getPaymentByTaskId, getTaskById, getTransferByPaymentId, sleep, stripe, updateTaskStatus, writeJsonFile, admin, buildStripeEvent, getWebhookEventByStripeEventId } from './lib/financial-ops.mjs'
-import { createTaskCheckout, releasePaymentFunds } from '../server/services/payments.service.js'
+import { createTestUser, ensureProfile, findActiveHelperFixture, getAuditEventsByStripeEventId, getLedgerEntriesByPaymentId, getPaymentById, getPaymentByTaskId, getTaskById, getTransferByPaymentId, stripe, updateTaskStatus, writeJsonFile, admin, buildStripeEvent, getWebhookEventByStripeEventId } from './lib/financial-ops.mjs'
+import { createTaskCheckout } from '../server/services/payments.service.js'
+import { completeTaskAndQueuePaymentRelease } from '../server/services/payment-release-jobs.service.js'
 import { processStripeWebhookEvent } from '../server/services/financial.service.js'
 
 const ARTIFACT_PATH = resolve(process.cwd(), 'tmp/stripe-smoke-result.json')
@@ -40,48 +41,6 @@ async function confirmCheckoutPaymentIntent(paymentIntentId) {
   return stripe.paymentIntents.retrieve(paymentIntentId, {
     expand: ['latest_charge'],
   })
-}
-
-async function topUpPlatformBalance(amountCents, currency = 'eur') {
-  return stripe.paymentIntents.create({
-    amount: amountCents,
-    currency,
-    payment_method: 'pm_card_bypassPendingInternational',
-    confirm: true,
-    off_session: true,
-    description: 'HelpMe Stripe smoke balance top-up',
-    metadata: {
-      purpose: 'financial-smoke-topup',
-    },
-  })
-}
-
-function getAvailableBalanceAmount(balance, currency) {
-  const normalizedCurrency = String(currency || 'eur').toLowerCase()
-
-  return (balance?.available || [])
-    .filter((entry) => String(entry.currency || '').toLowerCase() === normalizedCurrency)
-    .reduce((total, entry) => total + Number(entry.amount || 0), 0)
-}
-
-async function waitForAvailableBalance(minimumAmountCents, currency = 'eur', timeoutMs = 60_000) {
-  const startedAt = Date.now()
-
-  while (Date.now() - startedAt < timeoutMs) {
-    const balance = await stripe.balance.retrieve()
-    const availableAmount = getAvailableBalanceAmount(balance, currency)
-
-    if (availableAmount >= minimumAmountCents) {
-      return {
-        balance,
-        availableAmount,
-      }
-    }
-
-    await sleep(2_000)
-  }
-
-  throw new Error(`Timed out waiting for at least ${minimumAmountCents} ${currency} in available Stripe balance.`)
 }
 
 async function processStripeObjectEvent(eventId, type, object) {
@@ -213,25 +172,8 @@ async function main() {
       completed_at: new Date().toISOString(),
     })
 
-    const balanceTopUp = await topUpPlatformBalance(5000, payment.currency || 'eur')
-    result.steps.balance_top_up = {
-      charge_id: balanceTopUp.id,
-      amount: balanceTopUp.amount,
-      currency: balanceTopUp.currency,
-    }
-
-    const balanceCheck = await waitForAvailableBalance(
-      payment.helper_amount_cents,
-      payment.currency || 'eur',
-      60_000,
-    )
-    result.steps.balance_available = {
-      available_amount_cents: balanceCheck.availableAmount,
-      currency: payment.currency || 'eur',
-    }
-
-    const release = await releasePaymentFunds({
-      paymentId: payment.id,
+    const release = await completeTaskAndQueuePaymentRelease({
+      taskId,
       requester: {
         id: requester.id,
         email: requester.email,
@@ -245,16 +187,12 @@ async function main() {
     const transferCreatedEventId = `evt_smoke_transfer_created_${randomUUID().slice(0, 12)}`
     await processStripeObjectEvent(transferCreatedEventId, 'transfer.created', transferCreated)
 
-    const transferPaid = transferCreated
-    const transferPaidEventId = `evt_smoke_transfer_paid_${randomUUID().slice(0, 12)}`
-    await processStripeObjectEvent(transferPaidEventId, 'transfer.paid', transferPaid)
-
     const releasedPayment = await getPaymentById(payment.id)
     const closedTask = await getTaskById(taskId)
     const transferRow = await getTransferByPaymentId(payment.id)
 
-    assert(releasedPayment?.status === 'released', 'Payment should be released after transfer.paid.')
-    assert(closedTask?.status === 'closed', 'Task should be closed after transfer.paid.')
+    assert(releasedPayment?.status === 'released', 'Payment should be released after Stripe confirms transfer creation.')
+    assert(closedTask?.status === 'closed', 'Task should be closed after Stripe confirms transfer creation.')
     assert(transferRow?.status === 'paid', 'Local transfer row should mirror paid.')
 
     result.steps.happy_path = {
@@ -264,42 +202,40 @@ async function main() {
     }
     result.events.push(
       { type: 'transfer.created', event_id: transferCreatedEventId },
-      { type: 'transfer.paid', event_id: transferPaidEventId },
     )
 
-    const duplicateRelease = await releasePaymentFunds({
-      paymentId: payment.id,
+    const duplicateRelease = await completeTaskAndQueuePaymentRelease({
+      taskId,
       requester: {
         id: requester.id,
         email: requester.email,
       },
     })
-    assert(duplicateRelease.duplicate === true, 'Duplicate release should be idempotent.')
+    assert(duplicateRelease.task_status === 'closed', 'Duplicate release should preserve the closed task.')
 
-    await processStripeObjectEvent(transferPaidEventId, 'transfer.paid', transferPaid)
     const outOfOrderTransferEventId = `evt_smoke_transfer_out_of_order_${randomUUID().slice(0, 12)}`
     await processStripeObjectEvent(
       outOfOrderTransferEventId,
       'transfer.created',
-      transferPaid,
+      transferCreated,
     )
 
     const postReplayPayment = await getPaymentById(payment.id)
     const transferLedgerCount = await countRows('payment_ledger_entries', {
       payment_id: payment.id,
-      entry_type: 'transfer_paid',
+      entry_type: 'transfer_created',
     })
-    const transferPaidAuditCount = await countRows('audit_events', {
-      stripe_event_id: transferPaidEventId,
+    const transferCreatedAuditCount = await countRows('audit_events', {
+      stripe_event_id: transferCreatedEventId,
     })
 
-    assert(transferLedgerCount === 1, 'transfer.paid should create one ledger entry.')
-    assert(transferPaidAuditCount >= 1, 'transfer.paid should create audit entries.')
+    assert(transferLedgerCount === 1, 'A successful Transfer should create one ledger entry.')
+    assert(transferCreatedAuditCount >= 1, 'transfer.created should create audit entries.')
     assert(postReplayPayment?.reconciliation_status === 'needs_review' || postReplayPayment?.reconciliation_status === 'reconciled',
       'Payment should remain in a valid reconciliation state after replay.')
 
     const orphanTransferEventId = `evt_smoke_orphan_${randomUUID().slice(0, 12)}`
-    await processStripeObjectEvent(orphanTransferEventId, 'transfer.paid', {
+    await processStripeObjectEvent(orphanTransferEventId, 'transfer.created', {
       id: `tr_orphan_${randomUUID().slice(0, 12)}`,
       amount: 1200,
       currency: 'eur',
@@ -315,13 +251,13 @@ async function main() {
 
     result.mismatches.push(
       {
-        label: 'orphan_transfer_paid',
+        label: 'orphan_transfer_created',
         event_id: orphanTransferEventId,
         expected: true,
         recorded: orphanAuditCount >= 1,
       },
       {
-        label: 'out_of_order_transfer_created_after_paid',
+        label: 'replayed_transfer_created_after_release',
         event_id: outOfOrderTransferEventId,
         expected: true,
         recorded: true,
@@ -344,7 +280,6 @@ async function main() {
     const webhookCheckout = await getWebhookEventByStripeEventId(checkoutEventId)
     const webhookPi = await getWebhookEventByStripeEventId(paymentEventId)
     const webhookTransferCreated = await getWebhookEventByStripeEventId(transferCreatedEventId)
-    const webhookTransferPaid = await getWebhookEventByStripeEventId(transferPaidEventId)
 
     result.context.payment = payments
     result.context.audit_counts = {
@@ -355,7 +290,6 @@ async function main() {
       checkout: webhookCheckout?.processing_status || null,
       payment_intent: webhookPi?.processing_status || null,
       transfer_created: webhookTransferCreated?.processing_status || null,
-      transfer_paid: webhookTransferPaid?.processing_status || null,
     }
 
     result.ready = true

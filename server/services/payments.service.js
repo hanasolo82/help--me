@@ -507,6 +507,7 @@ async function createStripeTransferForPayment({ payment, helperConnectAccount })
       amount: payment.helper_amount_cents,
       currency: payment.currency || 'eur',
       destination: helperConnectAccount.stripe_account_id,
+      source_transaction: payment.stripe_charge_id,
       description: `HelpMe release for payment ${payment.id}`,
       metadata,
       transfer_group: payment.task_id || payment.id,
