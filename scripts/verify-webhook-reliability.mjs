@@ -27,6 +27,13 @@ for (const [key, value] of Object.entries({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_
 
 const STALE_MS = 6 * 60 * 1000 // > STALE_WEBHOOK_PROCESSING_MS (5 min) en el servicio
 
+// Marcas estables del residuo de este script. Los eventos REALES de Stripe también
+// empiezan por `evt_`, así que el barrido enumera prefijos completos: nunca `evt_%`.
+const SYNTHETIC_EVENT_PREFIXES = ['evt_stuck_', 'evt_stale_', 'evt_failed_', 'evt_concurrent_']
+const TEST_TASK_TITLE_PREFIX = 'WH reliability'
+const TEST_PAYMENT_KEY_PREFIX = 'wh-reliability-'
+const TEST_USER_EMAIL_PREFIX = 'wh-reliability-'
+
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
 })
@@ -329,33 +336,105 @@ async function testConcurrentDoubleFire(payment, ids) {
   return { eventId }
 }
 
+// supabase-js devuelve el error en la respuesta en vez de lanzarlo: sin comprobarlo, un
+// borrado rechazado deja residuo de forma silenciosa. Se acumulan y se reportan al final.
+async function deleteIn(failures, table, column, values) {
+  if (!values || values.length === 0) return
+
+  const { error } = await admin.from(table).delete().in(column, values)
+  if (error) failures.push(`${table}.${column}: ${error.message}`)
+}
+
 async function cleanup(ids) {
-  if (ids.eventIds.length > 0) {
-    await admin.from('audit_events').delete().in('stripe_event_id', ids.eventIds)
-    await admin.from('stripe_webhook_events').delete().in('stripe_event_id', ids.eventIds)
-  }
-  if (ids.taskIds.length > 0) {
-    await admin.from('audit_events').delete().in('entity_id', ids.taskIds)
-  }
-  if (ids.paymentIds.length > 0) {
-    await admin.from('payment_ledger_entries').delete().in('payment_id', ids.paymentIds)
-    await admin.from('payments').delete().in('id', ids.paymentIds)
-  }
-  if (ids.taskIds.length > 0) {
-    await admin.from('tasks').delete().in('id', ids.taskIds)
-  }
-  if (ids.profileIds.length > 0) {
-    await admin.from('profiles').delete().in('id', ids.profileIds)
-  }
+  const failures = []
+
+  await deleteIn(failures, 'audit_events', 'stripe_event_id', ids.eventIds)
+  await deleteIn(failures, 'stripe_webhook_events', 'stripe_event_id', ids.eventIds)
+  await deleteIn(failures, 'audit_events', 'entity_id', ids.taskIds)
+  await deleteIn(failures, 'payment_ledger_entries', 'payment_id', ids.paymentIds)
+  await deleteIn(failures, 'payments', 'id', ids.paymentIds)
+  await deleteIn(failures, 'tasks', 'id', ids.taskIds)
+  await deleteIn(failures, 'profiles', 'id', ids.profileIds)
+
   for (const userId of ids.userIds) {
-    await admin.auth.admin.deleteUser(userId)
+    const { error } = await admin.auth.admin.deleteUser(userId)
+    if (error) failures.push(`auth.users ${userId}: ${error.message}`)
   }
+
+  if (failures.length > 0) {
+    console.error(`Cleanup incompleto, queda residuo en la base:\n- ${failures.join('\n- ')}`)
+    process.exitCode = 1
+  }
+}
+
+// El `finally` no se ejecuta si el runner mata el proceso (SIGTERM/SIGKILL, p.ej. el
+// `concurrency: cancel-in-progress` del CI cancelando la corrida a mitad), y entonces el
+// fixture entero sobrevive: filas de inbox en `processing` que luego aparecen en
+// verify:financial-drift como WEBHOOK_STUCK_PROCESSING sin ser deriva financiera.
+// Por eso cada corrida empieza barriendo lo que dejaron las anteriores.
+async function sweepPreviousResidue() {
+  const ids = { eventIds: [], paymentIds: [], taskIds: [], profileIds: [], userIds: [] }
+
+  for (const prefix of SYNTHETIC_EVENT_PREFIXES) {
+    const { data, error } = await admin
+      .from('stripe_webhook_events')
+      .select('stripe_event_id')
+      .like('stripe_event_id', `${prefix}%`)
+    if (error) throw error
+    ids.eventIds.push(...(data || []).map((row) => row.stripe_event_id))
+  }
+
+  const { data: tasks, error: tasksError } = await admin
+    .from('tasks')
+    .select('id, created_by, accepted_by')
+    .like('title', `${TEST_TASK_TITLE_PREFIX}%`)
+  if (tasksError) throw tasksError
+
+  for (const task of tasks || []) {
+    ids.taskIds.push(task.id)
+    ids.profileIds.push(task.created_by, task.accepted_by)
+  }
+
+  // Por idempotency_key, no por task_id: cubre pagos cuya tarea ya se borró.
+  const { data: payments, error: paymentsError } = await admin
+    .from('payments')
+    .select('id')
+    .like('idempotency_key', `${TEST_PAYMENT_KEY_PREFIX}%`)
+  if (paymentsError) throw paymentsError
+  ids.paymentIds.push(...(payments || []).map((row) => row.id))
+
+  // Usuarios sin tarea asociada. Una sola página basta en un proyecto de test; si
+  // quedara alguno fuera, la siguiente corrida lo recoge.
+  const { data: userPage, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  if (usersError) throw usersError
+
+  for (const user of userPage?.users || []) {
+    if (user.email?.startsWith(TEST_USER_EMAIL_PREFIX)) {
+      ids.userIds.push(user.id)
+      ids.profileIds.push(user.id)
+    }
+  }
+
+  ids.profileIds = [...new Set(ids.profileIds.filter(Boolean))]
+  ids.userIds = [...new Set(ids.userIds)]
+
+  const total = ids.eventIds.length + ids.taskIds.length + ids.paymentIds.length + ids.userIds.length
+  if (total === 0) return
+
+  console.log(
+    `Barrido previo: ${ids.eventIds.length} eventos, ${ids.paymentIds.length} pagos, ` +
+      `${ids.taskIds.length} tareas y ${ids.userIds.length} usuarios de corridas anteriores.`,
+  )
+  await cleanup(ids)
 }
 
 async function main() {
   const ids = { eventIds: [], paymentIds: [], taskIds: [], profileIds: [], userIds: [] }
 
   try {
+    // Antes de crear nada: el barrido borra por prefijo de email y se llevaría los de esta corrida.
+    await sweepPreviousResidue()
+
     const requester = await createTestUser('requester')
     const helper = await createTestUser('helper')
     ids.userIds.push(requester.id, helper.id)
