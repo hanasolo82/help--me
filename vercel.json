@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/legal/privacy",
+      "destination": "/legal/privacy/index.html"
+    },
+    {
+      "source": "/legal/terms",
+      "destination": "/legal/terms/index.html"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/index.html"
     }

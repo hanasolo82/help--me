@@ -445,7 +445,7 @@ export default function Landing() {
               width="1600"
               height="900"
               loading={index === 0 ? 'eager' : 'lazy'}
-              fetchpriority={index === 0 ? 'high' : undefined}
+              fetchPriority={index === 0 ? 'high' : undefined}
               decoding="async"
             />
           ))}

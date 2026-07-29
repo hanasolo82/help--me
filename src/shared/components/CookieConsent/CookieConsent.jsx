@@ -11,6 +11,8 @@ export default function CookieConsent() {
   const [configOpen, setConfigOpen] = useState(false)
   const [draft, setDraft] = useState(readConsent())
 
+  if (typeof document === 'undefined') return null
+
   function persistAndClose(consent) {
     writeConsent(consent)
     setVisible(false)

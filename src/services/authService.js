@@ -5,8 +5,12 @@ import { clearClientSessionState } from './sessionCleanup'
 
 // URLs publicas para callbacks de Supabase. Solo deben coincidir con la allow-list
 // configurada en Supabase Auth > URL Configuration para evitar open redirect.
-const redirectTo = `${window.location.origin}/auth/callback`
-const resetRedirectTo = `${window.location.origin}/reset-password`
+const publicOrigin =
+  typeof window === 'undefined'
+    ? (import.meta.env.VITE_SITE_URL || 'https://helpme-community.com').replace(/\/$/, '')
+    : window.location.origin
+const redirectTo = `${publicOrigin}/auth/callback`
+const resetRedirectTo = `${publicOrigin}/reset-password`
 
 // Inicia OAuth con Google. La redireccion la gestiona Supabase, no guardamos passwords.
 export async function signInWithGoogle() {
