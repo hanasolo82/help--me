@@ -278,7 +278,7 @@ const footerCompanyLinks = [
 ]
 
 // PLACEHOLDER: email de contacto y soporte pendientes de confirmar.
-const FOOTER_CONTACT_EMAIL = 'helpme.app.contact@gmail.com'
+const FOOTER_CONTACT_EMAIL = 'helpme.community.suport@gmail.com'
 
 function StarRating({ value, max = 5 }) {
   return (

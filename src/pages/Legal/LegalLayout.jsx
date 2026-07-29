@@ -52,7 +52,8 @@ export default function LegalLayout({ title, kicker = 'Legal', lastUpdated, desc
 
       <footer className={styles.footer}>
         <p>
-          ¿Dudas? Escribenos a <a href="mailto:helpme.app.contact@gmail.com">helpme.app.contact@gmail.com</a>.
+          ¿Dudas? Escribenos a{' '}
+          <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>.
         </p>
         <Link to="/">Volver a inicio</Link>
       </footer>

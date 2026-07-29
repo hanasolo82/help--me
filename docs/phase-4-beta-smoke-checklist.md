@@ -143,7 +143,7 @@ Respalda las capas de aplicación/RLS/dinero por debajo del smoke (no sustituye 
 
 | Hallazgo | Clase | Acción |
 |---|---|---|
-| ~~"Contactar soporte" en `unconfirmed` usaba un placeholder de contacto sin email real (mismo placeholder en páginas Legal).~~ **RESUELTO 2026-06-26:** reemplazado por `helpme.app.contact@gmail.com` en StripeReturn + Legal. | resuelto | — |
+| ~~"Contactar soporte" en `unconfirmed` usaba un placeholder de contacto sin email real (mismo placeholder en páginas Legal).~~ **RESUELTO 2026-06-26:** reemplazado por `helpme.community.suport@gmail.com` en StripeReturn + Legal. | resuelto | — |
 | `completed_tasks`/`rating` se refrescan solo al entrar una review (column-guard Fase 3). | beta-acceptable | Documentado; opcional trigger en `tasks` al completar. |
 | `helper_status` / `updated_at` self-service. | beta-acceptable | Deuda GA (RPC de activación / touch trigger). |
 | Aviso de chunk grande en build; deprecación Node 20 en actions de CI. | later | Opcional: code-split (fuera de alcance) / bump actions a `@v5`. |

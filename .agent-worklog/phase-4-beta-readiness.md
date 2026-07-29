@@ -31,7 +31,8 @@ en RPC/RLS/handler identificada en el checklist.
 **Hallazgos clasificados:**
 - **RESUELTO 2026-06-26 (fix mínimo pre-beta):** el botón "Contactar soporte" del estado `unconfirmed`
   de StripeReturn usaba un placeholder de contacto sin email real (igual que las páginas Legal). Owner
-  definió `helpme.app.contact@gmail.com`; reemplazado en StripeReturn + Legal (Terms/Privacy/LegalLayout).
+  definió `helpme.community.suport@gmail.com`; reemplazado en StripeReturn + Legal
+  (Terms/Privacy/LegalLayout).
   Quedan fuera de alcance otros placeholders legales (`[NOMBRE Y APELLIDOS]`, `[NIF_O_NIE]`,
   `[DIRECCION POSTAL]`) y el bundle minificado scratch `tmp/prod-bootstrap.js`.
 - beta-acceptable: refresh de `completed_tasks`/`rating` solo por review; `helper_status`/`updated_at`

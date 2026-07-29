@@ -81,7 +81,7 @@ Mirar al menos una vez al día durante la beta. Casi todas son observables sin i
 | Tareas completadas | tareas en `completed`/`closed` | crece sin atascos |
 | Errores de pago | payments fuera de la state machine feliz; logs webhook `failed` | ~0 |
 | Findings `financial-drift` | `pnpm run verify:financial-drift` | 0 `critical`, ≤6 warnings conocidos |
-| Reports de soporte | correo `helpme.app.contact@gmail.com` | bajo; ninguno financiero/legal grave |
+| Reports de soporte | correo `helpme.community.suport@gmail.com` | bajo; ninguno financiero/legal grave |
 
 Frecuencia: `verify:financial-drift` **a diario** y tras cualquier incidencia de pago. Panel Stripe test
 tras cada ciclo de pago de un invitado las primeras veces.
@@ -116,7 +116,7 @@ No invitar a nadie externo hasta que **todo** esté en verde. Marcar `[x]` con f
 - [x] `verify:financial-drift` 0 critical / 6 warnings clasificados.
 - [x] CI en GitHub Actions verde (ambos jobs) — gate financiero documentado en `ci-financial-gates.md`.
 - [x] Recovery terminal de `StripeReturn` (corte de polling + panel `unconfirmed`) en código (Fase 3 cierre).
-- [x] Contacto de soporte real (`helpme.app.contact@gmail.com`) en StripeReturn + Legal; `rg` del
+- [x] Contacto de soporte real (`helpme.community.suport@gmail.com`) en StripeReturn + Legal; `rg` del
       placeholder de contacto = 0 en código/docs.
 
 ### Owner (requiere navegador / acción humana) — **pendiente**

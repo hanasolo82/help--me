@@ -4,7 +4,7 @@
 > Todo en **Stripe modo test**. Última revisión: 2026-06-28.
 > Hermanos: [`phase-4-beta-plan.md`](./phase-4-beta-plan.md) (estrategia, stop/go, métricas),
 > [`phase-4-beta-smoke-checklist.md`](./phase-4-beta-smoke-checklist.md) (smoke técnico de 13 pasos).
-> Contacto de soporte de la beta: **helpme.app.contact@gmail.com**.
+> Contacto de soporte de la beta: **helpme.community.suport@gmail.com**.
 
 ---
 
@@ -24,7 +24,7 @@ No mandar la primera invitación hasta que todo esté en verde. Marcar `[x]` con
 ### Recomendado (no bloqueante, pero hacerlo)
 - [ ] App levantada y accesible para los testers (URL estable de la beta).
 - [ ] Tarjeta de prueba comunicada: `4242 4242 4242 4242`, fecha futura, CVC cualquiera.
-- [ ] Buzón `helpme.app.contact@gmail.com` revisado y atendible a diario.
+- [ ] Buzón `helpme.community.suport@gmail.com` revisado y atendible a diario.
 - [ ] Lista nominal de invitados (5-15) con su rol previsto (requester / helper / ambos).
 - [ ] Plantilla de feedback (§3) compartida o enlazada.
 - [ ] Scratch `tmp/prod-bootstrap.js` borrado (limpieza de señal, opcional).
@@ -43,7 +43,7 @@ Mandar a cada tester su parte. Tono directo, pasos numerados. **Es Stripe de pru
 
 > Gracias por probar HelpMe. Estás en una beta cerrada con pagos de **prueba** (no se cobra nada real).
 > Si algo se atasca o te confunde, apúntalo (paso, qué esperabas, qué pasó) y mándalo a
-> **helpme.app.contact@gmail.com**.
+> **helpme.community.suport@gmail.com**.
 
 1. Entra y crea tu cuenta.
 2. **Publica una tarea**: título, descripción y lo que ofreces. Debe quedar visible como abierta.
@@ -61,7 +61,7 @@ Mandar a cada tester su parte. Tono directo, pasos numerados. **Es Stripe de pru
 ### 2B. Guion Helper (el que ayuda)
 
 > Gracias por probar HelpMe como helper. Pagos de **prueba**, nada real. Reporta cualquier rareza a
-> **helpme.app.contact@gmail.com**.
+> **helpme.community.suport@gmail.com**.
 
 1. Entra, crea tu cuenta y **completa el alta de cobros (Stripe Connect) en modo prueba** hasta que
    quede habilitado. Sin esto no podrás cobrar al cerrar la tarea.
@@ -120,7 +120,7 @@ Rutina del owner mientras la beta esté abierta. ~10 minutos al día.
 
 ### Cada mañana
 1. `pnpm run verify:financial-drift` → debe ser **0 critical** (≤6 warnings conocidos). Si critical → **pausar** (§5).
-2. Revisar buzón `helpme.app.contact@gmail.com`. Clasificar cada report (bloqueante / beta-aceptable / later).
+2. Revisar buzón `helpme.community.suport@gmail.com`. Clasificar cada report (bloqueante / beta-aceptable / later).
 3. Panel **Stripe test**: ojear pagos del día. Buscar dobles cobros, transfers duplicados, pagos colgados.
 
 ### Después de cada ciclo de pago de un tester (las primeras veces)
@@ -165,7 +165,7 @@ diagnosticar causa raíz → fix/mitigación → verificación verde de la capa 
 
 ## Apéndice — referencias rápidas
 - Tarjeta test: `4242 4242 4242 4242`, fecha futura, CVC cualquiera.
-- Soporte beta: `helpme.app.contact@gmail.com`.
+- Soporte beta: `helpme.community.suport@gmail.com`.
 - Verificaciones owner: `verify:financial-drift`, `verify:rls-payment-gate`, `verify:rls-ownership`,
   `verify:webhook-reliability`.
 - Estrategia y stop/go completos: [`phase-4-beta-plan.md`](./phase-4-beta-plan.md).
