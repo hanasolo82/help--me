@@ -19,7 +19,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['.agents/**/*.js', 'e2e/**/*.js', 'playwright.config.js'],
+    files: ['.agents/**/*.js', 'e2e/**/*.js', 'server/**/*.js', 'playwright.config.js'],
     languageOptions: {
       globals: globals.node,
     },
