@@ -1,48 +1,9 @@
 {
-  "generatedAt": "2026-07-29T11:53:33.620Z",
-  "window": "2026-06-29T11:53:33.620Z..2026-07-29T11:53:33.620Z",
-  "findings": [
-    {
-      "severity": "critical",
-      "code": "COMPLETED_HELD_PAYMENT_RELEASE_NOT_FINALIZED",
-      "entity_id": "95b693a6-5c9a-4366-9372-9b5526b2ccdb",
-      "detail": {
-        "payment_id": "95b693a6-5c9a-4366-9372-9b5526b2ccdb",
-        "task_id": "ea32e58f-51b1-4361-9a24-e8ce57198c7c",
-        "payment_status": "held",
-        "reconciliation_status": "reconciled",
-        "transfers": []
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "WEBHOOK_STUCK_PROCESSING",
-      "entity_id": "ee5a26cf-50ed-41f1-8080-4895cadcb5c6",
-      "detail": {
-        "webhook_event_id": "ee5a26cf-50ed-41f1-8080-4895cadcb5c6",
-        "stripe_event_id": "evt_concurrent_e556694c",
-        "type": "payment_intent.succeeded",
-        "received_at": "2026-07-09T05:28:40.064+00:00",
-        "age_ms": 1751093556,
-        "processing_attempts": 1
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "WEBHOOK_STUCK_PROCESSING",
-      "entity_id": "57e0f18f-7590-4392-b390-a6cdb85aec7a",
-      "detail": {
-        "webhook_event_id": "57e0f18f-7590-4392-b390-a6cdb85aec7a",
-        "stripe_event_id": "evt_stuck_c96b3a46",
-        "type": "payment_intent.succeeded",
-        "received_at": "2026-07-09T05:28:32.183+00:00",
-        "age_ms": 1751101437,
-        "processing_attempts": 1
-      }
-    }
-  ],
+  "generatedAt": "2026-07-29T14:11:26.508Z",
+  "window": "2026-06-29T14:11:26.508Z..2026-07-29T14:11:26.508Z",
+  "findings": [],
   "counts": {
-    "critical": 1,
-    "warning": 2
+    "critical": 0,
+    "warning": 0
   }
 }

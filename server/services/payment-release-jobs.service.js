@@ -350,11 +350,17 @@ async function processClaimedJob(job) {
 }
 
 export async function claimPaymentReleaseJobs({ limit = 10, jobId = null } = {}) {
-  return rpc('claim_payment_release_jobs', {
+  const rows = await rpc('claim_payment_release_jobs', {
     p_limit: limit,
     p_lease_seconds: DEFAULT_LEASE_SECONDS,
     p_job_id: jobId,
   })
+
+  // The RPC returns the job's primary key as `job_id`, while the rest of this service
+  // (and the finalize/retry RPCs, which have no default for p_job_id) read `job.id`.
+  // Without this mapping p_job_id went out as undefined, supabase-js dropped the key
+  // and PostgREST answered PGRST202 — after Stripe had already created the transfer.
+  return (rows || []).map((row) => ({ ...row, id: row.id ?? row.job_id }))
 }
 
 export async function processPaymentReleaseJobs({ limit = 10, jobId = null } = {}) {

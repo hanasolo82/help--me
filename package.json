@@ -27,6 +27,7 @@
     "verify:global-map-search": "node scripts/verify-global-map-search.mjs",
     "verify:financial-drift": "node scripts/verify-financial-drift.mjs",
     "repair:financial-drift": "node scripts/repair-financial-drift.mjs",
+    "repair:payment-release": "node scripts/requeue-payment-release.mjs",
     "server": "node server/index.js",
     "start": "concurrently \"pnpm run server\" \"pnpm run dev\""
   },

@@ -33,6 +33,13 @@ const CANCELLED_MONEY_HELD_STATUSES = new Set([
 ])
 const TERMINAL_PAYMENT_STATUSES = new Set(['voided', 'failed', 'refunded'])
 
+// Undelivered money is scanned without the --since window: a payment stuck since June
+// must not fall off the report just for getting old, or the gate goes green on its own
+// while a helper is still unpaid.
+const UNDELIVERED_PAYMENT_STATUSES = ['held', 'transferring', 'release_pending']
+const WORKER_OWNED_RELEASE_JOB_STATUSES = new Set(['queued', 'processing', 'retry_wait'])
+const STALE_RELEASE_JOB_MS = 30 * 60 * 1000
+
 function parseArgs(argv) {
   const args = {
     since: DEFAULT_SINCE,
@@ -204,6 +211,7 @@ function inspectPayments({
   payments,
   tasksById,
   transfersByPaymentId,
+  jobsByPaymentId,
 }) {
   for (const payment of payments) {
     const task = tasksById.get(payment.task_id) || null
@@ -229,20 +237,44 @@ function inspectPayments({
       )
     }
 
-    if (payment.status === 'held' && taskStatus === 'completed') {
-      addFinding(
-        findings,
-        'critical',
-        'COMPLETED_HELD_PAYMENT_RELEASE_NOT_FINALIZED',
-        payment.id,
-        {
-          payment_id: payment.id,
-          task_id: payment.task_id,
-          payment_status: payment.status,
-          reconciliation_status: payment.reconciliation_status,
-          transfers: transferSummary,
-        },
-      )
+    // Money confirmed as earned but not delivered. Severity depends on whether the
+    // durable queue is actually watching it: a job in flight is normal, no job at all
+    // means nothing will ever retry (dead_letter is reported by inspectReleaseJobs).
+    if (
+      UNDELIVERED_PAYMENT_STATUSES.includes(payment.status)
+      && taskStatus === 'completed'
+    ) {
+      const job = jobsByPaymentId.get(payment.id) || null
+      const detail = {
+        payment_id: payment.id,
+        task_id: payment.task_id,
+        payment_status: payment.status,
+        reconciliation_status: payment.reconciliation_status,
+        release_job: job
+          ? { id: job.id, status: job.status, attempts: job.attempt_count, last_error_code: job.last_error_code }
+          : null,
+        transfers: transferSummary,
+      }
+
+      if (!job) {
+        addFinding(
+          findings,
+          'critical',
+          'COMPLETED_HELD_PAYMENT_RELEASE_NOT_FINALIZED',
+          payment.id,
+          { ...detail, note: 'No release job exists: nothing will retry this payment.' },
+        )
+      } else if (job.status === 'succeeded') {
+        addFinding(
+          findings,
+          'critical',
+          'RELEASE_JOB_SUCCEEDED_PAYMENT_NOT_DELIVERED',
+          payment.id,
+          detail,
+        )
+      } else if (WORKER_OWNED_RELEASE_JOB_STATUSES.has(job.status)) {
+        addFinding(findings, 'warning', 'PAYMENT_RELEASE_IN_FLIGHT', payment.id, detail)
+      }
     }
 
     if (payment.status === 'released' && taskStatus !== 'closed') {
@@ -367,6 +399,43 @@ function inspectDuplicatePayments({ findings, paymentsByTaskId }) {
   }
 }
 
+// The queue is the safety net for undelivered money, so it needs watching too: a job out
+// of attempts needs a human, and a job whose turn passed long ago means the worker is not
+// running at all (its cron died, or it never got deployed).
+function inspectReleaseJobs({ findings, releaseJobs, nowMs }) {
+  for (const job of releaseJobs) {
+    if (job.status === 'dead_letter') {
+      addFinding(findings, 'critical', 'RELEASE_JOB_DEAD_LETTER', job.payment_id, {
+        payment_id: job.payment_id,
+        task_id: job.task_id,
+        job_id: job.id,
+        attempts: job.attempt_count,
+        last_error_code: job.last_error_code,
+        last_error: job.last_error,
+        action_required: 'Manual review: the helper has not been paid and retries are exhausted.',
+      })
+      continue
+    }
+
+    if (!WORKER_OWNED_RELEASE_JOB_STATUSES.has(job.status)) continue
+
+    const dueAt = job.status === 'processing' ? job.processing_started_at : job.next_attempt_at
+    const dueMs = new Date(dueAt || 0).getTime()
+    const overdueMs = Number.isFinite(dueMs) ? nowMs - dueMs : 0
+
+    if (overdueMs > STALE_RELEASE_JOB_MS) {
+      addFinding(findings, 'warning', 'RELEASE_JOB_NOT_PICKED_UP', job.payment_id, {
+        payment_id: job.payment_id,
+        job_id: job.id,
+        job_status: job.status,
+        overdue_ms: overdueMs,
+        attempts: job.attempt_count,
+        note: 'The release worker may not be running.',
+      })
+    }
+  }
+}
+
 function inspectWebhooks({ findings, webhookEvents, nowMs }) {
   for (const event of webhookEvents) {
     if (event.processing_status === 'failed') {
@@ -460,6 +529,16 @@ async function main() {
     args.limit,
   )
 
+  // Deliberately unbounded by --since: undelivered money never stops mattering.
+  const undeliveredPayments = await fetchPaged(
+    () => admin
+      .from('payments')
+      .select('id, task_id, status, reconciliation_status, provider, created_at, updated_at')
+      .in('status', UNDELIVERED_PAYMENT_STATUSES)
+      .order('updated_at', { ascending: false }),
+    args.limit,
+  )
+
   const recentTasks = await fetchPaged(
     () => admin
       .from('tasks')
@@ -474,7 +553,7 @@ async function main() {
     'tasks',
     'id, status, created_at, updated_at',
     'id',
-    recentPayments.map((payment) => payment.task_id),
+    [...recentPayments, ...undeliveredPayments].map((payment) => payment.task_id),
   )
   const relatedPayments = await fetchByIds(
     'payments',
@@ -486,7 +565,7 @@ async function main() {
     ],
   )
 
-  const payments = mergeById(recentPayments, relatedPayments)
+  const payments = mergeById(recentPayments, undeliveredPayments, relatedPayments)
   const tasks = mergeById(recentTasks, paymentTasks)
   const transfers = await fetchByIds(
     'transfers',
@@ -504,16 +583,30 @@ async function main() {
     args.limit,
   )
 
+  const releaseJobs = await fetchByIds(
+    'payment_release_jobs',
+    'id, payment_id, task_id, status, attempt_count, next_attempt_at, processing_started_at, last_error, last_error_code, updated_at',
+    'payment_id',
+    payments.map((payment) => payment.id),
+  )
+
   const findings = []
   const tasksById = new Map(tasks.map((task) => [task.id, task]))
   const paymentsByTaskId = groupBy(payments, 'task_id')
   const transfersByPaymentId = groupBy(transfers, 'payment_id')
+  const jobsByPaymentId = new Map(releaseJobs.map((job) => [job.payment_id, job]))
 
   inspectPayments({
     findings,
     payments,
     tasksById,
     transfersByPaymentId,
+    jobsByPaymentId,
+  })
+  inspectReleaseJobs({
+    findings,
+    releaseJobs,
+    nowMs: generatedAt.getTime(),
   })
   inspectTasks({
     findings,

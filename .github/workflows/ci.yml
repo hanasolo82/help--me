@@ -117,6 +117,13 @@ jobs:
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:webhook-reliability
 
+      # Ejercita el cierre de tarea + liberación de punta a punta (cola durable incluida).
+      # Sin este paso, el fallo 42702 de queue_task_payment_release pasó inadvertido: el
+      # flujo de pago quedó roto y el gate de drift no podía verlo.
+      - name: verify:payment-release
+        if: steps.preflight.outputs.have_secrets == 'true'
+        run: pnpm run verify:payment-release
+
       - name: verify:rls-payment-gate
         if: steps.preflight.outputs.have_secrets == 'true'
         run: pnpm run verify:rls-payment-gate
