@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 import { processPaymentReleaseJobs } from '../services/payment-release-jobs.service.js'
 
 const rawLimit = Number.parseInt(process.env.PAYMENT_RELEASE_JOB_LIMIT || '20', 10)
