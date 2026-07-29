@@ -321,6 +321,32 @@ export async function getStripeAccount(stripeAccountId) {
   return stripe.accounts.retrieve(stripeAccountId)
 }
 
+// Finds the release Transfer for a payment straight from Stripe. A missing local
+// `transfers` row does NOT prove the money stayed put: a run that dies between
+// `transfers.create` and the local finalizer leaves the transfer with no trace on our
+// side, and creating another one would pay the helper twice. The release worker stamps
+// transfer_group with the task id and payment_id in metadata, which is what we match on.
+// `lookupError` is returned rather than thrown so callers can refuse to act on an
+// unverified answer instead of assuming "no transfer".
+export async function findStripeTransferForPayment(payment) {
+  try {
+    const { data } = await stripe.transfers.list({
+      transfer_group: payment.task_id || payment.id,
+      limit: 10,
+    })
+
+    return {
+      transfer: data.find((entry) => entry.metadata?.payment_id === payment.id) || null,
+      lookupError: null,
+    }
+  } catch (error) {
+    return {
+      transfer: null,
+      lookupError: error?.code || error?.message || 'stripe_transfer_lookup_failed',
+    }
+  }
+}
+
 export async function writeJsonFile(pathname, value) {
   const { mkdir, writeFile } = await import('node:fs/promises')
   await mkdir(dirname(pathname), { recursive: true })

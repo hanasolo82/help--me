@@ -1,5 +1,10 @@
 import { resolve } from 'node:path'
-import { admin, stripe, writeJsonFile } from './lib/financial-ops.mjs'
+import {
+  admin,
+  findStripeTransferForPayment,
+  stripe,
+  writeJsonFile,
+} from './lib/financial-ops.mjs'
 import {
   finalizeReleaseFromStripeTransfer,
   processPaymentReleaseJobs,
@@ -127,7 +132,10 @@ async function diagnose({ payment, job }) {
   // No local row does NOT prove Stripe never sent the money: a run that died between
   // `transfers.create` and the local finalizer leaves an orphan transfer, and creating a
   // second one would pay the helper twice. Always ask Stripe before deciding.
-  const orphan = transferRow?.stripe_transfer_id ? null : await findOrphanTransfer(payment)
+  const lookup = transferRow?.stripe_transfer_id
+    ? { transfer: null, lookupError: null }
+    : await findStripeTransferForPayment(payment)
+  const orphan = lookup.transfer
 
   const action = transferRow?.stripe_transfer_id
     ? 'finalize_existing_transfer'
@@ -138,6 +146,8 @@ async function diagnose({ payment, job }) {
   const blockers = []
   if (!connectReady) blockers.push('helper_connect_not_ready')
   if (job?.status === 'succeeded') blockers.push('job_already_succeeded')
+  // An unverified answer is not a "no": creating a transfer here could pay twice.
+  if (lookup.lookupError) blockers.push(`stripe_lookup_failed:${lookup.lookupError}`)
 
   let transfer = orphan
     ? { id: orphan.id, amount: orphan.amount, reversed: orphan.reversed, exists: true, orphan: true }
@@ -197,21 +207,6 @@ async function diagnose({ payment, job }) {
     worker_owned: workerOwned,
     blockers,
     eligible: !workerOwned && blockers.length === 0,
-  }
-}
-
-// The worker stamps transfer_group with the task id and payment_id in metadata, so this
-// finds money that left the platform without ever being recorded locally.
-async function findOrphanTransfer(payment) {
-  try {
-    const { data } = await stripe.transfers.list({
-      transfer_group: payment.task_id || payment.id,
-      limit: 10,
-    })
-
-    return data.find((transfer) => transfer.metadata?.payment_id === payment.id) || null
-  } catch {
-    return null
   }
 }
 

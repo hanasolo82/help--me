@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import {
   admin,
+  findStripeTransferForPayment,
   writeJsonFile,
 } from './lib/financial-ops.mjs'
 
@@ -399,6 +400,44 @@ function inspectDuplicatePayments({ findings, paymentsByTaskId }) {
   }
 }
 
+// Money that left the platform without a local record is the state that ends in a dispute
+// (the client sees the charge, the helper has the money, the app says pending) and it is
+// also what makes a retry pay twice. The database alone cannot see it, so ask Stripe about
+// every undelivered payment that has no local transfer row.
+async function inspectUnrecordedTransfers({ findings, payments, tasksById, transfersByPaymentId }) {
+  for (const payment of payments) {
+    if (!UNDELIVERED_PAYMENT_STATUSES.includes(payment.status)) continue
+    if ((transfersByPaymentId.get(payment.id) || []).length > 0) continue
+
+    const { transfer, lookupError } = await findStripeTransferForPayment(payment)
+
+    if (lookupError) {
+      addFinding(findings, 'warning', 'STRIPE_TRANSFER_LOOKUP_FAILED', payment.id, {
+        payment_id: payment.id,
+        task_id: payment.task_id,
+        payment_status: payment.status,
+        error: lookupError,
+        note: 'Could not confirm with Stripe whether this payment was already transferred.',
+      })
+      continue
+    }
+
+    if (!transfer) continue
+
+    addFinding(findings, 'critical', 'STRIPE_TRANSFER_NOT_RECORDED', payment.id, {
+      payment_id: payment.id,
+      task_id: payment.task_id,
+      payment_status: payment.status,
+      task_status: tasksById.get(payment.task_id)?.status || null,
+      stripe_transfer_id: transfer.id,
+      amount_cents: transfer.amount,
+      reversed: transfer.reversed,
+      action_required: 'Money already left towards the helper but is not recorded locally. '
+        + 'Finalize it with `pnpm run repair:payment-release` — never create a second transfer.',
+    })
+  }
+}
+
 // The queue is the safety net for undelivered money, so it needs watching too: a job out
 // of attempts needs a human, and a job whose turn passed long ago means the worker is not
 // running at all (its cron died, or it never got deployed).
@@ -607,6 +646,12 @@ async function main() {
     findings,
     releaseJobs,
     nowMs: generatedAt.getTime(),
+  })
+  await inspectUnrecordedTransfers({
+    findings,
+    payments,
+    tasksById,
+    transfersByPaymentId,
   })
   inspectTasks({
     findings,
