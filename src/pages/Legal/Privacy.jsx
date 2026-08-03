@@ -2,7 +2,6 @@ import LegalLayout from './LegalLayout'
 
 // Politica de privacidad ajustada a lo que HelpMe realmente trata: Supabase EU, Turnstile,
 // Google OAuth opcional, OpenStreetMap, GeoJS y Storage publico de imagenes.
-// Los datos identificativos del responsable van entre corchetes para que el titular los rellene.
 export default function Privacy() {
   return (
     <LegalLayout title="Politica de privacidad" lastUpdated="2026-05-13">
@@ -10,8 +9,8 @@ export default function Privacy() {
         <h2>1. Responsable del tratamiento</h2>
         <p>
           El responsable del tratamiento de tus datos personales es <strong>Anás Elvira Fernández</strong>, persona
-          fisica con NIF/NIE <strong>[NIF_O_NIE]</strong>, domicilio a efectos de notificaciones en{' '}
-          <strong>[DIRECCION POSTAL]</strong> y correo electronico de contacto{' '}
+          fisica con NIF/NIE <strong>05301524R</strong>, domicilio a efectos de notificaciones en{' '}
+          <strong>50800 Zuera, Zaragoza</strong> y correo electronico de contacto{' '}
           <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>{' '}
           (en adelante, <em>HelpMe</em>).
         </p>

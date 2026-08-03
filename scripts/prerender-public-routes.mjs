@@ -99,6 +99,7 @@ function buildDocument(template, route, renderedMarkup) {
 
 function assertPrerenderedDocument(html, renderedMarkup, route) {
   const requiredFragments = ['<div id="root">', route.description]
+  const forbiddenTemplateFragments = ['[NOMBRE Y APELLIDOS]', '[NIF_O_NIE]', '[DIRECCION POSTAL]']
 
   for (const fragment of requiredFragments) {
     if (!html.includes(fragment)) {
@@ -115,6 +116,12 @@ function assertPrerenderedDocument(html, renderedMarkup, route) {
   for (const fragment of requiredMarkupFragments) {
     if (!renderedMarkup.includes(fragment)) {
       throw new Error(`Prerender markup for ${route.pathname} is missing: ${fragment}`)
+    }
+  }
+
+  for (const fragment of forbiddenTemplateFragments) {
+    if (renderedMarkup.includes(fragment)) {
+      throw new Error(`Prerender markup for ${route.pathname} contains template data: ${fragment}`)
     }
   }
 }

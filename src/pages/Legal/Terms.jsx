@@ -11,7 +11,7 @@ export default function Terms() {
         <p>
           En cumplimiento del art. 10 de la LSSI-CE, el titular de la aplicacion HelpMe (en adelante, la
           "Plataforma") es <strong>Anás Elvira Fernández</strong>, persona fisica con NIF/NIE{' '}
-          <strong>[NIF_O_NIE]</strong>, domicilio en <strong>[DIRECCION POSTAL]</strong> y correo electronico de
+          <strong>05301524R</strong>, domicilio en <strong>50800 Zuera, Zaragoza</strong> y correo electronico de
           contacto{' '}
           <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>.
         </p>

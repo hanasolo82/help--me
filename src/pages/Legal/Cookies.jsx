@@ -19,7 +19,7 @@ export default function Cookies() {
         <h2>2. Responsable</h2>
         <p>
           El responsable del uso de cookies es <strong>Anás Elvira Fernández</strong>, NIF/NIE{' '}
-          <strong>[NIF_O_NIE]</strong>. Mas datos en la{' '}
+          <strong>05301524R</strong>. Mas datos en la{' '}
           <Link to="/legal/privacy">Politica de privacidad</Link>.
         </p>
       </section>
