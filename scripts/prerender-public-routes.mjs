@@ -16,7 +16,11 @@ const PUBLIC_ROUTES = [
     socialTitle: 'HelpMe · Ayuda local entre vecinos',
     description:
       'HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden ayudarlas.',
-    requiredMarkupFragments: ['HelpMe, ayuda cercana para tus tareas cotidianas'],
+    requiredMarkupFragments: [
+      'HelpMe, ayuda cercana para tus tareas cotidianas',
+      'Inicio de sesión con Google',
+      'HelpMe recibe tu nombre, correo electrónico y foto de perfil',
+    ],
   },
   {
     pathname: '/legal/privacy',

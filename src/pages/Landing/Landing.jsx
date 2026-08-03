@@ -706,6 +706,25 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className={styles.googleAccess} aria-labelledby="google-access-title">
+        <div className={styles.sectionInner}>
+          <div className={styles.googleAccessLayout}>
+            <div>
+              <p className={styles.kicker}>Cuenta y privacidad</p>
+              <h2 id="google-access-title">Inicio de sesión con Google</h2>
+            </div>
+            <div className={styles.googleAccessCopy}>
+              <p>
+                Si eliges continuar con Google, HelpMe recibe tu nombre, correo electrónico y foto de perfil para
+                crear o identificar tu cuenta y completar tu perfil. No usamos estos datos para publicidad ni los
+                vendemos.
+              </p>
+              <Link to="/legal/privacy">Cómo tratamos tus datos</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className={styles.footer}>
         <div className={styles.footerGrid}>
           <div className={styles.footerBrand}>

@@ -763,6 +763,57 @@
   margin: 0;
 }
 
+.googleAccess {
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  border-block: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+  background: var(--section-bg-neutral-a);
+}
+
+.googleAccessLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  align-items: start;
+  gap: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.googleAccessLayout h2 {
+  max-width: 18rem;
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.googleAccessCopy {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 42rem;
+}
+
+.googleAccessCopy p {
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.googleAccessCopy a {
+  width: fit-content;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
+.googleAccessCopy a:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* --- Footer corporativo multi-columna --- */
 .footer {
   padding-block: clamp(2.25rem, 5vw, 3.5rem) 1.5rem;
@@ -1608,6 +1659,10 @@
   .heroFullContent {
     gap: 1.4rem;
     padding-block: 64px;
+  }
+
+  .googleAccessLayout {
+    grid-template-columns: 1fr;
   }
 }
 

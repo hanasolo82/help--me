@@ -9,7 +9,7 @@ export default function Privacy() {
       <section>
         <h2>1. Responsable del tratamiento</h2>
         <p>
-          El responsable del tratamiento de tus datos personales es <strong>[NOMBRE Y APELLIDOS]</strong>, persona
+          El responsable del tratamiento de tus datos personales es <strong>Anás Elvira Fernández</strong>, persona
           fisica con NIF/NIE <strong>[NIF_O_NIE]</strong>, domicilio a efectos de notificaciones en{' '}
           <strong>[DIRECCION POSTAL]</strong> y correo electronico de contacto{' '}
           <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>{' '}

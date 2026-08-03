@@ -10,7 +10,7 @@ export default function Terms() {
         <h2>1. Identificacion del prestador</h2>
         <p>
           En cumplimiento del art. 10 de la LSSI-CE, el titular de la aplicacion HelpMe (en adelante, la
-          "Plataforma") es <strong>[NOMBRE Y APELLIDOS]</strong>, persona fisica con NIF/NIE{' '}
+          "Plataforma") es <strong>Anás Elvira Fernández</strong>, persona fisica con NIF/NIE{' '}
           <strong>[NIF_O_NIE]</strong>, domicilio en <strong>[DIRECCION POSTAL]</strong> y correo electronico de
           contacto{' '}
           <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>.
