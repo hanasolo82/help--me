@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom'
 import LegalLayout from './LegalLayout'
 
 // Terminos y condiciones reales para una plataforma de micro-ayuda entre vecinos en Espana.
-// helpMe es intermediario; no presta los servicios anunciados.
+// HelpMe es intermediario; no presta los servicios anunciados.
 export default function Terms() {
   return (
     <LegalLayout title="Terminos y condiciones de uso" lastUpdated="2026-05-13">
       <section>
         <h2>1. Identificacion del prestador</h2>
         <p>
-          En cumplimiento del art. 10 de la LSSI-CE, el titular de la aplicacion helpMe (en adelante, la
+          En cumplimiento del art. 10 de la LSSI-CE, el titular de la aplicacion HelpMe (en adelante, la
           "Plataforma") es <strong>[NOMBRE Y APELLIDOS]</strong>, persona fisica con NIF/NIE{' '}
           <strong>[NIF_O_NIE]</strong>, domicilio en <strong>[DIRECCION POSTAL]</strong> y correo electronico de
           contacto{' '}
@@ -20,9 +20,9 @@ export default function Terms() {
       <section>
         <h2>2. Objeto</h2>
         <p>
-          helpMe es una plataforma tecnologica que pone en contacto a vecinos que necesitan ayuda con tareas
+          HelpMe es una plataforma tecnologica que pone en contacto a vecinos que necesitan ayuda con tareas
           cotidianas (mascotas, recados, compras, ayuda tecnica) con otros vecinos dispuestos a realizarlas a cambio
-          de un precio pactado. <strong>helpMe NO presta los servicios anunciados</strong>; actua exclusivamente
+          de un precio pactado. <strong>HelpMe NO presta los servicios anunciados</strong>; actua exclusivamente
           como intermediario tecnologico entre usuarios mayores de edad.
         </p>
       </section>
@@ -51,7 +51,7 @@ export default function Terms() {
         <h2>5. Cuenta y seguridad</h2>
         <p>
           Eres responsable de la confidencialidad de tus credenciales y de toda actividad realizada bajo tu cuenta.
-          Debes notificarnos inmediatamente cualquier uso no autorizado. helpMe no almacena tu contrasena en claro;
+          Debes notificarnos inmediatamente cualquier uso no autorizado. HelpMe no almacena tu contrasena en claro;
           se conserva con hash criptografico bcrypt mediante Supabase.
         </p>
       </section>
@@ -82,13 +82,13 @@ export default function Terms() {
           plataforma ni interviene en la ejecucion material de los acuerdos alcanzados entre usuarios.
         </p>
         <p>
-          Las tareas que se acuerdan a traves de helpMe se realizan a titulo personal entre vecinos. Cuando una
+          Las tareas que se acuerdan a traves de HelpMe se realizan a titulo personal entre vecinos. Cuando una
           tarea constituya una <strong>actividad economica</strong> en los terminos del art. 5 LIRPF o del art. 4
           LIVA, sera responsabilidad exclusiva del usuario que la realice declarar los ingresos obtenidos y cumplir
           con sus obligaciones fiscales (IRPF, IVA, alta en RETA, etc.).
         </p>
         <p>
-          helpMe NO es empleador ni intermediario laboral, no descuenta cotizaciones a la Seguridad Social y no
+          HelpMe NO es empleador ni intermediario laboral, no descuenta cotizaciones a la Seguridad Social y no
           asume responsabilidad por la calidad, seguridad o legalidad de los servicios prestados entre usuarios.
         </p>
       </section>
@@ -96,7 +96,7 @@ export default function Terms() {
       <section>
         <h2>8. Precios, comisiones y pagos</h2>
         <p>
-          Publicar una tarea es gratuito y helpMe no requiere ninguna suscripcion para usar el servicio. El precio
+          Publicar una tarea es gratuito y HelpMe no requiere ninguna suscripcion para usar el servicio. El precio
           de cada tarea se acuerda entre las partes y se muestra antes de aceptar. Si se aplicara una comision de
           plataforma sobre las tareas, se comunicara y mostrara con claridad antes de activarse.
         </p>
@@ -126,7 +126,7 @@ export default function Terms() {
       <section>
         <h2>10. Contenido subido por los usuarios</h2>
         <p>
-          Conservas la titularidad del contenido (textos, imagenes) que subes a helpMe. Al publicarlo nos otorgas
+          Conservas la titularidad del contenido (textos, imagenes) que subes a HelpMe. Al publicarlo nos otorgas
           una licencia limitada, no exclusiva y revocable para almacenarlo, mostrarlo dentro de la Plataforma a
           otros usuarios autorizados y procesarlo tecnicamente para la prestacion del servicio.
         </p>
@@ -141,7 +141,7 @@ export default function Terms() {
       <section>
         <h2>11. Disponibilidad y soporte</h2>
         <p>
-          helpMe se presta "tal cual" sin garantia de disponibilidad continua. Podemos suspender el servicio por
+          HelpMe se presta "tal cual" sin garantia de disponibilidad continua. Podemos suspender el servicio por
           mantenimiento o causas de fuerza mayor. Hacemos esfuerzos razonables para minimizar la interrupcion y
           comunicar incidencias relevantes.
         </p>
@@ -150,7 +150,7 @@ export default function Terms() {
       <section>
         <h2>12. Limitacion de responsabilidad</h2>
         <p>
-          En la maxima medida permitida por la ley, helpMe no sera responsable de:
+          En la maxima medida permitida por la ley, HelpMe no sera responsable de:
         </p>
         <ul>
           <li>Los danos derivados de la realizacion o no realizacion de la tarea acordada entre usuarios.</li>

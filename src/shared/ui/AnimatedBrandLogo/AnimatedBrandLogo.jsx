@@ -13,7 +13,7 @@ const SIZE_CLASSES = {
   xl: 'xl',
 }
 
-export default function AnimatedBrandLogo({ size = 'md', className = '', label = 'helpMe' }) {
+export default function AnimatedBrandLogo({ size = 'md', className = '', label = 'HelpMe' }) {
   const sizeClass = styles[SIZE_CLASSES[size] ?? 'md']
   const reactId = useId().replaceAll(':', '')
   const leftClipId = `${reactId}-clip-word-left`

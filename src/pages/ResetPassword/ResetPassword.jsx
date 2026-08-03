@@ -104,7 +104,7 @@ export default function ResetPassword() {
   return (
     <main className="auth-screen">
       <section className="auth-panel">
-        <p className="eyebrow">helpMe Auth</p>
+        <p className="eyebrow">HelpMe Auth</p>
         <h1>Crea una contrasena nueva</h1>
         <p className="muted">Minimo 12 caracteres, con al menos 3 tipos: mayusculas, minusculas, numeros y simbolos.</p>
 

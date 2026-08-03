@@ -27,7 +27,7 @@ export default function Cookies() {
       <section>
         <h2>3. Cookies y datos locales que usamos</h2>
         <p>
-          helpMe usa exclusivamente cookies y almacenamiento local <strong>de primera parte</strong>. No usamos
+          HelpMe usa exclusivamente cookies y almacenamiento local <strong>de primera parte</strong>. No usamos
           cookies publicitarias ni perfiladoras. El siguiente inventario es el real:
         </p>
 
@@ -51,14 +51,14 @@ export default function Cookies() {
             </tr>
             <tr>
               <td><code>helpme-consent-v1</code></td>
-              <td>helpMe</td>
+              <td>HelpMe</td>
               <td>Necesaria (localStorage)</td>
               <td>Guardar tu eleccion sobre cookies para no preguntarte de nuevo.</td>
               <td>12 meses.</td>
             </tr>
             <tr>
               <td><code>helpme-last-email</code></td>
-              <td>helpMe</td>
+              <td>HelpMe</td>
               <td>Preferencias (localStorage)</td>
               <td>
                 Recordar el ultimo email usado para que en el siguiente login solo tengas que introducir la
@@ -78,7 +78,7 @@ export default function Cookies() {
 
         <p>
           Las cargas de teselas de OpenStreetMap y de la API GeoJS pueden generar cookies tecnicas en sus dominios.
-          Como helpMe no controla esos dominios, te remitimos a sus politicas:{' '}
+          Como HelpMe no controla esos dominios, te remitimos a sus politicas:{' '}
           <a href="https://wiki.osmfoundation.org/wiki/Privacy_Policy" rel="noreferrer noopener" target="_blank">OSM</a>{' '}y{' '}
           <a href="https://www.geojs.io/" rel="noreferrer noopener" target="_blank">GeoJS</a>.
         </p>
@@ -148,7 +148,7 @@ export default function Cookies() {
           </li>
         </ul>
         <p>
-          Bloquear las cookies necesarias puede impedir que partes de helpMe funcionen correctamente.
+          Bloquear las cookies necesarias puede impedir que partes de HelpMe funcionen correctamente.
         </p>
       </section>
 

@@ -1,6 +1,6 @@
 import LegalLayout from './LegalLayout'
 
-// Politica de privacidad ajustada a lo que helpMe realmente trata: Supabase EU, Turnstile,
+// Politica de privacidad ajustada a lo que HelpMe realmente trata: Supabase EU, Turnstile,
 // Google OAuth opcional, OpenStreetMap, GeoJS y Storage publico de imagenes.
 // Los datos identificativos del responsable van entre corchetes para que el titular los rellene.
 export default function Privacy() {
@@ -13,7 +13,7 @@ export default function Privacy() {
           fisica con NIF/NIE <strong>[NIF_O_NIE]</strong>, domicilio a efectos de notificaciones en{' '}
           <strong>[DIRECCION POSTAL]</strong> y correo electronico de contacto{' '}
           <a href="mailto:helpme.community.suport@gmail.com">helpme.community.suport@gmail.com</a>{' '}
-          (en adelante, <em>helpMe</em>).
+          (en adelante, <em>HelpMe</em>).
         </p>
         <p>
           Esta politica se rige por el Reglamento (UE) 2016/679 (RGPD), la Ley Organica 3/2018 de Proteccion de Datos
@@ -24,7 +24,7 @@ export default function Privacy() {
 
       <section>
         <h2>2. Datos que tratamos</h2>
-        <p>helpMe trata las siguientes categorias de datos personales:</p>
+        <p>HelpMe trata las siguientes categorias de datos personales:</p>
         <table>
           <thead>
             <tr>
@@ -119,7 +119,7 @@ export default function Privacy() {
       <section>
         <h2>4. Destinatarios y encargados del tratamiento</h2>
         <p>
-          helpMe no vende tus datos. Los compartimos unicamente con los siguientes <strong>encargados del
+          HelpMe no vende tus datos. Los compartimos unicamente con los siguientes <strong>encargados del
           tratamiento</strong>, todos sujetos a contrato conforme al art. 28 RGPD:
         </p>
         <ul>
@@ -194,7 +194,7 @@ export default function Privacy() {
           <li><strong>Oposicion</strong>: oponerte a tratamientos basados en interes legitimo.</li>
           <li><strong>Portabilidad</strong>: obtener tus datos en formato estructurado y legible por maquina.</li>
           <li><strong>Retirar el consentimiento</strong> en cualquier momento, sin efectos retroactivos.</li>
-          <li><strong>No ser objeto de decisiones automatizadas</strong>: helpMe no toma decisiones automatizadas
+          <li><strong>No ser objeto de decisiones automatizadas</strong>: HelpMe no toma decisiones automatizadas
             con efectos juridicos significativos sobre ti.</li>
         </ul>
         <p>
@@ -224,7 +224,7 @@ export default function Privacy() {
       <section>
         <h2>9. Menores</h2>
         <p>
-          helpMe NO esta dirigido a menores de 14 anos. Si tienes entre 14 y 17 anos necesitas el consentimiento de
+          HelpMe NO esta dirigido a menores de 14 anos. Si tienes entre 14 y 17 anos necesitas el consentimiento de
           tus tutores legales para utilizar la aplicacion. Si detectamos cuentas de menores sin consentimiento, las
           eliminaremos.
         </p>

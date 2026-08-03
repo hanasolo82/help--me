@@ -880,44 +880,6 @@
   height: 16px;
 }
 
-.oauthDisclosure {
-  display: grid;
-  gap: 0.45rem;
-  margin-top: clamp(1.75rem, 4vw, 2.5rem);
-  padding-top: 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-}
-
-.oauthDisclosure h2,
-.oauthDisclosure p {
-  margin: 0;
-}
-
-.oauthDisclosure h2 {
-  color: var(--text);
-  font-size: 0.95rem;
-  font-weight: 750;
-}
-
-.oauthDisclosure p {
-  max-width: 52rem;
-  color: color-mix(in srgb, var(--text) 68%, transparent);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.oauthDisclosure a {
-  color: var(--accent);
-  font-weight: 700;
-  text-underline-offset: 3px;
-}
-
-.oauthDisclosure a:focus-visible {
-  border-radius: 4px;
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 .footerBottom {
   display: flex;
   flex-wrap: wrap;
@@ -1511,8 +1473,8 @@
   z-index: 2;
   display: grid;
   align-content: center;
-  gap: 2rem;
-  max-width: 620px;
+  gap: 1.35rem;
+  max-width: 700px;
   padding-block: 96px;
   color: #fff;
 }
@@ -1529,56 +1491,20 @@
 .heroFullTitle {
   margin: 0;
   font-family: var(--font-heading);
-  /* Escala continua: hasta 56px en desktop, se reduce en pantallas estrechas
-     para que ni el texto fijo ni la palabra rotativa salten a una 3ª línea. */
+  /* Escala continua: hasta 56px en desktop y legible sin depender de animación. */
   font-size: clamp(26px, 4.9vw, 56px);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.08;
+  letter-spacing: 0;
   font-weight: 600;
   color: #fff;
-  /* Reserva SIEMPRE 2 líneas: el bloque nunca cambia de altura al rotar. */
-  min-height: 2.1em;
 }
 
 .heroFullLead {
   max-width: 36rem;
-  margin: -0.5rem 0 0;
+  margin: 0;
   color: rgba(255, 255, 255, 0.92);
   font-size: 1.05rem;
   line-height: 1.55;
-}
-
-/* Texto fijo en su propia línea (línea 1). */
-.heroTitleLead {
-  display: block;
-  white-space: nowrap;
-}
-
-/* Titular: cola con typewriter + cursor */
-.heroTypeWrap {
-  display: flex; /* bloque: la palabra rotativa ocupa siempre la línea 2 */
-  align-items: baseline;
-  white-space: nowrap;
-}
-
-.heroType {
-  color: #bfe6cd; /* verde claro del eyebrow, para diferenciar la parte variable */
-}
-
-.heroCaret {
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  margin-left: 2px;
-  transform: translateY(0.08em);
-  background: currentColor;
-  animation: hm-caret 1s steps(1) infinite;
-}
-
-@keyframes hm-caret {
-  50% {
-    opacity: 0;
-  }
 }
 
 /* Frase rotativa del H2 de Categorías: vertical cut reveal en cada cambio (entrada por key). */
@@ -1618,11 +1544,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heroCaret {
-    animation: none;
-    opacity: 0;
-  }
-
   .rotatingPhrase {
     animation: none;
   }

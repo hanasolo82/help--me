@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
     socialTitle: 'HelpMe · Ayuda local entre vecinos',
     description:
       'HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden ayudarlas.',
+    requiredMarkupFragments: ['HelpMe, ayuda cercana para tus tareas cotidianas'],
   },
   {
     pathname: '/legal/privacy',
@@ -24,6 +25,7 @@ const PUBLIC_ROUTES = [
     socialTitle: 'Política de privacidad · HelpMe',
     description:
       'Política de privacidad de HelpMe: datos tratados, uso del inicio de sesión con Google, proveedores y derechos de las personas usuarias.',
+    requiredMarkupFragments: ['Google Ireland Limited', 'Recibimos email, nombre y avatar publico'],
   },
   {
     pathname: '/legal/terms',
@@ -91,8 +93,8 @@ function buildDocument(template, route, renderedMarkup) {
   return html
 }
 
-function assertPrerenderedDocument(html, route) {
-  const requiredFragments = ['<div id="root">', '<h1', 'HelpMe', route.description]
+function assertPrerenderedDocument(html, renderedMarkup, route) {
+  const requiredFragments = ['<div id="root">', route.description]
 
   for (const fragment of requiredFragments) {
     if (!html.includes(fragment)) {
@@ -102,6 +104,14 @@ function assertPrerenderedDocument(html, route) {
 
   if (html.includes('<div id="root"></div>')) {
     throw new Error(`Prerender output for ${route.pathname} still has an empty root`)
+  }
+
+  const requiredMarkupFragments = ['<h1', 'HelpMe', ...(route.requiredMarkupFragments ?? [])]
+
+  for (const fragment of requiredMarkupFragments) {
+    if (!renderedMarkup.includes(fragment)) {
+      throw new Error(`Prerender markup for ${route.pathname} is missing: ${fragment}`)
+    }
   }
 }
 
@@ -121,7 +131,7 @@ try {
   for (const route of PUBLIC_ROUTES) {
     const renderedMarkup = renderPublicRoute(route.pathname)
     const document = buildDocument(template, route, renderedMarkup)
-    assertPrerenderedDocument(document, route)
+    assertPrerenderedDocument(document, renderedMarkup, route)
 
     const outputPath = path.join(DIST_DIR, route.outputPath)
     await mkdir(path.dirname(outputPath), { recursive: true })

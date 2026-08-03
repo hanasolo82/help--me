@@ -72,7 +72,7 @@ export default function OnboardingVerificationStep() {
             Volver
           </button>
           <button className="primary-action" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Finalizando...' : 'Entrar a helpMe'}
+            {mutation.isPending ? 'Finalizando...' : 'Entrar a HelpMe'}
           </button>
         </div>
       </form>

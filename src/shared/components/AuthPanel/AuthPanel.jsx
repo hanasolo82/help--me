@@ -216,6 +216,11 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
             Continuar con Google
           </button>
 
+          <p className="oauth-data-note">
+            Google comparte tu nombre, correo y foto de perfil para crear o identificar tu cuenta.{' '}
+            <Link to="/legal/privacy">Más información</Link>.
+          </p>
+
           <div className="auth-divider">
             <span>o</span>
           </div>

@@ -12,7 +12,7 @@ export default function OnboardingFrame({ title, lead, children, footer, onBack 
         </div>
       ) : null}
       <div className={styles.hero}>
-        <p className="eyebrow">helpMe</p>
+        <p className="eyebrow">HelpMe</p>
         <h1>{title}</h1>
         <p className="muted">{lead}</p>
       </div>

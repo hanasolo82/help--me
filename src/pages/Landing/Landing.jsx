@@ -20,13 +20,8 @@ import CookieConsent from '../../shared/components/CookieConsent/CookieConsent'
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta'
 import { useInView } from '../../shared/hooks/useInView'
 import { useScrollReveal } from '../../shared/hooks/useScrollReveal'
-import { useTypewriter } from '../../shared/hooks/useTypewriter'
 import { useTextRotate } from '../../shared/hooks/useTextRotate'
-import {
-  HERO_TITLE_PREFIX,
-  HERO_TITLE_TAILS,
-  CATEGORY_TITLE_PHRASES,
-} from './heroPhrases'
+import { CATEGORY_TITLE_PHRASES } from './heroPhrases'
 import { setHelperHomeIntent } from '../../features/helper-onboarding/services/helperIntentStorage'
 import BentoGrid from './components/BentoGrid'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
@@ -311,12 +306,6 @@ export default function Landing() {
   // Reveal de los bloques de Confianza (intro con foto y banda ancha) al entrar en viewport.
   const [trustZig1Ref, trustZig1InView] = useInView({ threshold: 0.25 })
   const [trustZig2Ref, trustZig2InView] = useInView({ threshold: 0.25 })
-  const { text: heroTitleTail } = useTypewriter(HERO_TITLE_TAILS, {
-    typeSpeed: 90,
-    deleteSpeed: 55,
-    holdFull: 10000,
-    holdEmpty: 450,
-  })
   // Rotación del H2 de Categorías (mismo ritmo pausado que tenía: 8s por frase).
   const rotatingPhraseIndex = useTextRotate(CATEGORY_TITLE_PHRASES.length, 8000)
 
@@ -454,14 +443,7 @@ export default function Landing() {
         <div className={styles.sectionInner}>
           <div className={styles.heroFullContent}>
             <p className={styles.heroFullEyebrow}>Ayuda cercana</p>
-            <h1 className={styles.heroFullTitle}>
-              <span className={styles.heroTitleLead}>{HERO_TITLE_PREFIX}</span>
-              <span className={styles.heroTypeWrap} aria-hidden="true">
-                <span className={styles.heroType}>{heroTitleTail}</span>
-                <span className={styles.heroCaret} />
-              </span>
-              <span className={styles.srOnly}>{`${HERO_TITLE_PREFIX} cerca de ti`}</span>
-            </h1>
+            <h1 className={styles.heroFullTitle}>HelpMe, ayuda cercana para tus tareas cotidianas</h1>
             <p className={styles.heroFullLead}>
               HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden
               ayudarlas.
@@ -776,15 +758,6 @@ export default function Landing() {
             <Link to="/legal/cookies">Cookies</Link>
           </nav>
         </div>
-
-        <section className={styles.oauthDisclosure} aria-labelledby="google-sign-in-title">
-          <h2 id="google-sign-in-title">Inicio de sesión con Google</h2>
-          <p>
-            Si eliges continuar con Google, HelpMe utiliza tu nombre, correo electrónico y foto de perfil para
-            crear tu cuenta, identificarte de forma segura y completar tu perfil. Consulta los detalles en nuestra{' '}
-            <Link to="/legal/privacy">Política de privacidad</Link>.
-          </p>
-        </section>
 
         <div className={styles.footerBottom}>
           <span>© {new Date().getFullYear()} HelpMe. Todos los derechos reservados.</span>

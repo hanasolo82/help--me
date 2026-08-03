@@ -475,6 +475,27 @@ p {
   flex: 0 0 auto;
 }
 
+.oauth-data-note {
+  max-width: 22.5rem;
+  margin: -0.2rem auto 0;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.oauth-data-note a {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.oauth-data-note a:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .oauth-action:hover {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));

@@ -13,7 +13,7 @@ export default function Login() {
   useDocumentMeta({
     title: initialMode === 'register' ? 'Crea tu cuenta' : 'Entrar',
     description:
-      'Accede a helpMe con Google o con email y contrasena para publicar tareas o ayudar a tus vecinos.',
+      'Accede a HelpMe con Google o con email y contrasena para publicar tareas o ayudar a tus vecinos.',
     path: '/login',
   })
 

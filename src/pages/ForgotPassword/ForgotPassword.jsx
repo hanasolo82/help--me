@@ -29,7 +29,7 @@ export default function ForgotPassword() {
   return (
     <main className="auth-screen">
       <section className="auth-panel">
-        <p className="eyebrow">helpMe Auth</p>
+        <p className="eyebrow">HelpMe Auth</p>
         <h1>Recupera tu contrasena</h1>
         <p className="muted">
           Te enviaremos un enlace para crear una contrasena nueva si el correo esta registrado.
