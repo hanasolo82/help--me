@@ -2096,7 +2096,7 @@ p {
    Element.animate({ pseudoElement }), cuyo soporte es menos consistente. */
 :root[data-theme-transition='wave']::view-transition-new(root) {
   z-index: 1;
-  animation: theme-wave-reveal var(--theme-wave-duration, 900ms) cubic-bezier(0.3, 0, 0.7, 1) both;
+  animation: theme-wave-reveal var(--theme-wave-duration, 900ms) linear both;
 }
 
 :root[data-theme-transition='wave']::view-transition-old(root) {

@@ -3,8 +3,8 @@ import { flushSync } from 'react-dom'
 import { Moon, Sun } from 'lucide-react'
 import styles from './ThemeSwitch.module.css'
 
-const MIN_TRANSITION_DURATION = 780
-const MAX_TRANSITION_DURATION = 1000
+const MIN_TRANSITION_DURATION = 800
+const MAX_TRANSITION_DURATION = 1100
 
 export default function ThemeSwitch({
   checked = false,
@@ -33,17 +33,12 @@ export default function ThemeSwitch({
       return
     }
 
-    // En activación táctil usamos las coordenadas reales del toque, que son el
-    // mismo sistema de referencia que usa la capa de View Transitions. Teclado
-    // y clicks sintéticos conservan el centro del switch como fallback.
+    // El origen visual es siempre el centro físico del switch. Usar el punto
+    // exacto del toque desplazaba la onda dentro de este control tan pequeño,
+    // especialmente en Chrome Android.
     const rect = event.currentTarget.getBoundingClientRect()
-    const pointerIsInsideSwitch =
-      event.clientX >= rect.left &&
-      event.clientX <= rect.right &&
-      event.clientY >= rect.top &&
-      event.clientY <= rect.bottom
-    const x = pointerIsInsideSwitch ? event.clientX : rect.left + rect.width / 2
-    const y = pointerIsInsideSwitch ? event.clientY : rect.top + rect.height / 2
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
     // La pseudo-capa de View Transitions usa el snapshot containing block, que
     // puede ser mayor que visualViewport en móviles con barras dinámicas.
     const viewportWidth = Math.max(window.innerWidth, document.documentElement.clientWidth)
@@ -55,7 +50,7 @@ export default function ThemeSwitch({
       ) + 2
     const duration = Math.min(
       MAX_TRANSITION_DURATION,
-      Math.max(MIN_TRANSITION_DURATION, maxRadius * 0.9),
+      Math.max(MIN_TRANSITION_DURATION, maxRadius),
     )
 
     activeTransitionRef.current?.skipTransition?.()
