@@ -712,7 +712,7 @@ export default function Landing() {
         <div className={styles.footerGrid}>
           <div className={styles.footerBrand}>
             <a className={styles.footerBrandLogo} href="/" aria-label="Ir a la portada de HelpMe">
-              <BrandLogo size="md" variant="auto" />
+              <BrandLogo size="md" variant="auto" loading="lazy" />
             </a>
             <p className={styles.footerTagline}>La ayuda que necesitas, cerca de ti</p>
             <p className={styles.footerClaim}>

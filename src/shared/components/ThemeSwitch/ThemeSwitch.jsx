@@ -3,8 +3,8 @@ import { flushSync } from 'react-dom'
 import { Moon, Sun } from 'lucide-react'
 import styles from './ThemeSwitch.module.css'
 
-const MIN_TRANSITION_DURATION = 520
-const MAX_TRANSITION_DURATION = 720
+const MIN_TRANSITION_DURATION = 780
+const MAX_TRANSITION_DURATION = 1000
 
 export default function ThemeSwitch({
   checked = false,
@@ -33,10 +33,17 @@ export default function ThemeSwitch({
       return
     }
 
-    // Origen de la revelación: centro del botón.
+    // En activación táctil usamos las coordenadas reales del toque, que son el
+    // mismo sistema de referencia que usa la capa de View Transitions. Teclado
+    // y clicks sintéticos conservan el centro del switch como fallback.
     const rect = event.currentTarget.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
+    const pointerIsInsideSwitch =
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    const x = pointerIsInsideSwitch ? event.clientX : rect.left + rect.width / 2
+    const y = pointerIsInsideSwitch ? event.clientY : rect.top + rect.height / 2
     // La pseudo-capa de View Transitions usa el snapshot containing block, que
     // puede ser mayor que visualViewport en móviles con barras dinámicas.
     const viewportWidth = Math.max(window.innerWidth, document.documentElement.clientWidth)
@@ -48,11 +55,16 @@ export default function ThemeSwitch({
       ) + 2
     const duration = Math.min(
       MAX_TRANSITION_DURATION,
-      Math.max(MIN_TRANSITION_DURATION, maxRadius * 0.72),
+      Math.max(MIN_TRANSITION_DURATION, maxRadius * 0.9),
     )
 
     activeTransitionRef.current?.skipTransition?.()
-    document.documentElement.dataset.themeTransition = 'wave'
+    const root = document.documentElement
+    root.dataset.themeTransition = 'wave'
+    root.style.setProperty('--theme-wave-x', `${x}px`)
+    root.style.setProperty('--theme-wave-y', `${y}px`)
+    root.style.setProperty('--theme-wave-radius', `${maxRadius}px`)
+    root.style.setProperty('--theme-wave-duration', `${Math.round(duration)}ms`)
 
     const transition = document.startViewTransition(() => {
       // flushSync garantiza que el cambio de data-theme (y el estado de React) se aplique
@@ -61,32 +73,16 @@ export default function ThemeSwitch({
     })
     activeTransitionRef.current = transition
 
-    transition.ready
-      .then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${maxRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration,
-            easing: 'cubic-bezier(0.4, 0, 1, 1)',
-            pseudoElement: '::view-transition-new(root)',
-          },
-        )
-      })
-      .catch(() => {
-        // Si la transición se interrumpe, el tema ya está aplicado; no hace falta nada más.
-      })
-
     transition.finished
       .catch(() => {})
       .finally(() => {
         if (activeTransitionRef.current === transition) {
           activeTransitionRef.current = null
-          delete document.documentElement.dataset.themeTransition
+          delete root.dataset.themeTransition
+          root.style.removeProperty('--theme-wave-x')
+          root.style.removeProperty('--theme-wave-y')
+          root.style.removeProperty('--theme-wave-radius')
+          root.style.removeProperty('--theme-wave-duration')
         }
       })
   }

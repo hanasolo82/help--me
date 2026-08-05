@@ -55,7 +55,13 @@ function subscribeToThemeChanges(callback) {
   return () => observer.disconnect()
 }
 
-export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left', className = '' }) {
+export default function BrandLogo({
+  variant = 'auto',
+  size = 'md',
+  align = 'left',
+  className = '',
+  loading = 'eager',
+}) {
   const resolvedVariant = useSyncExternalStore(
     subscribeToThemeChanges,
     () => resolveVariant(variant),
@@ -84,6 +90,7 @@ export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left
         alt="HelpMe"
         width={logoDimensions.width}
         height={logoDimensions.height}
+        loading={loading}
         decoding="async"
       />
     </span>

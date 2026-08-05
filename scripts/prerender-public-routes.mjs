@@ -143,6 +143,17 @@ function assertPrerenderedDocument(html, renderedMarkup, route) {
   }
 
   const rootStart = html.indexOf('<div id="root" data-prerendered="true">')
+  const stylesheetStart = html.indexOf('<link rel="stylesheet"')
+  const imagePreloadStart = html.indexOf('<link rel="preload" as="image"')
+
+  if (stylesheetStart < 0 || stylesheetStart > rootStart) {
+    throw new Error(`Prerender output for ${route.pathname} must load CSS before #root`)
+  }
+
+  if (imagePreloadStart >= 0 && imagePreloadStart < stylesheetStart) {
+    throw new Error(`Prerender output for ${route.pathname} must load CSS before image preloads`)
+  }
+
   const noscriptStart = html.indexOf('<noscript>')
   const rootMarkup = rootStart >= 0 && noscriptStart > rootStart
     ? html.slice(rootStart, noscriptStart)
