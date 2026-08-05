@@ -134,6 +134,26 @@
   flex: 0 0 auto;
 }
 
+.headerPreferenceActions,
+.headerTopActions,
+.headerProfileActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headerPreferenceActions {
+  order: 1;
+}
+
+.headerTopActions {
+  order: 2;
+}
+
+.headerProfileActions {
+  order: 3;
+}
+
 @media (min-width: 72rem) {
   .header {
     /* Sin efecto tarjeta: el header se apoya directo sobre el fondo del main.
@@ -788,12 +808,29 @@
   .headerActions {
     grid-column: 2;
     grid-row: 1;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.45rem;
+    display: grid;
+    grid-template-columns: auto;
+    justify-items: end;
+    gap: 0.55rem;
     align-self: start;
+  }
+
+  .headerTopActions,
+  .headerPreferenceActions,
+  .headerProfileActions {
+    gap: 0.5rem;
+  }
+
+  .headerTopActions {
+    grid-row: 1;
+  }
+
+  .headerPreferenceActions {
+    grid-row: 2;
+  }
+
+  .headerProfileActions {
+    grid-row: 3;
   }
 
   .helperLink {

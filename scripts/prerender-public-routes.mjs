@@ -66,14 +66,41 @@ function setMetaTag(html, attribute, name, content) {
   return replaceRequired(html, pattern, tag, `${attribute}="${name}"`)
 }
 
-function buildDocument(template, route, renderedMarkup) {
+function extractImagePreloads(renderedMarkup) {
+  const preloads = []
+  const markup = renderedMarkup.replace(/<link\s+rel="preload"\s+as="image"[^>]*\/?>(?:<\/link>)?/gi, (tag) => {
+    preloads.push(
+      tag
+        .replaceAll('imageSrcSet', 'imagesrcset')
+        .replaceAll('imageSizes', 'imagesizes'),
+    )
+    return ''
+  })
+
+  return {
+    markup,
+    headMarkup: [...new Set(preloads)].join('\n    '),
+  }
+}
+
+function buildDocument(template, route, rawRenderedMarkup) {
   const canonicalUrl = `${SITE_ORIGIN}${route.pathname === '/' ? '/' : route.pathname}`
+  const { markup: renderedMarkup, headMarkup } = extractImagePreloads(rawRenderedMarkup)
   let html = replaceRequired(
     template,
     /<div id="root"><\/div>/,
     `<div id="root">${renderedMarkup}</div>`,
     'prerender root',
   )
+
+  if (headMarkup) {
+    html = replaceRequired(
+      html,
+      /<\/head>/i,
+      `    ${headMarkup}\n  </head>`,
+      'prerender image preloads',
+    )
+  }
 
   html = replaceRequired(
     html,
@@ -109,6 +136,19 @@ function assertPrerenderedDocument(html, renderedMarkup, route) {
 
   if (html.includes('<div id="root"></div>')) {
     throw new Error(`Prerender output for ${route.pathname} still has an empty root`)
+  }
+
+  if (html.includes('/src/assets/')) {
+    throw new Error(`Prerender output for ${route.pathname} contains a development asset URL`)
+  }
+
+  const rootStart = html.indexOf('<div id="root">')
+  const noscriptStart = html.indexOf('<noscript>')
+  const rootMarkup = rootStart >= 0 && noscriptStart > rootStart
+    ? html.slice(rootStart, noscriptStart)
+    : ''
+  if (rootMarkup.includes('<link rel="preload"')) {
+    throw new Error(`Prerender output for ${route.pathname} contains an image preload inside #root`)
   }
 
   const requiredMarkupFragments = ['<h1', 'HelpMe', ...(route.requiredMarkupFragments ?? [])]

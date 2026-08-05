@@ -133,54 +133,59 @@ export default function HomeHeader({
         ) : null}
 
         <div className={styles.headerActions}>
-          <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />
+          <div className={styles.headerPreferenceActions}>
+            <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />
+          </div>
 
-          {onOpenHelper ? (
-            <button type="button" className={styles.helperLink} onClick={modeAction}>
-              {modeLabel}
-            </button>
-          ) : null}
-
-          {/* La campana abre el feed real de /notifications (antes, un dropdown resumen). */}
-          <button
-            type="button"
-            className={styles.notificationButton}
-            onClick={onOpenNotifications}
-            aria-label={
-              totalNotificationCount > 0
-                ? `Notificaciones (${notificationBadge} nuevas)`
-                : 'Notificaciones'
-            }
-          >
-            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-              <path
-                d="M12 3a5 5 0 0 0-5 5v2.65c0 .76-.23 1.5-.66 2.12L5.1 14.55A1.55 1.55 0 0 0 6.38 17h11.24a1.55 1.55 0 0 0 1.28-2.43l-1.24-1.8A3.72 3.72 0 0 1 17 10.65V8a5 5 0 0 0-5-5Zm0 19a3 3 0 0 0 2.83-2h-5.66A3 3 0 0 0 12 22Z"
-                fill="currentColor"
-              />
-            </svg>
-            {totalNotificationCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
-          </button>
-
-          <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
-            <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="sm" />
-          </button>
-
-          <AnimatedDropdown
-            isOpen={menuOpen}
-            onOpenChange={setMenuOpen}
-            align="end"
-            width={300}
-            portal
-            trigger={
-              <button type="button" className={styles.menuButton} aria-label="Abrir opciones">
-                <span className={styles.menuButtonBars} aria-hidden="true">
-                  <span className={styles.menuButtonBar} />
-                  <span className={styles.menuButtonBar} />
-                  <span className={styles.menuButtonBar} />
-                </span>
+          <div className={styles.headerTopActions}>
+            {onOpenHelper ? (
+              <button type="button" className={styles.helperLink} onClick={modeAction}>
+                {modeLabel}
               </button>
-            }
-          >
+            ) : null}
+
+            {/* La campana abre el feed real de /notifications (antes, un dropdown resumen). */}
+            <button
+              type="button"
+              className={styles.notificationButton}
+              onClick={onOpenNotifications}
+              aria-label={
+                totalNotificationCount > 0
+                  ? `Notificaciones (${notificationBadge} nuevas)`
+                  : 'Notificaciones'
+              }
+            >
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path
+                  d="M12 3a5 5 0 0 0-5 5v2.65c0 .76-.23 1.5-.66 2.12L5.1 14.55A1.55 1.55 0 0 0 6.38 17h11.24a1.55 1.55 0 0 0 1.28-2.43l-1.24-1.8A3.72 3.72 0 0 1 17 10.65V8a5 5 0 0 0-5-5Zm0 19a3 3 0 0 0 2.83-2h-5.66A3 3 0 0 0 12 22Z"
+                  fill="currentColor"
+                />
+              </svg>
+              {totalNotificationCount > 0 ? <span className={styles.notificationBadge}>{notificationBadge}</span> : null}
+            </button>
+          </div>
+
+          <div className={styles.headerProfileActions}>
+            <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
+              <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="sm" />
+            </button>
+
+            <AnimatedDropdown
+              isOpen={menuOpen}
+              onOpenChange={setMenuOpen}
+              align="end"
+              width={300}
+              portal
+              trigger={
+                <button type="button" className={styles.menuButton} aria-label="Abrir opciones">
+                  <span className={styles.menuButtonBars} aria-hidden="true">
+                    <span className={styles.menuButtonBar} />
+                    <span className={styles.menuButtonBar} />
+                    <span className={styles.menuButtonBar} />
+                  </span>
+                </button>
+              }
+            >
             <AnimatedDropdown.Group title="Principal">
               {primaryItems.map((item) => (
                 <AnimatedDropdown.Item
@@ -229,7 +234,8 @@ export default function HomeHeader({
                 </AnimatedDropdown.Item>
               </>
             ) : null}
-          </AnimatedDropdown>
+            </AnimatedDropdown>
+          </div>
         </div>
       </header>
 

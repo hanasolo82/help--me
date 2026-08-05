@@ -111,9 +111,9 @@ export function AuthProvider({ children }) {
     const subscription = onAuthStateChange(async (event, nextSession) => {
       if (!isMounted) return
 
-      // Antes del bootstrap inicial, ignoramos eventos para no pisar el estado validado.
-      // INITIAL_SESSION llegara y reconciliara cuando bootstrap haya terminado.
-      if (!didBootstrap && event !== 'INITIAL_SESSION') return
+      // bootstrapAuth ya valida y carga la sesión inicial. Procesar también
+      // INITIAL_SESSION duplicaba la consulta de profiles en cada entrada.
+      if (!didBootstrap || event === 'INITIAL_SESSION') return
 
       const nextUser = nextSession?.user ?? null
       const nextUserId = nextUser?.id ?? null

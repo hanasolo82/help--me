@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from 'react'
-import blackLogo from '../../../assets/icons/helpme_logo_black.webp'
-import whiteLogo from '../../../assets/icons/helme_logo_white.webp'
 import styles from './BrandLogo.module.css'
+
+const LOGO_URLS = {
+  light: '/logos/helpme_logo_black.webp',
+  dark: '/logos/helme_logo_white.webp',
+}
 
 // Dimensiones intrínsecas por variante (ratios distintos) para reservar espacio y evitar CLS.
 const LOGO_DIMENSIONS = {
@@ -59,7 +62,7 @@ export default function BrandLogo({ variant = 'auto', size = 'md', align = 'left
     () => (variant === 'auto' ? 'light' : variant),
   )
 
-  const logoSrc = resolvedVariant === 'dark' ? whiteLogo : blackLogo
+  const logoSrc = LOGO_URLS[resolvedVariant] ?? LOGO_URLS.light
   const logoDimensions = LOGO_DIMENSIONS[resolvedVariant] ?? LOGO_DIMENSIONS.light
   const rootClassName = [
     styles.logo,

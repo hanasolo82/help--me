@@ -68,8 +68,8 @@
    :first-of-type/:last-of-type: los iconos conviven con los span .srOnly y
    .thumb, así que esos selectores apuntaban a los spans equivocados y no
    llegaban a aplicarse nunca. */
-.switch:not(.switchChecked) .iconMoon,
-.switchChecked .iconSun {
+.switch:not(.switchChecked) .iconSun,
+.switchChecked .iconMoon {
   color: #ffffff;
 }
 
@@ -87,7 +87,7 @@
   background: var(--color-primary);
   box-shadow: var(--shadow-primary);
   transform: translate(-50%, -50%);
-  transition: transform 0.22s var(--ease-spring-soft);
+  transition: transform 0.28s cubic-bezier(0.2, 0.72, 0.18, 1);
 }
 
 /* Recorrido = una columna exacta: del centro del primer icono al del segundo. */

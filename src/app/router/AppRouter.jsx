@@ -34,6 +34,7 @@ import StripeReturn from "../../pages/Stripe/StripeReturn";
 import StripeRefresh from "../../pages/Stripe/StripeRefresh";
 import PaymentsPage from "../../pages/Payments/PaymentsPage";
 import PaymentReceiptPage from "../../pages/Payments/PaymentReceiptPage";
+import NotFound from "../../pages/NotFound/NotFound";
 import RequireAuth from "./RequireAuth";
 
 const DesignLab = import.meta.env.DEV ? lazy(() => import("../../pages/DesignLab/DesignLab")) : null;
@@ -138,6 +139,7 @@ export const router = createBrowserRouter(
           }
         />
       ) : null}
+      <Route path="*" element={<NotFound />} />
     </Route>
   ),
 );

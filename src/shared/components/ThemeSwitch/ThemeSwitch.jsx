@@ -3,6 +3,7 @@ import { Moon, Sun } from 'lucide-react'
 import styles from './ThemeSwitch.module.css'
 
 const TRANSITION_DURATION = 500
+const MOBILE_TRANSITION_DURATION = 280
 
 export default function ThemeSwitch({
   checked = false,
@@ -39,6 +40,7 @@ export default function ThemeSwitch({
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y),
     )
+    const useCompactTransition = window.matchMedia('(max-width: 42rem)').matches
 
     const transition = document.startViewTransition(() => {
       // flushSync garantiza que el cambio de data-theme (y el estado de React) se aplique
@@ -49,15 +51,17 @@ export default function ThemeSwitch({
     transition.ready
       .then(() => {
         document.documentElement.animate(
+          useCompactTransition
+            ? { opacity: [0, 1] }
+            : {
+                clipPath: [
+                  `circle(0px at ${x}px ${y}px)`,
+                  `circle(${maxRadius}px at ${x}px ${y}px)`,
+                ],
+              },
           {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${maxRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration: TRANSITION_DURATION,
-            easing: 'ease-in-out',
+            duration: useCompactTransition ? MOBILE_TRANSITION_DURATION : TRANSITION_DURATION,
+            easing: useCompactTransition ? 'ease-out' : 'ease-in-out',
             pseudoElement: '::view-transition-new(root)',
           },
         )
@@ -77,11 +81,11 @@ export default function ThemeSwitch({
       onClick={handleClick}
     >
       <span className={styles.srOnly}>{nextLabel}</span>
-      <span className={`${styles.icon} ${styles.iconMoon}`} aria-hidden="true">
-        <Moon size={16} strokeWidth={2} />
-      </span>
       <span className={`${styles.icon} ${styles.iconSun}`} aria-hidden="true">
         <Sun size={16} strokeWidth={2} />
+      </span>
+      <span className={`${styles.icon} ${styles.iconMoon}`} aria-hidden="true">
+        <Moon size={16} strokeWidth={2} />
       </span>
       <span className={styles.thumb} aria-hidden="true" />
     </button>
