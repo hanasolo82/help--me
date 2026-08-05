@@ -17,6 +17,12 @@
   max-width: 30rem;
 }
 
+.brandLink {
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+}
+
 .content h1,
 .content p {
   margin: 0;

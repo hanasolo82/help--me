@@ -6,7 +6,9 @@ import styles from './NotFound.module.css'
 export default function NotFound() {
   return (
     <main className={styles.page}>
-      <BrandLogo size="md" variant="auto" align="center" />
+      <Link className={styles.brandLink} to="/" aria-label="Ir a la portada de HelpMe">
+        <BrandLogo size="md" variant="auto" align="center" />
+      </Link>
       <div className={styles.content}>
         <p className={styles.code}>404</p>
         <h1>Página no encontrada</h1>

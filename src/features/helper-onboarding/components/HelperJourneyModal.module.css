@@ -2,7 +2,7 @@
    aquí solo quedan el ancho del wizard y su botón de cierre flotante. */
 .panel {
   --modal-width: 54rem;
-  max-height: min(calc(100vh - 2rem), 56rem);
+  max-height: min(calc(100dvh - 2rem), 56rem);
 }
 
 .closeButton {
@@ -121,7 +121,7 @@
 
   .modal {
     width: 100%;
-    max-height: calc(100vh - 1.5rem);
+    max-height: calc(100dvh - 1.5rem);
     border-radius: var(--radius-lg);
   }
 }

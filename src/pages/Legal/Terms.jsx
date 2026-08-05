@@ -5,7 +5,7 @@ import LegalLayout from './LegalLayout'
 // HelpMe es intermediario; no presta los servicios anunciados.
 export default function Terms() {
   return (
-    <LegalLayout title="Terminos y condiciones de uso" lastUpdated="2026-05-13">
+    <LegalLayout title="Terminos y condiciones de uso" lastUpdated="2026-08-05">
       <section>
         <h2>1. Identificacion del prestador</h2>
         <p>
@@ -53,6 +53,14 @@ export default function Terms() {
           Eres responsable de la confidencialidad de tus credenciales y de toda actividad realizada bajo tu cuenta.
           Debes notificarnos inmediatamente cualquier uso no autorizado. HelpMe no almacena tu contrasena en claro;
           se conserva con hash criptografico bcrypt mediante Supabase.
+        </p>
+        <h3>Inicio de sesión con Google</h3>
+        <p>
+          Si eliges continuar con Google, HelpMe recibe tu nombre, correo electrónico y foto de perfil para crear o
+          identificar tu cuenta y completar tu perfil. No usamos estos datos para publicidad ni los vendemos.
+        </p>
+        <p>
+          Puedes consultar cómo tratamos estos datos en nuestra <Link to="/legal/privacy">Política de privacidad</Link>.
         </p>
       </section>
 

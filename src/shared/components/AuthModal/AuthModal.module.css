@@ -16,7 +16,7 @@
   position: relative;
   width: min(100%, 38.75rem);
   max-width: 38.75rem;
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--hm-panel-bg);
@@ -471,7 +471,7 @@
   .modal {
     width: calc(100vw - 24px);
     max-width: none;
-    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
     border-radius: 28px;
     padding: 1.45rem 1rem 1rem;
   }

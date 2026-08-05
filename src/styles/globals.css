@@ -6,6 +6,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--app-background);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -17,6 +18,7 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 h1,

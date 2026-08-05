@@ -12,14 +12,17 @@ import { useEffect, useRef, useState } from 'react'
  */
 export function useInView({ threshold = 0.2, rootMargin = '0px 0px -10% 0px' } = {}) {
   const ref = useRef(null)
-  // Sin soporte de IntersectionObserver: muestra el contenido directamente.
-  const [inView, setInView] = useState(
-    () => typeof IntersectionObserver === 'undefined',
-  )
+  // Estado inicial estable para que prerender y cliente produzcan el mismo DOM.
+  const [inView, setInView] = useState(false)
 
   useEffect(() => {
     const node = ref.current
     if (!node || inView) return undefined
+
+    if (typeof IntersectionObserver === 'undefined') {
+      const timeoutId = window.setTimeout(() => setInView(true), 0)
+      return () => window.clearTimeout(timeoutId)
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {

@@ -4,11 +4,15 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   min-height: 100dvh;
   width: min(100%, var(--hm-shell-max-width));
   max-width: var(--hm-shell-max-width);
   margin: 0 auto;
-  padding: var(--hm-shell-padding-block) var(--hm-shell-padding-inline) var(--hm-shell-bottom-offset);
+  padding-block-start: max(var(--hm-shell-padding-block), env(safe-area-inset-top));
+  padding-inline-end: max(var(--hm-shell-padding-inline), env(safe-area-inset-right));
+  padding-block-end: max(var(--hm-shell-bottom-offset), env(safe-area-inset-bottom));
+  padding-inline-start: max(var(--hm-shell-padding-inline), env(safe-area-inset-left));
   background: var(--hm-shell-surface);
   color: var(--hm-shell-text);
   transition:
@@ -38,6 +42,7 @@
 
 @media (min-width: 72rem) {
   .shell {
+    height: 100vh;
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
@@ -50,6 +55,7 @@
 
 @media (max-width: 42rem) {
   .shell {
-    padding-inline: var(--hm-shell-padding-inline-mobile);
+    padding-inline-start: max(var(--hm-shell-padding-inline-mobile), env(safe-area-inset-left));
+    padding-inline-end: max(var(--hm-shell-padding-inline-mobile), env(safe-area-inset-right));
   }
 }

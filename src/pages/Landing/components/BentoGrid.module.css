@@ -390,4 +390,33 @@
   .grid {
     grid-template-columns: 1fr;
   }
+
+  .card {
+    align-items: center;
+    text-align: center;
+  }
+
+  .iconBox {
+    align-self: center;
+  }
+
+  .taskList {
+    width: 100%;
+    justify-items: center;
+  }
+
+  .taskList li {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .taskList li::before {
+    margin-top: 0;
+  }
+
+  .tags {
+    justify-content: center;
+  }
 }

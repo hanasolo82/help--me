@@ -12,7 +12,7 @@
   display: grid;
   gap: 1rem;
   width: min(100%, 42rem);
-  max-height: 92vh;
+  max-height: 92dvh;
   margin-inline: auto;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-xl) var(--hm-radius-xl) 0 0;
@@ -105,7 +105,7 @@
 
   .drawer {
     width: min(60vw, 42rem);
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     height: 100%;
     margin-inline: 0;
     border-radius: var(--hm-radius-xl);

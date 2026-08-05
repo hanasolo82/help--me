@@ -196,9 +196,9 @@ export default function AuthPanel({ titleId, initialMode = 'login', onSuccess })
 
   return (
     <section className="auth-panel">
-      <div className="auth-panel-brand" aria-hidden="true">
+      <a className="auth-panel-brand" href="/" aria-label="Ir a la portada de HelpMe">
         <AnimatedBrandLogo size="lg" />
-      </div>
+      </a>
 
       <h1 id={titleId} className="auth-panel-title">
         {copy.title}

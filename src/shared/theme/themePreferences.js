@@ -1,6 +1,7 @@
 export const THEME_STORAGE_KEY = 'helpme-theme-preference'
 export const THEME_LIGHT = 'light'
 export const THEME_DARK = 'dark'
+const THEME_CHANGE_EVENT = 'helpme:theme-change'
 
 const THEME_ALIAS_TOKENS = {
   '--color-bg': 'var(--hm-color-bg)',
@@ -153,8 +154,29 @@ export function setStoredThemePreference(theme) {
 
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   } catch {
     // Ignore storage errors in restricted browsers.
+  }
+}
+
+export function getStoredThemeSnapshot() {
+  return getStoredThemePreference() ?? THEME_LIGHT
+}
+
+export function subscribeToStoredThemePreference(callback) {
+  if (typeof window === 'undefined') return () => {}
+
+  const handleStorage = (event) => {
+    if (event.key === THEME_STORAGE_KEY) callback()
+  }
+
+  window.addEventListener(THEME_CHANGE_EVENT, callback)
+  window.addEventListener('storage', handleStorage)
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', handleStorage)
   }
 }
 

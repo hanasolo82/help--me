@@ -175,33 +175,47 @@ export function AnimatedDropdown({
     const updatePosition = () => {
       const triggerNode = triggerRef.current
       const triggerRect = triggerNode.getBoundingClientRect()
-      const dropdownWidth = typeof width === 'number' ? width : Math.min(triggerRect.width, window.innerWidth - 16)
-      const maxWidth = window.innerWidth - 16
+      const visualViewport = window.visualViewport
+      const viewportTop = visualViewport?.offsetTop ?? 0
+      const viewportLeft = visualViewport?.offsetLeft ?? 0
+      const viewportHeight = visualViewport?.height ?? window.innerHeight
+      const viewportWidth = visualViewport?.width ?? window.innerWidth
+      const viewportBottom = viewportTop + viewportHeight
+      const viewportRight = viewportLeft + viewportWidth
+      const dropdownWidth = typeof width === 'number' ? width : Math.min(triggerRect.width, viewportWidth - 16)
+      const maxWidth = viewportWidth - 16
       const resolvedWidth = Math.min(dropdownWidth, maxWidth)
       const viewportGap = 8
       const triggerGap = 10
-      const availableBelow = Math.max(window.innerHeight - triggerRect.bottom - triggerGap - viewportGap, 0)
-      const availableAbove = Math.max(triggerRect.top - triggerGap - viewportGap, 0)
+      const availableBelow = Math.max(viewportBottom - triggerRect.bottom - triggerGap - viewportGap, 0)
+      const availableAbove = Math.max(triggerRect.top - viewportTop - triggerGap - viewportGap, 0)
       const dropdownHeight = dropdownRef.current?.scrollHeight || 0
       const preferredHeight = Math.min(dropdownHeight, 360)
       const opensAbove = availableBelow < preferredHeight && availableAbove > availableBelow
       const availableHeight = opensAbove ? availableAbove : availableBelow
+      const maxHeight = Math.min(availableHeight, 360)
+      const renderedHeight = Math.min(dropdownHeight, maxHeight)
 
       let left
       if (align === 'start') {
-        left = Math.max(viewportGap, Math.min(triggerRect.left, window.innerWidth - resolvedWidth - viewportGap))
+        left = Math.max(
+          viewportLeft + viewportGap,
+          Math.min(triggerRect.left, viewportRight - resolvedWidth - viewportGap),
+        )
       } else {
         left = Math.max(
-          viewportGap,
-          Math.min(triggerRect.right - resolvedWidth, window.innerWidth - resolvedWidth - viewportGap),
+          viewportLeft + viewportGap,
+          Math.min(triggerRect.right - resolvedWidth, viewportRight - resolvedWidth - viewportGap),
         )
       }
 
       setPosition({
-        top: opensAbove ? 'auto' : `${triggerRect.bottom + triggerGap}px`,
-        bottom: opensAbove ? `${window.innerHeight - triggerRect.top + triggerGap}px` : 'auto',
+        top: opensAbove
+          ? `${Math.max(viewportTop + viewportGap, triggerRect.top - triggerGap - renderedHeight)}px`
+          : `${triggerRect.bottom + triggerGap}px`,
+        bottom: 'auto',
         left: `${left}px`,
-        maxHeight: `${Math.max(availableHeight, 80)}px`,
+        maxHeight: `${maxHeight}px`,
         transformOrigin: `${align === 'start' ? 'left' : 'right'} ${opensAbove ? 'bottom' : 'top'}`,
       })
     }
@@ -210,10 +224,14 @@ export function AnimatedDropdown({
 
     window.addEventListener('resize', updatePosition)
     window.addEventListener('scroll', updatePosition, true)
+    window.visualViewport?.addEventListener('resize', updatePosition)
+    window.visualViewport?.addEventListener('scroll', updatePosition)
 
     return () => {
       window.removeEventListener('resize', updatePosition)
       window.removeEventListener('scroll', updatePosition, true)
+      window.visualViewport?.removeEventListener('resize', updatePosition)
+      window.visualViewport?.removeEventListener('scroll', updatePosition)
     }
   }, [align, rendered, width])
 

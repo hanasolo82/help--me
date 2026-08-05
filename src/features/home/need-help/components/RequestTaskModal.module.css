@@ -2,7 +2,7 @@
    Modal base de shared/ui; aquí quedan el ancho propio y el contenido del form. */
 .panel {
   --modal-width: 42rem;
-  max-height: min(96vh, 52rem);
+  max-height: min(96dvh, 52rem);
   scrollbar-gutter: stable;
 }
 
@@ -201,7 +201,7 @@
   z-index: 8;
   display: grid;
   gap: 0.38rem;
-  max-height: min(15rem, 42vh);
+  max-height: min(15rem, 42dvh);
   overflow-y: auto;
   border: 1px solid var(--hm-panel-border);
   border-radius: var(--hm-panel-radius);

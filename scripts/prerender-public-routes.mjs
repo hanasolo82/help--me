@@ -16,11 +16,7 @@ const PUBLIC_ROUTES = [
     socialTitle: 'HelpMe · Ayuda local entre vecinos',
     description:
       'HelpMe conecta a personas que necesitan resolver tareas cotidianas con vecinos cercanos que pueden ayudarlas.',
-    requiredMarkupFragments: [
-      'HelpMe, ayuda cercana para tus tareas cotidianas',
-      'Inicio de sesión con Google',
-      'HelpMe recibe tu nombre, correo electrónico y foto de perfil',
-    ],
+    requiredMarkupFragments: ['HelpMe, ayuda cercana para tus tareas cotidianas'],
   },
   {
     pathname: '/legal/privacy',
@@ -38,6 +34,10 @@ const PUBLIC_ROUTES = [
     socialTitle: 'Términos y condiciones · HelpMe',
     description:
       'Términos y condiciones de HelpMe para solicitar y prestar ayuda con tareas cotidianas entre personas cercanas.',
+    requiredMarkupFragments: [
+      'Inicio de sesión con Google',
+      'HelpMe recibe tu nombre, correo electrónico y foto de perfil',
+    ],
   },
 ]
 
@@ -89,7 +89,7 @@ function buildDocument(template, route, rawRenderedMarkup) {
   let html = replaceRequired(
     template,
     /<div id="root"><\/div>/,
-    `<div id="root">${renderedMarkup}</div>`,
+    `<div id="root" data-prerendered="true">${renderedMarkup}</div>`,
     'prerender root',
   )
 
@@ -125,7 +125,7 @@ function buildDocument(template, route, rawRenderedMarkup) {
 }
 
 function assertPrerenderedDocument(html, renderedMarkup, route) {
-  const requiredFragments = ['<div id="root">', route.description]
+  const requiredFragments = ['<div id="root" data-prerendered="true">', route.description]
   const forbiddenTemplateFragments = ['[NOMBRE Y APELLIDOS]', '[NIF_O_NIE]', '[DIRECCION POSTAL]']
 
   for (const fragment of requiredFragments) {
@@ -142,7 +142,7 @@ function assertPrerenderedDocument(html, renderedMarkup, route) {
     throw new Error(`Prerender output for ${route.pathname} contains a development asset URL`)
   }
 
-  const rootStart = html.indexOf('<div id="root">')
+  const rootStart = html.indexOf('<div id="root" data-prerendered="true">')
   const noscriptStart = html.indexOf('<noscript>')
   const rootMarkup = rootStart >= 0 && noscriptStart > rootStart
     ? html.slice(rootStart, noscriptStart)

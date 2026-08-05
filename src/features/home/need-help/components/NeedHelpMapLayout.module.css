@@ -582,7 +582,7 @@
   display: grid;
   gap: 0.75rem;
   overflow: auto;
-  max-height: calc(100vh - 16rem);
+  max-height: calc(100dvh - 16rem);
   padding-right: 0.2rem;
 }
 

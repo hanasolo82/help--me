@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import styles from '../../pages/Home/Home.module.css'
 import AnimatedDropdown from '../../shared/ui/AnimatedDropdown'
 import ThemeSwitch from '../../shared/components/ThemeSwitch/ThemeSwitch'
@@ -93,7 +94,9 @@ export default function HomeHeader({
     <>
       <header className={`${styles.header} ${showZoneSearch ? styles.headerWithSearch : ''}`}>
         <div className={styles.headerIdentity}>
-          <BrandLogo size="sm" variant="auto" className={styles.logo} />
+          <Link className={styles.headerBrandLink} to="/" aria-label="Ir a la portada de HelpMe">
+            <BrandLogo size="sm" variant="auto" className={styles.logo} />
+          </Link>
           <p className="muted">Hola, {displayName}</p>
         </div>
 
@@ -132,18 +135,24 @@ export default function HomeHeader({
           </div>
         ) : null}
 
-        <div className={styles.headerActions}>
-          <div className={styles.headerPreferenceActions}>
-            <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />
-          </div>
+        <button type="button" className={`${styles.avatar} ${styles.headerAvatar}`} onClick={onOpenProfile} aria-label="Abrir perfil">
+          <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="md" />
+        </button>
 
-          <div className={styles.headerTopActions}>
+        <div className={styles.headerActions}>
+          <div className={styles.headerModeAction}>
             {onOpenHelper ? (
               <button type="button" className={styles.helperLink} onClick={modeAction}>
                 {modeLabel}
               </button>
             ) : null}
+          </div>
 
+          <div className={styles.headerPreferenceAction}>
+            <ThemeSwitch checked={themePreference === THEME_DARK} onCheckedChange={onThemeChange} />
+          </div>
+
+          <div className={styles.headerNotificationAction}>
             {/* La campana abre el feed real de /notifications (antes, un dropdown resumen). */}
             <button
               type="button"
@@ -165,11 +174,7 @@ export default function HomeHeader({
             </button>
           </div>
 
-          <div className={styles.headerProfileActions}>
-            <button type="button" className={styles.avatar} onClick={onOpenProfile} aria-label="Abrir perfil">
-              <UserAvatar src={avatarUrl} name={displayName || userInitial} alt={displayName} size="sm" />
-            </button>
-
+          <div className={styles.headerMenuAction}>
             <AnimatedDropdown
               isOpen={menuOpen}
               onOpenChange={setMenuOpen}
@@ -186,54 +191,54 @@ export default function HomeHeader({
                 </button>
               }
             >
-            <AnimatedDropdown.Group title="Principal">
-              {primaryItems.map((item) => (
-                <AnimatedDropdown.Item
-                  key={item.label}
-                  onClick={() => handleAction(item.action)}
-                >
-                  {item.label}
-                </AnimatedDropdown.Item>
-              ))}
-            </AnimatedDropdown.Group>
+              <AnimatedDropdown.Group title="Principal">
+                {primaryItems.map((item) => (
+                  <AnimatedDropdown.Item
+                    key={item.label}
+                    onClick={() => handleAction(item.action)}
+                  >
+                    {item.label}
+                  </AnimatedDropdown.Item>
+                ))}
+              </AnimatedDropdown.Group>
 
-            <AnimatedDropdown.Divider />
+              <AnimatedDropdown.Divider />
 
-            <AnimatedDropdown.Group title="Cuenta">
-              {accountItems.map((item) => (
-                <AnimatedDropdown.Item
-                  key={item.label}
-                  onClick={() => handleAction(item.action)}
-                >
-                  {item.label}
-                </AnimatedDropdown.Item>
-              ))}
-            </AnimatedDropdown.Group>
+              <AnimatedDropdown.Group title="Cuenta">
+                {accountItems.map((item) => (
+                  <AnimatedDropdown.Item
+                    key={item.label}
+                    onClick={() => handleAction(item.action)}
+                  >
+                    {item.label}
+                  </AnimatedDropdown.Item>
+                ))}
+              </AnimatedDropdown.Group>
 
-            {helperItems.length > 0 ? (
-              <>
-                <AnimatedDropdown.Divider />
-                <AnimatedDropdown.Group title="Ayudante activo">
-                  {helperItems.map((item) => (
-                    <AnimatedDropdown.Item
-                      key={item.label}
-                      onClick={() => handleAction(item.action)}
-                    >
-                      {item.label}
-                    </AnimatedDropdown.Item>
-                  ))}
-                </AnimatedDropdown.Group>
-              </>
-            ) : null}
+              {helperItems.length > 0 ? (
+                <>
+                  <AnimatedDropdown.Divider />
+                  <AnimatedDropdown.Group title="Ayudante activo">
+                    {helperItems.map((item) => (
+                      <AnimatedDropdown.Item
+                        key={item.label}
+                        onClick={() => handleAction(item.action)}
+                      >
+                        {item.label}
+                      </AnimatedDropdown.Item>
+                    ))}
+                  </AnimatedDropdown.Group>
+                </>
+              ) : null}
 
-            {onLogout ? (
-              <>
-                <AnimatedDropdown.Divider />
-                <AnimatedDropdown.Item danger onClick={handleRequestLogout}>
-                  Cerrar sesión
-                </AnimatedDropdown.Item>
-              </>
-            ) : null}
+              {onLogout ? (
+                <>
+                  <AnimatedDropdown.Divider />
+                  <AnimatedDropdown.Item danger onClick={handleRequestLogout}>
+                    Cerrar sesión
+                  </AnimatedDropdown.Item>
+                </>
+              ) : null}
             </AnimatedDropdown>
           </div>
         </div>

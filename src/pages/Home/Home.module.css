@@ -27,6 +27,13 @@
   white-space: nowrap;
 }
 
+.headerBrandLink {
+  display: inline-flex;
+  width: fit-content;
+  color: inherit;
+  text-decoration: none;
+}
+
 .headerSearch {
   display: grid;
   gap: 0.35rem;
@@ -134,24 +141,13 @@
   flex: 0 0 auto;
 }
 
-.headerPreferenceActions,
-.headerTopActions,
-.headerProfileActions {
+.headerModeAction,
+.headerPreferenceAction,
+.headerNotificationAction,
+.headerMenuAction {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.headerPreferenceActions {
-  order: 1;
-}
-
-.headerTopActions {
-  order: 2;
-}
-
-.headerProfileActions {
-  order: 3;
+  justify-content: center;
 }
 
 @media (min-width: 72rem) {
@@ -173,7 +169,7 @@
     display: grid;
     /* La columna de acciones nunca baja de su contenido (max-content); si el
        viewport aprieta, cede primero la columna de identidad. */
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 40%) minmax(max-content, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 40%) auto minmax(max-content, 1fr);
     align-items: center;
   }
 
@@ -185,6 +181,10 @@
   }
 
   .headerActions {
+    justify-self: end;
+  }
+
+  .headerAvatar {
     justify-self: end;
   }
 }
@@ -230,6 +230,13 @@
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow-sm);
+}
+
+.headerAvatar {
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0.1rem;
+  flex: 0 0 auto;
 }
 
 .avatar {
@@ -758,6 +765,59 @@
   transform: translate(-1px, -1px);
 }
 
+@media (max-width: 64rem) {
+  .header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: start;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .headerIdentity {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-items: center;
+    min-width: 0;
+  }
+
+  .headerIdentity p {
+    display: none;
+  }
+
+  .headerBrandLink {
+    justify-self: center;
+  }
+
+  .headerAvatar {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    width: 3.35rem;
+    height: 3.35rem;
+  }
+
+  .headerActions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    gap: 0.55rem;
+  }
+
+  .headerSearch {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    max-width: none;
+  }
+
+  .logo {
+    width: clamp(6.5rem, 18vw, 8rem);
+  }
+}
+
 @media (max-width: 42rem) {
   .sectionTitle {
     align-items: stretch;
@@ -772,72 +832,44 @@
     max-width: none;
   }
 
-  .header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .headerWithSearch {
-    display: grid;
-  }
-
-  .headerIdentity {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .headerSearch {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    width: 100%;
-    max-width: none;
-  }
-
-  .logo {
-    font-size: clamp(1.55rem, 8vw, 2.15rem);
-  }
-
   .location {
     font-size: 0.78rem;
     margin-bottom: 0.1rem;
   }
 
   .headerActions {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-items: end;
+    gap: 0.45rem 0.55rem;
+  }
+
+  .headerModeAction {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .headerPreferenceAction {
     grid-column: 2;
     grid-row: 1;
-    display: grid;
-    grid-template-columns: auto;
-    justify-items: end;
-    gap: 0.55rem;
-    align-self: start;
   }
 
-  .headerTopActions,
-  .headerPreferenceActions,
-  .headerProfileActions {
-    gap: 0.5rem;
-  }
-
-  .headerTopActions {
-    grid-row: 1;
-  }
-
-  .headerPreferenceActions {
+  .headerNotificationAction {
+    grid-column: 1;
     grid-row: 2;
+    justify-self: end;
   }
 
-  .headerProfileActions {
-    grid-row: 3;
+  .headerMenuAction {
+    grid-column: 2;
+    grid-row: 2;
   }
 
   .helperLink {
     font-size: 0.82rem;
   }
 
-  .avatar,
   .notificationButton,
   .menuButton {
     width: 2.45rem;

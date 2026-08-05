@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   PencilLine,
@@ -29,8 +29,9 @@ import BrandLogo from '../../shared/ui/BrandLogo/BrandLogo'
 import AnimatedBrandLogo from '../../shared/ui/AnimatedBrandLogo/AnimatedBrandLogo'
 import {
   applyThemeToDocument,
-  resolveThemePreference,
+  getStoredThemeSnapshot,
   setStoredThemePreference,
+  subscribeToStoredThemePreference,
   THEME_DARK,
   THEME_LIGHT,
 } from '../../shared/theme/themePreferences'
@@ -310,8 +311,10 @@ export default function Landing() {
   const rotatingPhraseIndex = useTextRotate(CATEGORY_TITLE_PHRASES.length, 8000)
 
   useScrollReveal(landingRef)
-  const [themePreference, setThemePreference] = useState(() =>
-    resolveThemePreference({ isPrivateRoute: false }),
+  const themePreference = useSyncExternalStore(
+    subscribeToStoredThemePreference,
+    getStoredThemeSnapshot,
+    () => THEME_LIGHT,
   )
 
   useEffect(() => {
@@ -368,7 +371,6 @@ export default function Landing() {
 
   function handleThemeChange(nextChecked) {
     const nextTheme = nextChecked ? THEME_DARK : THEME_LIGHT
-    setThemePreference(nextTheme)
     setStoredThemePreference(nextTheme)
     applyThemeToDocument(nextTheme)
   }
@@ -379,7 +381,7 @@ export default function Landing() {
       className={themePreference === THEME_DARK ? `${styles.landing} ${styles.dark}` : styles.landing}
     >
       <header className={styles.navbar}>
-        <a className={styles.brand} href="#inicio" aria-label="Inicio">
+        <a className={styles.brand} href="/" aria-label="Ir a la portada de HelpMe">
           <AnimatedBrandLogo size="md" />
         </a>
 
@@ -673,8 +675,6 @@ export default function Landing() {
             <div className={styles.testimonialGrid}>
               {TESTIMONIALS_PLACEHOLDER.map((testimonial) => (
                 <article key={testimonial.name} className={styles.testimonialCard}>
-                  <StarRating value={testimonial.stars} />
-                  <blockquote className={styles.testimonialQuote}>{testimonial.quote}</blockquote>
                   <footer className={styles.testimonialAuthor}>
                     <span className={styles.testimonialAvatar} aria-hidden="true">
                       {testimonial.name.charAt(0)}
@@ -684,6 +684,8 @@ export default function Landing() {
                       <span>{testimonial.role}</span>
                     </div>
                   </footer>
+                  <StarRating value={testimonial.stars} />
+                  <blockquote className={styles.testimonialQuote}>{testimonial.quote}</blockquote>
                 </article>
               ))}
             </div>
@@ -706,29 +708,12 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className={styles.googleAccess} aria-labelledby="google-access-title">
-        <div className={styles.sectionInner}>
-          <div className={styles.googleAccessLayout}>
-            <div>
-              <p className={styles.kicker}>Cuenta y privacidad</p>
-              <h2 id="google-access-title">Inicio de sesión con Google</h2>
-            </div>
-            <div className={styles.googleAccessCopy}>
-              <p>
-                Si eliges continuar con Google, HelpMe recibe tu nombre, correo electrónico y foto de perfil para
-                crear o identificar tu cuenta y completar tu perfil. No usamos estos datos para publicidad ni los
-                vendemos.
-              </p>
-              <Link to="/legal/privacy">Cómo tratamos tus datos</Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <footer className={styles.footer}>
         <div className={styles.footerGrid}>
           <div className={styles.footerBrand}>
-            <BrandLogo size="md" variant="auto" />
+            <a className={styles.footerBrandLogo} href="/" aria-label="Ir a la portada de HelpMe">
+              <BrandLogo size="md" variant="auto" />
+            </a>
             <p className={styles.footerTagline}>La ayuda que necesitas, cerca de ti</p>
             <p className={styles.footerClaim}>
               Vecinos que se echan una mano con recados, compras, mascotas y pequeñas gestiones del día a día.

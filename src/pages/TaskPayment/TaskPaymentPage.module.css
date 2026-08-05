@@ -1,6 +1,6 @@
 .page {
   width: min(100%, 68rem);
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
   padding: clamp(1rem, 2.2vw, 1.5rem) 1rem 6rem;
   color: var(--color-text);

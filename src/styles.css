@@ -475,6 +475,15 @@ p {
   flex: 0 0 auto;
 }
 
+.auth-panel-brand {
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+  margin-inline: auto;
+  color: inherit;
+  text-decoration: none;
+}
+
 .oauth-data-note {
   max-width: 22.5rem;
   margin: -0.2rem auto 0;
@@ -1045,7 +1054,7 @@ p {
 .task-chat-modal {
   /* contextual task chat modal card: components/home/TaskChatModal.jsx */
   width: min(100%, 42rem);
-  max-height: min(90vh, 42rem);
+  max-height: min(90dvh, 42rem);
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
@@ -2019,7 +2028,7 @@ p {
   /* confirmación al publicar: pages/CreateTask/CreateTask.jsx */
   position: fixed;
   left: 50%;
-  bottom: clamp(1.25rem, 4vh, 2.5rem);
+  bottom: clamp(1.25rem, 4dvh, 2.5rem);
   transform: translateX(-50%);
   z-index: 1200;
   display: flex;
@@ -2078,18 +2087,18 @@ p {
 /* Animated Theme Toggler (View Transitions API).
    Desactivamos la animación por defecto de la instantánea root para que solo se vea el
    círculo (clip-path) que anima ThemeSwitch; así se evita el doble cross-fade. */
-::view-transition-old(root),
-::view-transition-new(root) {
+:root[data-theme-transition='wave']::view-transition-old(root),
+:root[data-theme-transition='wave']::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
 /* La instantánea nueva se revela por encima de la antigua (el círculo crece sobre el tema previo). */
-::view-transition-new(root) {
+:root[data-theme-transition='wave']::view-transition-new(root) {
   z-index: 1;
 }
 
-::view-transition-old(root) {
+:root[data-theme-transition='wave']::view-transition-old(root) {
   z-index: 0;
 }
 

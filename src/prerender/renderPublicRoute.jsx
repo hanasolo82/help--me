@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from 'react-dom/server'
+import { renderToString } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 
 import Landing from '../pages/Landing/Landing'
@@ -18,7 +18,7 @@ export function renderPublicRoute(pathname) {
     throw new Error(`Unsupported public prerender route: ${pathname}`)
   }
 
-  return renderToStaticMarkup(
+  return renderToString(
     <MemoryRouter initialEntries={[pathname]}>
       <Page />
     </MemoryRouter>,

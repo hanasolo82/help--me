@@ -59,7 +59,7 @@ export function useScrollReveal(containerRef, options) {
     if (!sections.length) return undefined
 
     const viewportHeight = () =>
-      window.innerHeight || document.documentElement.clientHeight || 1
+      window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 1
 
     sections.forEach((el) => {
       el.style.setProperty('--sr-translate', `${opts.translate}px`)

@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(17rem, 23rem) minmax(0, 1fr);
   gap: 0;
-  min-height: min(70vh, 46rem);
+  min-height: min(70dvh, 46rem);
   border: 1px solid var(--hm-panel-border);
   border-radius: var(--hm-panel-radius);
   background: var(--hm-panel-bg);
