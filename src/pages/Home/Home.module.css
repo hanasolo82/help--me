@@ -150,6 +150,22 @@
   justify-content: center;
 }
 
+.headerModeAction {
+  order: 1;
+}
+
+.headerMenuAction {
+  order: 2;
+}
+
+.headerPreferenceAction {
+  order: 3;
+}
+
+.headerNotificationAction {
+  order: 4;
+}
+
 @media (min-width: 72rem) {
   .header {
     /* Sin efecto tarjeta: el header se apoya directo sobre el fondo del main.
@@ -814,7 +830,7 @@
   }
 
   .logo {
-    width: clamp(6.5rem, 18vw, 8rem);
+    width: clamp(8rem, 28vw, 10.5rem);
   }
 }
 
@@ -839,23 +855,26 @@
 
   .headerActions {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 3.5rem;
+    grid-template-rows: 2.75rem 2.75rem;
     justify-items: end;
-    gap: 0.45rem 0.55rem;
+    gap: 0.45rem 0.35rem;
   }
 
-  .headerModeAction {
+  .headerPreferenceAction {
     grid-column: 1;
     grid-row: 1;
     justify-self: end;
   }
 
-  .headerPreferenceAction {
+  .headerNotificationAction {
     grid-column: 2;
     grid-row: 1;
+    width: 3.5rem;
+    justify-content: flex-end;
   }
 
-  .headerNotificationAction {
+  .headerModeAction {
     grid-column: 1;
     grid-row: 2;
     justify-self: end;
@@ -864,6 +883,8 @@
   .headerMenuAction {
     grid-column: 2;
     grid-row: 2;
+    width: 3.5rem;
+    justify-content: flex-end;
   }
 
   .helperLink {
@@ -872,8 +893,8 @@
 
   .notificationButton,
   .menuButton {
-    width: 2.45rem;
-    height: 2.45rem;
+    width: 2.75rem;
+    height: 2.75rem;
   }
 
   .notificationButton svg {

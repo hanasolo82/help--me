@@ -37,6 +37,32 @@
   box-shadow: var(--hm-panel-shadow);
 }
 
+:global(html[data-theme='dark']) .backdrop {
+  background: rgba(5, 7, 5, 0.68);
+}
+
+:global(html[data-theme='dark']) .modal {
+  /* theme-live mantiene algunos aliases de panel en su valor claro. Se
+     reconectan aquí a la paleta activa para que todo el formulario, incluido
+     el contenido portaled a body, use superficies y controles oscuros. */
+  --hm-card-bg: var(--hm-color-surface-strong);
+  --hm-card-border: var(--hm-color-border-subtle);
+  --hm-card-muted-bg: var(--hm-color-secondary);
+  --hm-card-muted-fg: var(--hm-color-muted);
+  --hm-card-accent-bg: var(--hm-color-primary);
+  --hm-card-accent-fg: var(--hm-color-bg);
+  --hm-panel-bg: var(--hm-color-surface-strong);
+  --hm-panel-border: var(--hm-color-border-subtle);
+  --hm-input-bg: var(--hm-color-secondary);
+  --hm-input-text: var(--hm-color-text);
+  --hm-input-placeholder: var(--hm-color-muted);
+  --hm-input-border: var(--hm-color-border-subtle);
+
+  background: var(--hm-panel-bg);
+  border-color: var(--hm-panel-border);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.48);
+}
+
 .modal::before {
   content: "";
   position: absolute;

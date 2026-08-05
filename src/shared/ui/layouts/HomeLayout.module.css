@@ -55,6 +55,7 @@
 
 @media (max-width: 42rem) {
   .shell {
+    padding-block-start: max(1rem, env(safe-area-inset-top));
     padding-inline-start: max(var(--hm-shell-padding-inline-mobile), env(safe-area-inset-left));
     padding-inline-end: max(var(--hm-shell-padding-inline-mobile), env(safe-area-inset-right));
   }

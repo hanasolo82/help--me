@@ -1018,7 +1018,9 @@
 
 @media (max-width: 42rem) {
   .navbar {
-    padding-inline: 0.75rem;
+    padding-block-start: max(1rem, env(safe-area-inset-top));
+    padding-inline-start: max(0.75rem, env(safe-area-inset-left));
+    padding-inline-end: max(0.75rem, env(safe-area-inset-right));
   }
 
   .hero,
@@ -1063,8 +1065,14 @@
   }
 
   .navActions {
+    min-height: 2.75rem;
     justify-content: end;
     gap: 0.35rem;
+  }
+
+  .ghostButton {
+    width: 3.5rem;
+    min-height: 2.75rem;
   }
 
   .ghostButton,
